@@ -1,11 +1,13 @@
-require "test_helper"
+# frozen_string_literal: true
 
-class Schema::VizTest < Minitest::Test
-  def test_that_it_has_a_version_number
+require './test/test_helper'
+
+describe Schema::Viz do
+  it 'has a version number' do
     refute_nil ::Schema::Viz::VERSION
   end
 
-  def test_it_does_something_useful
-    assert false
+  it 'should work' do
+    assert true
   end
 end

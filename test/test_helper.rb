@@ -1,5 +1,5 @@
 # frozen_string_literal: true
 
 $LOAD_PATH.unshift File.expand_path('../lib', __dir__)
-require './lib/schema/viz'
+require './lib/schema-viz/main'
 require 'minitest/autorun'

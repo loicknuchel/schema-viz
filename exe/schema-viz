@@ -1,5 +1,5 @@
 #!/usr/bin/env ruby
 # frozen_string_literal: true
 
-require './lib/schema/viz'
-Schema::Viz.main(ARGV)
+require './lib/schema-viz/main'
+SchemaViz::Main.main(ARGV)

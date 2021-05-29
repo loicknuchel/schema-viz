@@ -1,10 +1,10 @@
 # frozen_string_literal: true
 
-require_relative 'lib/schema/viz/version'
+require_relative 'lib/schema-viz/version'
 
 Gem::Specification.new do |spec|
   spec.name          = 'schema-viz'
-  spec.version       = Schema::Viz::VERSION
+  spec.version       = SchemaViz::VERSION
   spec.authors       = ['Loïc Knuchel']
   spec.email         = ['loicknuchel@gmail.com']
 

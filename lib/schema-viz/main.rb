@@ -1,14 +1,11 @@
 # frozen_string_literal: true
 
-require './lib/schema/viz/version'
-
-module Schema
+module SchemaViz
   # Gem entry point, call it to use it
-  module Viz
-    class Error < StandardError; end
-
+  module Main
     def self.main(args)
       puts "Hello Viz: #{args}"
+      true
     end
   end
 end

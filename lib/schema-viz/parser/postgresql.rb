@@ -4,10 +4,22 @@ module SchemaViz
   module Parser
     # parse a PostgreSQL file
     module Postgresql
-      Table = Struct.new(:schema, :table, :columns, :primary_key, :comment)
-      Column = Struct.new(:name, :type, :nullable, :default, :reference, :comment)
+      Table = Struct.new(:schema, :table, :columns, :primary_key, :comment) do
+        def copy(schema: nil, table: nil, columns: nil, primary_key: nil, comment: nil)
+          Table.new(schema || self.schema, table || self.table, columns || self.columns, primary_key || self.primary_key, comment || self.comment)
+        end
+      end
+      Column = Struct.new(:name, :type, :nullable, :default, :reference, :comment) do
+        def copy(name: nil, type: nil, nullable: nil, default: nil, reference: nil, comment: nil)
+          Column.new(name || self.name, type || self.type, nullable || self.nullable, default || self.default, reference || self.reference, comment || self.comment)
+        end
+      end
       Reference = Struct.new(:schema, :table, :column, :key_name)
       Structure = Struct.new(:tables) do
+        def copy(tables: nil)
+          Structure.new(tables || self.tables)
+        end
+
         def table(schema, table)
           tables.find { |t| t.schema == schema && t.table == table }
         end
@@ -35,15 +47,15 @@ module SchemaViz
           case statement
           in SqlParser::Table => table
             columns = table.columns.map { |c| Column.new(c.name, c.type, c.nullable, c.default, nil, nil) }
-            Structure.new(structure.tables + [Table.new(table.schema, table.table, columns, nil, nil)])
+            structure.copy(tables: structure.tables + [Table.new(table.schema, table.table, columns, nil, nil)])
           in SqlParser::TableComment => comment
-            Structure.new(add_table_comment(structure.tables, comment))
+            structure.copy(tables: add_table_comment(structure.tables, comment))
           in SqlParser::ColumnComment => comment
-            Structure.new(add_column_comment(structure.tables, comment))
+            structure.copy(tables: add_column_comment(structure.tables, comment))
           in SqlParser::PrimaryKey => pk
-            Structure.new(add_primary_key(structure.tables, pk))
+            structure.copy(tables: add_primary_key(structure.tables, pk))
           in SqlParser::ForeignKey => fk
-            Structure.new(add_foreign_key(structure.tables, fk))
+            structure.copy(tables: add_foreign_key(structure.tables, fk))
           else
             puts "not handled: #{statement.inspect}"
             structure
@@ -51,27 +63,20 @@ module SchemaViz
         end
 
         def add_table_comment(tables, comment)
-          update_table(tables, comment) do |table|
-            Table.new(table.schema, table.table, table.columns, table.primary_key, comment.comment)
-          end
+          update_table(tables, comment) { |table| table.copy(comment: comment.comment) }
         end
 
         def add_column_comment(tables, comment)
-          update_column(tables, comment) do |column|
-            Column.new(column.name, column.type, column.nullable, column.default, column.reference, comment.comment)
-          end
+          update_column(tables, comment) { |column| column.copy(comment: comment.comment) }
         end
 
         def add_primary_key(tables, pk)
-          update_table(tables, pk) do |table|
-            Table.new(table.schema, table.table, table.columns, pk.columns, table.comment)
-          end
+          update_table(tables, pk) { |table| table.copy(primary_key: pk.columns) }
         end
 
         def add_foreign_key(tables, fk)
-          update_column(tables, fk) do |c|
-            reference = Reference.new(fk.dest_schema, fk.dest_table, fk.dest_column, fk.name)
-            Column.new(c.name, c.type, c.nullable, c.default, reference, c.comment)
+          update_column(tables, fk) do |column|
+            column.copy(reference: Reference.new(fk.dest_schema, fk.dest_table, fk.dest_column, fk.name))
           end
         end
 
@@ -83,9 +88,9 @@ module SchemaViz
         def update_column(tables, statement)
           update_table(tables, statement) do |table|
             raise 'error' if table.columns.find { |c| same_column?(c, statement) }.nil?
-            Table.new(table.schema, table.table, table.columns.map do |c|
+            table.copy(columns: table.columns.map do |c|
               same_column?(c, statement) ? yield(c) : c
-            end, table.primary_key, table.comment)
+            end)
           end
         end
 

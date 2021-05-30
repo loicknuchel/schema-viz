@@ -95,7 +95,7 @@ module SchemaViz
 
         def build_statements(lines)
           useful_lines = lines.reject { |line| line.empty? || line.start_with?('--') }
-          useful_lines.join(' ').gsub(/ +/, ' ').split(';').map { |s| "#{s.strip};" }
+          useful_lines.join("\n").split(";\n").map { |s| "#{s.gsub(/\n/, ' ').gsub(/ +/, ' ').strip};" }
         end
 
         def evolve_r(structure, parsed_statement)
@@ -114,6 +114,31 @@ module SchemaViz
             structure.update_column_r(fk) { |column| Result.of(column.copy(reference: reference)) }
           in SqlParser::SetColumnDefault => default
             structure.update_column_r(default) { |column| Result.of(column.copy(default: default.value)) }
+          in ->(v) do
+            v.instance_of?(String) && [
+              'CREATE TYPE',
+              'CREATE FUNCTION',
+              'CREATE VIEW',
+              'CREATE OR REPLACE VIEW',
+              'CREATE MATERIALIZED VIEW',
+              'COMMENT ON VIEW',
+              'CREATE INDEX',
+              'CREATE UNIQUE INDEX',
+              'COMMENT ON INDEX',
+              'CREATE EXTENSION',
+              'COMMENT ON EXTENSION',
+              'CREATE TEXT SEARCH CONFIGURATION',
+              'ALTER TEXT SEARCH CONFIGURATION',
+              'CREATE SCHEMA',
+              'CREATE SEQUENCE',
+              'ALTER SEQUENCE',
+              'SET',
+              'SELECT',
+              'INSERT INTO',
+              'END'
+            ].any? { |start| v.start_with?(start) }
+          end # ignored statements
+            Result.of(structure)
           else
             puts "not handled: #{parsed_statement.inspect}"
             Result.of(structure)
@@ -135,6 +160,8 @@ module SchemaViz
         Column = Struct.new(:name, :type, :nullable, :default)
         PrimaryKey = Struct.new(:schema, :table, :columns, :name)
         ForeignKey = Struct.new(:schema, :table, :column, :dest_schema, :dest_table, :dest_column, :name)
+        UniqueConstraint = Struct.new(:schema, :table, :columns, :name)
+        CheckConstraint = Struct.new(:schema, :table, :predicate, :name)
         SetColumnDefault = Struct.new(:schema, :table, :column, :value)
         SetColumnStatistics = Struct.new(:schema, :table, :column, :value)
         TableComment = Struct.new(:schema, :table, :comment)
@@ -186,14 +213,14 @@ module SchemaViz
           end
 
           def parse_alter_table_r(sql)
-            res = sql.match(/ALTER TABLE ONLY (?<schema>[^ .]+)\.(?<table>[^ .]+) (?<command>.*);/)
+            res = sql.match(/ALTER TABLE (?:ONLY )?(?<schema>[^ .]+)\.(?<table>[^ .]+) (?<command>.*);/)
             if res[:command].start_with?('ADD CONSTRAINT')
-              parse_add_constraint_r(res[:schema], res[:table], res[:command]).on_error { |e| e.add_context(__method__, sql, res) }
+              parse_add_constraint_r(res[:schema], res[:table], res[:command])
             elsif res[:command].start_with?('ALTER COLUMN')
-              parse_alter_column_r(res[:schema], res[:table], res[:command]).on_error { |e| e.add_context(__method__, sql, res) }
+              parse_alter_column_r(res[:schema], res[:table], res[:command])
             else
-              Result.failure(ParseError.new(__method__, sql, res, StandardError.new("Unknown command #{res[:command].inspect}")))
-            end
+              Result.failure(StandardError.new("Unknown command #{res[:command].inspect}"))
+            end.on_error { |e| e.add_context(__method__, sql, res) }
           rescue StandardError => e
             Result.failure(ParseError.new(__method__, sql, res, e))
           end
@@ -201,19 +228,23 @@ module SchemaViz
           def parse_add_constraint_r(schema, table, command)
             res = command.match(/ADD CONSTRAINT (?<name>[^ .]+) (?<constraint>.*)/)
             if res[:constraint].start_with?('PRIMARY KEY')
-              parse_add_primary_key_r(schema, table, res[:name], res[:constraint]).on_error { |e| e.add_context(__method__, command, res) }
+              parse_add_primary_key_r(schema, table, res[:name], res[:constraint])
             elsif res[:constraint].start_with?('FOREIGN KEY')
-              parse_add_foreign_key_r(schema, table, res[:name], res[:constraint]).on_error { |e| e.add_context(__method__, command, res) }
+              parse_add_foreign_key_r(schema, table, res[:name], res[:constraint])
+            elsif res[:constraint].start_with?('UNIQUE')
+              parse_add_unique_constraint_r(schema, table, res[:name], res[:constraint])
+            elsif res[:constraint].start_with?('CHECK')
+              parse_add_check_constraint_r(schema, table, res[:name], res[:constraint])
             else
-              Result.failure(ParseError.new(__method__, command, res, StandardError.new("Unknown constraint #{res[:constraint].inspect}")))
-            end
+              Result.failure(StandardError.new("Unknown constraint #{res[:constraint]}"))
+            end.on_error { |e| e.add_context(__method__, command, res) }
           rescue StandardError => e
             Result.failure(ParseError.new(__method__, command, res, e))
           end
 
           def parse_add_primary_key_r(schema, table, name, constraint)
             res = constraint.match(/PRIMARY KEY \((?<columns>[^)]+)\)/)
-            Result.of(PrimaryKey.new(schema, table, res[:columns].split(','), name))
+            Result.of(PrimaryKey.new(schema, table, res[:columns].split(',').map(&:strip), name))
           rescue StandardError => e
             Result.failure(ParseError.new(__method__, constraint, res, e))
           end
@@ -225,15 +256,29 @@ module SchemaViz
             Result.failure(ParseError.new(__method__, constraint, res, e))
           end
 
+          def parse_add_unique_constraint_r(schema, table, name, constraint)
+            res = constraint.match(/UNIQUE \((?<columns>[^)]+)\)/)
+            Result.of(UniqueConstraint.new(schema, table, res[:columns].split(',').map(&:strip), name))
+          rescue StandardError => e
+            Result.failure(ParseError.new(__method__, constraint, res, e))
+          end
+
+          def parse_add_check_constraint_r(schema, table, name, constraint)
+            res = constraint.match(/CHECK (?<predicate>.*)/)
+            Result.of(CheckConstraint.new(schema, table, res[:predicate], name))
+          rescue StandardError => e
+            Result.failure(ParseError.new(__method__, constraint, res, e))
+          end
+
           def parse_alter_column_r(schema, table, command)
             res = command.match(/ALTER COLUMN (?<column>[^ .]+) SET (?<property>.+)/)
             if res[:property].start_with?('DEFAULT')
-              parse_alter_column_default_r(schema, table, res[:column], res[:property]).on_error { |e| e.add_context(__method__, command, res) }
+              parse_alter_column_default_r(schema, table, res[:column], res[:property])
             elsif res[:property].start_with?('STATISTICS')
-              parse_alter_column_statistics_r(schema, table, res[:column], res[:property]).on_error { |e| e.add_context(__method__, command, res) }
+              parse_alter_column_statistics_r(schema, table, res[:column], res[:property])
             else
-              Result.failure(ParseError.new(__method__, command, res, StandardError.new("Unknown property #{res[:property].inspect}")))
-            end
+              Result.failure(StandardError.new("Unknown property #{res[:property].inspect}"))
+            end.on_error { |e| e.add_context(__method__, command, res) }
           rescue StandardError => e
             Result.failure(ParseError.new(__method__, command, res, e))
           end

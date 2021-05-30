@@ -62,10 +62,15 @@ describe SchemaViz::Parser::Postgresql do
                    parser.parse_alter_table_r('ALTER TABLE ONLY public.t2 ADD CONSTRAINT t2_id_pkey PRIMARY KEY (id);').get!
       assert_equal parser::ForeignKey.new('p', 't2', 't1_id', 'p', 't1', 'id', 't2_t1_id_fk'),
                    parser.parse_alter_table_r('ALTER TABLE ONLY p.t2 ADD CONSTRAINT t2_t1_id_fk FOREIGN KEY (t1_id) REFERENCES p.t1(id);').get!
+      assert_equal parser::UniqueConstraint.new('p', 't1', %w[first_name last_name], 'name_unique'),
+                   parser.parse_alter_table_r('ALTER TABLE ONLY p.t1 ADD CONSTRAINT name_unique UNIQUE (first_name, last_name);').get!
+      assert_equal parser::CheckConstraint.new('p', 't1', '((kind IS NOT NULL)) NOT VALID', 't1_kind_not_null'),
+                   parser.parse_alter_table_r('ALTER TABLE p.t1 ADD CONSTRAINT t1_kind_not_null CHECK ((kind IS NOT NULL)) NOT VALID;').get!
       assert_equal parser::SetColumnDefault.new('public', 'table1', 'id', '1'),
                    parser.parse_alter_table_r('ALTER TABLE ONLY public.table1 ALTER COLUMN id SET DEFAULT 1;').get!
       assert_equal parser::SetColumnStatistics.new('public', 'table1', 'table1_id', 5000),
                    parser.parse_alter_table_r('ALTER TABLE ONLY public.table1 ALTER COLUMN table1_id SET STATISTICS 5000;').get!
+
       assert_equal parser::ParseError, parser.parse_alter_table_r('bad text').error!.class
 
       message = "parse_alter_table_r can't parse \"ALTER TABLE ONLY p.t1 ALTER COLUMN id SET STATISTICS bad;\" (regex result: #<MatchData \"ALTER TABLE ONLY p.t1 ALTER COLUMN id SET STATISTICS bad;\" schema:\"p\" table:\"t1\" command:\"ALTER COLUMN id SET STATISTICS bad\">)\n" \
@@ -80,6 +85,8 @@ describe SchemaViz::Parser::Postgresql do
                    parser.parse_table_comment_r("COMMENT ON TABLE public.table1 IS 'A comment';").get!
       assert_equal parser::TableComment.new('public', 'table1', "A 'good' comment"),
                    parser.parse_table_comment_r("COMMENT ON TABLE public.table1 IS 'A ''good'' comment';").get!
+      assert_equal parser::TableComment.new('public', 'table1', 'A ; comment'),
+                   parser.parse_table_comment_r("COMMENT ON TABLE public.table1 IS 'A ; comment';").get!
       assert_equal parser::ParseError, parser.parse_table_comment_r('bad text').error!.class
     end
 
@@ -88,6 +95,8 @@ describe SchemaViz::Parser::Postgresql do
                    parser.parse_column_comment_r("COMMENT ON COLUMN public.table1.id IS 'An id';").get!
       assert_equal parser::ColumnComment.new('public', 'table1', 'id', "A 'good' id"),
                    parser.parse_column_comment_r("COMMENT ON COLUMN public.table1.id IS 'A ''good'' id';").get!
+      assert_equal parser::ColumnComment.new('public', 'table1', 'id', 'An ; id'),
+                   parser.parse_column_comment_r("COMMENT ON COLUMN public.table1.id IS 'An ; id';").get!
       assert_equal parser::ParseError, parser.parse_column_comment_r('bad text').error!.class
     end
   end

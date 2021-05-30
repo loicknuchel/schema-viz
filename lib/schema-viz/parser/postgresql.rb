@@ -4,6 +4,11 @@ module SchemaViz
   module Parser
     # parse a PostgreSQL file
     module Postgresql
+      TableComment = Struct.new(:schema, :table, :comment)
+      ColumnComment = Struct.new(:schema, :table, :column, :comment)
+      Table = Struct.new(:schema, :table, :columns)
+      Column = Struct.new(:name, :type, :nullable, :default)
+
       class << self
         def parse_schema_file(path)
           file = File.open(path)
@@ -15,11 +20,12 @@ module SchemaViz
         end
 
         def parse_table(sql)
-          r = /CREATE TABLE (?<schema>[^ .]+).(?<table>[^ ]+) \((?<body>[^;]+?)\)(?: WITH \((?<options>.*?)\))?;/
-          res = sql.gsub(/\n/, ' ').match(r)
+          r = /^CREATE TABLE (?<schema>[^ .]+)\.(?<table>[^ .]+) \((?<body>[^;]+?)\)(?: WITH \((?<options>.*?)\))?;$/
+          res = sql.strip.gsub(/\n/, ' ').match(r)
           body_lines = split_on_comma_except_when_inside_parenthesis(res[:body]).map(&:strip)
           columns = body_lines.reject { |line| line.start_with?('CONSTRAINT') }
           # constraints = body_lines.select { |line| line.start_with?('CONSTRAINT') }
+          # options = res[:options].split(',')
           Table.new(res[:schema], res[:table], columns.map { |column| parse_column(column) })
         rescue StandardError => e
           puts "parse_table failed on #{sql.inspect} (res: #{res.inspect})"
@@ -31,6 +37,22 @@ module SchemaViz
           Column.new(res[:name], res[:type], res[:nullable].nil?, res[:default])
         rescue StandardError => e
           puts "parse_column failed on #{sql.inspect} (res: #{res.inspect})"
+          raise e
+        end
+
+        def parse_table_comment(sql)
+          res = sql.match(/^COMMENT ON TABLE (?<schema>[^ .]+)\.(?<table>[^ .]+) IS '(?<comment>(?:[^']|'')+)';$/)
+          TableComment.new(res[:schema], res[:table], res[:comment].gsub(/''/, "'"))
+        rescue StandardError => e
+          puts "parse_table_comment failed on #{sql.inspect} (res: #{res.inspect})"
+          raise e
+        end
+
+        def parse_column_comment(sql)
+          res = sql.match(/^COMMENT ON COLUMN (?<schema>[^ .]+)\.(?<table>[^ .]+)\.(?<column>[^ .]+) IS '(?<comment>(?:[^']|'')+)';$/)
+          ColumnComment.new(res[:schema], res[:table], res[:column], res[:comment].gsub(/''/, "'"))
+        rescue StandardError => e
+          puts "parse_column_comment failed on #{sql.inspect} (res: #{res.inspect})"
           raise e
         end
 

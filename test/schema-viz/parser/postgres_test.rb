@@ -20,54 +20,58 @@ describe SchemaViz::Parser::Postgresql do
     assert_equal postgres::Reference.new('public', 'table1', 'id', 'table2_table1_id_fk'), structure.column('public', 'table2', 'table1_id').reference
   end
 
-  it 'parses a table' do
-    sql = <<~SQL
-      CREATE TABLE public.users (
-        id bigint NOT NULL,
-        name character varying(255),
-        price numeric(8,2)
-      ) WITH (autovacuum_enabled='false');
-    SQL
-    assert_equal postgres::Table.new('public', 'users', [
-      postgres::Column.new('id', 'bigint', false, nil),
-      postgres::Column.new('name', 'character varying(255)', true, nil),
-      postgres::Column.new('price', 'numeric(8,2)', true, nil)
-    ]), postgres.parse_table(sql)
-  end
+  describe 'SqlParser' do
+    parser = SchemaViz::Parser::Postgresql::SqlParser
 
-  it 'parses a column' do
-    assert_equal postgres::Column.new('id', 'bigint', false, nil),
-                 postgres.parse_column('id bigint NOT NULL')
-    assert_equal postgres::Column.new('name', 'character varying(255)', true, nil),
-                 postgres.parse_column('name character varying(255)')
-    assert_equal postgres::Column.new('status', 'character varying(255)', false, "'done'::character varying"),
-                 postgres.parse_column("status character varying(255) DEFAULT 'done'::character varying NOT NULL")
-    assert_equal postgres::Column.new('price', 'numeric(8,2)', true, nil),
-                 postgres.parse_column('price numeric(8,2)')
-  end
+    it 'parses a table' do
+      sql = <<~SQL
+        CREATE TABLE public.users (
+          id bigint NOT NULL,
+          name character varying(255),
+          price numeric(8,2)
+        ) WITH (autovacuum_enabled='false');
+      SQL
+      assert_equal parser::Table.new('public', 'users', [
+        parser::Column.new('id', 'bigint', false, nil),
+        parser::Column.new('name', 'character varying(255)', true, nil),
+        parser::Column.new('price', 'numeric(8,2)', true, nil)
+      ]), parser.parse_table(sql)
+    end
 
-  it 'parses an alter table' do
-    assert_equal postgres::PrimaryKey.new('public', 't2', ['id'], 't2_id_pkey'),
-                 postgres.parse_alter_table('ALTER TABLE ONLY public.t2 ADD CONSTRAINT t2_id_pkey PRIMARY KEY (id);')
-    assert_equal postgres::ForeignKey.new('p', 't2', 't1_id', 'p', 't1', 'id', 't2_t1_id_fk'),
-                 postgres.parse_alter_table('ALTER TABLE ONLY p.t2 ADD CONSTRAINT t2_t1_id_fk FOREIGN KEY (t1_id) REFERENCES p.t1(id);')
-    assert_equal postgres::SetColumnDefault.new('public', 'table1', 'id', '1'),
-                 postgres.parse_alter_table('ALTER TABLE ONLY public.table1 ALTER COLUMN id SET DEFAULT 1;')
-    assert_equal postgres::SetColumnStatistics.new('public', 'table1', 'table1_id', 5000),
-                 postgres.parse_alter_table('ALTER TABLE ONLY public.table1 ALTER COLUMN table1_id SET STATISTICS 5000;')
-  end
+    it 'parses a column' do
+      assert_equal parser::Column.new('id', 'bigint', false, nil),
+                   parser.parse_column('id bigint NOT NULL')
+      assert_equal parser::Column.new('name', 'character varying(255)', true, nil),
+                   parser.parse_column('name character varying(255)')
+      assert_equal parser::Column.new('status', 'character varying(255)', false, "'done'::character varying"),
+                   parser.parse_column("status character varying(255) DEFAULT 'done'::character varying NOT NULL")
+      assert_equal parser::Column.new('price', 'numeric(8,2)', true, nil),
+                   parser.parse_column('price numeric(8,2)')
+    end
 
-  it 'parses a table comment' do
-    assert_equal postgres::TableComment.new('public', 'table1', 'A comment'),
-                 postgres.parse_table_comment("COMMENT ON TABLE public.table1 IS 'A comment';")
-    assert_equal postgres::TableComment.new('public', 'table1', "A 'good' comment"),
-                 postgres.parse_table_comment("COMMENT ON TABLE public.table1 IS 'A ''good'' comment';")
-  end
+    it 'parses an alter table' do
+      assert_equal parser::PrimaryKey.new('public', 't2', ['id'], 't2_id_pkey'),
+                   parser.parse_alter_table('ALTER TABLE ONLY public.t2 ADD CONSTRAINT t2_id_pkey PRIMARY KEY (id);')
+      assert_equal parser::ForeignKey.new('p', 't2', 't1_id', 'p', 't1', 'id', 't2_t1_id_fk'),
+                   parser.parse_alter_table('ALTER TABLE ONLY p.t2 ADD CONSTRAINT t2_t1_id_fk FOREIGN KEY (t1_id) REFERENCES p.t1(id);')
+      assert_equal parser::SetColumnDefault.new('public', 'table1', 'id', '1'),
+                   parser.parse_alter_table('ALTER TABLE ONLY public.table1 ALTER COLUMN id SET DEFAULT 1;')
+      assert_equal parser::SetColumnStatistics.new('public', 'table1', 'table1_id', 5000),
+                   parser.parse_alter_table('ALTER TABLE ONLY public.table1 ALTER COLUMN table1_id SET STATISTICS 5000;')
+    end
 
-  it 'parses a column comment' do
-    assert_equal postgres::ColumnComment.new('public', 'table1', 'id', 'An id'),
-                 postgres.parse_column_comment("COMMENT ON COLUMN public.table1.id IS 'An id';")
-    assert_equal postgres::ColumnComment.new('public', 'table1', 'id', "A 'good' id"),
-                 postgres.parse_column_comment("COMMENT ON COLUMN public.table1.id IS 'A ''good'' id';")
+    it 'parses a table comment' do
+      assert_equal parser::TableComment.new('public', 'table1', 'A comment'),
+                   parser.parse_table_comment("COMMENT ON TABLE public.table1 IS 'A comment';")
+      assert_equal parser::TableComment.new('public', 'table1', "A 'good' comment"),
+                   parser.parse_table_comment("COMMENT ON TABLE public.table1 IS 'A ''good'' comment';")
+    end
+
+    it 'parses a column comment' do
+      assert_equal parser::ColumnComment.new('public', 'table1', 'id', 'An id'),
+                   parser.parse_column_comment("COMMENT ON COLUMN public.table1.id IS 'An id';")
+      assert_equal parser::ColumnComment.new('public', 'table1', 'id', "A 'good' id"),
+                   parser.parse_column_comment("COMMENT ON COLUMN public.table1.id IS 'A ''good'' id';")
+    end
   end
 end

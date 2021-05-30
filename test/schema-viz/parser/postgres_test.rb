@@ -11,13 +11,17 @@ describe SchemaViz::Parser::Postgresql do
   it 'parse a sql file' do
     structure = postgres.parse_schema_file('./test/resources/structure.sql')
     assert_equal 2, structure.tables.length
+    # primary key is added
+    assert_nil structure.table('public', 'table1').primary_key
+    assert_equal ['id'], structure.table('public', 'table2').primary_key
+    # foreign keys are added
+    assert_nil structure.column('public', 'table2', 'id').reference
+    assert_equal postgres::Reference.new('public', 'table1', 'id', 'table2_table1_id_fk'), structure.column('public', 'table2', 'table1_id').reference
     # comments are added
-    assert_equal 'This is the first table', structure.table('public', 'table1').comment
-    assert_equal 'An external \'id\' or "value"', structure.column('public', 'table1', 'user_id').comment
     assert_nil structure.table('public', 'table2').comment
     assert_nil structure.column('public', 'table1', 'id').comment
-    # foreign keys are added
-    assert_equal postgres::Reference.new('public', 'table1', 'id', 'table2_table1_id_fk'), structure.column('public', 'table2', 'table1_id').reference
+    assert_equal 'This is the first table', structure.table('public', 'table1').comment
+    assert_equal 'An external \'id\' or "value"', structure.column('public', 'table1', 'user_id').comment
   end
 
   describe 'SqlParser' do

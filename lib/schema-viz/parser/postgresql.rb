@@ -4,7 +4,7 @@ module SchemaViz
   module Parser
     # parse a PostgreSQL file
     module Postgresql
-      Table = Struct.new(:schema, :table, :columns, :comment)
+      Table = Struct.new(:schema, :table, :columns, :primary_key, :comment)
       Column = Struct.new(:name, :type, :nullable, :default, :reference, :comment)
       Reference = Struct.new(:schema, :table, :column, :key_name)
       Structure = Struct.new(:tables) do
@@ -35,11 +35,13 @@ module SchemaViz
           case statement
           in SqlParser::Table => table
             columns = table.columns.map { |c| Column.new(c.name, c.type, c.nullable, c.default, nil, nil) }
-            Structure.new(structure.tables + [Table.new(table.schema, table.table, columns, nil)])
+            Structure.new(structure.tables + [Table.new(table.schema, table.table, columns, nil, nil)])
           in SqlParser::TableComment => comment
             Structure.new(add_table_comment(structure.tables, comment))
           in SqlParser::ColumnComment => comment
             Structure.new(add_column_comment(structure.tables, comment))
+          in SqlParser::PrimaryKey => pk
+            Structure.new(add_primary_key(structure.tables, pk))
           in SqlParser::ForeignKey => fk
             Structure.new(add_foreign_key(structure.tables, fk))
           else
@@ -49,12 +51,20 @@ module SchemaViz
         end
 
         def add_table_comment(tables, comment)
-          update_table(tables, comment) { |table| Table.new(table.schema, table.table, table.columns, comment.comment) }
+          update_table(tables, comment) do |table|
+            Table.new(table.schema, table.table, table.columns, table.primary_key, comment.comment)
+          end
         end
 
         def add_column_comment(tables, comment)
-          update_column(tables, comment) do |c|
-            Column.new(c.name, c.type, c.nullable, c.default, c.reference, comment.comment)
+          update_column(tables, comment) do |column|
+            Column.new(column.name, column.type, column.nullable, column.default, column.reference, comment.comment)
+          end
+        end
+
+        def add_primary_key(tables, pk)
+          update_table(tables, pk) do |table|
+            Table.new(table.schema, table.table, table.columns, pk.columns, table.comment)
           end
         end
 
@@ -75,7 +85,7 @@ module SchemaViz
             raise 'error' if table.columns.find { |c| same_column?(c, statement) }.nil?
             Table.new(table.schema, table.table, table.columns.map do |c|
               same_column?(c, statement) ? yield(c) : c
-            end, table.comment)
+            end, table.primary_key, table.comment)
           end
         end
 

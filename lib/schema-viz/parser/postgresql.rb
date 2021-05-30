@@ -13,13 +13,21 @@ module SchemaViz
           same?(comment) ? Table.new(schema, table, columns.map { |c| c.add_comment(comment) }, self.comment) : self
         end
 
+        def add_foreign_key(fk)
+          same?(fk) ? Table.new(schema, table, columns.map { |c| c.add_foreign_key(fk) }, self.comment) : self
+        end
+
         def same?(comment)
           comment.schema == schema && comment.table == table
         end
       end
-      Column = Struct.new(:name, :type, :nullable, :default, :comment) do
+      Column = Struct.new(:name, :type, :nullable, :default, :reference, :comment) do
         def add_comment(comment)
-          comment.column == name ? Column.new(name, type, nullable, default, comment.comment) : self
+          comment.column == name ? Column.new(name, type, nullable, default, reference, comment.comment) : self
+        end
+
+        def add_foreign_key(fk)
+          fk.column == name ? Column.new(name, type, nullable, default, Reference.new(fk.dest_schema, fk.dest_table, fk.dest_column, fk.name), comment) : self
         end
       end
       PrimaryKey = Struct.new(:schema, :table, :columns, :name)
@@ -28,6 +36,7 @@ module SchemaViz
       SetColumnStatistics = Struct.new(:schema, :table, :column, :value)
       TableComment = Struct.new(:schema, :table, :comment)
       ColumnComment = Struct.new(:schema, :table, :column, :comment)
+      Reference = Struct.new(:schema, :table, :column, :key_name)
       Structure = Struct.new(:tables) do
         def table(schema, table)
           tables.find { |t| t.schema == schema && t.table == table }
@@ -46,18 +55,28 @@ module SchemaViz
           useful_lines = lines.reject { |line| line.empty? || line.start_with?('--') }
           statements = useful_lines.join(' ').gsub(/ +/, ' ').split(';').map { |s| "#{s.strip};" }
           statements.inject(Structure.new([])) do |structure, statement|
-            if statement.start_with?('CREATE TABLE')
-              Structure.new(structure.tables + [parse_table(statement)])
-            elsif statement.start_with?('COMMENT ON TABLE')
-              comment = parse_table_comment(statement)
+            case parse_statement(statement)
+            in Table => table
+              Structure.new(structure.tables + [table])
+            in TableComment => comment
               Structure.new(structure.tables.map { |table| table.add_comment(comment) })
-            elsif statement.start_with?('COMMENT ON COLUMN')
-              comment = parse_column_comment(statement)
+            in ColumnComment => comment
               Structure.new(structure.tables.map { |table| table.add_column_comment(comment) })
+            in ForeignKey => fk
+              Structure.new(structure.tables.map { |table| table.add_foreign_key(fk) })
             else
+              puts "not handled: #{statement}"
               structure
             end
           end
+        end
+
+        def parse_statement(sql)
+          return parse_table(sql) if sql.start_with?('CREATE TABLE')
+          return parse_table_comment(sql) if sql.start_with?('COMMENT ON TABLE')
+          return parse_column_comment(sql) if sql.start_with?('COMMENT ON COLUMN')
+          return parse_alter_table(sql) if sql.start_with?('ALTER TABLE')
+          sql
         end
 
         def parse_table(sql)
@@ -170,8 +189,6 @@ module SchemaViz
           puts "parse_column_comment failed on #{sql.inspect} (res: #{res.inspect})"
           raise e
         end
-
-        private
 
         # from https://stackoverflow.com/questions/18424315/how-do-i-split-a-string-by-commas-except-inside-parenthesis-using-a-regular-exp
         def split_on_comma_except_when_inside_parenthesis(text)

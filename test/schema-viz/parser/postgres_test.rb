@@ -39,6 +39,17 @@ describe SchemaViz::Parser::Postgresql do
                  postgres.parse_column('price numeric(8,2)')
   end
 
+  it 'parses an alter table' do
+    assert_equal postgres::PrimaryKey.new('public', 't2', ['id'], 't2_id_pkey'),
+                 postgres.parse_alter_table('ALTER TABLE ONLY public.t2 ADD CONSTRAINT t2_id_pkey PRIMARY KEY (id);')
+    assert_equal postgres::ForeignKey.new('p', 't2', 't1_id', 'p', 't1', 'id', 't2_t1_id_fk'),
+                 postgres.parse_alter_table('ALTER TABLE ONLY p.t2 ADD CONSTRAINT t2_t1_id_fk FOREIGN KEY (t1_id) REFERENCES p.t1(id);')
+    assert_equal postgres::SetColumnDefault.new('public', 'table1', 'id', '1'),
+                 postgres.parse_alter_table('ALTER TABLE ONLY public.table1 ALTER COLUMN id SET DEFAULT 1;')
+    assert_equal postgres::SetColumnStatistics.new('public', 'table1', 'table1_id', 5000),
+                 postgres.parse_alter_table('ALTER TABLE ONLY public.table1 ALTER COLUMN table1_id SET STATISTICS 5000;')
+  end
+
   it 'parses a table comment' do
     assert_equal postgres::TableComment.new('public', 'table1', 'A comment'),
                  postgres.parse_table_comment("COMMENT ON TABLE public.table1 IS 'A comment';")

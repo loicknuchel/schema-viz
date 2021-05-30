@@ -59,7 +59,12 @@ ALTER SEQUENCE public.table2_id_seq OWNED BY public.table2.id;
 
 
 ALTER TABLE ONLY public.table2
+    ADD CONSTRAINT table2_id_pkey PRIMARY KEY (id);
+
+ALTER TABLE ONLY public.table2
     ADD CONSTRAINT table2_table1_id_fk FOREIGN KEY (table1_id) REFERENCES public.table1(id);
+
+ALTER TABLE ONLY public.table2 ALTER COLUMN id SET DEFAULT nextval('public.table2_id_seq'::regclass);
 
 ALTER TABLE ONLY public.table2 ALTER COLUMN table1_id SET STATISTICS 5000;
 

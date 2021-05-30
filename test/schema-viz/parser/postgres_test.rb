@@ -40,6 +40,7 @@ describe SchemaViz::Parser::Postgresql do
         parser::Column.new('name', 'character varying(255)', true, nil),
         parser::Column.new('price', 'numeric(8,2)', true, nil)
       ]), parser.parse_table(sql)
+      assert_raises(parser::ParseError) { parser.parse_table('bad text') }
     end
 
     it 'parses a column' do
@@ -51,6 +52,7 @@ describe SchemaViz::Parser::Postgresql do
                    parser.parse_column("status character varying(255) DEFAULT 'done'::character varying NOT NULL")
       assert_equal parser::Column.new('price', 'numeric(8,2)', true, nil),
                    parser.parse_column('price numeric(8,2)')
+      assert_raises(parser::ParseError) { parser.parse_column('bad-text') }
     end
 
     it 'parses an alter table' do
@@ -62,6 +64,7 @@ describe SchemaViz::Parser::Postgresql do
                    parser.parse_alter_table('ALTER TABLE ONLY public.table1 ALTER COLUMN id SET DEFAULT 1;')
       assert_equal parser::SetColumnStatistics.new('public', 'table1', 'table1_id', 5000),
                    parser.parse_alter_table('ALTER TABLE ONLY public.table1 ALTER COLUMN table1_id SET STATISTICS 5000;')
+      assert_raises(parser::ParseError) { parser.parse_alter_table('bad text') }
     end
 
     it 'parses a table comment' do
@@ -69,6 +72,7 @@ describe SchemaViz::Parser::Postgresql do
                    parser.parse_table_comment("COMMENT ON TABLE public.table1 IS 'A comment';")
       assert_equal parser::TableComment.new('public', 'table1', "A 'good' comment"),
                    parser.parse_table_comment("COMMENT ON TABLE public.table1 IS 'A ''good'' comment';")
+      assert_raises(parser::ParseError) { parser.parse_table_comment('bad text') }
     end
 
     it 'parses a column comment' do
@@ -76,6 +80,7 @@ describe SchemaViz::Parser::Postgresql do
                    parser.parse_column_comment("COMMENT ON COLUMN public.table1.id IS 'An id';")
       assert_equal parser::ColumnComment.new('public', 'table1', 'id', "A 'good' id"),
                    parser.parse_column_comment("COMMENT ON COLUMN public.table1.id IS 'A ''good'' id';")
+      assert_raises(parser::ParseError) { parser.parse_column_comment('bad text') }
     end
   end
 end

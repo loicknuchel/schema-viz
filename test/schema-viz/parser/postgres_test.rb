@@ -17,6 +17,8 @@ describe SchemaViz::Parser::Postgresql do
     # foreign keys are added
     assert_nil structure.column('public', 'table2', 'id').reference
     assert_equal postgres::Reference.new('public', 'table1', 'id', 'table2_table1_id_fk'), structure.column('public', 'table2', 'table1_id').reference
+    # column default
+    assert_equal "nextval('public.table2_id_seq'::regclass)", structure.column('public', 'table2', 'id').default
     # comments are added
     assert_nil structure.table('public', 'table2').comment
     assert_nil structure.column('public', 'table1', 'id').comment

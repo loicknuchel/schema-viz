@@ -112,6 +112,8 @@ module SchemaViz
           in SqlParser::ForeignKey => fk
             reference = Reference.new(fk.dest_schema, fk.dest_table, fk.dest_column, fk.name)
             structure.update_column_r(fk) { |column| Result.of(column.copy(reference: reference)) }
+          in SqlParser::SetColumnDefault => default
+            structure.update_column_r(default) { |column| Result.of(column.copy(default: default.value)) }
           else
             puts "not handled: #{parsed_statement.inspect}"
             Result.of(structure)

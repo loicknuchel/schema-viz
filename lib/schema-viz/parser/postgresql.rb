@@ -4,14 +4,39 @@ module SchemaViz
   module Parser
     # parse a PostgreSQL file
     module Postgresql
-      TableComment = Struct.new(:schema, :table, :comment)
-      ColumnComment = Struct.new(:schema, :table, :column, :comment)
-      Table = Struct.new(:schema, :table, :columns)
-      Column = Struct.new(:name, :type, :nullable, :default)
+      Table = Struct.new(:schema, :table, :columns, :comment) do
+        def add_comment(comment)
+          same?(comment) ? Table.new(schema, table, columns, comment.comment) : self
+        end
+
+        def add_column_comment(comment)
+          same?(comment) ? Table.new(schema, table, columns.map { |c| c.add_comment(comment) }, self.comment) : self
+        end
+
+        def same?(comment)
+          comment.schema == schema && comment.table == table
+        end
+      end
+      Column = Struct.new(:name, :type, :nullable, :default, :comment) do
+        def add_comment(comment)
+          comment.column == name ? Column.new(name, type, nullable, default, comment.comment) : self
+        end
+      end
       PrimaryKey = Struct.new(:schema, :table, :columns, :name)
       ForeignKey = Struct.new(:schema, :table, :column, :dest_schema, :dest_table, :dest_column, :name)
       SetColumnDefault = Struct.new(:schema, :table, :column, :value)
       SetColumnStatistics = Struct.new(:schema, :table, :column, :value)
+      TableComment = Struct.new(:schema, :table, :comment)
+      ColumnComment = Struct.new(:schema, :table, :column, :comment)
+      Structure = Struct.new(:tables) do
+        def table(schema, table)
+          tables.find { |t| t.schema == schema && t.table == table }
+        end
+
+        def column(schema, table, column)
+          table(schema, table)&.columns&.find { |c| c.name == column }
+        end
+      end
 
       class << self
         def parse_schema_file(path)
@@ -20,7 +45,19 @@ module SchemaViz
           file.close
           useful_lines = lines.reject { |line| line.empty? || line.start_with?('--') }
           statements = useful_lines.join(' ').gsub(/ +/, ' ').split(';').map { |s| "#{s.strip};" }
-          statements.select { |s| s.start_with?('CREATE TABLE') }.map { |s| parse_table(s) }
+          statements.inject(Structure.new([])) do |structure, statement|
+            if statement.start_with?('CREATE TABLE')
+              Structure.new(structure.tables + [parse_table(statement)])
+            elsif statement.start_with?('COMMENT ON TABLE')
+              comment = parse_table_comment(statement)
+              Structure.new(structure.tables.map { |table| table.add_comment(comment) })
+            elsif statement.start_with?('COMMENT ON COLUMN')
+              comment = parse_column_comment(statement)
+              Structure.new(structure.tables.map { |table| table.add_column_comment(comment) })
+            else
+              structure
+            end
+          end
         end
 
         def parse_table(sql)

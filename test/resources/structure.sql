@@ -36,7 +36,7 @@ COMMENT ON TABLE public.table1 IS 'This is the first table';
 -- Name: COLUMN table1.user_id; Type: COMMENT; Schema: public; Owner: -
 --
 
-COMMENT ON COLUMN public.table1.user_id IS 'It references an external ''id'' or "value"';
+COMMENT ON COLUMN public.table1.user_id IS 'An external ''id'' or "value"';
 
 
 --

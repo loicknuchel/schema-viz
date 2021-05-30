@@ -9,8 +9,12 @@ describe SchemaViz::Parser::Postgresql do
   postgres = SchemaViz::Parser::Postgresql
 
   it 'parse a sql file' do
-    tables = postgres.parse_schema_file('./test/resources/structure.sql')
-    assert_equal 2, tables.length
+    structure = postgres.parse_schema_file('./test/resources/structure.sql')
+    assert_equal 2, structure.tables.length
+    assert_equal 'This is the first table', structure.table('public', 'table1').comment
+    assert_equal 'An external \'id\' or "value"', structure.column('public', 'table1', 'user_id').comment
+    assert_nil structure.table('public', 'table2').comment
+    assert_nil structure.column('public', 'table1', 'id').comment
   end
 
   it 'parses a table' do

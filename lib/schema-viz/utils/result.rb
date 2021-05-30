@@ -43,7 +43,7 @@ module SchemaViz
       if errors.empty?
         Success.new(arr.map { |i| i.instance_of?(Success) ? i.get! : i })
       else
-        Failure.new(errors)
+        Failure.new(errors.length == 1 ? errors.first : errors)
       end
     end
 
@@ -94,8 +94,8 @@ module SchemaViz
         if results.all? { |r| r.instance_of?(Success) }
           Result.expected!(yield(*results.map(&:get!)))
         else
-          errors = results.select { |r| r.instance_of?(Failure) }.map(&:error!)
-          Failure.new(errors)
+          errors = results.select { |r| r.instance_of?(Failure) }.map(&:error!).flatten(1)
+          Failure.new(errors.length == 1 ? errors.first : errors)
         end
       end
 
@@ -132,9 +132,15 @@ module SchemaViz
       end
 
       def get!
-        raise @error if @error.is_a?(StandardError)
+        raise NotASuccess, 'No errors (empty array)' if @error.instance_of?(Array) && @error.empty?
+        if @error.instance_of?(Array) && @error.length > 1
+          raise NotASuccess, "Multiple errors (#{@error.length}):#{@error.map { |e| "\n - #{e}" }.join}"
+        end
 
-        raise NotASuccess, @error.to_s
+        err = @error.instance_of?(Array) && @error.length == 1 ? @error[0] : @error
+        raise err if err.is_a?(StandardError)
+
+        raise NotASuccess, err.to_s
       end
 
       def error!

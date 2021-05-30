@@ -48,9 +48,9 @@ describe SchemaViz::Result do
 
   it 'combines results' do
     assert_equal result.of(6), result.of(1).and(result.of(2), result.of(3)) { |a, b, c| a + b + c }
-    assert_equal result.failure(['err1']), result.failure('err1').and(result.of(2), result.of(3)) { |a, b, c| a + b + c }
-    assert_equal result.failure(['err2']), result.of(1).and(result.failure('err2'), result.of(3)) { |a, b, c| a + b + c }
-    assert_equal result.failure(['err3']), result.of(1).and(result.of(2), result.failure('err3')) { |a, b, c| a + b + c }
+    assert_equal result.failure('err1'), result.failure('err1').and(result.of(2), result.of(3)) { |a, b, c| a + b + c }
+    assert_equal result.failure('err2'), result.of(1).and(result.failure('err2'), result.of(3)) { |a, b, c| a + b + c }
+    assert_equal result.failure('err3'), result.of(1).and(result.of(2), result.failure('err3')) { |a, b, c| a + b + c }
     assert_equal result.failure(%w[err1 err2]), result.failure('err1').and(result.failure('err2'), result.of(3)) { |a, b, c| a + b + c }
 
     assert_equal result.of(6), result.of(1).flat_and(result.of(2), result.of(3)) { |a, b, c| result.of(a + b + c) }
@@ -58,8 +58,8 @@ describe SchemaViz::Result do
 
   it 'extracts Result from Array' do
     assert_equal result.of([1, 2]), result.seq([result.of(1), result.of(2)])
-    assert_equal result.failure(['err1']), result.seq([result.failure('err1'), result.of(2)])
-    assert_equal result.failure(['err2']), result.seq([result.of(1), result.failure('err2')])
+    assert_equal result.failure('err1'), result.seq([result.failure('err1'), result.of(2)])
+    assert_equal result.failure('err2'), result.seq([result.of(1), result.failure('err2')])
     assert_equal result.failure(%w[err1 err2]), result.seq([result.failure('err1'), result.failure('err2')])
   end
 end

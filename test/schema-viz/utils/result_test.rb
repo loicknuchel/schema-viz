@@ -31,6 +31,12 @@ describe SchemaViz::Result do
     assert_equal 'err', result.failure('err').error!
     assert_raises(result::NotAFailure) { result.of(1).error! }
     assert_raises(result::NotASuccess) { result.failure('err').get! }
+
+    assert_equal 1, result.of(1).get_or_else(2)
+    assert_equal 2, result.failure('err').get_or_else(2)
+
+    assert_equal '1', result.of(1).fold(->(err) { err }, ->(value) { value.to_s })
+    assert_equal 'err', result.failure('err').fold(->(err) { err }, ->(value) { value.to_s })
   end
 
   it 'transforms value' do

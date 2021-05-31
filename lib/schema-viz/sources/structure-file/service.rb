@@ -6,36 +6,39 @@ require './lib/schema-viz/utils/result'
 module SchemaViz
   module Source
     module StructureFile
-      Table = Struct.new(:schema, :table, :columns, :primary_key, :comment) do
-        def copy(schema: nil, table: nil, columns: nil, primary_key: nil, comment: nil)
-          Table.new(schema || self.schema, table || self.table, columns || self.columns, primary_key || self.primary_key, comment || self.comment)
+      Table = Struct.new(:src, :schema, :table, :columns, :primary_key, :uniques, :checks, :comment) do
+        def copy(schema: nil, table: nil, columns: nil, primary_key: nil, uniques: nil, checks: nil, comment: nil)
+          Table.new(src, schema || self.schema, table || self.table, columns || self.columns, primary_key || self.primary_key, uniques || self.uniques, checks || self.checks, comment || self.comment)
         end
 
         def same?(other)
           schema == other.schema && table == other.table
         end
       end
-      Column = Struct.new(:column, :type, :nullable, :default, :reference, :comment) do
+      Column = Struct.new(:src, :column, :type, :nullable, :default, :reference, :comment) do
         def copy(column: nil, type: nil, nullable: nil, default: nil, reference: nil, comment: nil)
-          Column.new(column || self.column, type || self.type, nullable || self.nullable, default || self.default, reference || self.reference, comment || self.comment)
+          Column.new(src, column || self.column, type || self.type, nullable || self.nullable, default || self.default, reference || self.reference, comment || self.comment)
         end
 
         def same?(other)
           column == other.column
         end
       end
-      Reference = Struct.new(:schema, :table, :column, :key_name)
-      Structure = Struct.new(:tables) do
+      PrimaryKey = Struct.new(:src, :columns, :name)
+      Unique = Struct.new(:src, :columns, :name)
+      Check = Struct.new(:src, :predicate, :name)
+      Reference = Struct.new(:src, :schema, :table, :column, :name)
+      Structure = Struct.new(:src, :tables) do
+        def copy(tables: nil)
+          Structure.new(src, tables || self.tables)
+        end
+
         def table(schema, table)
           tables.find { |t| t.schema == schema && t.table == table }
         end
 
         def column(schema, table, column)
           table(schema, table)&.columns&.find { |c| c.column == column }
-        end
-
-        def copy(tables: nil)
-          Structure.new(tables || self.tables)
         end
 
         def add_table_r(table)
@@ -102,39 +105,59 @@ module SchemaViz
       end
 
       class Service
+        Statement = Struct.new(:file, :line, :lines) do
+          def text
+            lines.map(&:text).join(' ').gsub(/ +/, ' ').strip
+          end
+        end
+        Line = Struct.new(:file, :line, :text)
+
         def initialize(file_service)
           @file_service = file_service
         end
 
         def parse_schema_file_r(path)
           @file_service.read_lines_r(path).flat_map do |lines|
-            statements = build_statements(lines)
-            statements.inject(Result.of(Structure.new([]))) do |structure_r, statement|
-              structure_r.flat_and(Parser.parse_statement_r(statement)) { |structure, parsed_statement| evolve_r(structure, parsed_statement) }
+            statements = build_statements(path, lines)
+            statements.inject(Result.of(Structure.new(path, []))) do |structure_r, statement|
+              structure_r.flat_and(Parser.parse_statement_r(statement.text)) do |structure, parsed_statement|
+                evolve_r(structure, statement, parsed_statement)
+              end
             end
           end
         end
 
-        def build_statements(lines)
-          lines.reject { |line| line.empty? || line.start_with?('--') }
-               .map { |line| "#{line}\n" }.join.split(";\n")
-               .map { |statement| "#{statement.gsub(/\n/, ' ').gsub(/ +/, ' ').strip};" }
+        def build_statements(file, lines)
+          lines.each_with_index.map { |line, index| Line.new(file, index + 1, line) }
+               .reject { |line| line.text.empty? || line.text.start_with?('--') }
+               .chunk_while { |before, _after| !before.text.end_with?(';') }
+               .map { |statement_lines| Statement.new(file, statement_lines.first.line, statement_lines) }
         end
 
-        def evolve_r(structure, parsed_statement)
+        def evolve_r(structure, statement, parsed_statement)
           case parsed_statement
           in Parser::Table => table
-            columns = table.columns.map { |c| Column.new(c.column, c.type, c.nullable, c.default, nil, nil) }
-            structure.add_table_r(Table.new(table.schema, table.table, columns, nil, nil))
+            columns = table.columns.map do |c|
+              line = statement.lines.find { |line| line.text.strip.start_with?(c.column) }
+              Column.new(line, c.column, c.type, c.nullable, c.default, nil, nil)
+            end
+            structure.add_table_r(Table.new(statement, table.schema, table.table, columns, nil, nil, nil, nil))
           in Parser::TableComment => comment
             structure.update_table_r(comment) { |table| Result.of(table.copy(comment: comment.comment)) }
           in Parser::ColumnComment => comment
             structure.update_column_r(comment) { |column| Result.of(column.copy(comment: comment.comment)) }
           in Parser::PrimaryKey => pk
-            structure.update_table_r(pk) { |table| Result.of(table.copy(primary_key: pk.columns)) }
+            primary_key = PrimaryKey.new(statement, pk.columns, pk.name)
+            structure.update_table_r(pk) { |table| Result.of(table.copy(primary_key: primary_key)) }
           in Parser::ForeignKey => fk
-            reference = Reference.new(fk.dest_schema, fk.dest_table, fk.dest_column, fk.name)
+            reference = Reference.new(statement, fk.dest_schema, fk.dest_table, fk.dest_column, fk.name)
             structure.update_column_r(fk) { |column| Result.of(column.copy(reference: reference)) }
+          in Parser::UniqueConstraint => unique
+            constraint = Unique.new(statement, unique.columns, unique.name)
+            structure.update_table_r(unique) { |table| Result.of(table.copy(uniques: (table.uniques || []) + [constraint])) }
+          in Parser::CheckConstraint => check
+            constraint = Check.new(statement, check.predicate, check.name)
+            structure.update_table_r(check) { |table| Result.of(table.copy(checks: (table.checks || []) + [constraint])) }
           in Parser::SetColumnDefault => default
             structure.update_column_r(default) { |column| Result.of(column.copy(default: default.value)) }
           in Parser::SetColumnStatistics

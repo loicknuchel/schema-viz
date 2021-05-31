@@ -1,7 +1,9 @@
 # frozen_string_literal: true
 
 module SchemaViz
-  # to handle success/results of a computation and avoid raise
+  # Result represents a computation that may fail, using Success or Failure classes depending on the outcome.
+  # It allows to not raise errors that may pass several function levels and keep track of computation results.
+  # It provides several functions to handle use cases nicely.
   module Result
     class NotASuccess < StandardError
     end
@@ -51,16 +53,24 @@ module SchemaViz
     class AbstractClass
       private_class_method :new, :allocate
 
+      # using it is a smell, try to find dedicated methods instead
       def success?
         instance_of?(Success)
       end
 
+      # use only in tests, prefer other methods such as `map`, `flat_map`, `and`, `fold` or `get_or_else`
       def get!
         throw NotImplementedError
       end
 
+      # use only in tests, prefer other methods such as `on_error`
       def error!
         throw NotImplementedError
+      end
+
+      def get_or_else(default = nil)
+        raise ArgumentError, 'expect block or value, not both' if block_given? && !default.nil?
+        success? ? get! : block_given? ? yield : default
       end
 
       def map
@@ -97,6 +107,12 @@ module SchemaViz
           errors = results.select { |r| r.instance_of?(Failure) }.map(&:error!).flatten(1)
           Failure.new(errors.length == 1 ? errors.first : errors)
         end
+      end
+
+      def fold(on_failure, on_success)
+        raise TypeError, "expect failure Proc for 1st param, got #{on_failure.inspect} (#{on_failure.class})" unless on_failure.instance_of?(Proc)
+        raise TypeError, "expect success Proc for 2nd param, got #{on_success.inspect} (#{on_success.class})" unless on_success.instance_of?(Proc)
+        success? ? on_success.call(get!) : on_failure.call(error!)
       end
 
       def ==(other)
@@ -139,7 +155,6 @@ module SchemaViz
 
         err = @error.instance_of?(Array) && @error.length == 1 ? @error[0] : @error
         raise err if err.is_a?(StandardError)
-
         raise NotASuccess, err.to_s
       end
 

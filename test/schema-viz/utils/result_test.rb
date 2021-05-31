@@ -9,8 +9,8 @@ describe SchemaViz::Result do
   it 'creates a Result' do
     assert_equal result::Success.new(1), result.of(1)
     assert_equal result::Failure.new('err'), result.failure('err')
-    assert_equal result::Success.new(5), result.try { 10 / 2 }.on_error(&:message)
-    assert_equal result::Failure.new('divided by 0'), result.try { 10 / 0 }.on_error(&:message)
+    assert_equal result::Success.new(5), result.rescue { 10 / 2 }.on_error(&:message)
+    assert_equal result::Failure.new('divided by 0'), result.rescue { 10 / 0 }.on_error(&:message)
     assert_raises(NameError) { result.new(1) }
     assert_raises(NameError) { result::AbstractClass.new(1) }
   end

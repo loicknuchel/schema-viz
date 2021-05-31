@@ -3,8 +3,7 @@
 module SchemaViz
   # Gem entry point, call it to use it
   module Main
-    def self.main(args)
-      puts "Hello Viz: #{args}"
+    def self.main(_args)
       true
     end
   end

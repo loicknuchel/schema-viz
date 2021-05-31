@@ -17,7 +17,7 @@ module SchemaViz
       Failure.new(error)
     end
 
-    def self.try
+    def self.rescue
       raise TypeError, 'a block is expected' unless block_given?
 
       begin

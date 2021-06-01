@@ -7,8 +7,8 @@ module SchemaViz
   module Source
     module StructureFile
       Structure = Struct.new(:src, :tables) do
-        def copy(tables: nil)
-          Structure.new(src, tables || self.tables)
+        def copy(tables: self.tables)
+          Structure.new(src, tables)
         end
 
         def table(schema, table)
@@ -52,8 +52,8 @@ module SchemaViz
         end
       end
       Table = Struct.new(:src, :schema, :table, :columns, :primary_key, :uniques, :checks, :comment) do
-        def copy(schema: nil, table: nil, columns: nil, primary_key: nil, uniques: nil, checks: nil, comment: nil)
-          Table.new(src, schema || self.schema, table || self.table, columns || self.columns, primary_key || self.primary_key, uniques || self.uniques, checks || self.checks, comment || self.comment)
+        def copy(schema: self.schema, table: self.table, columns: self.columns, primary_key: self.primary_key, uniques: self.uniques, checks: self.checks, comment: self.comment)
+          Table.new(src, schema, table, columns, primary_key, uniques, checks, comment)
         end
 
         def same?(other)
@@ -61,8 +61,8 @@ module SchemaViz
         end
       end
       Column = Struct.new(:src, :column, :type, :nullable, :default, :reference, :comment) do
-        def copy(column: nil, type: nil, nullable: nil, default: nil, reference: nil, comment: nil)
-          Column.new(src, column || self.column, type || self.type, nullable || self.nullable, default || self.default, reference || self.reference, comment || self.comment)
+        def copy(column: self.column, type: self.type, nullable: self.nullable, default: self.default, reference: self.reference, comment: self.comment)
+          Column.new(src, column, type, nullable, default, reference, comment)
         end
 
         def same?(other)
@@ -139,7 +139,7 @@ module SchemaViz
               line = statement.lines.find { |line| line.text.strip.start_with?(c.column) }
               Column.new(line, c.column, c.type, c.nullable, c.default, nil, nil)
             end
-            structure.add_table_r(Table.new(statement, table.schema, table.table, columns, nil, nil, nil, nil))
+            structure.add_table_r(Table.new(statement, table.schema, table.table, columns, nil, [], [], nil))
           in Parser::TableComment => comment
             structure.update_table_r(comment) { |table| Result.of(table.copy(comment: comment.comment)) }
           in Parser::ColumnComment => comment
@@ -152,10 +152,10 @@ module SchemaViz
             structure.update_column_r(fk) { |column| Result.of(column.copy(reference: reference)) }
           in Parser::UniqueConstraint => unique
             constraint = Unique.new(statement, unique.columns, unique.name)
-            structure.update_table_r(unique) { |table| Result.of(table.copy(uniques: (table.uniques || []) + [constraint])) }
+            structure.update_table_r(unique) { |table| Result.of(table.copy(uniques: table.uniques + [constraint])) }
           in Parser::CheckConstraint => check
             constraint = Check.new(statement, check.predicate, check.name)
-            structure.update_table_r(check) { |table| Result.of(table.copy(checks: (table.checks || []) + [constraint])) }
+            structure.update_table_r(check) { |table| Result.of(table.copy(checks: table.checks + [constraint])) }
           in Parser::SetColumnDefault => default
             structure.update_column_r(default) { |column| Result.of(column.copy(default: default.value)) }
           in Parser::SetColumnStatistics

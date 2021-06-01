@@ -19,10 +19,10 @@ describe SchemaViz::Source::StructureFile::Service do
     assert_nil structure.column('public', 'table2', 'id').reference
     assert_equal 'table2_table1_id_fk', structure.column('public', 'table2', 'table1_id').reference.name
     # unique constraint
-    assert_nil structure.table('public', 'table1').uniques
+    assert_equal [], structure.table('public', 'table1').uniques
     assert_equal %w[table1_id name], structure.table('public', 'table2').uniques[0].columns
     # check constraint
-    assert_nil structure.table('public', 'table2').checks
+    assert_equal [], structure.table('public', 'table2').checks
     assert_equal '((user_id > 10)) NOT VALID', structure.table('public', 'table1').checks[0].predicate
     # column default
     assert_equal "nextval('public.table2_id_seq'::regclass)", structure.column('public', 'table2', 'id').default

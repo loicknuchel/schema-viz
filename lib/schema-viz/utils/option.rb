@@ -36,9 +36,17 @@ module SchemaViz
         throw NotImplementedError
       end
 
+      def get_or_nil
+        some? ? get! : nil
+      end
+
       def get_or_else(default = nil)
         raise ArgumentError, 'expect block or value, not both' if block_given? && !default.nil?
         some? ? get! : block_given? ? yield : default
+      end
+
+      def include?(value)
+        some? ? value == get! : false
       end
 
       def map

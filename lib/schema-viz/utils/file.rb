@@ -9,13 +9,13 @@ module SchemaViz
 
     # manipulate files
     class Service
-      def read_r(path)
-        read_raw_lines_r(path).map do |lines|
+      def read(path)
+        read_raw_lines(path).map do |lines|
           Content.new(path, lines.each_with_index.map { |line, index| Line.new(path, index + 1, line) })
         end
       end
 
-      def read_raw_lines_r(path)
+      def read_raw_lines(path)
         file = nil
         begin
           file = ::File.open(path)

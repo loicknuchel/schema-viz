@@ -9,13 +9,13 @@ module SchemaViz
   module Main
     def self.main(args)
       args = Args.parse(args)
-      if args.command == 'generate'
+      if args.command.include?('generate')
         if args.has?(:structure)
           path = args.get_s(:structure)
           file_service = File::Service.new
           structure_file_service = Source::StructureFile::Service.new(file_service)
           puts "Parsing #{path.inspect} file..."
-          structure_r = structure_file_service.parse_schema_file_r(path)
+          structure_r = structure_file_service.parse_schema_file(path)
           puts structure_r.fold(->(error) { " -> error in parsing: #{error.message}" },
                                 ->(structure) { " -> #{structure.tables.length} tables found" })
         end

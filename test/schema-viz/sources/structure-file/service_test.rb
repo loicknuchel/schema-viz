@@ -8,7 +8,7 @@ describe SchemaViz::Source::StructureFile::Service do
 
   it 'parse a sql file' do
     file = './test/resources/structure.sql'
-    structure = service.parse_schema_file_r(file).get!
+    structure = service.parse_schema_file(file).get!
     assert_equal 2, structure.tables.length
     # primary key is added
     assert_equal SchemaViz::Option.empty, structure.table('public', 'table1').primary_key

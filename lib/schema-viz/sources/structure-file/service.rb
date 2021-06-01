@@ -18,7 +18,7 @@ module SchemaViz
           table(schema, table)&.columns&.find { |c| c.column == column }
         end
 
-        def add_table_r(table)
+        def add_table(table)
           if tables.find { |t| t.same?(table) }.nil?
             Result.of(copy(tables: tables + [table]))
           else
@@ -26,7 +26,7 @@ module SchemaViz
           end
         end
 
-        def update_table_r(statement)
+        def update_table(statement)
           raise TypeError, 'a block is expected' unless block_given?
 
           if tables.find { |table| table.same?(statement) }.nil?
@@ -37,10 +37,10 @@ module SchemaViz
           end
         end
 
-        def update_column_r(statement)
+        def update_column(statement)
           raise TypeError, 'a block is expected' unless block_given?
 
-          update_table_r(statement) do |table|
+          update_table(statement) do |table|
             if table.columns.find { |column| column.same?(statement) }.nil?
               Result.failure(ColumnNotFound.from_statement(statement))
             else
@@ -114,12 +114,12 @@ module SchemaViz
           @file_service = file_service
         end
 
-        def parse_schema_file_r(path)
-          @file_service.read_r(path).map(&:lines).flat_map do |lines|
+        def parse_schema_file(path)
+          @file_service.read(path).map(&:lines).flat_map do |lines|
             statements = build_statements(lines)
             statements.inject(Result.of(Structure.new(path, []))) do |structure_r, statement|
-              structure_r.flat_and(Parser.parse_statement_r(statement.text)) do |structure, parsed_statement|
-                evolve_r(structure, statement, parsed_statement)
+              structure_r.flat_and(Parser.parse_statement(statement.text)) do |structure, parsed_statement|
+                evolve(structure, statement, parsed_statement)
               end
             end
           end
@@ -131,32 +131,32 @@ module SchemaViz
                .map { |statement_lines| Statement.new(statement_lines.first.file, statement_lines.first.line, statement_lines) }
         end
 
-        def evolve_r(structure, statement, parsed_statement)
+        def evolve(structure, statement, parsed_statement)
           case parsed_statement
           in Parser::Table => table
             columns = table.columns.map do |c|
               line = statement.lines.find { |line| line.text.strip.start_with?(c.column) }
               Column.new(line, c.column, c.type, c.nullable, c.default, Option.empty, Option.empty)
             end
-            structure.add_table_r(Table.new(statement, table.schema, table.table, columns, Option.empty, [], [], Option.empty))
+            structure.add_table(Table.new(statement, table.schema, table.table, columns, Option.empty, [], [], Option.empty))
           in Parser::TableComment => comment
-            structure.update_table_r(comment) { |table| Result.of(table.copy(comment: Option.of(comment.comment))) }
+            structure.update_table(comment) { |table| Result.of(table.copy(comment: Option.of(comment.comment))) }
           in Parser::ColumnComment => comment
-            structure.update_column_r(comment) { |column| Result.of(column.copy(comment: Option.of(comment.comment))) }
+            structure.update_column(comment) { |column| Result.of(column.copy(comment: Option.of(comment.comment))) }
           in Parser::PrimaryKey => pk
             primary_key = PrimaryKey.new(statement, pk.columns, pk.name)
-            structure.update_table_r(pk) { |table| Result.of(table.copy(primary_key: Option.of(primary_key))) }
+            structure.update_table(pk) { |table| Result.of(table.copy(primary_key: Option.of(primary_key))) }
           in Parser::ForeignKey => fk
             reference = Reference.new(statement, fk.dest_schema, fk.dest_table, fk.dest_column, fk.name)
-            structure.update_column_r(fk) { |column| Result.of(column.copy(reference: Option.of(reference))) }
+            structure.update_column(fk) { |column| Result.of(column.copy(reference: Option.of(reference))) }
           in Parser::UniqueConstraint => unique
             constraint = Unique.new(statement, unique.columns, unique.name)
-            structure.update_table_r(unique) { |table| Result.of(table.copy(uniques: table.uniques + [constraint])) }
+            structure.update_table(unique) { |table| Result.of(table.copy(uniques: table.uniques + [constraint])) }
           in Parser::CheckConstraint => check
             constraint = Check.new(statement, check.predicate, check.name)
-            structure.update_table_r(check) { |table| Result.of(table.copy(checks: table.checks + [constraint])) }
+            structure.update_table(check) { |table| Result.of(table.copy(checks: table.checks + [constraint])) }
           in Parser::SetColumnDefault => default
-            structure.update_column_r(default) { |column| Result.of(column.copy(default: default.value)) }
+            structure.update_column(default) { |column| Result.of(column.copy(default: default.value)) }
           in Parser::SetColumnStatistics
             Result.of(structure) # do nothing
           in ->(v) do

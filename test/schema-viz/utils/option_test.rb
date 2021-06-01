@@ -24,12 +24,23 @@ describe SchemaViz::Option do
     assert_equal false, option.empty.some?
   end
 
+  it 'checks content' do
+    assert_equal true, option.of(1).include?(1)
+    assert_equal false, option.of(1).include?(2)
+    assert_equal false, option.empty.include?(1)
+  end
+
   it 'extracts value' do
     assert_equal 1, option.of(1).get!
     assert_raises(option::NoSuchElementError) { option.empty.get! }
 
+    assert_equal 1, option.of(1).get_or_nil
+    assert_nil option.empty.get_or_nil
+
     assert_equal 1, option.of(1).get_or_else(2)
     assert_equal 2, option.empty.get_or_else(2)
+    # use block to lazy evaluate the else part
+    assert_equal 1, (option.of(1).get_or_else { raise 'bad' })
   end
 
   it 'transforms value' do
@@ -43,4 +54,3 @@ describe SchemaViz::Option do
     assert_equal option.empty, (option.empty.flat_map { |i| option.empty })
   end
 end
-

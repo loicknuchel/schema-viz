@@ -1,7 +1,6 @@
 # frozen_string_literal: true
 
 require './lib/schema-viz/sources/structure-file/parser'
-require './lib/schema-viz/utils/result'
 
 module SchemaViz
   module Source
@@ -137,19 +136,19 @@ module SchemaViz
           in Parser::Table => table
             columns = table.columns.map do |c|
               line = statement.lines.find { |line| line.text.strip.start_with?(c.column) }
-              Column.new(line, c.column, c.type, c.nullable, c.default, nil, nil)
+              Column.new(line, c.column, c.type, c.nullable, c.default, Option.empty, Option.empty)
             end
-            structure.add_table_r(Table.new(statement, table.schema, table.table, columns, nil, [], [], nil))
+            structure.add_table_r(Table.new(statement, table.schema, table.table, columns, Option.empty, [], [], Option.empty))
           in Parser::TableComment => comment
-            structure.update_table_r(comment) { |table| Result.of(table.copy(comment: comment.comment)) }
+            structure.update_table_r(comment) { |table| Result.of(table.copy(comment: Option.of(comment.comment))) }
           in Parser::ColumnComment => comment
-            structure.update_column_r(comment) { |column| Result.of(column.copy(comment: comment.comment)) }
+            structure.update_column_r(comment) { |column| Result.of(column.copy(comment: Option.of(comment.comment))) }
           in Parser::PrimaryKey => pk
             primary_key = PrimaryKey.new(statement, pk.columns, pk.name)
-            structure.update_table_r(pk) { |table| Result.of(table.copy(primary_key: primary_key)) }
+            structure.update_table_r(pk) { |table| Result.of(table.copy(primary_key: Option.of(primary_key))) }
           in Parser::ForeignKey => fk
             reference = Reference.new(statement, fk.dest_schema, fk.dest_table, fk.dest_column, fk.name)
-            structure.update_column_r(fk) { |column| Result.of(column.copy(reference: reference)) }
+            structure.update_column_r(fk) { |column| Result.of(column.copy(reference: Option.of(reference))) }
           in Parser::UniqueConstraint => unique
             constraint = Unique.new(statement, unique.columns, unique.name)
             structure.update_table_r(unique) { |table| Result.of(table.copy(uniques: table.uniques + [constraint])) }

@@ -1,6 +1,5 @@
 # frozen_string_literal: true
 
-require './lib/schema-viz/sources/structure-file/parser'
 require './test/test_helper'
 
 describe SchemaViz::Source::StructureFile::Parser do
@@ -15,21 +14,21 @@ describe SchemaViz::Source::StructureFile::Parser do
       ) WITH (autovacuum_enabled='false');
     SQL
     assert_equal parser::Table.new('public', 'users', [
-      parser::Column.new('id', 'bigint', false, nil),
-      parser::Column.new('name', 'character varying(255)', true, nil),
-      parser::Column.new('price', 'numeric(8,2)', true, nil)
+      parser::Column.new('id', 'bigint', false, SchemaViz::Option.empty),
+      parser::Column.new('name', 'character varying(255)', true, SchemaViz::Option.empty),
+      parser::Column.new('price', 'numeric(8,2)', true, SchemaViz::Option.empty)
     ]), parser.parse_table_r(sql).get!
     assert_equal parser::ParseError, parser.parse_table_r('bad text').error!.class
   end
 
   it 'parses a column' do
-    assert_equal parser::Column.new('id', 'bigint', false, nil),
+    assert_equal parser::Column.new('id', 'bigint', false, SchemaViz::Option.empty),
                  parser.parse_column_r('id bigint NOT NULL').get!
-    assert_equal parser::Column.new('name', 'character varying(255)', true, nil),
+    assert_equal parser::Column.new('name', 'character varying(255)', true, SchemaViz::Option.empty),
                  parser.parse_column_r('name character varying(255)').get!
-    assert_equal parser::Column.new('status', 'character varying(255)', false, "'done'::character varying"),
+    assert_equal parser::Column.new('status', 'character varying(255)', false, SchemaViz::Option.of("'done'::character varying")),
                  parser.parse_column_r("status character varying(255) DEFAULT 'done'::character varying NOT NULL").get!
-    assert_equal parser::Column.new('price', 'numeric(8,2)', true, nil),
+    assert_equal parser::Column.new('price', 'numeric(8,2)', true, SchemaViz::Option.empty),
                  parser.parse_column_r('price numeric(8,2)').get!
     assert_equal parser::ParseError, parser.parse_column_r('bad-text').error!.class
   end

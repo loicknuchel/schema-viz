@@ -1,7 +1,5 @@
 # frozen_string_literal: true
 
-require './lib/schema-viz/sources/structure-file/service'
-require './lib/schema-viz/utils/file'
 require './test/test_helper'
 
 describe SchemaViz::Source::StructureFile::Service do
@@ -13,11 +11,11 @@ describe SchemaViz::Source::StructureFile::Service do
     structure = service.parse_schema_file_r(file).get!
     assert_equal 2, structure.tables.length
     # primary key is added
-    assert_nil structure.table('public', 'table1').primary_key
-    assert_equal ['id'], structure.table('public', 'table2').primary_key.columns
+    assert_equal SchemaViz::Option.empty, structure.table('public', 'table1').primary_key
+    assert_equal ['id'], structure.table('public', 'table2').primary_key.get!.columns
     # foreign keys are added
-    assert_nil structure.column('public', 'table2', 'id').reference
-    assert_equal 'table2_table1_id_fk', structure.column('public', 'table2', 'table1_id').reference.name
+    assert_equal SchemaViz::Option.empty, structure.column('public', 'table2', 'id').reference
+    assert_equal 'table2_table1_id_fk', structure.column('public', 'table2', 'table1_id').reference.get!.name
     # unique constraint
     assert_equal [], structure.table('public', 'table1').uniques
     assert_equal %w[table1_id name], structure.table('public', 'table2').uniques[0].columns
@@ -27,17 +25,17 @@ describe SchemaViz::Source::StructureFile::Service do
     # column default
     assert_equal "nextval('public.table2_id_seq'::regclass)", structure.column('public', 'table2', 'id').default
     # comments are added
-    assert_nil structure.table('public', 'table2').comment
-    assert_nil structure.column('public', 'table1', 'id').comment
-    assert_equal 'This is the first table', structure.table('public', 'table1').comment
-    assert_equal 'An external \'id\' or "value"', structure.column('public', 'table1', 'user_id').comment
+    assert_equal SchemaViz::Option.empty, structure.table('public', 'table2').comment
+    assert_equal SchemaViz::Option.empty, structure.column('public', 'table1', 'id').comment
+    assert_equal 'This is the first table', structure.table('public', 'table1').comment.get!
+    assert_equal 'An external \'id\' or "value"', structure.column('public', 'table1', 'user_id').comment.get!
     # sources are kept
     assert_equal file, structure.src
     assert_equal 6, structure.table('public', 'table1').src.line
     assert_equal 9, structure.column('public', 'table1', 'created_at').src.line
     assert_equal 17, structure.table('public', 'table1').checks[0].src.line
-    assert_equal 39, structure.table('public', 'table2').primary_key.src.line
-    assert_equal 42, structure.column('public', 'table2', 'table1_id').reference.src.line
+    assert_equal 39, structure.table('public', 'table2').primary_key.get!.src.line
+    assert_equal 42, structure.column('public', 'table2', 'table1_id').reference.get!.src.line
     assert_equal 49, structure.table('public', 'table2').uniques[0].src.line
   end
 

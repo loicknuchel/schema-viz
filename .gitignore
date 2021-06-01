@@ -6,5 +6,6 @@
 /pkg/
 /spec/reports/
 /tmp/
+/out/
 /local/
 /test/resources/structure-full.sql

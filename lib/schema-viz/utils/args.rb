@@ -1,12 +1,14 @@
 # frozen_string_literal: true
 
+require './lib/schema-viz/utils/option'
+
 module SchemaViz
   # parsing command line args
   # see also: https://ruby-doc.org/stdlib-2.4.2/libdoc/optparse/rdoc/OptionParser.html
   class Args
     attr_reader :command, :attributes, :arguments
 
-    def initialize(command = nil, attributes = {}, arguments = [])
+    def initialize(command, attributes, arguments)
       @command = command
       @attributes = attributes
       @arguments = arguments
@@ -30,35 +32,35 @@ module SchemaViz
     end
 
     def self.parse(args)
-      command = nil
+      command = Option.empty
       attributes = {}
       arguments = []
-      cur_attr = nil
+      cur_attr = Option.empty
       cur_args = []
       args.each_with_index do |arg, index|
         if arg.start_with?('--')
-          unless cur_attr.nil?
+          if cur_attr.some?
             if cur_args.empty?
-              arguments.append(cur_attr)
+              arguments.append(cur_attr.get!)
             else
-              attributes[cur_attr.to_sym] = cur_args.length == 1 ? cur_args.first : cur_args
+              attributes[cur_attr.get!.to_sym] = cur_args.length == 1 ? cur_args.first : cur_args
             end
           end
-          cur_attr = arg.delete_prefix('--')
+          cur_attr = Option.of(arg.delete_prefix('--'))
           cur_args = []
         elsif index.zero?
-          command = arg
-        elsif !cur_attr.nil?
+          command = Option.of(arg)
+        elsif cur_attr.some?
           cur_args.append(arg)
         else
           arguments.append(arg)
         end
       end
-      unless cur_attr.nil?
+      if cur_attr.some?
         if cur_args.empty?
-          arguments.append(cur_attr)
+          arguments.append(cur_attr.get!)
         else
-          attributes[cur_attr.to_sym] = cur_args.length == 1 ? cur_args.first : cur_args
+          attributes[cur_attr.get!.to_sym] = cur_args.length == 1 ? cur_args.first : cur_args
         end
       end
       Args.new(command, attributes, arguments)

@@ -1,7 +1,6 @@
 # frozen_string_literal: true
 
 require './test/test_helper'
-require './lib/schema-viz/utils/result'
 
 describe SchemaViz::Result do
   result = SchemaViz::Result
@@ -29,8 +28,8 @@ describe SchemaViz::Result do
   it 'extracts value' do
     assert_equal 1, result.of(1).get!
     assert_equal 'err', result.failure('err').error!
-    assert_raises(result::NotAFailure) { result.of(1).error! }
-    assert_raises(result::NotASuccess) { result.failure('err').get! }
+    assert_raises(result::NotAFailureError) { result.of(1).error! }
+    assert_raises(result::NotASuccessError) { result.failure('err').get! }
 
     assert_equal 1, result.of(1).get_or_else(2)
     assert_equal 2, result.failure('err').get_or_else(2)

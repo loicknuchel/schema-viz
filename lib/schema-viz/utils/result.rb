@@ -1,14 +1,13 @@
 # frozen_string_literal: true
 
 module SchemaViz
-  # Result represents a computation that may fail, using Success or Failure classes depending on the outcome.
-  # It allows to not raise errors that may pass several function levels and keep track of computation results.
-  # It provides several functions to handle use cases nicely.
+  # Result represents a computation that may fail, using Success or Failure classes depending on the outcome
+  # It allows to not raise errors that may pass several function levels and keep track of computation results
   module Result
-    class NotASuccess < StandardError
+    class NotASuccessError < StandardError
     end
 
-    class NotAFailure < StandardError
+    class NotAFailureError < StandardError
     end
 
     def self.of(value)
@@ -30,9 +29,8 @@ module SchemaViz
     end
 
     def self.expected!(value)
-      raise TypeError, "expect Result, got #{value.inspect} (#{value.class})" unless value.is_a?(AbstractClass)
-
-      value
+      return value if value.is_a?(AbstractClass)
+      raise TypeError, "expect Result, got #{value.inspect} (#{value.class})"
     end
 
     # transform an Array of Result into a Result of Array
@@ -75,31 +73,26 @@ module SchemaViz
 
       def map
         raise TypeError, 'a block is expected' unless block_given?
-
         success? ? Success.new(yield(get!)) : self
       end
 
       def flat_map
         raise TypeError, 'a block is expected' unless block_given?
-
         success? ? Result.expected!(yield(get!)) : self
       end
 
       def on_error
         raise TypeError, 'a block is expected' unless block_given?
-
         success? ? self : Failure.new(yield(error!))
       end
 
       def and(*others)
         raise TypeError, 'a block is expected' unless block_given?
-
         flat_and(*others) { |*args| Result.of(yield(*args)) }
       end
 
       def flat_and(*others)
         raise TypeError, 'a block is expected' unless block_given?
-
         results = [self] + others
         if results.all? { |r| r.instance_of?(Success) }
           Result.expected!(yield(*results.map(&:get!)))
@@ -120,7 +113,7 @@ module SchemaViz
       end
     end
 
-    # Success case of the Result
+    # Success case of Result
     class Success < AbstractClass
       public_class_method :new
 
@@ -134,11 +127,11 @@ module SchemaViz
       end
 
       def error!
-        raise NotAFailure, 'Result is in success'
+        raise NotAFailureError, 'Result is in success'
       end
     end
 
-    # Failure case of the Result
+    # Failure case of Result
     class Failure < AbstractClass
       public_class_method :new
 
@@ -148,14 +141,14 @@ module SchemaViz
       end
 
       def get!
-        raise NotASuccess, 'No errors (empty array)' if @error.instance_of?(Array) && @error.empty?
+        raise NotASuccessError, 'No errors (empty array)' if @error.instance_of?(Array) && @error.empty?
         if @error.instance_of?(Array) && @error.length > 1
-          raise NotASuccess, "Multiple errors (#{@error.length}):#{@error.map { |e| "\n - #{e}" }.join}"
+          raise NotASuccessError, "Multiple errors (#{@error.length}):#{@error.map { |e| "\n - #{e}" }.join}"
         end
 
         err = @error.instance_of?(Array) && @error.length == 1 ? @error[0] : @error
         raise err if err.is_a?(StandardError)
-        raise NotASuccess, err.to_s
+        raise NotASuccessError, err.to_s
       end
 
       def error!

@@ -1,7 +1,5 @@
 # frozen_string_literal: true
 
-require './lib/schema-viz/utils/result'
-
 module SchemaViz
   module Source
     module StructureFile
@@ -57,7 +55,7 @@ module SchemaViz
 
           def parse_column_r(sql)
             res = sql.match(/^(?<name>[^ ]+) (?<type>.*?)(?: DEFAULT (?<default>.*?))?(?<nullable> NOT NULL)?$/)
-            Result.rescue { Column.new(res[:name], res[:type], res[:nullable].nil?, res[:default]) }
+            Result.rescue { Column.new(res[:name], res[:type], res[:nullable].nil?, Option.of(res[:default])) }
                   .on_error { |e| ParseError.new(__method__, sql, res, e) }
           end
 

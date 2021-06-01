@@ -6,28 +6,6 @@ require './lib/schema-viz/utils/result'
 module SchemaViz
   module Source
     module StructureFile
-      Table = Struct.new(:src, :schema, :table, :columns, :primary_key, :uniques, :checks, :comment) do
-        def copy(schema: nil, table: nil, columns: nil, primary_key: nil, uniques: nil, checks: nil, comment: nil)
-          Table.new(src, schema || self.schema, table || self.table, columns || self.columns, primary_key || self.primary_key, uniques || self.uniques, checks || self.checks, comment || self.comment)
-        end
-
-        def same?(other)
-          schema == other.schema && table == other.table
-        end
-      end
-      Column = Struct.new(:src, :column, :type, :nullable, :default, :reference, :comment) do
-        def copy(column: nil, type: nil, nullable: nil, default: nil, reference: nil, comment: nil)
-          Column.new(src, column || self.column, type || self.type, nullable || self.nullable, default || self.default, reference || self.reference, comment || self.comment)
-        end
-
-        def same?(other)
-          column == other.column
-        end
-      end
-      PrimaryKey = Struct.new(:src, :columns, :name)
-      Unique = Struct.new(:src, :columns, :name)
-      Check = Struct.new(:src, :predicate, :name)
-      Reference = Struct.new(:src, :schema, :table, :column, :name)
       Structure = Struct.new(:src, :tables) do
         def copy(tables: nil)
           Structure.new(src, tables || self.tables)
@@ -73,6 +51,33 @@ module SchemaViz
           end
         end
       end
+      Table = Struct.new(:src, :schema, :table, :columns, :primary_key, :uniques, :checks, :comment) do
+        def copy(schema: nil, table: nil, columns: nil, primary_key: nil, uniques: nil, checks: nil, comment: nil)
+          Table.new(src, schema || self.schema, table || self.table, columns || self.columns, primary_key || self.primary_key, uniques || self.uniques, checks || self.checks, comment || self.comment)
+        end
+
+        def same?(other)
+          schema == other.schema && table == other.table
+        end
+      end
+      Column = Struct.new(:src, :column, :type, :nullable, :default, :reference, :comment) do
+        def copy(column: nil, type: nil, nullable: nil, default: nil, reference: nil, comment: nil)
+          Column.new(src, column || self.column, type || self.type, nullable || self.nullable, default || self.default, reference || self.reference, comment || self.comment)
+        end
+
+        def same?(other)
+          column == other.column
+        end
+      end
+      PrimaryKey = Struct.new(:src, :columns, :name)
+      Unique = Struct.new(:src, :columns, :name)
+      Check = Struct.new(:src, :predicate, :name)
+      Reference = Struct.new(:src, :schema, :table, :column, :name)
+      Statement = Struct.new(:file, :line, :lines) do
+        def text
+          lines.map(&:text).join(' ').gsub(/ +/, ' ').strip
+        end
+      end
 
       class TableAlreadyExists < StandardError
         def initialize(schema, table)
@@ -105,20 +110,14 @@ module SchemaViz
       end
 
       class Service
-        Statement = Struct.new(:file, :line, :lines) do
-          def text
-            lines.map(&:text).join(' ').gsub(/ +/, ' ').strip
-          end
-        end
-        Line = Struct.new(:file, :line, :text)
 
         def initialize(file_service)
           @file_service = file_service
         end
 
         def parse_schema_file_r(path)
-          @file_service.read_lines_r(path).flat_map do |lines|
-            statements = build_statements(path, lines)
+          @file_service.read_r(path).map(&:lines).flat_map do |lines|
+            statements = build_statements(lines)
             statements.inject(Result.of(Structure.new(path, []))) do |structure_r, statement|
               structure_r.flat_and(Parser.parse_statement_r(statement.text)) do |structure, parsed_statement|
                 evolve_r(structure, statement, parsed_statement)
@@ -127,11 +126,10 @@ module SchemaViz
           end
         end
 
-        def build_statements(file, lines)
-          lines.each_with_index.map { |line, index| Line.new(file, index + 1, line) }
-               .reject { |line| line.text.empty? || line.text.start_with?('--') }
+        def build_statements(lines)
+          lines.reject { |line| line.text.empty? || line.text.start_with?('--') }
                .chunk_while { |before, _after| !before.text.end_with?(';') }
-               .map { |statement_lines| Statement.new(file, statement_lines.first.line, statement_lines) }
+               .map { |statement_lines| Statement.new(statement_lines.first.file, statement_lines.first.line, statement_lines) }
         end
 
         def evolve_r(structure, statement, parsed_statement)

@@ -42,6 +42,7 @@ describe SchemaViz::Source::StructureFile::Service do
   end
 
   it 'builds statements from lines' do
+    file = 'structure.sql'
     lines = [
       '',
       '-- a comment',
@@ -56,22 +57,22 @@ describe SchemaViz::Source::StructureFile::Service do
       'ALTER TABLE ONLY public.users',
       '  ADD CONSTRAINT users_id_pkey PRIMARY KEY (id);',
       ''
-    ]
+    ].each_with_index.map { |line, index| SchemaViz::File::Line.new(file, index + 1, line) }
     statements_with_indexes = [
-      pkg::Service::Statement.new('structure.sql', 4, [
-        pkg::Service::Line.new('structure.sql', 4, 'CREATE TABLE public.users ('),
-        pkg::Service::Line.new('structure.sql', 5, '  id bigint NOT NULL,'),
-        pkg::Service::Line.new('structure.sql', 6, '  name character varying(255)'),
-        pkg::Service::Line.new('structure.sql', 7, ');')
+      pkg::Statement.new(file, 4, [
+        SchemaViz::File::Line.new(file, 4, 'CREATE TABLE public.users ('),
+        SchemaViz::File::Line.new(file, 5, '  id bigint NOT NULL,'),
+        SchemaViz::File::Line.new(file, 6, '  name character varying(255)'),
+        SchemaViz::File::Line.new(file, 7, ');')
       ]),
-      pkg::Service::Statement.new('structure.sql', 9, [
-        pkg::Service::Line.new('structure.sql', 9, "COMMENT ON TABLE public.users IS 'A comment ; ''tricky'' one';")
+      pkg::Statement.new(file, 9, [
+        SchemaViz::File::Line.new(file, 9, "COMMENT ON TABLE public.users IS 'A comment ; ''tricky'' one';")
       ]),
-      pkg::Service::Statement.new('structure.sql', 11, [
-        pkg::Service::Line.new('structure.sql', 11, 'ALTER TABLE ONLY public.users'),
-        pkg::Service::Line.new('structure.sql', 12, '  ADD CONSTRAINT users_id_pkey PRIMARY KEY (id);')
+      pkg::Statement.new(file, 11, [
+        SchemaViz::File::Line.new(file, 11, 'ALTER TABLE ONLY public.users'),
+        SchemaViz::File::Line.new(file, 12, '  ADD CONSTRAINT users_id_pkey PRIMARY KEY (id);')
       ])
     ]
-    assert_equal statements_with_indexes, service.build_statements('structure.sql', lines)
+    assert_equal statements_with_indexes, service.build_statements(lines)
   end
 end

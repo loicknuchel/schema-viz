@@ -4,9 +4,18 @@ require './lib/schema-viz/utils/result'
 
 module SchemaViz
   module File
+    Content = Struct.new(:file, :lines)
+    Line = Struct.new(:file, :line, :text)
+
     # manipulate files
     class Service
-      def read_lines_r(path)
+      def read_r(path)
+        read_raw_lines_r(path).map do |lines|
+          Content.new(path, lines.each_with_index.map { |line, index| Line.new(path, index + 1, line) })
+        end
+      end
+
+      def read_raw_lines_r(path)
         file = nil
         begin
           file = ::File.open(path)

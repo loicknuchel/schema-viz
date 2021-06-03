@@ -1,10 +1,10 @@
 # frozen_string_literal: true
 
-require './lib/schema-viz/sources/structure-file/parser'
+require './lib/schema-viz/sources/schema-file/parser'
 
 module SchemaViz
   module Source
-    module StructureFile
+    module SchemaFile
       Structure = Struct.new(:src, :tables) do
         def copy(tables: self.tables)
           Structure.new(src, tables)

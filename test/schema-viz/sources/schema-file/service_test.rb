@@ -2,8 +2,8 @@
 
 require './test/test_helper'
 
-describe SchemaViz::Source::StructureFile::Service do
-  pkg = SchemaViz::Source::StructureFile
+describe SchemaViz::Source::SchemaFile::Service do
+  pkg = SchemaViz::Source::SchemaFile
   service = pkg::Service.new(SchemaViz::File::Service.new)
 
   it 'parse a sql file' do

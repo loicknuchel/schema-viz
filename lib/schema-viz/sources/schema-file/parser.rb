@@ -2,7 +2,7 @@
 
 module SchemaViz
   module Source
-    module StructureFile
+    module SchemaFile
       # parse SQL statements
       module Parser
         Table = Struct.new(:schema, :table, :columns)
@@ -58,7 +58,7 @@ module SchemaViz
           def parse_table(sql)
             res = parse(sql, /^CREATE TABLE (?<schema>[^ .]+)\.(?<table>[^ .]+) \((?<body>[^;]+?)\)(?: WITH \((?<options>.*?)\))?;$/)
             begin
-              body_lines = split_on_comma_except_when_inside_parenthesis(res[:body]).map(&:strip)
+              body_lines = nested_comma_split(res[:body]).map(&:strip)
               columns = body_lines.reject { |line| line.start_with?('CONSTRAINT') }
               # constraints = body_lines.select { |line| line.start_with?('CONSTRAINT') }
               # options = res[:options].split(',')
@@ -173,7 +173,7 @@ module SchemaViz
           end
 
           # from https://stackoverflow.com/questions/18424315/how-do-i-split-a-string-by-commas-except-inside-parenthesis-using-a-regular-exp
-          def split_on_comma_except_when_inside_parenthesis(text)
+          def nested_comma_split(text)
             text.scan(/(?:\([^()]*\)|[^,])+/)
           end
 

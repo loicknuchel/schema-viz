@@ -2,8 +2,8 @@
 
 require './test/test_helper'
 
-describe SchemaViz::Source::StructureFile::Parser do
-  parser = SchemaViz::Source::StructureFile::Parser
+describe SchemaViz::Source::SchemaFile::Parser do
+  parser = SchemaViz::Source::SchemaFile::Parser
 
   it 'parses a table' do
     sql = <<~SQL

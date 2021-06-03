@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require './lib/schema-viz/sources/structure-file/service'
+require './lib/schema-viz/sources/schema-file/service'
 require './lib/schema-viz/utils/args'
 require './lib/schema-viz/utils/file'
 
@@ -13,7 +13,7 @@ module SchemaViz
         if args.has?(:structure)
           path = args.get_s(:structure)
           file_service = File::Service.new
-          structure_file_service = Source::StructureFile::Service.new(file_service)
+          structure_file_service = Source::SchemaFile::Service.new(file_service)
           puts "Parsing #{path.inspect} file..."
           structure_r = structure_file_service.parse_schema_file(path)
           puts structure_r.fold(->(error) { " -> error in parsing: #{error.message}" },

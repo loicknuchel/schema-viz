@@ -11,7 +11,7 @@ module SchemaViz
       args = Args.parse(args)
       if args.command.include?('generate')
         if args.has?(:structure)
-          path = args.get_s(:structure)
+          path = args.get_s!(:structure)
           file_service = File::Service.new
           structure_file_service = Source::SchemaFile::Service.new(file_service)
           puts "Parsing #{path.inspect} file..."

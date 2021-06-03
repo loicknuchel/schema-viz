@@ -51,7 +51,7 @@ module SchemaViz
 
       def map
         raise ArgumentError, 'a block is expected' unless block_given?
-        some? ? Some.new(yield(get!)) : self
+        some? ? Option.of(yield(get!)) : self
       end
 
       def flat_map

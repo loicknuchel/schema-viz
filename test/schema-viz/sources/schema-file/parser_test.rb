@@ -52,7 +52,7 @@ describe SchemaViz::Source::SchemaFile::Parser do
     message = "parse_alter_table can't parse \"ALTER TABLE ONLY p.t1 ALTER COLUMN id SET STATISTICS bad;\"\n" \
       "Caused by: ParseError: parse_alter_column can't parse \"ALTER COLUMN id SET STATISTICS bad\"\n" \
       "Caused by: ParseError: parse_alter_column_statistics can't parse \"STATISTICS bad\"\n" \
-      "Caused by: RuntimeError: /STATISTICS (?<value>[0-9]+)/ didn't matched, can't get :value capture"
+      "Caused by: RuntimeError: /STATISTICS (?<value>[0-9]+)/ didn't matched, can't get \"value\""
     assert_equal message, parser.parse_alter_table('ALTER TABLE ONLY p.t1 ALTER COLUMN id SET STATISTICS bad;').error!.message
   end
 

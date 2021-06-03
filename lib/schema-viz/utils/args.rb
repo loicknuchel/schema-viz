@@ -18,7 +18,7 @@ module SchemaViz
       attributes.key?(attr)
     end
 
-    def get_s(attr)
+    def get_s!(attr)
       value = attributes[attr]
       raise "#{attr.inspect} is not a String" unless value.instance_of?(String)
       value

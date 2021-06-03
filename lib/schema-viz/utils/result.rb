@@ -18,9 +18,14 @@ module SchemaViz
       Failure.new(error)
     end
 
+    def self.error(error_class, msg = nil)
+      error = error_class.new(msg)
+      error.set_backtrace(caller)
+      Failure.new(error)
+    end
+
     def self.rescue
       raise TypeError, 'a block is expected' unless block_given?
-
       begin
         Success.new(yield)
       rescue StandardError => e
@@ -73,7 +78,7 @@ module SchemaViz
 
       def map
         raise TypeError, 'a block is expected' unless block_given?
-        success? ? Success.new(yield(get!)) : self
+        success? ? Result.rescue { yield(get!) } : self
       end
 
       def flat_map

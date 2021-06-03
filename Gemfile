@@ -5,5 +5,5 @@ source 'https://rubygems.org'
 # Specify your gem's dependencies in schema-viz.gemspec
 gemspec
 
-gem 'minitest', '~> 5.0'
-gem 'rake', '~> 12.0'
+gem 'minitest', '~> 5.14', '>= 5.14.4'
+gem 'rake', '~> 13.0', '>= 13.0.3'

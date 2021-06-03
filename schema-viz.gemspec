@@ -12,7 +12,7 @@ Gem::Specification.new do |spec|
   spec.description   = 'Allow to vizualize and navigate in db schemas'
   spec.homepage      = 'https://github.com/loicknuchel/schema-viz'
   spec.license       = 'MIT'
-  spec.required_ruby_version = Gem::Requirement.new('>= 2.4.0')
+  spec.required_ruby_version = Gem::Requirement.new('>= 3.0.1')
 
   spec.metadata['allowed_push_host'] = "TODO: Set to 'https://mygemserver.com'"
 

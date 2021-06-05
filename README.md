@@ -1,44 +1,62 @@
 # SchemaViz
 
-Welcome to your new gem! In this directory, you'll find the files you need to be able to package up your Ruby library into a gem. Put your Ruby code in the file `lib/schema-viz`. To experiment with that code, run `bin/console` for an interactive prompt.
+**⚠️⚠️⚠️ Under construction ⚠️⚠️⚠️**
+
+An Entity Relationship diagram (ERD) visualization tool, with various filters and inputs to help understand your SQL
+schema.
+
+Why building my own ?
+
+Most ERD tool I looked into ([DrawSQL](https://drawsql.app), [dbdiagram.io](https://dbdiagram.io)
+, [Lucidchart](https://www.lucidchart.com/pages/examples/er-diagram-tool), [ERDPlus](https://erdplus.com)
+, [Creately](https://creately.com/lp/er-diagram-tool-online), [SqlDBM](https://sqldbm.com)) are focusing on
+creating/editing the schema (collaboratively) and displaying it (statically). This is nice when starting a new project
+with a few tables but doesn't really help when you discover an existing one with hundreds of tables and relations.
+
+I really miss an interactive exploration tool with features like:
+
+- filter/show/hide some tables
+- filter/show/hide some columns
+- search for tables, columns or even in metadata
+- tag tables and columns to define meaningful groups (team ownership, domain exploration...)
+- rich UI infos with:
+    - source links (schema file but also app models)
+    - database statistics (table size, column value samples)
+    - team/code ownership (git blame or specific format)
+
+For me, this tool is the missing piece between a classic ERD tool and a Data catalog.
 
 ## Installation
 
-Add this line to your application's Gemfile:
+This tool is under construction and may drastically change in the process (no final packaging has been decided for now).
 
-```ruby
-gem 'schema-viz'
-```
+Currently, it has two parts:
 
-And then execute:
+- a parser, built in Ruby to parse a schema file and write it to JSON
+- a front app, built in Elm to visualize the schema
 
-    $ bundle install
+### Ruby parser
 
-Or install it yourself as:
+First, you need to install Ruby & Bundler in your machine, then run `bundle install` to get the dependencies.
 
-    $ gem install schema-viz
+- launch the program: `exe/schema-viz generate --structure ./test/resources/structure.sql`
+- launch the tests: `rake test`
+- launch a Ruby console: `bin/console`
 
-## Usage
+Ruby folders are `lib/schema-viz` for sources & `test` for tests.
 
-- run tests: `rake test`
-- run program: `exe/schema-viz`
-- launch a console: `bin/console`
+### Elm viz
 
-## Development
+First, you need to install Elm & NPM on your machine, then run `npm install` to get the dependencies.
 
-After checking out the repo, run `bin/setup` to install dependencies. Then, run `rake test` to run the tests. You can also run `bin/console` for an interactive prompt that will allow you to experiment.
+- launch dev env: `elm reactor`
+- launch the tests: `npx elm-test`
+- compile to an HTML file: `elm make src/Main.elm`
 
-To install this gem onto your local machine, run `bundle exec rake install`. To release a new version, update the version number in `version.rb`, and then run `bundle exec rake release`, which will create a git tag for the version, push git commits and tags, and push the `.gem` file to [rubygems.org](https://rubygems.org).
+Elm folders are `src` for sources & `tests` for tests.
 
-## Contributing
-
-Bug reports and pull requests are welcome on GitHub at https://github.com/loicknuchel/schema-viz. This project is intended to be a safe, welcoming space for collaboration, and contributors are expected to adhere to the [code of conduct](https://github.com/[USERNAME]/schema-viz/blob/master/CODE_OF_CONDUCT.md).
-
+(I know, this is not very good, this will improve with the maturity of the tool ^^)
 
 ## License
 
-The gem is available as open source under the terms of the [MIT License](https://opensource.org/licenses/MIT).
-
-## Code of Conduct
-
-Everyone interacting in the SchemaViz project's codebases, issue trackers, chat rooms and mailing lists is expected to follow the [code of conduct](https://github.com/[USERNAME]/schema-viz/blob/master/CODE_OF_CONDUCT.md).
+The tool is available as open source under the terms of the [MIT License](https://opensource.org/licenses/MIT).

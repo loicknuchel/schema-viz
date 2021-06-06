@@ -18,51 +18,50 @@ main =
 
 -- MODEL
 -- basic type alias
--- TODO: make these types alias incompatibles, use opaque types ? but access their content...
 
 
-type alias SchemaName =
-    String
+type SchemaName
+    = SchemaName String
 
 
-type alias TableName =
-    String
+type TableName
+    = TableName String
 
 
-type alias ColumnName =
-    String
+type ColumnName
+    = ColumnName String
 
 
-type alias ColumnType =
-    String
+type ColumnType
+    = ColumnType String
 
 
-type alias PrimaryKeyName =
-    String
+type PrimaryKeyName
+    = PrimaryKeyName String
 
 
-type alias ForeignKeyName =
-    String
+type ForeignKeyName
+    = ForeignKeyName String
 
 
-type alias UniqueIndexName =
-    String
+type UniqueIndexName
+    = UniqueIndexName String
 
 
-type alias TableComment =
-    String
+type TableComment
+    = TableComment String
 
 
-type alias ColumnComment =
-    String
+type ColumnComment
+    = ColumnComment String
 
 
 
 -- models, no primitive types allowed here
 
 
-type alias PrimaryKey =
-    { columns : List ColumnName, name : PrimaryKeyName }
+type PrimaryKey
+    = PrimaryKey { columns : List ColumnName, name : PrimaryKeyName }
 
 
 type alias ForeignKey =
@@ -145,14 +144,14 @@ view model =
 viewTable : Table -> Html Msg
 viewTable table =
     div [ class "table" ]
-        [ div [ class "header" ] [ text (table.schema ++ "." ++ table.table) ]
+        [ div [ class "header" ] [ text (formatTableName table) ]
         , ul [ class "columns" ] (List.map viewColumn table.columns)
         ]
 
 
 viewColumn : Column -> Html Msg
 viewColumn column =
-    li [] [ text column.column ]
+    li [] [ text (formatColumnName column) ]
 
 
 viewHttpError : Http.Error -> String
@@ -181,6 +180,24 @@ viewHttpError error =
 
 
 
+-- FORMAT: functions that return a String to be printed
+
+
+formatTableName : Table -> String
+formatTableName table =
+    case ( table.schema, table.table ) of
+        ( SchemaName schema, TableName name ) ->
+            schema ++ "." ++ name
+
+
+formatColumnName : Column -> String
+formatColumnName column =
+    case column.column of
+        ColumnName name ->
+            name
+
+
+
 -- HTTP
 
 
@@ -194,47 +211,47 @@ loadSchema =
 
 schemaNameDecoder : Decoder SchemaName
 schemaNameDecoder =
-    string
+    map SchemaName string
 
 
 tableNameDecoder : Decoder TableName
 tableNameDecoder =
-    string
+    map TableName string
 
 
 columnNameDecoder : Decoder ColumnName
 columnNameDecoder =
-    string
+    map ColumnName string
 
 
 columnTypeDecoder : Decoder ColumnType
 columnTypeDecoder =
-    string
+    map ColumnType string
 
 
 primaryKeyNameDecoder : Decoder PrimaryKeyName
 primaryKeyNameDecoder =
-    string
+    map PrimaryKeyName string
 
 
 foreignKeyNameDecoder : Decoder ForeignKeyName
 foreignKeyNameDecoder =
-    string
+    map ForeignKeyName string
 
 
 uniqueIndexNameDecoder : Decoder UniqueIndexName
 uniqueIndexNameDecoder =
-    string
+    map UniqueIndexName string
 
 
 tableCommentDecoder : Decoder TableComment
 tableCommentDecoder =
-    string
+    map TableComment string
 
 
 columnCommentDecoder : Decoder ColumnComment
 columnCommentDecoder =
-    string
+    map ColumnComment string
 
 
 schemaDecoder : Decoder Schema
@@ -263,11 +280,21 @@ columnDecoder =
         (maybe (field "comment" columnCommentDecoder))
 
 
+
+-- TODO: decode PrimaryKey without needing PrimaryKeyAlias so other types could be custom types instead of type aliases
+
+
+type alias PrimaryKeyAlias =
+    { columns : List ColumnName, name : PrimaryKeyName }
+
+
 primaryKeyDecoder : Decoder PrimaryKey
 primaryKeyDecoder =
-    map2 PrimaryKey
-        (field "columns" (list columnNameDecoder))
-        (field "name" primaryKeyNameDecoder)
+    map PrimaryKey
+        (map2 PrimaryKeyAlias
+            (field "columns" (list columnNameDecoder))
+            (field "name" primaryKeyNameDecoder)
+        )
 
 
 referenceDecoder : Decoder ForeignKey

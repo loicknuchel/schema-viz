@@ -1,10 +1,10 @@
 module Main exposing (..)
 
 import Browser
-import Html exposing (Html, div, li, text, ul)
-import Html.Attributes exposing (class)
+import Html exposing (Attribute, Html, div, li, text, ul)
+import Html.Attributes exposing (class, style)
 import Http exposing (Error(..))
-import Models.Schema exposing (Column, ColumnName(..), Schema, SchemaName(..), Table, TableName(..), schemaDecoder)
+import Models.Schema exposing (Column, ColumnName(..), ColumnType(..), Schema, SchemaName(..), Table, TableName(..), schemaDecoder)
 
 
 
@@ -19,10 +19,22 @@ main =
 -- MODEL
 
 
+colors =
+    { red = "#E3342F", pink = "#F66D9B", orange = "#F6993F", yellow = "#FFED4A", green = "#4DC0B5", blue = "#3490DC", darkBlue = "#6574CD", purple = "#9561E2", grey = "#B8C2CC" }
+
+
+type alias UiTable =
+    { sql : Table, color : String, top : Int, left : Int }
+
+
+type alias UISchema =
+    { tables : List UiTable }
+
+
 type Model
     = Loading
     | Failure Http.Error
-    | Success Schema
+    | Success UISchema
 
 
 init : () -> ( Model, Cmd Msg )
@@ -44,10 +56,15 @@ update msg _ =
         GotSchema result ->
             case result of
                 Ok schema ->
-                    ( Success schema, Cmd.none )
+                    ( Success (buildUISchema schema), Cmd.none )
 
                 Err e ->
                     ( Failure e, Cmd.none )
+
+
+buildUISchema : Schema -> UISchema
+buildUISchema schema =
+    { tables = List.map (\table -> { sql = table, color = colors.red, top = 0, left = 0 }) schema.tables }
 
 
 
@@ -73,20 +90,20 @@ view model =
             text "Loading..."
 
         Success structure ->
-            div [] (List.map (\table -> viewTable table) structure.tables)
+            div [ class "app" ] (List.map (\table -> viewTable table) structure.tables)
 
 
-viewTable : Table -> Html Msg
+viewTable : UiTable -> Html Msg
 viewTable table =
-    div [ class "table" ]
+    div [ class "table", borderColor table.color, top table.top, left table.left ]
         [ div [ class "header" ] [ text (formatTableName table) ]
-        , ul [ class "columns" ] (List.map viewColumn table.columns)
+        , ul [ class "columns" ] (List.map viewColumn table.sql.columns)
         ]
 
 
 viewColumn : Column -> Html Msg
 viewColumn column =
-    li [] [ text (formatColumnName column) ]
+    li [ class "column" ] [ text (formatColumnName column ++ " " ++ formatColumnType column) ]
 
 
 viewHttpError : Http.Error -> String
@@ -114,13 +131,33 @@ viewHttpError error =
             errorMessage
 
 
+top : Int -> Attribute msg
+top value =
+    style "top" (asPx value)
+
+
+left : Int -> Attribute msg
+left value =
+    style "left" (asPx value)
+
+
+borderColor : String -> Attribute msg
+borderColor color =
+    style "border-color" color
+
+
+asPx : Int -> String
+asPx value =
+    String.fromInt value ++ "px"
+
+
 
 -- FORMAT: functions that return a String to be printed
 
 
-formatTableName : Table -> String
+formatTableName : UiTable -> String
 formatTableName table =
-    case ( table.schema, table.table ) of
+    case ( table.sql.schema, table.sql.table ) of
         ( SchemaName schema, TableName name ) ->
             schema ++ "." ++ name
 
@@ -130,6 +167,13 @@ formatColumnName column =
     case column.column of
         ColumnName name ->
             name
+
+
+formatColumnType : Column -> String
+formatColumnType column =
+    case column.kind of
+        ColumnType kind ->
+            kind
 
 
 

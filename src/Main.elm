@@ -6,6 +6,7 @@ import Html exposing (Attribute, Html, div, li, text, ul)
 import Html.Attributes exposing (class, style)
 import Http exposing (Error(..))
 import Models.Schema exposing (Column, ColumnName(..), ColumnType(..), Schema, SchemaName(..), Table, TableName(..), schemaDecoder)
+import Random
 import Task
 
 
@@ -23,6 +24,10 @@ main =
 
 colors =
     { red = "#E3342F", pink = "#F66D9B", orange = "#F6993F", yellow = "#FFED4A", green = "#4DC0B5", blue = "#3490DC", darkBlue = "#6574CD", purple = "#9561E2", grey = "#B8C2CC" }
+
+
+type alias Color =
+    String
 
 
 type alias Size =
@@ -44,7 +49,7 @@ type alias UiSchema =
 type Model
     = Loading
     | Failure String
-    | Rendering Schema
+    | Rendering Schema (Maybe Size)
     | Success UiSchema
 
 
@@ -60,6 +65,7 @@ init _ =
 type Msg
     = GotSchema (Result Http.Error Schema)
     | GotWindowSize Size
+    | GotLayout UiSchema
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -68,28 +74,21 @@ update msg model =
         GotSchema result ->
             case result of
                 Ok schema ->
-                    ( Rendering schema, windowSize )
+                    ( Rendering schema Nothing, windowSize )
 
                 Err e ->
                     ( Failure (viewHttpError e), Cmd.none )
 
         GotWindowSize size ->
             case model of
-                Rendering schema ->
-                    ( Success (buildUiSchema size schema), Cmd.none )
+                Rendering schema Nothing ->
+                    ( Rendering schema (Just size), renderSchema schema size )
 
                 _ ->
                     ( Failure "bad", Cmd.none )
 
-
-buildUiSchema : Size -> Schema -> UiSchema
-buildUiSchema size schema =
-    { tables = List.map (\table -> buildUiTable size table) schema.tables }
-
-
-buildUiTable : Size -> Table -> UiTable
-buildUiTable size table =
-    { sql = table, color = colors.red, position = { top = round (size.width / 2), left = round (size.height / 2) } }
+        GotLayout schema ->
+            ( Success schema, Cmd.none )
 
 
 
@@ -114,7 +113,7 @@ view model =
         Loading ->
             text "Loading..."
 
-        Rendering _ ->
+        Rendering _ _ ->
             text "Rendering..."
 
         Success structure ->
@@ -219,3 +218,39 @@ loadSchema =
 windowSize : Cmd Msg
 windowSize =
     Task.perform (\viewport -> GotWindowSize { width = viewport.viewport.width, height = viewport.viewport.height }) Browser.Dom.getViewport
+
+
+renderSchema : Schema -> Size -> Cmd Msg
+renderSchema schema size =
+    Random.generate GotLayout (randomUiSchema schema size)
+
+
+randomUiSchema : Schema -> Size -> Random.Generator UiSchema
+randomUiSchema schema size =
+    Random.map
+        (\tables -> { tables = tables })
+        (List.foldl
+            (\table uiTablesGen ->
+                Random.map2
+                    (\uiTables uiTable -> List.append uiTables [ uiTable ])
+                    uiTablesGen
+                    (randomUiTable table size)
+            )
+            (Random.constant [])
+            schema.tables
+        )
+
+
+randomUiTable : Table -> Size -> Random.Generator UiTable
+randomUiTable table size =
+    Random.map2 (\color position -> { sql = table, color = color, position = position }) randomColor (randomPosition size)
+
+
+randomPosition : Size -> Random.Generator AbsolutePosition
+randomPosition size =
+    Random.map2 (\w h -> { top = h, left = w }) (Random.int 0 (round size.width)) (Random.int 0 (round size.height))
+
+
+randomColor : Random.Generator Color
+randomColor =
+    Random.map (\pos -> colors.blue) (Random.int 0 9)

@@ -2,6 +2,7 @@ module Main exposing (..)
 
 import Browser
 import Browser.Dom
+import Draggable
 import Html exposing (Attribute, Html, div, li, text, ul)
 import Html.Attributes exposing (class, style)
 import Http exposing (Error(..))
@@ -14,12 +15,21 @@ import Task
 -- MAIN
 
 
+main : Program () Model Msg
 main =
     Browser.element { init = init, update = update, subscriptions = subscriptions, view = view }
 
 
 
 -- MODEL
+
+
+tableWidth =
+    200
+
+
+tableHeight =
+    200
 
 
 colors =
@@ -35,7 +45,11 @@ type alias Size =
 
 
 type alias Position =
-    { top : Int, left : Int }
+    { top : Float, left : Float }
+
+
+type alias Menu =
+    { position : Position, drag : Draggable.State () }
 
 
 type alias UiTable =
@@ -50,7 +64,7 @@ type Model
     = Loading
     | Failure String
     | Rendering Schema (Maybe Size)
-    | Success UiSchema
+    | Success Menu UiSchema
 
 
 init : () -> ( Model, Cmd Msg )
@@ -66,6 +80,8 @@ type Msg
     = GotSchema (Result Http.Error Schema)
     | GotWindowSize Size
     | GotLayout UiSchema
+    | OnDragBy Draggable.Delta
+    | DragMsg (Draggable.Msg ())
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -88,7 +104,25 @@ update msg model =
                     ( Failure "bad", Cmd.none )
 
         GotLayout schema ->
-            ( Success schema, Cmd.none )
+            ( Success { position = Position 0 0, drag = Draggable.init } schema, Cmd.none )
+
+        OnDragBy ( dx, dy ) ->
+            case model of
+                Success menu schema ->
+                    ( Success { position = { top = menu.position.top + dy, left = menu.position.left + dx }, drag = menu.drag } schema, Cmd.none )
+
+                _ ->
+                    ( Failure "bad", Cmd.none )
+
+        DragMsg dragMsg ->
+            case model of
+                Success menu schema ->
+                    case Draggable.update (Draggable.basicConfig OnDragBy) dragMsg menu of
+                        ( newMenu, newMsg ) ->
+                            ( Success newMenu schema, newMsg )
+
+                _ ->
+                    ( Failure "bad", Cmd.none )
 
 
 
@@ -96,8 +130,13 @@ update msg model =
 
 
 subscriptions : Model -> Sub Msg
-subscriptions _ =
-    Sub.none
+subscriptions model =
+    case model of
+        Success { drag } _ ->
+            Draggable.subscriptions DragMsg drag
+
+        _ ->
+            Sub.none
 
 
 
@@ -116,8 +155,11 @@ view model =
         Rendering _ _ ->
             text "Rendering..."
 
-        Success structure ->
-            div [ class "app" ] (List.map (\table -> viewTable table) structure.tables)
+        Success menu structure ->
+            div [ class "app" ]
+                [ div ([ class "menu", top menu.position.top, left menu.position.left, Draggable.mouseTrigger () DragMsg ] ++ Draggable.touchTriggers () DragMsg) [ text "menu" ]
+                , div [ class "erd" ] (List.map (\table -> viewTable table) structure.tables)
+                ]
 
 
 viewTable : UiTable -> Html Msg
@@ -158,12 +200,12 @@ viewHttpError error =
             errorMessage
 
 
-top : Int -> Attribute msg
+top : Float -> Attribute msg
 top value =
     style "top" (asPx value)
 
 
-left : Int -> Attribute msg
+left : Float -> Attribute msg
 left value =
     style "left" (asPx value)
 
@@ -173,9 +215,9 @@ borderColor color =
     style "border-color" color
 
 
-asPx : Int -> String
+asPx : Float -> String
 asPx value =
-    String.fromInt value ++ "px"
+    String.fromFloat value ++ "px"
 
 
 
@@ -243,7 +285,7 @@ uiTableGen table size =
 
 positionGen : Size -> Random.Generator Position
 positionGen size =
-    Random.map2 (\w h -> { top = h, left = w }) (Random.int 0 (round size.width)) (Random.int 0 (round size.height))
+    Random.map2 (\w h -> { top = h, left = w }) (Random.float 0 (size.width - tableWidth)) (Random.float 0 (size.height - tableHeight))
 
 
 colorGen : Random.Generator Color

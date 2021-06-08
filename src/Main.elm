@@ -34,12 +34,12 @@ type alias Size =
     { width : Float, height : Float }
 
 
-type alias AbsolutePosition =
+type alias Position =
     { top : Int, left : Int }
 
 
 type alias UiTable =
-    { sql : Table, color : String, position : AbsolutePosition }
+    { sql : Table, color : String, position : Position }
 
 
 type alias UiSchema =
@@ -55,7 +55,7 @@ type Model
 
 init : () -> ( Model, Cmd Msg )
 init _ =
-    ( Loading, loadSchema )
+    ( Loading, loadSchema "/test/resources/schema.json" )
 
 
 
@@ -204,15 +204,12 @@ formatColumnType column =
 
 
 
--- HTTP
+-- MESSAGE BUILDERS
 
 
-loadSchema : Cmd Msg
-loadSchema =
-    Http.get
-        { url = "/test/resources/schema.json"
-        , expect = Http.expectJson GotSchema schemaDecoder
-        }
+loadSchema : String -> Cmd Msg
+loadSchema url =
+    Http.get { url = url, expect = Http.expectJson GotSchema schemaDecoder }
 
 
 windowSize : Cmd Msg
@@ -222,35 +219,41 @@ windowSize =
 
 renderSchema : Schema -> Size -> Cmd Msg
 renderSchema schema size =
-    Random.generate GotLayout (randomUiSchema schema size)
+    Random.generate GotLayout (uiSchemaGen schema size)
 
 
-randomUiSchema : Schema -> Size -> Random.Generator UiSchema
-randomUiSchema schema size =
-    Random.map
-        (\tables -> { tables = tables })
-        (List.foldl
-            (\table uiTablesGen ->
-                Random.map2
-                    (\uiTables uiTable -> List.append uiTables [ uiTable ])
-                    uiTablesGen
-                    (randomUiTable table size)
-            )
-            (Random.constant [])
-            schema.tables
-        )
+
+-- RANDOM GENERATORS
 
 
-randomUiTable : Table -> Size -> Random.Generator UiTable
-randomUiTable table size =
-    Random.map2 (\color position -> { sql = table, color = color, position = position }) randomColor (randomPosition size)
+uiSchemaGen : Schema -> Size -> Random.Generator UiSchema
+uiSchemaGen schema size =
+    Random.map (\tables -> { tables = tables }) (uiTablesGen schema.tables size)
 
 
-randomPosition : Size -> Random.Generator AbsolutePosition
-randomPosition size =
+uiTablesGen : List Table -> Size -> Random.Generator (List UiTable)
+uiTablesGen tables size =
+    extractGen (List.map (\table -> uiTableGen table size) tables)
+
+
+uiTableGen : Table -> Size -> Random.Generator UiTable
+uiTableGen table size =
+    Random.map2 (\color position -> { sql = table, color = color, position = position }) colorGen (positionGen size)
+
+
+positionGen : Size -> Random.Generator Position
+positionGen size =
     Random.map2 (\w h -> { top = h, left = w }) (Random.int 0 (round size.width)) (Random.int 0 (round size.height))
 
 
-randomColor : Random.Generator Color
-randomColor =
+colorGen : Random.Generator Color
+colorGen =
     Random.map (\pos -> colors.blue) (Random.int 0 9)
+
+
+extractGen : List (Random.Generator a) -> Random.Generator (List a)
+extractGen listGen =
+    List.foldl
+        (\aGen listGenAcc -> Random.map2 (\list a -> List.append list [ a ]) listGenAcc aGen)
+        (Random.constant [])
+        listGen

@@ -4,11 +4,11 @@ import Browser
 import Browser.Dom
 import Draggable
 import Html exposing (Attribute, Html, div, li, text, ul)
-import Html.Attributes exposing (class, style)
+import Html.Attributes exposing (attribute, class, id, style)
 import Http exposing (Error(..))
 import Models.Schema exposing (Column, ColumnName(..), ColumnType(..), Schema, SchemaName(..), Table, TableName(..), schemaDecoder)
 import Random
-import Task
+import Task exposing (Task)
 
 
 
@@ -22,14 +22,6 @@ main =
 
 
 -- MODEL
-
-
-tableWidth =
-    200
-
-
-tableHeight =
-    200
 
 
 colors =
@@ -52,8 +44,16 @@ type alias Menu =
     { position : Position, drag : Draggable.State () }
 
 
+type alias SizedTable =
+    { sql : Table, size : Size }
+
+
+type alias SizedSchema =
+    { tables : List SizedTable }
+
+
 type alias UiTable =
-    { sql : Table, color : String, position : Position }
+    { sql : Table, size : Size, color : String, position : Position }
 
 
 type alias UiSchema =
@@ -63,8 +63,9 @@ type alias UiSchema =
 type Model
     = Loading
     | Failure String
-    | Rendering Schema (Maybe Size)
-    | Success Menu UiSchema
+    | HasData Schema
+    | HasSizes SizedSchema Size
+    | Success UiSchema Menu
 
 
 init : () -> ( Model, Cmd Msg )
@@ -78,7 +79,7 @@ init _ =
 
 type Msg
     = GotSchema (Result Http.Error Schema)
-    | GotWindowSize Size
+    | GotSizes (Result Browser.Dom.Error ( SizedSchema, Size ))
     | GotLayout UiSchema
     | OnDragBy Draggable.Delta
     | DragMsg (Draggable.Msg ())
@@ -87,42 +88,38 @@ type Msg
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
-        GotSchema result ->
-            case result of
-                Ok schema ->
-                    ( Rendering schema Nothing, windowSize )
+        GotSchema (Ok schema) ->
+            ( HasData schema, getSizes schema )
 
-                Err e ->
-                    ( Failure (viewHttpError e), Cmd.none )
+        GotSchema (Err e) ->
+            ( Failure (viewHttpError e), Cmd.none )
 
-        GotWindowSize size ->
-            case model of
-                Rendering schema Nothing ->
-                    ( Rendering schema (Just size), renderSchema schema size )
+        GotSizes (Ok ( sizedSchema, size )) ->
+            ( HasSizes sizedSchema size, renderLayout sizedSchema size )
 
-                _ ->
-                    ( Failure "bad", Cmd.none )
+        GotSizes (Err (Browser.Dom.NotFound e)) ->
+            ( Failure ("Size not found for '" ++ e ++ "' id"), Cmd.none )
 
         GotLayout schema ->
-            ( Success { position = Position 0 0, drag = Draggable.init } schema, Cmd.none )
+            ( Success schema (Menu (Position 0 0) Draggable.init), Cmd.none )
 
         OnDragBy ( dx, dy ) ->
             case model of
-                Success menu schema ->
-                    ( Success { position = { top = menu.position.top + dy, left = menu.position.left + dx }, drag = menu.drag } schema, Cmd.none )
+                Success schema menu ->
+                    ( Success schema { position = { top = menu.position.top + dy, left = menu.position.left + dx }, drag = menu.drag }, Cmd.none )
 
                 _ ->
-                    ( Failure "bad", Cmd.none )
+                    ( Failure "Can't OnDragBy when not Success", Cmd.none )
 
         DragMsg dragMsg ->
             case model of
-                Success menu schema ->
+                Success schema menu ->
                     case Draggable.update (Draggable.basicConfig OnDragBy) dragMsg menu of
                         ( newMenu, newMsg ) ->
-                            ( Success newMenu schema, newMsg )
+                            ( Success schema newMenu, newMsg )
 
                 _ ->
-                    ( Failure "bad", Cmd.none )
+                    ( Failure "Can't DragMsg when not Success", Cmd.none )
 
 
 
@@ -132,7 +129,7 @@ update msg model =
 subscriptions : Model -> Sub Msg
 subscriptions model =
     case model of
-        Success { drag } _ ->
+        Success _ { drag } ->
             Draggable.subscriptions DragMsg drag
 
         _ ->
@@ -152,21 +149,30 @@ view model =
         Loading ->
             text "Loading..."
 
-        Rendering _ _ ->
-            text "Rendering..."
+        HasData schema ->
+            div [ class "app" ]
+                [ div [ class "menu", top 0, left 0 ] [ text "menu" ]
+                , div [ class "erd" ] (List.map (\table -> viewTable table (Size 0 0) colors.grey (Position 0 0)) schema.tables)
+                ]
 
-        Success menu structure ->
+        HasSizes schema _ ->
+            div [ class "app" ]
+                [ div [ class "menu", top 0, left 0 ] [ text "menu" ]
+                , div [ class "erd" ] (List.map (\table -> viewTable table.sql table.size colors.grey (Position 0 0)) schema.tables)
+                ]
+
+        Success schema menu ->
             div [ class "app" ]
                 [ div ([ class "menu", top menu.position.top, left menu.position.left, Draggable.mouseTrigger () DragMsg ] ++ Draggable.touchTriggers () DragMsg) [ text "menu" ]
-                , div [ class "erd" ] (List.map (\table -> viewTable table) structure.tables)
+                , div [ class "erd" ] (List.map (\table -> viewTable table.sql table.size table.color table.position) schema.tables)
                 ]
 
 
-viewTable : UiTable -> Html Msg
-viewTable table =
-    div [ class "table", borderColor table.color, top table.position.top, left table.position.left ]
+viewTable : Table -> Size -> Color -> Position -> Html Msg
+viewTable table size color position =
+    div [ id (formatTableId table), class "table", borderColor color, top position.top, left position.left, attribute "data-size" (String.fromFloat size.width ++ "x" ++ String.fromFloat size.height) ]
         [ div [ class "header" ] [ text (formatTableName table) ]
-        , ul [ class "columns" ] (List.map viewColumn table.sql.columns)
+        , ul [ class "columns" ] (List.map viewColumn table.columns)
         ]
 
 
@@ -224,9 +230,16 @@ asPx value =
 -- FORMAT: functions that return a String to be printed
 
 
-formatTableName : UiTable -> String
+formatTableId : Table -> String
+formatTableId table =
+    case ( table.schema, table.table ) of
+        ( SchemaName schema, TableName name ) ->
+            schema ++ "." ++ name
+
+
+formatTableName : Table -> String
 formatTableName table =
-    case ( table.sql.schema, table.sql.table ) of
+    case ( table.schema, table.table ) of
         ( SchemaName schema, TableName name ) ->
             schema ++ "." ++ name
 
@@ -254,38 +267,67 @@ loadSchema url =
     Http.get { url = url, expect = Http.expectJson GotSchema schemaDecoder }
 
 
-windowSize : Cmd Msg
-windowSize =
-    Task.perform (\viewport -> GotWindowSize { width = viewport.viewport.width, height = viewport.viewport.height }) Browser.Dom.getViewport
+getSizes : Schema -> Cmd Msg
+getSizes schema =
+    Task.attempt GotSizes (allSizes schema)
 
 
-renderSchema : Schema -> Size -> Cmd Msg
-renderSchema schema size =
+renderLayout : SizedSchema -> Size -> Cmd Msg
+renderLayout schema size =
     Random.generate GotLayout (uiSchemaGen schema size)
+
+
+
+-- GET SIZES
+
+
+allSizes : Schema -> Task Browser.Dom.Error ( SizedSchema, Size )
+allSizes schema =
+    Task.map2 (\sizedSchema size -> ( sizedSchema, size )) (schemaSize schema) windowSize
+
+
+schemaSize : Schema -> Task Browser.Dom.Error SizedSchema
+schemaSize schema =
+    Task.map (\tables -> { tables = tables }) (tablesSize schema.tables)
+
+
+tablesSize : List Table -> Task Browser.Dom.Error (List SizedTable)
+tablesSize tables =
+    Task.sequence (List.map (\table -> tableSize table) tables)
+
+
+tableSize : Table -> Task Browser.Dom.Error SizedTable
+tableSize table =
+    Task.map (\e -> SizedTable table (Size e.element.width e.element.height)) (Browser.Dom.getElement (formatTableId table))
+
+
+windowSize : Task e Size
+windowSize =
+    Task.map (\viewport -> Size viewport.viewport.width viewport.viewport.height) Browser.Dom.getViewport
 
 
 
 -- RANDOM GENERATORS
 
 
-uiSchemaGen : Schema -> Size -> Random.Generator UiSchema
+uiSchemaGen : SizedSchema -> Size -> Random.Generator UiSchema
 uiSchemaGen schema size =
     Random.map (\tables -> { tables = tables }) (uiTablesGen schema.tables size)
 
 
-uiTablesGen : List Table -> Size -> Random.Generator (List UiTable)
+uiTablesGen : List SizedTable -> Size -> Random.Generator (List UiTable)
 uiTablesGen tables size =
-    extractGen (List.map (\table -> uiTableGen table size) tables)
+    sequenceGen (List.map (\table -> uiTableGen table size) tables)
 
 
-uiTableGen : Table -> Size -> Random.Generator UiTable
+uiTableGen : SizedTable -> Size -> Random.Generator UiTable
 uiTableGen table size =
-    Random.map2 (\color position -> { sql = table, color = color, position = position }) colorGen (positionGen size)
+    Random.map2 (\color position -> { sql = table.sql, size = table.size, color = color, position = position }) colorGen (positionGen table size)
 
 
-positionGen : Size -> Random.Generator Position
-positionGen size =
-    Random.map2 (\w h -> { top = h, left = w }) (Random.float 0 (size.width - tableWidth)) (Random.float 0 (size.height - tableHeight))
+positionGen : SizedTable -> Size -> Random.Generator Position
+positionGen table size =
+    Random.map2 (\w h -> { top = h, left = w }) (Random.float 0 (size.width - table.size.width)) (Random.float 0 (size.height - table.size.height))
 
 
 colorGen : Random.Generator Color
@@ -293,8 +335,8 @@ colorGen =
     Random.map (\pos -> colors.blue) (Random.int 0 9)
 
 
-extractGen : List (Random.Generator a) -> Random.Generator (List a)
-extractGen listGen =
+sequenceGen : List (Random.Generator a) -> Random.Generator (List a)
+sequenceGen listGen =
     List.foldl
         (\aGen listGenAcc -> Random.map2 (\list a -> List.append list [ a ]) listGenAcc aGen)
         (Random.constant [])

@@ -6,9 +6,7 @@ module SchemaViz
     attr_reader :schema, :table, :columns
 
     def initialize(schema, table, columns)
-      @schema = schema
-      @table = table
-      @columns = columns
+      @schema, @table, @columns = schema, table, columns
     end
 
     def to_s

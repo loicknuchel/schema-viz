@@ -7,3 +7,5 @@ gemspec
 
 gem 'minitest', '~> 5.14', '>= 5.14.4'
 gem 'rake', '~> 13.0', '>= 13.0.3'
+gem 'rbs'
+gem 'simplecov', require: false, group: :test

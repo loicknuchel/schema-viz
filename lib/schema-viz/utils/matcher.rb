@@ -3,9 +3,7 @@
 module SchemaViz
   class Matcher
     def initialize(text, regex)
-      @text = text
-      @regex = regex
-      @result = Option.of(regex.match(text))
+      @text, @regex, @result = text, regex, Option.of(regex.match(text))
     end
 
     # matcher.get(key) -> Result<value or nil>

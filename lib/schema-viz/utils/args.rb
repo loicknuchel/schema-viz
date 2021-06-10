@@ -9,9 +9,7 @@ module SchemaViz
     attr_reader :command, :attributes, :arguments
 
     def initialize(command, attributes, arguments)
-      @command = command
-      @attributes = attributes
-      @arguments = arguments
+      @command, @attributes, @arguments = command, attributes, arguments
     end
 
     def has?(attr)

@@ -6,10 +6,7 @@ module SchemaViz
     attr_reader :name, :type, :nullable, :default
 
     def initialize(name, type, nullable, default)
-      @name = name
-      @type = type
-      @nullable = nullable
-      @default = default
+      @name, @type, @nullable, @default = name, type, nullable, default
     end
 
     def to_s

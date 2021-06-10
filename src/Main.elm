@@ -3,9 +3,10 @@ module Main exposing (..)
 import Browser
 import Browser.Dom as Dom
 import Draggable
-import Formats exposing (formatColumnName, formatColumnType, formatHttpError, formatSize, formatTableId, formatTableName)
+import Draggable.Events exposing (onDragBy, onDragEnd, onDragStart)
+import Formats exposing (formatColumnName, formatColumnType, formatHttpError, formatTableId, formatTableName)
 import Html exposing (Attribute, Html, div, li, text, ul)
-import Html.Attributes exposing (attribute, class, id, style)
+import Html.Attributes exposing (class, id, style)
 import Http
 import Lib exposing (genChoose, genSequence, maybeFold)
 import Models.Schema exposing (Column, ColumnName(..), ColumnType(..), Schema, SchemaName(..), Table, TableName(..), schemaDecoder)
@@ -27,12 +28,24 @@ main =
 -- MODEL
 
 
+type alias Error =
+    String
+
+
+type alias WindowSize =
+    Size
+
+
 type alias Menu =
-    { position : Position, drag : Draggable.State () }
+    { id : DragId, position : Position }
+
+
+type alias TableId =
+    String
 
 
 type alias SizedTable =
-    { sql : Table, size : Size }
+    { id : TableId, sql : Table, size : Size }
 
 
 type alias SizedSchema =
@@ -40,19 +53,27 @@ type alias SizedSchema =
 
 
 type alias UiTable =
-    { sql : Table, size : Size, color : String, position : Position }
+    { id : TableId, sql : Table, size : Size, color : String, position : Position }
 
 
 type alias UiSchema =
     { tables : List UiTable }
 
 
+type alias DragId =
+    String
+
+
+type alias DragState =
+    { id : Maybe DragId, drag : Draggable.State DragId }
+
+
 type Model
     = Loading
-    | Failure String
+    | Failure Error
     | HasData Schema
     | HasSizes SizedSchema Size
-    | Success UiSchema Menu
+    | Success UiSchema Menu DragState
 
 
 init : () -> ( Model, Cmd Msg )
@@ -62,7 +83,7 @@ init _ =
 
 initMenu : Menu
 initMenu =
-    Menu (Position 0 0) Draggable.init
+    Menu "menu" (Position 0 0)
 
 
 
@@ -71,47 +92,96 @@ initMenu =
 
 type Msg
     = GotSchema (Result Http.Error Schema)
-    | GotSizes (Result Dom.Error ( SizedSchema, Size ))
+    | GotSizes (Result Dom.Error ( SizedSchema, WindowSize ))
     | GotLayout UiSchema
+    | StartDragging DragId
+    | StopDragging
     | OnDragBy Draggable.Delta
-    | DragMsg (Draggable.Msg ())
+    | DragMsg (Draggable.Msg DragId)
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
-    case msg of
-        GotSchema (Ok schema) ->
+    case ( msg, model ) of
+        ( GotSchema (Ok schema), _ ) ->
             ( HasData schema, getSizes schema )
 
-        GotSchema (Err e) ->
-            ( Failure (formatHttpError e), Cmd.none )
-
-        GotSizes (Ok ( sizedSchema, size )) ->
+        ( GotSizes (Ok ( sizedSchema, size )), _ ) ->
             ( HasSizes sizedSchema size, renderLayout sizedSchema size )
 
-        GotSizes (Err (Dom.NotFound e)) ->
+        ( GotLayout schema, _ ) ->
+            ( Success schema initMenu (DragState Nothing Draggable.init), Cmd.none )
+
+        ( StartDragging id, Success schema menu drag ) ->
+            ( Success schema menu { drag | id = Just id }, Cmd.none )
+
+        ( StopDragging, Success schema menu drag ) ->
+            ( Success schema menu { drag | id = Nothing }, Cmd.none )
+
+        ( OnDragBy delta, Success schema menu drag ) ->
+            case drag.id of
+                Just id ->
+                    if id == menu.id then
+                        ( Success schema (updatePosition menu delta) drag, Cmd.none )
+
+                    else
+                        ( Success (updateTable (\table -> updatePosition table delta) id schema) menu drag, Cmd.none )
+
+                Nothing ->
+                    ( Failure "Can't OnDragBy when no drag id", Cmd.none )
+
+        ( DragMsg dragMsg, Success schema menu drag ) ->
+            case Draggable.update dragConfig dragMsg drag of
+                ( newDrag, newMsg ) ->
+                    ( Success schema menu newDrag, newMsg )
+
+        ( GotSchema (Err e), _ ) ->
+            ( Failure (formatHttpError e), Cmd.none )
+
+        ( GotSizes (Err (Dom.NotFound e)), _ ) ->
             ( Failure ("Size not found for '" ++ e ++ "' id"), Cmd.none )
 
-        GotLayout schema ->
-            ( Success schema initMenu, Cmd.none )
+        ( StartDragging _, _ ) ->
+            ( Failure "Can't StartDragging when not Success", Cmd.none )
 
-        OnDragBy ( dx, dy ) ->
-            case model of
-                Success schema menu ->
-                    ( Success schema (Menu (Position (menu.position.left + dx) (menu.position.top + dy)) menu.drag), Cmd.none )
+        ( StopDragging, _ ) ->
+            ( Failure "Can't StopDragging when not Success", Cmd.none )
 
-                _ ->
-                    ( Failure "Can't OnDragBy when not Success", Cmd.none )
+        ( OnDragBy _, _ ) ->
+            ( Failure "Can't OnDragBy when not Success", Cmd.none )
 
-        DragMsg dragMsg ->
-            case model of
-                Success schema menu ->
-                    case Draggable.update (Draggable.basicConfig OnDragBy) dragMsg menu of
-                        ( newMenu, newMsg ) ->
-                            ( Success schema newMenu, newMsg )
+        ( DragMsg _, _ ) ->
+            ( Failure "Can't DragMsg when not Success", Cmd.none )
 
-                _ ->
-                    ( Failure "Can't DragMsg when not Success", Cmd.none )
+
+dragConfig : Draggable.Config DragId Msg
+dragConfig =
+    Draggable.customConfig
+        [ onDragStart StartDragging
+        , onDragEnd StopDragging
+        , onDragBy OnDragBy
+        ]
+
+
+updateTable : (UiTable -> UiTable) -> TableId -> UiSchema -> UiSchema
+updateTable transform id schema =
+    { schema
+        | tables =
+            List.map
+                (\table ->
+                    if table.id == id then
+                        transform table
+
+                    else
+                        table
+                )
+                schema.tables
+    }
+
+
+updatePosition : { m | position : Position } -> Draggable.Delta -> { m | position : Position }
+updatePosition item ( dx, dy ) =
+    { item | position = Position (item.position.left + dx) (item.position.top + dy) }
 
 
 
@@ -121,7 +191,7 @@ update msg model =
 subscriptions : Model -> Sub Msg
 subscriptions model =
     case model of
-        Success _ { drag } ->
+        Success _ _ { drag } ->
             Draggable.subscriptions DragMsg drag
 
         _ ->
@@ -142,30 +212,26 @@ view model =
             text "Loading..."
 
         HasData schema ->
-            viewApp Nothing (List.map (\table -> UiTable table (Size 0 0) colors.grey (Position 0 0)) schema.tables)
+            viewApp Nothing (List.map (\table -> UiTable (formatTableId table) table (Size 0 0) colors.grey (Position 0 0)) schema.tables)
 
         HasSizes schema _ ->
-            viewApp Nothing (List.map (\table -> UiTable table.sql table.size colors.grey (Position 0 0)) schema.tables)
+            viewApp Nothing (List.map (\table -> UiTable table.id table.sql table.size colors.grey (Position 0 0)) schema.tables)
 
-        Success schema menu ->
+        Success schema menu _ ->
             viewApp (Just menu) schema.tables
 
 
 viewApp : Maybe Menu -> List UiTable -> Html Msg
 viewApp menu tables =
     div [ class "app" ]
-        [ viewMenu (Maybe.map .position menu)
+        [ viewMenu menu
         , viewErd tables
         ]
 
 
-viewMenu : Maybe Position -> Html Msg
-viewMenu position =
-    div
-        ([ class "menu" ]
-            ++ pos (Maybe.withDefault (Position 0 0) position)
-            ++ maybeFold [] (\_ -> Draggable.mouseTrigger () DragMsg :: Draggable.touchTriggers () DragMsg) position
-        )
+viewMenu : Maybe Menu -> Html Msg
+viewMenu menu =
+    div ([ class "menu", placeAt (maybeFold (Position 0 0) .position menu) ] ++ maybeFold [] (\m -> dragAttrs m.id) menu)
         [ text "menu" ]
 
 
@@ -176,7 +242,7 @@ viewErd tables =
 
 viewTable : UiTable -> Html Msg
 viewTable table =
-    div ([ class "table", id (formatTableId table.sql), borderColor table.color, attribute "data-size" (formatSize table.size) ] ++ pos table.position)
+    div ([ class "table", placeAt table.position, id (formatTableId table.sql), borderColor table.color ] ++ dragAttrs table.id)
         [ div [ class "header" ] [ text (formatTableName table.sql) ]
         , ul [ class "columns" ] (List.map viewColumn table.sql.columns)
         ]
@@ -187,19 +253,9 @@ viewColumn column =
     li [ class "column" ] [ text (formatColumnName column ++ " " ++ formatColumnType column) ]
 
 
-pos : Position -> List (Attribute msg)
-pos position =
-    [ left position.left, top position.top ]
-
-
-top : Float -> Attribute msg
-top value =
-    style "top" (asPx value)
-
-
-left : Float -> Attribute msg
-left value =
-    style "left" (asPx value)
+placeAt : Position -> Attribute msg
+placeAt p =
+    style "transform" ("translate(" ++ String.fromFloat p.left ++ "px, " ++ String.fromFloat p.top ++ "px)")
 
 
 borderColor : String -> Attribute msg
@@ -207,9 +263,9 @@ borderColor color =
     style "border-color" color
 
 
-asPx : Float -> String
-asPx value =
-    String.fromFloat value ++ "px"
+dragAttrs : DragId -> List (Attribute Msg)
+dragAttrs id =
+    style "cursor" "pointer" :: Draggable.mouseTrigger id DragMsg :: Draggable.touchTriggers id DragMsg
 
 
 
@@ -252,7 +308,7 @@ tablesSize tables =
 
 tableSize : Table -> Task Dom.Error SizedTable
 tableSize table =
-    Task.map (\e -> SizedTable table (Size e.element.width e.element.height)) (Dom.getElement (formatTableId table))
+    Task.map (\e -> SizedTable (formatTableId table) table (Size e.element.width e.element.height)) (Dom.getElement (formatTableId table))
 
 
 windowSize : Task e Size
@@ -276,7 +332,7 @@ uiTablesGen tables size =
 
 uiTableGen : SizedTable -> Size -> Random.Generator UiTable
 uiTableGen table size =
-    Random.map2 (\color position -> UiTable table.sql table.size color position) colorGen (positionGen table size)
+    Random.map2 (\color pos -> UiTable table.id table.sql table.size color pos) colorGen (positionGen table size)
 
 
 positionGen : SizedTable -> Size -> Random.Generator Position

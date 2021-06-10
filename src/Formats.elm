@@ -33,11 +33,6 @@ formatColumnType column =
             kind
 
 
-formatSize : Size -> String
-formatSize size =
-    String.fromFloat size.width ++ "x" ++ String.fromFloat size.height
-
-
 formatHttpError : Http.Error -> String
 formatHttpError error =
     case error of

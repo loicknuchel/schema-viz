@@ -332,12 +332,26 @@ positionGen table size =
 
 colorGen : Random.Generator Color
 colorGen =
-    Random.map (\pos -> colors.blue) (Random.int 0 9)
+    case colors of
+        { red, pink, orange, yellow, green, blue, darkBlue, purple, grey } ->
+            choose ( red, [ pink, orange, yellow, green, blue, darkBlue, purple, grey ] )
 
 
 sequenceGen : List (Random.Generator a) -> Random.Generator (List a)
-sequenceGen listGen =
-    List.foldl
-        (\aGen listGenAcc -> Random.map2 (\list a -> List.append list [ a ]) listGenAcc aGen)
-        (Random.constant [])
-        listGen
+sequenceGen generators =
+    List.foldr (Random.map2 (::)) (Random.constant []) generators
+
+
+choose : ( a, List a ) -> Random.Generator a
+choose ( item, list ) =
+    Random.map (\num -> getOrElse (List.head (List.drop num list)) item) (Random.int 0 (List.length list))
+
+
+getOrElse : Maybe a -> a -> a
+getOrElse maybe default =
+    case maybe of
+        Just a ->
+            a
+
+        Nothing ->
+            default

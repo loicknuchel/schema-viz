@@ -11,4 +11,5 @@
 /test/resources/structure-full.sql
 /node_modules/
 /elm-stuff/
+/review/elm-stuff/
 index.js

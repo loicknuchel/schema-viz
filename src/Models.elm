@@ -76,5 +76,6 @@ type alias Error =
     String
 
 
+colors : { red : Color, pink : Color, orange : Color, yellow : Color, green : Color, blue : Color, darkBlue : Color, purple : Color, grey : Color }
 colors =
     { red = "#E3342F", pink = "#F66D9B", orange = "#F6993F", yellow = "#FFED4A", green = "#4DC0B5", blue = "#3490DC", darkBlue = "#6574CD", purple = "#9561E2", grey = "#B8C2CC" }

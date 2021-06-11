@@ -1,4 +1,4 @@
-module Lib exposing (..)
+module Libs.Std exposing (..)
 
 import Random
 

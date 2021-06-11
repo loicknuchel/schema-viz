@@ -1,0 +1,124 @@
+{
+  "tables": [
+    {
+      "schema": "public",
+      "table": "users",
+      "columns": [
+        {
+          "column": "id",
+          "type": "int",
+          "nullable": false
+        }
+      ],
+      "primaryKey": {
+        "columns": [
+          "id"
+        ],
+        "name": "users_pk"
+      },
+      "uniques": []
+    },
+    {
+      "schema": "public",
+      "table": "roles",
+      "columns": [
+        {
+          "column": "id",
+          "type": "int",
+          "nullable": false
+        },
+        {
+          "column": "slug",
+          "type": "varchar(255)",
+          "nullable": false
+        },
+        {
+          "column": "name",
+          "type": "varchar(255)",
+          "nullable": false
+        },
+        {
+          "column": "description",
+          "type": "text",
+          "nullable": true
+        },
+        {
+          "column": "created_at",
+          "type": "timestamp",
+          "nullable": false
+        },
+        {
+          "column": "updated_at",
+          "type": "timestamp",
+          "nullable": false
+        }
+      ],
+      "primaryKey": {
+        "columns": [
+          "id"
+        ],
+        "name": "roles_pk"
+      },
+      "uniques": [
+        {
+          "columns": [
+            "slug"
+          ],
+          "name": "roles_slug_uniq"
+        },
+        {
+          "columns": [
+            "name"
+          ],
+          "name": "roles_name_uniq"
+        }
+      ]
+    },
+    {
+      "schema": "public",
+      "table": "role_user",
+      "columns": [
+        {
+          "column": "role_id",
+          "type": "int",
+          "nullable": false,
+          "reference": {
+            "schema": "public",
+            "table": "roles",
+            "column": "id",
+            "name": "role_user_role_id_fk"
+          }
+        },
+        {
+          "column": "user_id",
+          "type": "int",
+          "nullable": false,
+          "reference": {
+            "schema": "public",
+            "table": "users",
+            "column": "id",
+            "name": "role_user_user_id_fk"
+          }
+        },
+        {
+          "column": "created_at",
+          "type": "timestamp",
+          "nullable": false
+        },
+        {
+          "column": "updated_at",
+          "type": "timestamp",
+          "nullable": false
+        }
+      ],
+      "primaryKey": {
+        "columns": [
+          "role_id",
+          "user_id"
+        ],
+        "name": "role_user_pk"
+      },
+      "uniques": []
+    }
+  ]
+}

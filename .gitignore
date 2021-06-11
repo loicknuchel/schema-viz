@@ -9,7 +9,7 @@
 /out/
 /local/
 /test/resources/structure-full.sql
-/node_modules/
-/elm-stuff/
-/review/elm-stuff/
-index.js
+/frontend/node_modules/
+/frontend/elm-stuff/
+/frontend/review/elm-stuff/
+/frontend/index.js

@@ -25,7 +25,7 @@ main =
 
 init : () -> ( Model, Cmd Msg )
 init _ =
-    ( Loading, loadSchema "/test/resources/schema.json" )
+    ( Loading, loadSchema "/tests/resources/schema.json" )
 
 
 

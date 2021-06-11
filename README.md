@@ -49,11 +49,12 @@ Ruby folders are `lib/schema-viz` for sources & `test` for tests.
 
 ### Elm viz
 
-First, you need to install Elm & NPM on your machine, then run `npm install` to get the dependencies.
+First, you need to install Elm & NPM on your machine, then move to `frontend` folder and run `npm install` to get the dependencies.
 
-- launch dev env: `elm reactor`
+- launch dev env: `elm reactor` or `elm-live src/Main.elm --open --start-page=index.html -- --output=index.js`
 - launch the tests: `npx elm-test`
-- compile to an HTML file: `elm make src/Main.elm`
+- run linter: `npx elm-review`
+- compile to the demo file: `elm make src/Main.elm`
 
 Elm folders are `src` for sources & `tests` for tests.
 

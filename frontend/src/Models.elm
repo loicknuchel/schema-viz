@@ -1,6 +1,7 @@
 module Models exposing (..)
 
 import Browser.Dom as Dom
+import Dict exposing (Dict)
 import Draggable
 import Http
 import Libs.SchemaDecoders exposing (Schema, Table)
@@ -41,7 +42,7 @@ type alias Menu =
 
 
 type alias UiSchema =
-    { tables : List UiTable }
+    { tables : Dict TableId UiTable }
 
 
 type alias UiTable =

@@ -6,7 +6,7 @@ import Html.Attributes exposing (class, id, style)
 import Http exposing (Error(..))
 import Libs.SchemaDecoders exposing (Column, ColumnName(..), ColumnType(..), SchemaName(..), Table, TableName(..))
 import Libs.Std exposing (handleWheel, maybeFold)
-import Models exposing (CanvasPosition, DragId, Menu, Msg(..), Position, Size, SizedTable, UiTable, ZoomDelta, ZoomLevel, conf)
+import Models exposing (CanvasPosition, DragId, Menu, Msg(..), Position, Size, SizedTable, TableId, UiTable, ZoomLevel, conf)
 
 
 viewApp : ZoomLevel -> CanvasPosition -> Maybe Menu -> List UiTable -> Html Msg
@@ -80,7 +80,7 @@ sizedTableToUiTable table =
 -- formatters
 
 
-formatTableId : Table -> String
+formatTableId : Table -> TableId
 formatTableId table =
     case ( table.schema, table.table ) of
         ( SchemaName schema, TableName name ) ->

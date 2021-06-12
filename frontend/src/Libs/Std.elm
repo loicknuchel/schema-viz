@@ -56,6 +56,7 @@ handleWheel onWheel =
                 )
                 |> Decode.map onWheel
 
+        preventDefaultAndStopPropagation : msg -> { message : msg, stopPropagation : Bool, preventDefault : Bool }
         preventDefaultAndStopPropagation msg =
             { message = msg, stopPropagation = True, preventDefault = True }
     in

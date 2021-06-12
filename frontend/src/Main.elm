@@ -2,12 +2,13 @@ module Main exposing (..)
 
 import Browser
 import Browser.Dom as Dom
+import Dict exposing (Dict)
 import Draggable
 import Html exposing (Html, text)
 import Http
 import Libs.SchemaDecoders exposing (Schema, Table, schemaDecoder)
 import Libs.Std exposing (genChoose, genSequence)
-import Models exposing (Color, DragState, Menu, Model(..), Msg(..), Position, Size, SizedSchema, SizedTable, UiSchema, UiTable, WindowSize, conf)
+import Models exposing (Color, DragState, Menu, Model(..), Msg(..), Position, Size, SizedSchema, SizedTable, TableId, UiSchema, UiTable, WindowSize, conf)
 import Random
 import Task exposing (Task)
 import Update exposing (dragConfig, dragItem, zoomCanvas)
@@ -115,7 +116,7 @@ view model =
             viewApp 1 (Position 0 0) Nothing (List.map sizedTableToUiTable schema.tables)
 
         Success schema menu drag ->
-            viewApp drag.zoom drag.position (Just menu) schema.tables
+            viewApp drag.zoom drag.position (Just menu) (Dict.values schema.tables)
 
 
 
@@ -172,7 +173,7 @@ windowSize =
 
 uiSchemaGen : SizedSchema -> Size -> Random.Generator UiSchema
 uiSchemaGen schema size =
-    Random.map (\tables -> UiSchema tables) (uiTablesGen schema.tables size)
+    Random.map (\tables -> UiSchema (asDict tables)) (uiTablesGen schema.tables size)
 
 
 uiTablesGen : List SizedTable -> Size -> Random.Generator (List UiTable)
@@ -195,3 +196,8 @@ colorGen =
     case conf.colors of
         { red, pink, orange, yellow, green, blue, darkBlue, purple, grey } ->
             genChoose ( red, [ pink, orange, yellow, green, blue, darkBlue, purple, grey ] )
+
+
+asDict : List UiTable -> Dict TableId UiTable
+asDict tables =
+    Dict.fromList (List.map (\table -> ( table.id, table )) tables)

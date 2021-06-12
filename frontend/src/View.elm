@@ -5,15 +5,15 @@ import Html exposing (Attribute, Html, div, li, text, ul)
 import Html.Attributes exposing (class, id, style)
 import Http exposing (Error(..))
 import Libs.SchemaDecoders exposing (Column, ColumnName(..), ColumnType(..), SchemaName(..), Table, TableName(..))
-import Libs.Std exposing (maybeFold)
-import Models exposing (DragId, Menu, Msg(..), Position, Size, SizedTable, UiTable, colors)
+import Libs.Std exposing (handleWheel, maybeFold)
+import Models exposing (CanvasPosition, DragId, Menu, Msg(..), Position, Size, SizedTable, UiTable, ZoomDelta, ZoomLevel, conf)
 
 
-viewApp : Maybe Menu -> List UiTable -> Html Msg
-viewApp menu tables =
+viewApp : ZoomLevel -> CanvasPosition -> Maybe Menu -> List UiTable -> Html Msg
+viewApp zoom pan menu tables =
     div [ class "app" ]
         [ viewMenu menu
-        , viewErd tables
+        , viewErd zoom pan tables
         ]
 
 
@@ -23,9 +23,10 @@ viewMenu menu =
         [ text "menu" ]
 
 
-viewErd : List UiTable -> Html Msg
-viewErd tables =
-    div [ class "erd" ] (List.map viewTable tables)
+viewErd : ZoomLevel -> CanvasPosition -> List UiTable -> Html Msg
+viewErd zoom pan tables =
+    div ([ class "erd", handleWheel Zoom ] ++ dragAttrs "erd")
+        [ div [ class "canvas", placeAndZoom zoom pan ] (List.map viewTable tables) ]
 
 
 viewTable : UiTable -> Html Msg
@@ -50,6 +51,11 @@ placeAt p =
     style "transform" ("translate(" ++ String.fromFloat p.left ++ "px, " ++ String.fromFloat p.top ++ "px)")
 
 
+placeAndZoom : ZoomLevel -> CanvasPosition -> Attribute msg
+placeAndZoom zoom pan =
+    style "transform" ("translate(" ++ String.fromFloat pan.left ++ "px, " ++ String.fromFloat pan.top ++ "px) scale(" ++ String.fromFloat zoom ++ ")")
+
+
 borderColor : String -> Attribute msg
 borderColor color =
     style "border-color" color
@@ -57,17 +63,17 @@ borderColor color =
 
 dragAttrs : DragId -> List (Attribute Msg)
 dragAttrs id =
-    style "cursor" "pointer" :: Draggable.mouseTrigger id DragMsg :: Draggable.touchTriggers id DragMsg
+    Draggable.mouseTrigger id DragMsg :: Draggable.touchTriggers id DragMsg
 
 
 tableToUiTable : Table -> UiTable
 tableToUiTable table =
-    UiTable (formatTableId table) table (Size 0 0) colors.grey (Position 0 0)
+    UiTable (formatTableId table) table (Size 0 0) conf.colors.grey (Position 0 0)
 
 
 sizedTableToUiTable : SizedTable -> UiTable
 sizedTableToUiTable table =
-    UiTable table.id table.sql table.size colors.grey (Position 0 0)
+    UiTable table.id table.sql table.size conf.colors.grey (Position 0 0)
 
 
 

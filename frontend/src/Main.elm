@@ -7,10 +7,10 @@ import Html exposing (Html, text)
 import Http
 import Libs.SchemaDecoders exposing (Schema, Table, schemaDecoder)
 import Libs.Std exposing (genChoose, genSequence)
-import Models exposing (Color, DragState, Menu, Model(..), Msg(..), Position, Size, SizedSchema, SizedTable, UiSchema, UiTable, WindowSize, colors)
+import Models exposing (Color, DragState, Menu, Model(..), Msg(..), Position, Size, SizedSchema, SizedTable, UiSchema, UiTable, WindowSize, conf)
 import Random
 import Task exposing (Task)
-import Update exposing (dragConfig, dragItem)
+import Update exposing (dragConfig, dragItem, zoomCanvas)
 import View exposing (formatHttpError, formatTableId, sizedTableToUiTable, tableToUiTable, viewApp)
 
 
@@ -41,8 +41,8 @@ update msg model =
         ( GotSizes (Ok ( sizedSchema, size )), _ ) ->
             ( HasSizes sizedSchema, renderLayout sizedSchema size )
 
-        ( GotLayout schema, _ ) ->
-            ( Success schema (Menu "menu" (Position 0 0)) (DragState Nothing Draggable.init), Cmd.none )
+        ( GotLayout schema zoom pan, _ ) ->
+            ( Success schema (Menu "menu" (Position 0 0)) (DragState zoom pan Nothing Draggable.init), Cmd.none )
 
         ( StartDragging id, Success schema menu drag ) ->
             ( Success schema menu { drag | id = Just id }, Cmd.none )
@@ -51,10 +51,13 @@ update msg model =
             ( Success schema menu { drag | id = Nothing }, Cmd.none )
 
         ( OnDragBy delta, Success schema menu drag ) ->
-            dragItem schema menu drag delta
+            ( dragItem schema menu drag delta, Cmd.none )
 
         ( DragMsg dragMsg, Success schema menu drag ) ->
             Tuple.mapFirst (\newDrag -> Success schema menu newDrag) (Draggable.update dragConfig dragMsg drag)
+
+        ( Zoom zoom, Success schema menu drag ) ->
+            ( zoomCanvas schema menu drag zoom, Cmd.none )
 
         ( GotSchema (Err e), _ ) ->
             ( Failure (formatHttpError e), Cmd.none )
@@ -73,6 +76,9 @@ update msg model =
 
         ( DragMsg _, _ ) ->
             ( Failure "Can't DragMsg when not Success", Cmd.none )
+
+        ( Zoom _, _ ) ->
+            ( Failure "Can't Zoom when not Success", Cmd.none )
 
 
 
@@ -103,13 +109,13 @@ view model =
             text "Loading..."
 
         HasData schema ->
-            viewApp Nothing (List.map tableToUiTable schema.tables)
+            viewApp 1 (Position 0 0) Nothing (List.map tableToUiTable schema.tables)
 
         HasSizes schema ->
-            viewApp Nothing (List.map sizedTableToUiTable schema.tables)
+            viewApp 1 (Position 0 0) Nothing (List.map sizedTableToUiTable schema.tables)
 
-        Success schema menu _ ->
-            viewApp (Just menu) schema.tables
+        Success schema menu drag ->
+            viewApp drag.zoom drag.position (Just menu) schema.tables
 
 
 
@@ -128,7 +134,7 @@ getSizes schema =
 
 renderLayout : SizedSchema -> Size -> Cmd Msg
 renderLayout schema size =
-    Random.generate GotLayout (uiSchemaGen schema size)
+    Random.generate (\uiSchema -> GotLayout uiSchema 1 (Position 0 0)) (uiSchemaGen schema size)
 
 
 
@@ -186,6 +192,6 @@ positionGen table size =
 
 colorGen : Random.Generator Color
 colorGen =
-    case colors of
+    case conf.colors of
         { red, pink, orange, yellow, green, blue, darkBlue, purple, grey } ->
             genChoose ( red, [ pink, orange, yellow, green, blue, darkBlue, purple, grey ] )

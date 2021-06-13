@@ -52,7 +52,7 @@ type alias UiTable =
 
 
 type alias SizedSchema =
-    { tables : List SizedTable }
+    { tables : Dict TableId SizedTable }
 
 
 type alias SizedTable =

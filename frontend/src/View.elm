@@ -1,5 +1,6 @@
 module View exposing (..)
 
+import AssocList as Dict exposing (Dict)
 import Draggable
 import FontAwesome.Icon exposing (viewIcon)
 import FontAwesome.Regular as IconLight
@@ -12,7 +13,7 @@ import Libs.Std exposing (handleWheel, maybeFilter, maybeFold)
 import Models exposing (CanvasPosition, DragId, Menu, Msg(..), Position, Size, SizedTable, UiTable, ZoomLevel, conf)
 
 
-viewApp : ZoomLevel -> CanvasPosition -> Maybe Menu -> List UiTable -> Html Msg
+viewApp : ZoomLevel -> CanvasPosition -> Maybe Menu -> Dict TableId UiTable -> Html Msg
 viewApp zoom pan menu tables =
     div [ class "app" ]
         [ viewMenu menu
@@ -26,10 +27,10 @@ viewMenu menu =
         [ text "menu" ]
 
 
-viewErd : ZoomLevel -> CanvasPosition -> List UiTable -> Html Msg
+viewErd : ZoomLevel -> CanvasPosition -> Dict TableId UiTable -> Html Msg
 viewErd zoom pan tables =
     div ([ class "erd", handleWheel Zoom ] ++ dragAttrs "erd")
-        [ div [ class "canvas", placeAndZoom zoom pan ] (List.map viewTable tables) ]
+        [ div [ class "canvas", placeAndZoom zoom pan ] (List.map viewTable (Dict.values tables)) ]
 
 
 viewTable : UiTable -> Html Msg

@@ -1,10 +1,12 @@
 module Libs.SchemaDecoders exposing (..)
 
+import AssocList exposing (Dict)
 import Json.Decode exposing (Decoder, bool, field, list, map, map2, map3, map4, map5, map7, maybe, string)
+import Libs.Std exposing (dictFromList)
 
 
 type alias Schema =
-    { tables : List Table }
+    { tables : Dict TableId Table }
 
 
 type alias Table =
@@ -82,7 +84,7 @@ type ForeignKeyName
 schemaDecoder : Decoder Schema
 schemaDecoder =
     map Schema
-        (field "tables" (list tableDecoder))
+        (map (dictFromList .id) (field "tables" (list tableDecoder)))
 
 
 tableDecoder : Decoder Table

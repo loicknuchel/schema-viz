@@ -1,5 +1,6 @@
 module Libs.Std exposing (..)
 
+import AssocList as Dict exposing (Dict)
 import Html exposing (Attribute)
 import Html.Events
 import Json.Decode as Decode exposing (Decoder)
@@ -37,6 +38,11 @@ maybeFold empty transform maybe =
 
         Nothing ->
             empty
+
+
+dictFromList : (a -> k) -> List a -> Dict k a
+dictFromList getKey list =
+    Dict.fromList (List.map (\item -> ( getKey item, item )) list)
 
 
 type alias WheelEvent =

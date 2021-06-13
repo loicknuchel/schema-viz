@@ -8,7 +8,7 @@ import FontAwesome.Styles as Icon
 import Html exposing (text)
 import Http
 import Libs.SchemaDecoders exposing (Schema, Table, TableId, schemaDecoder)
-import Libs.Std exposing (genChoose, genSequence)
+import Libs.Std exposing (dictFromList, genChoose, genSequence)
 import Models exposing (Color, DragState, Menu, Model(..), Msg(..), Position, Size, SizedSchema, SizedTable, UiSchema, UiTable, WindowSize, conf)
 import Random
 import Task exposing (Task)
@@ -114,13 +114,13 @@ view model =
                 text "Loading..."
 
             HasData schema ->
-                viewApp 1 (Position 0 0) Nothing (List.map tableToUiTable schema.tables)
+                viewApp 1 (Position 0 0) Nothing (Dict.map (\_ t -> tableToUiTable t) schema.tables)
 
             HasSizes schema ->
-                viewApp 1 (Position 0 0) Nothing (List.map sizedTableToUiTable schema.tables)
+                viewApp 1 (Position 0 0) Nothing (Dict.map (\_ t -> sizedTableToUiTable t) schema.tables)
 
             Success schema menu drag ->
-                viewApp drag.zoom drag.position (Just menu) (Dict.values schema.tables)
+                viewApp drag.zoom drag.position (Just menu) schema.tables
         ]
     }
 
@@ -155,7 +155,7 @@ allSizes schema =
 
 schemaSize : Schema -> Task Dom.Error SizedSchema
 schemaSize schema =
-    Task.map (\tables -> SizedSchema tables) (tablesSize schema.tables)
+    Task.map (\tables -> SizedSchema (dictFromList .id tables)) (tablesSize (Dict.values schema.tables))
 
 
 tablesSize : List Table -> Task Dom.Error (List SizedTable)
@@ -179,7 +179,7 @@ windowSize =
 
 uiSchemaGen : SizedSchema -> Size -> Random.Generator UiSchema
 uiSchemaGen schema size =
-    Random.map (\tables -> UiSchema (asDict tables)) (uiTablesGen schema.tables size)
+    Random.map (\tables -> UiSchema (dictFromList .id tables)) (uiTablesGen (Dict.values schema.tables) size)
 
 
 uiTablesGen : List SizedTable -> Size -> Random.Generator (List UiTable)
@@ -202,8 +202,3 @@ colorGen =
     case conf.colors of
         { pink, purple, darkBlue, blue, turquoise, lightBlue, lightGreen, green, yellow, orange, red, grey } ->
             genChoose ( pink, [ purple, darkBlue, blue, turquoise, lightBlue, lightGreen, green, yellow, orange, red, grey ] )
-
-
-asDict : List UiTable -> Dict TableId UiTable
-asDict tables =
-    Dict.fromList (List.map (\table -> ( table.id, table )) tables)

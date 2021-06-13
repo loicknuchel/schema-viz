@@ -8,7 +8,27 @@
           "column": "id",
           "type": "int",
           "nullable": false,
-          "comment": "A unique ID for users"
+          "comment": "The user id which is automatically defined based on subscription order. Should never change!"
+        },
+        {
+          "column": "first_name",
+          "type": "varchar(255)",
+          "nullable": false
+        },
+        {
+          "column": "last_name",
+          "type": "varchar(255)",
+          "nullable": false
+        },
+        {
+          "column": "email",
+          "type": "varchar(255)",
+          "nullable": true
+        },
+        {
+          "column": "external_id",
+          "type": "uuid",
+          "nullable": true
         }
       ],
       "primaryKey": {
@@ -17,8 +37,32 @@
         ],
         "name": "users_pk"
       },
-      "uniques": [],
-      "comment": "Store all users"
+      "uniques": [
+        {
+          "columns": [
+            "email"
+          ],
+          "name": "user_email_uniq"
+        }
+      ],
+      "indexes": [
+        {
+          "columns": [
+            "first_name",
+            "last_name"
+          ],
+          "definition": "btree (first_name, last_name)",
+          "name": "user_name_index"
+        },
+        {
+          "columns": [
+            "external_id"
+          ],
+          "definition": "(external_id)",
+          "name": "user_external_id_index"
+        }
+      ],
+      "comment": "A table to store all users and in a single diagram control them, for the better or worse!"
     },
     {
       "schema": "public",
@@ -74,12 +118,18 @@
           ],
           "name": "roles_name_uniq"
         }
-      ]
+      ],
+      "indexes": []
     },
     {
       "schema": "public",
       "table": "role_user",
       "columns": [
+        {
+          "column": "id",
+          "type": "int",
+          "nullable": false
+        },
         {
           "column": "role_id",
           "type": "int",
@@ -115,12 +165,12 @@
       ],
       "primaryKey": {
         "columns": [
-          "role_id",
-          "user_id"
+          "id"
         ],
         "name": "role_user_pk"
       },
-      "uniques": []
+      "uniques": [],
+      "indexes": []
     }
   ]
 }

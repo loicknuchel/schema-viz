@@ -2,12 +2,13 @@ module View exposing (..)
 
 import Draggable
 import FontAwesome.Icon exposing (viewIcon)
+import FontAwesome.Regular as IconLight
 import FontAwesome.Solid as Icon
 import Html exposing (Attribute, Html, div, span, text)
 import Html.Attributes exposing (class, id, style, title)
 import Http exposing (Error(..))
-import Libs.SchemaDecoders exposing (Column, ColumnComment(..), ColumnName(..), ColumnType(..), ForeignKey, ForeignKeyName(..), PrimaryKey(..), SchemaName(..), Table, TableComment(..), TableId(..), TableName(..))
-import Libs.Std exposing (handleWheel, maybeFold)
+import Libs.SchemaDecoders exposing (Column, ColumnComment(..), ColumnName(..), ColumnType(..), ForeignKey, Index, IndexName(..), PrimaryKey(..), SchemaName(..), Table, TableComment(..), TableId(..), TableName(..), UniqueIndex, UniqueIndexName(..))
+import Libs.Std exposing (handleWheel, maybeFilter, maybeFold)
 import Models exposing (CanvasPosition, DragId, Menu, Msg(..), Position, Size, SizedTable, UiTable, ZoomLevel, conf)
 
 
@@ -34,31 +35,35 @@ viewErd zoom pan tables =
 viewTable : UiTable -> Html Msg
 viewTable table =
     div
-        ([ class "table", placeAt table.position, id (formatTableId table.id) ]
-            ++ maybeFold [] (\(TableComment comment) -> [ title comment ]) table.sql.comment
-            ++ dragAttrs (formatTableId table.id)
-        )
-        [ div [ class "header", borderTopColor table.color ] [ text (formatTableName table.sql) ]
-        , div [ class "columns" ] (List.map (viewColumn table.sql.primaryKey) table.sql.columns)
+        ([ class "table", placeAt table.position, id (formatTableId table.id) ] ++ dragAttrs (formatTableId table.id))
+        [ div [ class "header", borderTopColor table.color ] ([ text (formatTableName table.sql) ] ++ viewComment (Maybe.map (\(TableComment comment) -> comment) table.sql.comment))
+        , div [ class "columns" ] (List.map (viewColumn table.sql.primaryKey table.sql.uniques table.sql.indexes) table.sql.columns)
         ]
 
 
-viewColumn : Maybe PrimaryKey -> Column -> Html Msg
-viewColumn pk column =
-    div ([ class "column" ] ++ maybeFold [] (\(ColumnComment comment) -> [ title comment ]) column.comment)
-        [ viewColumnIcon column.reference
+viewColumn : Maybe PrimaryKey -> List UniqueIndex -> List Index -> Column -> Html Msg
+viewColumn pk uniques indexes column =
+    div [ class "column" ]
+        [ viewColumnIcon pk uniques indexes column
         , viewColumnName pk column
-        , span [ class "type" ] [ text (formatColumnType column) ]
+        , viewColumnType column
         ]
 
 
-viewColumnIcon : Maybe ForeignKey -> Html Msg
-viewColumnIcon fk =
-    case fk of
-        Just { schema, table, column, name } ->
-            case ( schema, table, column ) of
-                ( SchemaName s, TableName t, ColumnName c ) ->
-                    span [ class "icon", title ("Foreign key to " ++ s ++ "." ++ t ++ "." ++ c) ] [ viewIcon Icon.externalLinkAlt ]
+viewColumnIcon : Maybe PrimaryKey -> List UniqueIndex -> List Index -> Column -> Html Msg
+viewColumnIcon maybePk uniques indexes column =
+    case ( ( inPrimaryKey column.column maybePk, column.reference ), ( inUniqueIndexes column.column uniques, inIndexes column.column indexes ) ) of
+        ( ( Just pk, _ ), _ ) ->
+            span [ class "icon", title (formatPkTitle pk) ] [ viewIcon Icon.key ]
+
+        ( ( _, Just fk ), _ ) ->
+            span [ class "icon", title (formatFkTitle fk) ] [ viewIcon Icon.externalLinkAlt ]
+
+        ( _, ( u :: us, _ ) ) ->
+            span [ class "icon", title (formatUniqueTitle (u :: us)) ] [ viewIcon Icon.fingerprint ]
+
+        ( _, ( _, i :: is ) ) ->
+            span [ class "icon", title (formatIndexTitle (i :: is)) ] [ viewIcon Icon.sortAmountDownAlt ]
 
         _ ->
             span [ class "icon" ] []
@@ -67,24 +72,47 @@ viewColumnIcon fk =
 viewColumnName : Maybe PrimaryKey -> Column -> Html Msg
 viewColumnName pk column =
     let
+        className : String
         className =
-            if isInPrimaryKey pk column then
-                "name bold"
+            case inPrimaryKey column.column pk of
+                Just _ ->
+                    "name bold"
 
-            else
-                "name"
+                _ ->
+                    "name"
     in
-    span [ class className ] [ text (formatColumnName column) ]
+    span [ class className ]
+        ([ text (formatColumnName column.column) ] ++ viewComment (Maybe.map (\(ColumnComment comment) -> comment) column.comment))
 
 
-isInPrimaryKey : Maybe PrimaryKey -> Column -> Bool
-isInPrimaryKey pk col =
-    case pk of
-        Just (PrimaryKey { columns }) ->
-            List.any (\c -> c == col.column) columns
+viewColumnType : Column -> Html Msg
+viewColumnType column =
+    span [ class "type" ] [ text (formatColumnType column.kind ++ formatNullable column) ]
 
-        _ ->
-            False
+
+viewComment : Maybe String -> List (Html Msg)
+viewComment comment =
+    maybeFold [] (\c -> [ span [ title c, style "margin-left" ".25rem", style "font-size" ".9rem", style "opacity" ".25" ] [ viewIcon IconLight.commentDots ] ]) comment
+
+
+inPrimaryKey : ColumnName -> Maybe PrimaryKey -> Maybe PrimaryKey
+inPrimaryKey column pk =
+    maybeFilter (\(PrimaryKey { columns }) -> hasColumn column columns) pk
+
+
+inUniqueIndexes : ColumnName -> List UniqueIndex -> List UniqueIndex
+inUniqueIndexes column uniques =
+    List.filter (\{ columns } -> hasColumn column columns) uniques
+
+
+inIndexes : ColumnName -> List Index -> List Index
+inIndexes column indexes =
+    List.filter (\{ columns } -> hasColumn column columns) indexes
+
+
+hasColumn : ColumnName -> List ColumnName -> Bool
+hasColumn column columns =
+    List.any (\c -> c == column) columns
 
 
 
@@ -131,31 +159,79 @@ tableToUiTable table =
 
 
 formatTableId : TableId -> DragId
-formatTableId id =
-    case id of
-        TableId value ->
-            value
+formatTableId (TableId id) =
+    id
 
 
 formatTableName : Table -> String
 formatTableName table =
     case ( table.schema, table.table ) of
         ( SchemaName schema, TableName name ) ->
-            schema ++ "." ++ name
+            if schema == conf.defaultSchema then
+                name
+
+            else
+                schema ++ "." ++ name
 
 
-formatColumnName : Column -> String
-formatColumnName column =
-    case column.column of
-        ColumnName name ->
-            name
+formatColumnName : ColumnName -> String
+formatColumnName (ColumnName name) =
+    name
 
 
-formatColumnType : Column -> String
-formatColumnType column =
-    case column.kind of
-        ColumnType kind ->
-            kind
+formatColumnType : ColumnType -> String
+formatColumnType (ColumnType kind) =
+    kind
+
+
+formatNullable : Column -> String
+formatNullable column =
+    if column.nullable then
+        "?"
+
+    else
+        ""
+
+
+formatPkTitle : PrimaryKey -> String
+formatPkTitle _ =
+    "Primary key"
+
+
+formatFkTitle : ForeignKey -> String
+formatFkTitle fk =
+    "Foreign key to " ++ formatReference fk
+
+
+formatUniqueTitle : List UniqueIndex -> String
+formatUniqueTitle uniques =
+    "Unique constraint in " ++ String.join ", " (List.map (\unique -> formatUniqueIndexName unique.name) uniques)
+
+
+formatIndexTitle : List Index -> String
+formatIndexTitle indexes =
+    "Indexed by " ++ String.join ", " (List.map (\index -> formatIndexName index.name) indexes)
+
+
+formatReference : ForeignKey -> String
+formatReference { schema, table, column } =
+    case ( schema, table, column ) of
+        ( SchemaName s, TableName t, ColumnName c ) ->
+            if s == conf.defaultSchema then
+                t ++ "." ++ c
+
+            else
+                s ++ "." ++ t ++ "." ++ c
+
+
+formatUniqueIndexName : UniqueIndexName -> String
+formatUniqueIndexName (UniqueIndexName name) =
+    name
+
+
+formatIndexName : IndexName -> String
+formatIndexName (IndexName name) =
+    name
 
 
 formatHttpError : Http.Error -> String

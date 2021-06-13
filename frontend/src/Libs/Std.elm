@@ -16,6 +16,19 @@ genChoose ( item, list ) =
     Random.map (\num -> Maybe.withDefault item (List.head (List.drop num list))) (Random.int 0 (List.length list))
 
 
+maybeFilter : (a -> Bool) -> Maybe a -> Maybe a
+maybeFilter predicate maybe =
+    Maybe.andThen
+        (\a ->
+            if predicate a then
+                maybe
+
+            else
+                Nothing
+        )
+        maybe
+
+
 maybeFold : b -> (a -> b) -> Maybe a -> b
 maybeFold empty transform maybe =
     case maybe of

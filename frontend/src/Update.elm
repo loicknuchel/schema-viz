@@ -1,6 +1,6 @@
 module Update exposing (..)
 
-import AssocList as Dict exposing (Dict)
+import AssocList as Dict
 import Draggable
 import Draggable.Events exposing (onDragBy, onDragEnd, onDragStart)
 import Libs.SchemaDecoders exposing (TableId(..))

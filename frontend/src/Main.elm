@@ -5,7 +5,7 @@ import Browser
 import Browser.Dom as Dom
 import Draggable
 import FontAwesome.Styles as Icon
-import Html exposing (Html, text)
+import Html exposing (text)
 import Http
 import Libs.SchemaDecoders exposing (Schema, Table, TableId, schemaDecoder)
 import Libs.Std exposing (genChoose, genSequence)
@@ -200,8 +200,8 @@ positionGen table size =
 colorGen : Random.Generator Color
 colorGen =
     case conf.colors of
-        { red, pink, orange, yellow, green, blue, darkBlue, purple, grey } ->
-            genChoose ( red, [ pink, orange, yellow, green, blue, darkBlue, purple, grey ] )
+        { pink, purple, darkBlue, blue, turquoise, lightBlue, lightGreen, green, yellow, orange, red, grey } ->
+            genChoose ( pink, [ purple, darkBlue, blue, turquoise, lightBlue, lightGreen, green, yellow, orange, red, grey ] )
 
 
 asDict : List UiTable -> Dict TableId UiTable

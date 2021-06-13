@@ -1,6 +1,6 @@
 module Libs.SchemaDecoders exposing (..)
 
-import Json.Decode exposing (Decoder, field, list, map, map2, map4, map6, maybe, string)
+import Json.Decode exposing (Decoder, bool, field, list, map, map2, map3, map4, map5, map7, maybe, string)
 
 
 type alias Schema =
@@ -8,11 +8,11 @@ type alias Schema =
 
 
 type alias Table =
-    { id : TableId, schema : SchemaName, table : TableName, columns : List Column, primaryKey : Maybe PrimaryKey, uniques : List UniqueIndex, comment : Maybe TableComment }
+    { id : TableId, schema : SchemaName, table : TableName, columns : List Column, primaryKey : Maybe PrimaryKey, uniques : List UniqueIndex, indexes : List Index, comment : Maybe TableComment }
 
 
 type alias Column =
-    { column : ColumnName, kind : ColumnType, reference : Maybe ForeignKey, comment : Maybe ColumnComment }
+    { column : ColumnName, kind : ColumnType, nullable : Bool, reference : Maybe ForeignKey, comment : Maybe ColumnComment }
 
 
 type PrimaryKey
@@ -25,6 +25,10 @@ type alias PrimaryKeyRecord =
 
 type alias UniqueIndex =
     { columns : List ColumnName, name : UniqueIndexName }
+
+
+type alias Index =
+    { columns : List ColumnName, definition : String, name : IndexName }
 
 
 type alias ForeignKey =
@@ -67,6 +71,10 @@ type UniqueIndexName
     = UniqueIndexName String
 
 
+type IndexName
+    = IndexName String
+
+
 type ForeignKeyName
     = ForeignKeyName String
 
@@ -79,12 +87,13 @@ schemaDecoder =
 
 tableDecoder : Decoder Table
 tableDecoder =
-    map6 (\schema table columns primaryKey uniques comment -> Table (buildTableId schema table) schema table columns primaryKey uniques comment)
+    map7 (\schema table columns primaryKey uniques indexes comment -> Table (buildTableId schema table) schema table columns primaryKey uniques indexes comment)
         (field "schema" schemaNameDecoder)
         (field "table" tableNameDecoder)
         (field "columns" (list columnDecoder))
         (maybe (field "primaryKey" primaryKeyDecoder))
         (field "uniques" (list uniqueIndexDecoder))
+        (field "indexes" (list indexDecoder))
         (maybe (field "comment" tableCommentDecoder))
 
 
@@ -97,9 +106,10 @@ buildTableId schema table =
 
 columnDecoder : Decoder Column
 columnDecoder =
-    map4 Column
+    map5 Column
         (field "column" columnNameDecoder)
         (field "type" columnTypeDecoder)
+        (field "nullable" bool)
         (maybe (field "reference" foreignKeyDecoder))
         (maybe (field "comment" columnCommentDecoder))
 
@@ -118,6 +128,14 @@ uniqueIndexDecoder =
     map2 UniqueIndex
         (field "columns" (list columnNameDecoder))
         (field "name" uniqueIndexNameDecoder)
+
+
+indexDecoder : Decoder Index
+indexDecoder =
+    map3 Index
+        (field "columns" (list columnNameDecoder))
+        (field "definition" string)
+        (field "name" indexNameDecoder)
 
 
 foreignKeyDecoder : Decoder ForeignKey
@@ -167,6 +185,11 @@ primaryKeyNameDecoder =
 uniqueIndexNameDecoder : Decoder UniqueIndexName
 uniqueIndexNameDecoder =
     map UniqueIndexName string
+
+
+indexNameDecoder : Decoder IndexName
+indexNameDecoder =
+    map IndexName string
 
 
 foreignKeyNameDecoder : Decoder ForeignKeyName

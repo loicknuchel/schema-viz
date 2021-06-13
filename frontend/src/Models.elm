@@ -10,11 +10,13 @@ import Libs.Std exposing (WheelEvent)
 
 conf :
     { zoom : { min : ZoomLevel, max : ZoomLevel, speed : Float }
-    , colors : { red : Color, pink : Color, orange : Color, yellow : Color, green : Color, blue : Color, darkBlue : Color, purple : Color, grey : Color }
+    , colors : { pink : Color, purple : Color, darkBlue : Color, blue : Color, turquoise : Color, lightBlue : Color, lightGreen : Color, green : Color, yellow : Color, orange : Color, red : Color, grey : Color }
+    , defaultSchema : String
     }
 conf =
     { zoom = { min = 0.2, max = 5, speed = 0.001 }
-    , colors = { red = "#E3342F", pink = "#F66D9B", orange = "#F6993F", yellow = "#FFED4A", green = "#4DC0B5", blue = "#3490DC", darkBlue = "#6574CD", purple = "#9561E2", grey = "#B8C2CC" }
+    , colors = { pink = "#F66D9B", purple = "#9561E2", darkBlue = "#6574CD", blue = "#3490DC", turquoise = "#4DC0B5", lightBlue = "#22D3EE", lightGreen = "#84CC16", green = "#38C172", yellow = "#FFED4A", orange = "#F6993F", red = "#E3342F", grey = "#B8C2CC" }
+    , defaultSchema = "public"
     }
 
 

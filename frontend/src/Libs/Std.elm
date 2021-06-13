@@ -7,6 +7,11 @@ import Json.Decode as Decode exposing (Decoder)
 import Random
 
 
+listCollect : (a -> Maybe b) -> List a -> List b
+listCollect transform list =
+    List.foldr (\a res -> maybeFold res (\b -> b :: res) (transform a)) [] list
+
+
 genSequence : List (Random.Generator a) -> Random.Generator (List a)
 genSequence generators =
     List.foldr (Random.map2 (::)) (Random.constant []) generators

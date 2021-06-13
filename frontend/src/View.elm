@@ -8,8 +8,8 @@ import FontAwesome.Solid as Icon
 import Html exposing (Attribute, Html, div, span, text)
 import Html.Attributes exposing (class, id, style, title)
 import Http exposing (Error(..))
-import Libs.SchemaDecoders exposing (Column, ColumnComment(..), ColumnName(..), ColumnType(..), ForeignKey, Index, IndexName(..), PrimaryKey(..), SchemaName(..), Table, TableComment(..), TableId(..), TableName(..), UniqueIndex, UniqueIndexName(..))
-import Libs.Std exposing (handleWheel, maybeFilter, maybeFold)
+import Libs.SchemaDecoders exposing (Column, ColumnComment(..), ColumnName(..), ColumnType(..), ForeignKey, ForeignKeyName(..), Index, IndexName(..), PrimaryKey(..), SchemaName(..), Table, TableComment(..), TableId(..), TableName(..), UniqueIndex, UniqueIndexName(..), buildTableId)
+import Libs.Std exposing (handleWheel, listCollect, maybeFilter, maybeFold)
 import Models exposing (CanvasPosition, DragId, Menu, Msg(..), Position, Size, SizedTable, UiTable, ZoomLevel, conf)
 
 
@@ -30,7 +30,7 @@ viewMenu menu =
 viewErd : ZoomLevel -> CanvasPosition -> Dict TableId UiTable -> Html Msg
 viewErd zoom pan tables =
     div ([ class "erd", handleWheel Zoom ] ++ dragAttrs "erd")
-        [ div [ class "canvas", placeAndZoom zoom pan ] (List.map viewTable (Dict.values tables)) ]
+        [ div [ class "canvas", placeAndZoom zoom pan ] (List.map viewTable (Dict.values tables) ++ List.map viewRelation (getRelations tables)) ]
 
 
 viewTable : UiTable -> Html Msg
@@ -96,6 +96,13 @@ viewComment comment =
     maybeFold [] (\c -> [ span [ title c, style "margin-left" ".25rem", style "font-size" ".9rem", style "opacity" ".25" ] [ viewIcon IconLight.commentDots ] ]) comment
 
 
+viewRelation : ( ( UiTable, Column ), ( UiTable, Column ), ForeignKey ) -> Html Msg
+viewRelation ( ( srcTable, srcColumn ), ( refTable, refColumn ), fk ) =
+    case ( ( srcTable.id, srcColumn.column ), fk.name, ( refTable.id, refColumn.column ) ) of
+        ( ( TableId srcId, ColumnName srcCol ), ForeignKeyName name, ( TableId refId, ColumnName refCol ) ) ->
+            div [] [ text (srcId ++ "." ++ srcCol ++ " -> " ++ name ++ " -> " ++ refId ++ "." ++ refCol) ]
+
+
 inPrimaryKey : ColumnName -> Maybe PrimaryKey -> Maybe PrimaryKey
 inPrimaryKey column pk =
     maybeFilter (\(PrimaryKey { columns }) -> hasColumn column columns) pk
@@ -114,6 +121,31 @@ inIndexes column indexes =
 hasColumn : ColumnName -> List ColumnName -> Bool
 hasColumn column columns =
     List.any (\c -> c == column) columns
+
+
+getRelations : Dict TableId UiTable -> List ( ( UiTable, Column ), ( UiTable, Column ), ForeignKey )
+getRelations tables =
+    List.foldr (\table res -> includeRefTable tables (getColumnsWithForeignKey table) ++ res) [] (Dict.values tables)
+
+
+includeRefTable : Dict TableId UiTable -> List ( ( UiTable, Column ), ForeignKey ) -> List ( ( UiTable, Column ), ( UiTable, Column ), ForeignKey )
+includeRefTable tables relations =
+    listCollect (\( src, fk ) -> Maybe.map (\ref -> ( src, ref, fk )) (getTable fk tables)) relations
+
+
+getTable : ForeignKey -> Dict TableId UiTable -> Maybe ( UiTable, Column )
+getTable fk tables =
+    Maybe.andThen (\table -> Maybe.map (\column -> ( table, column )) (getColumns fk.column table)) (Dict.get (buildTableId fk.schema fk.table) tables)
+
+
+getColumns : ColumnName -> UiTable -> Maybe Column
+getColumns columnName table =
+    List.head (List.filter (\column -> column.column == columnName) table.sql.columns)
+
+
+getColumnsWithForeignKey : UiTable -> List ( ( UiTable, Column ), ForeignKey )
+getColumnsWithForeignKey table =
+    listCollect (\column -> Maybe.map (\ref -> ( ( table, column ), ref )) column.reference) table.sql.columns
 
 
 

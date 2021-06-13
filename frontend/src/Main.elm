@@ -1,13 +1,13 @@
 module Main exposing (..)
 
-import AssocList as Dict exposing (Dict)
+import AssocList as Dict
 import Browser
 import Browser.Dom as Dom
 import Draggable
 import FontAwesome.Styles as Icon
 import Html exposing (text)
 import Http
-import Libs.SchemaDecoders exposing (Schema, Table, TableId, schemaDecoder)
+import Libs.SchemaDecoders exposing (Schema, Table, schemaDecoder)
 import Libs.Std exposing (dictFromList, genChoose, genSequence)
 import Models exposing (Color, DragState, Menu, Model(..), Msg(..), Position, Size, SizedSchema, SizedTable, UiSchema, UiTable, WindowSize, conf)
 import Random

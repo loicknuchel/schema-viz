@@ -10,11 +10,24 @@ type alias Schema =
 
 
 type alias Table =
-    { id : TableId, schema : SchemaName, table : TableName, columns : List Column, primaryKey : Maybe PrimaryKey, uniques : List UniqueIndex, indexes : List Index, comment : Maybe TableComment }
+    { id : TableId
+    , schema : SchemaName
+    , table : TableName
+    , columns : Dict ColumnName Column
+    , primaryKey : Maybe PrimaryKey
+    , uniques : List UniqueIndex
+    , indexes : List Index
+    , comment : Maybe TableComment
+    }
 
 
 type alias Column =
-    { column : ColumnName, kind : ColumnType, nullable : Bool, reference : Maybe ForeignKey, comment : Maybe ColumnComment }
+    { column : ColumnName
+    , kind : ColumnType
+    , nullable : Bool
+    , reference : Maybe ForeignKey
+    , comment : Maybe ColumnComment
+    }
 
 
 type PrimaryKey
@@ -92,7 +105,7 @@ tableDecoder =
     map7 (\schema table columns primaryKey uniques indexes comment -> Table (buildTableId schema table) schema table columns primaryKey uniques indexes comment)
         (field "schema" schemaNameDecoder)
         (field "table" tableNameDecoder)
-        (field "columns" (list columnDecoder))
+        (map (dictFromList .column) (field "columns" (list columnDecoder)))
         (maybe (field "primaryKey" primaryKeyDecoder))
         (field "uniques" (list uniqueIndexDecoder))
         (field "indexes" (list indexDecoder))

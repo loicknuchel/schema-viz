@@ -13,7 +13,8 @@ import Models exposing (Color, DragState, Menu, Model(..), Msg(..), Position, Si
 import Random
 import Task exposing (Task)
 import Update exposing (dragConfig, dragItem, zoomCanvas)
-import View exposing (formatHttpError, formatTableId, sizedTableToUiTable, tableToUiTable, viewApp)
+import View exposing (viewApp)
+import Views.Helpers exposing (formatHttpError, formatTableId, sizedTableToUiTable, tableToUiTable)
 
 
 

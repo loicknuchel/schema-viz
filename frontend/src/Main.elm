@@ -4,6 +4,7 @@ import AssocList as Dict exposing (Dict)
 import Browser
 import Browser.Dom as Dom
 import Draggable
+import FontAwesome.Styles as Icon
 import Html exposing (Html, text)
 import Http
 import Libs.SchemaDecoders exposing (Schema, Table, TableId, schemaDecoder)
@@ -21,7 +22,7 @@ import View exposing (formatHttpError, formatTableId, sizedTableToUiTable, table
 
 main : Program () Model Msg
 main =
-    Browser.element { init = init, update = update, subscriptions = subscriptions, view = view }
+    Browser.document { init = init, update = update, subscriptions = subscriptions, view = view }
 
 
 init : () -> ( Model, Cmd Msg )
@@ -100,23 +101,28 @@ subscriptions model =
 -- VIEW: each case should be one line
 
 
-view : Model -> Html Msg
+view : Model -> Browser.Document Msg
 view model =
-    case model of
-        Failure e ->
-            text ("Unable to load your schema: " ++ e)
+    { title = "Schema Viz"
+    , body =
+        [ Icon.css
+        , case model of
+            Failure e ->
+                text ("Unable to load your schema: " ++ e)
 
-        Loading ->
-            text "Loading..."
+            Loading ->
+                text "Loading..."
 
-        HasData schema ->
-            viewApp 1 (Position 0 0) Nothing (List.map tableToUiTable schema.tables)
+            HasData schema ->
+                viewApp 1 (Position 0 0) Nothing (List.map tableToUiTable schema.tables)
 
-        HasSizes schema ->
-            viewApp 1 (Position 0 0) Nothing (List.map sizedTableToUiTable schema.tables)
+            HasSizes schema ->
+                viewApp 1 (Position 0 0) Nothing (List.map sizedTableToUiTable schema.tables)
 
-        Success schema menu drag ->
-            viewApp drag.zoom drag.position (Just menu) (Dict.values schema.tables)
+            Success schema menu drag ->
+                viewApp drag.zoom drag.position (Just menu) (Dict.values schema.tables)
+        ]
+    }
 
 
 

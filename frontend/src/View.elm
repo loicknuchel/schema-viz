@@ -1,10 +1,12 @@
 module View exposing (..)
 
 import Draggable
-import Html exposing (Attribute, Html, div, li, text, ul)
-import Html.Attributes exposing (class, id, style)
+import FontAwesome.Icon exposing (viewIcon)
+import FontAwesome.Solid as Icon
+import Html exposing (Attribute, Html, div, span, text)
+import Html.Attributes exposing (class, id, style, title)
 import Http exposing (Error(..))
-import Libs.SchemaDecoders exposing (Column, ColumnName(..), ColumnType(..), SchemaName(..), Table, TableId(..), TableName(..))
+import Libs.SchemaDecoders exposing (Column, ColumnName(..), ColumnType(..), ForeignKey, ForeignKeyName(..), SchemaName(..), Table, TableId(..), TableName(..))
 import Libs.Std exposing (handleWheel, maybeFold)
 import Models exposing (CanvasPosition, DragId, Menu, Msg(..), Position, Size, SizedTable, UiTable, ZoomLevel, conf)
 
@@ -31,15 +33,31 @@ viewErd zoom pan tables =
 
 viewTable : UiTable -> Html Msg
 viewTable table =
-    div ([ class "table", placeAt table.position, id (formatTableId table.id), borderColor table.color ] ++ dragAttrs (formatTableId table.id))
-        [ div [ class "header" ] [ text (formatTableName table.sql) ]
-        , ul [ class "columns" ] (List.map viewColumn table.sql.columns)
+    div ([ class "table", placeAt table.position, id (formatTableId table.id) ] ++ dragAttrs (formatTableId table.id))
+        [ div [ class "header", borderTopColor table.color ] [ text (formatTableName table.sql) ]
+        , div [ class "columns" ] (List.map viewColumn table.sql.columns)
         ]
 
 
 viewColumn : Column -> Html Msg
 viewColumn column =
-    li [ class "column" ] [ text (formatColumnName column ++ " " ++ formatColumnType column) ]
+    div [ class "column" ]
+        [ viewColumnIcon column.reference
+        , span [ class "name" ] [ text (formatColumnName column) ]
+        , span [ class "type" ] [ text (formatColumnType column) ]
+        ]
+
+
+viewColumnIcon : Maybe ForeignKey -> Html Msg
+viewColumnIcon fk =
+    case fk of
+        Just { schema, table, column, name } ->
+            case ( schema, table, column ) of
+                ( SchemaName s, TableName t, ColumnName c ) ->
+                    span [ class "icon", title ("Foreign key to " ++ s ++ "." ++ t ++ "." ++ c) ] [ viewIcon Icon.externalLinkAlt ]
+
+        _ ->
+            span [ class "icon" ] []
 
 
 
@@ -56,9 +74,9 @@ placeAndZoom zoom pan =
     style "transform" ("translate(" ++ String.fromFloat pan.left ++ "px, " ++ String.fromFloat pan.top ++ "px) scale(" ++ String.fromFloat zoom ++ ")")
 
 
-borderColor : String -> Attribute msg
-borderColor color =
-    style "border-color" color
+borderTopColor : String -> Attribute msg
+borderTopColor color =
+    style "border-top-color" color
 
 
 dragAttrs : DragId -> List (Attribute Msg)

@@ -1,14 +1,14 @@
 module Main exposing (..)
 
+import AssocList as Dict exposing (Dict)
 import Browser
 import Browser.Dom as Dom
-import Dict exposing (Dict)
 import Draggable
 import Html exposing (Html, text)
 import Http
-import Libs.SchemaDecoders exposing (Schema, Table, schemaDecoder)
+import Libs.SchemaDecoders exposing (Schema, Table, TableId, schemaDecoder)
 import Libs.Std exposing (genChoose, genSequence)
-import Models exposing (Color, DragState, Menu, Model(..), Msg(..), Position, Size, SizedSchema, SizedTable, TableId, UiSchema, UiTable, WindowSize, conf)
+import Models exposing (Color, DragState, Menu, Model(..), Msg(..), Position, Size, SizedSchema, SizedTable, UiSchema, UiTable, WindowSize, conf)
 import Random
 import Task exposing (Task)
 import Update exposing (dragConfig, dragItem, zoomCanvas)
@@ -159,7 +159,7 @@ tablesSize tables =
 
 tableSize : Table -> Task Dom.Error SizedTable
 tableSize table =
-    Task.map (\e -> SizedTable (formatTableId table) table (Size e.element.width e.element.height)) (Dom.getElement (formatTableId table))
+    Task.map (\e -> SizedTable table.id table (Size e.element.width e.element.height)) (Dom.getElement (formatTableId table.id))
 
 
 windowSize : Task x WindowSize

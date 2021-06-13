@@ -1,10 +1,11 @@
 module Update exposing (..)
 
-import Dict
+import AssocList as Dict exposing (Dict)
 import Draggable
 import Draggable.Events exposing (onDragBy, onDragEnd, onDragStart)
+import Libs.SchemaDecoders exposing (TableId(..))
 import Libs.Std exposing (WheelEvent)
-import Models exposing (DragId, DragState, Menu, Model(..), Msg(..), Position, TableId, UiSchema, UiTable, ZoomLevel, conf)
+import Models exposing (DragId, DragState, Menu, Model(..), Msg(..), Position, UiSchema, UiTable, ZoomLevel, conf)
 
 
 dragConfig : Draggable.Config DragId Msg
@@ -27,7 +28,7 @@ dragItem schema menu drag delta =
                 Success schema menu (updatePosition drag delta 1)
 
             else
-                Success (updateTable id (\table -> updatePosition table delta drag.zoom) schema) menu drag
+                Success (updateTable (TableId id) (\table -> updatePosition table delta drag.zoom) schema) menu drag
 
         Nothing ->
             Failure "Can't OnDragBy when no drag id"

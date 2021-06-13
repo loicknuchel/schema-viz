@@ -1,10 +1,10 @@
 module Models exposing (..)
 
+import AssocList exposing (Dict)
 import Browser.Dom as Dom
-import Dict exposing (Dict)
 import Draggable
 import Http
-import Libs.SchemaDecoders exposing (Schema, Table)
+import Libs.SchemaDecoders exposing (Schema, Table, TableId)
 import Libs.Std exposing (WheelEvent)
 
 
@@ -71,10 +71,6 @@ type alias DragState =
 
 type alias WindowSize =
     Size
-
-
-type alias TableId =
-    DragId
 
 
 type alias DragId =

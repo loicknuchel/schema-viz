@@ -8,7 +8,7 @@ type alias Schema =
 
 
 type alias Table =
-    { schema : SchemaName, table : TableName, columns : List Column, primaryKey : Maybe PrimaryKey, uniques : List UniqueIndex, comment : Maybe TableComment }
+    { id : TableId, schema : SchemaName, table : TableName, columns : List Column, primaryKey : Maybe PrimaryKey, uniques : List UniqueIndex, comment : Maybe TableComment }
 
 
 type alias Column =
@@ -43,6 +43,10 @@ type SchemaName
     = SchemaName String
 
 
+type TableId
+    = TableId String
+
+
 type TableName
     = TableName String
 
@@ -75,13 +79,20 @@ schemaDecoder =
 
 tableDecoder : Decoder Table
 tableDecoder =
-    map6 Table
+    map6 (\schema table columns primaryKey uniques comment -> Table (buildTableId schema table) schema table columns primaryKey uniques comment)
         (field "schema" schemaNameDecoder)
         (field "table" tableNameDecoder)
         (field "columns" (list columnDecoder))
         (maybe (field "primaryKey" primaryKeyDecoder))
         (field "uniques" (list uniqueIndexDecoder))
         (maybe (field "comment" tableCommentDecoder))
+
+
+buildTableId : SchemaName -> TableName -> TableId
+buildTableId schema table =
+    case ( schema, table ) of
+        ( SchemaName schemaName, TableName tableName ) ->
+            TableId (schemaName ++ "." ++ tableName)
 
 
 columnDecoder : Decoder Column

@@ -4,9 +4,9 @@ import Draggable
 import Html exposing (Attribute, Html, div, li, text, ul)
 import Html.Attributes exposing (class, id, style)
 import Http exposing (Error(..))
-import Libs.SchemaDecoders exposing (Column, ColumnName(..), ColumnType(..), SchemaName(..), Table, TableName(..))
+import Libs.SchemaDecoders exposing (Column, ColumnName(..), ColumnType(..), SchemaName(..), Table, TableId(..), TableName(..))
 import Libs.Std exposing (handleWheel, maybeFold)
-import Models exposing (CanvasPosition, DragId, Menu, Msg(..), Position, Size, SizedTable, TableId, UiTable, ZoomLevel, conf)
+import Models exposing (CanvasPosition, DragId, Menu, Msg(..), Position, Size, SizedTable, UiTable, ZoomLevel, conf)
 
 
 viewApp : ZoomLevel -> CanvasPosition -> Maybe Menu -> List UiTable -> Html Msg
@@ -31,7 +31,7 @@ viewErd zoom pan tables =
 
 viewTable : UiTable -> Html Msg
 viewTable table =
-    div ([ class "table", placeAt table.position, id (formatTableId table.sql), borderColor table.color ] ++ dragAttrs table.id)
+    div ([ class "table", placeAt table.position, id (formatTableId table.id), borderColor table.color ] ++ dragAttrs (formatTableId table.id))
         [ div [ class "header" ] [ text (formatTableName table.sql) ]
         , ul [ class "columns" ] (List.map viewColumn table.sql.columns)
         ]
@@ -66,9 +66,9 @@ dragAttrs id =
     Draggable.mouseTrigger id DragMsg :: Draggable.touchTriggers id DragMsg
 
 
-tableToUiTable : Table -> UiTable
-tableToUiTable table =
-    UiTable (formatTableId table) table (Size 0 0) conf.colors.grey (Position 0 0)
+tableToSizedTable : Table -> SizedTable
+tableToSizedTable table =
+    SizedTable table.id table (Size 0 0)
 
 
 sizedTableToUiTable : SizedTable -> UiTable
@@ -76,15 +76,20 @@ sizedTableToUiTable table =
     UiTable table.id table.sql table.size conf.colors.grey (Position 0 0)
 
 
+tableToUiTable : Table -> UiTable
+tableToUiTable table =
+    sizedTableToUiTable (tableToSizedTable table)
+
+
 
 -- formatters
 
 
-formatTableId : Table -> TableId
-formatTableId table =
-    case ( table.schema, table.table ) of
-        ( SchemaName schema, TableName name ) ->
-            schema ++ "." ++ name
+formatTableId : TableId -> DragId
+formatTableId id =
+    case id of
+        TableId value ->
+            value
 
 
 formatTableName : Table -> String

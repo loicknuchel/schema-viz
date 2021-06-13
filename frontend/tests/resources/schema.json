@@ -7,7 +7,8 @@
         {
           "column": "id",
           "type": "int",
-          "nullable": false
+          "nullable": false,
+          "comment": "A unique ID for users"
         }
       ],
       "primaryKey": {
@@ -16,7 +17,8 @@
         ],
         "name": "users_pk"
       },
-      "uniques": []
+      "uniques": [],
+      "comment": "Store all users"
     },
     {
       "schema": "public",

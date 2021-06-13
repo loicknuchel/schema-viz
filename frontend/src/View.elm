@@ -6,7 +6,7 @@ import FontAwesome.Solid as Icon
 import Html exposing (Attribute, Html, div, span, text)
 import Html.Attributes exposing (class, id, style, title)
 import Http exposing (Error(..))
-import Libs.SchemaDecoders exposing (Column, ColumnName(..), ColumnType(..), ForeignKey, ForeignKeyName(..), SchemaName(..), Table, TableId(..), TableName(..))
+import Libs.SchemaDecoders exposing (Column, ColumnComment(..), ColumnName(..), ColumnType(..), ForeignKey, ForeignKeyName(..), PrimaryKey(..), SchemaName(..), Table, TableComment(..), TableId(..), TableName(..))
 import Libs.Std exposing (handleWheel, maybeFold)
 import Models exposing (CanvasPosition, DragId, Menu, Msg(..), Position, Size, SizedTable, UiTable, ZoomLevel, conf)
 
@@ -33,17 +33,21 @@ viewErd zoom pan tables =
 
 viewTable : UiTable -> Html Msg
 viewTable table =
-    div ([ class "table", placeAt table.position, id (formatTableId table.id) ] ++ dragAttrs (formatTableId table.id))
+    div
+        ([ class "table", placeAt table.position, id (formatTableId table.id) ]
+            ++ maybeFold [] (\(TableComment comment) -> [ title comment ]) table.sql.comment
+            ++ dragAttrs (formatTableId table.id)
+        )
         [ div [ class "header", borderTopColor table.color ] [ text (formatTableName table.sql) ]
-        , div [ class "columns" ] (List.map viewColumn table.sql.columns)
+        , div [ class "columns" ] (List.map (viewColumn table.sql.primaryKey) table.sql.columns)
         ]
 
 
-viewColumn : Column -> Html Msg
-viewColumn column =
-    div [ class "column" ]
+viewColumn : Maybe PrimaryKey -> Column -> Html Msg
+viewColumn pk column =
+    div ([ class "column" ] ++ maybeFold [] (\(ColumnComment comment) -> [ title comment ]) column.comment)
         [ viewColumnIcon column.reference
-        , span [ class "name" ] [ text (formatColumnName column) ]
+        , viewColumnName pk column
         , span [ class "type" ] [ text (formatColumnType column) ]
         ]
 
@@ -58,6 +62,29 @@ viewColumnIcon fk =
 
         _ ->
             span [ class "icon" ] []
+
+
+viewColumnName : Maybe PrimaryKey -> Column -> Html Msg
+viewColumnName pk column =
+    let
+        className =
+            if isInPrimaryKey pk column then
+                "name bold"
+
+            else
+                "name"
+    in
+    span [ class className ] [ text (formatColumnName column) ]
+
+
+isInPrimaryKey : Maybe PrimaryKey -> Column -> Bool
+isInPrimaryKey pk col =
+    case pk of
+        Just (PrimaryKey { columns }) ->
+            List.any (\c -> c == col.column) columns
+
+        _ ->
+            False
 
 
 

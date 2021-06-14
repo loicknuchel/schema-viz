@@ -1,13 +1,16 @@
 module Views.Helpers exposing (..)
 
--- Helpers for views, can be included in any view, should not include anything from views
-
 import Draggable
 import Html exposing (Attribute)
 import Html.Attributes exposing (style)
 import Http exposing (Error(..))
-import Libs.SchemaDecoders exposing (Table, TableId(..))
-import Models exposing (DragId, Msg(..), Position, Size, SizedTable, UiTable, conf)
+import Models exposing (DragId, Msg(..))
+import Models.Schema exposing (TableId(..))
+import Models.Utils exposing (Position)
+
+
+
+-- Helpers for views, can be included in any view, should not include anything from views
 
 
 placeAt : Position -> Attribute msg
@@ -18,25 +21,6 @@ placeAt p =
 dragAttrs : DragId -> List (Attribute Msg)
 dragAttrs id =
     Draggable.mouseTrigger id DragMsg :: Draggable.touchTriggers id DragMsg
-
-
-
--- data accessors
-
-
-tableToSizedTable : Table -> SizedTable
-tableToSizedTable table =
-    SizedTable table.id table (Size 0 0)
-
-
-sizedTableToUiTable : SizedTable -> UiTable
-sizedTableToUiTable table =
-    UiTable table.id table.sql table.size conf.colors.grey (Position 0 0)
-
-
-tableToUiTable : Table -> UiTable
-tableToUiTable table =
-    sizedTableToUiTable (tableToSizedTable table)
 
 
 

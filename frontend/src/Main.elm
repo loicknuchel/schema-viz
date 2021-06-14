@@ -1,24 +1,25 @@
 module Main exposing (..)
 
-import AssocList as Dict
 import Browser
 import Browser.Dom as Dom
+import Commands.FetchData exposing (loadData)
+import Commands.GetSizes exposing (getSizes)
+import Commands.RenderLayout exposing (buildTable, renderLayout)
+import Decoders.SchemaDecoder exposing (JsonTable)
 import Draggable
 import FontAwesome.Styles as Icon
 import Html exposing (text)
-import Http
-import Libs.SchemaDecoders exposing (Schema, Table, schemaDecoder)
-import Libs.Std exposing (dictFromList, genChoose, genSequence)
-import Models exposing (Color, DragState, Menu, Model(..), Msg(..), Position, Size, SizedSchema, SizedTable, UiSchema, UiTable, WindowSize, conf)
-import Random
-import Task exposing (Task)
+import Libs.Std exposing (dictFromList)
+import Models exposing (Menu, Model(..), Msg(..), UiState, conf)
+import Models.Schema exposing (Schema, Table, TableId)
+import Models.Utils exposing (Position, Size)
 import Update exposing (dragConfig, dragItem, zoomCanvas)
 import View exposing (viewApp)
-import Views.Helpers exposing (formatHttpError, formatTableId, sizedTableToUiTable, tableToUiTable)
+import Views.Helpers exposing (formatHttpError)
 
 
 
--- MAIN
+-- MAIN: program entry point \o/
 
 
 main : Program () Model Msg
@@ -28,7 +29,7 @@ main =
 
 init : () -> ( Model, Cmd Msg )
 init _ =
-    ( Loading, loadSchema "/tests/resources/schema.json" )
+    ( Loading, loadData "/tests/resources/schema.json" )
 
 
 
@@ -38,47 +39,56 @@ init _ =
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case ( msg, model ) of
-        ( GotSchema (Ok schema), _ ) ->
-            ( HasData schema, getSizes schema )
+        ( GotData (Ok tables), Loading ) ->
+            ( HasData tables, getSizes tables )
 
-        ( GotSizes (Ok ( sizedSchema, size )), _ ) ->
-            ( HasSizes sizedSchema, renderLayout sizedSchema size )
+        ( GotData (Ok _), _ ) ->
+            ( Failure "Can't GotData when not Loading", Cmd.none )
 
-        ( GotLayout schema zoom pan, _ ) ->
-            ( Success schema (Menu "menu" (Position 0 0)) (DragState zoom pan Nothing Draggable.init), Cmd.none )
-
-        ( StartDragging id, Success schema menu drag ) ->
-            ( Success schema menu { drag | id = Just id }, Cmd.none )
-
-        ( StopDragging, Success schema menu drag ) ->
-            ( Success schema menu { drag | id = Nothing }, Cmd.none )
-
-        ( OnDragBy delta, Success schema menu drag ) ->
-            ( dragItem schema menu drag delta, Cmd.none )
-
-        ( DragMsg dragMsg, Success schema menu drag ) ->
-            Tuple.mapFirst (\newDrag -> Success schema menu newDrag) (Draggable.update dragConfig dragMsg drag)
-
-        ( Zoom zoom, Success schema menu drag ) ->
-            ( zoomCanvas schema menu drag zoom, Cmd.none )
-
-        ( GotSchema (Err e), _ ) ->
+        ( GotData (Err e), _ ) ->
             ( Failure (formatHttpError e), Cmd.none )
+
+        ( GotSizes (Ok ( tableSizes, windowSize )), HasData _ ) ->
+            ( HasSizes tableSizes windowSize, renderLayout tableSizes windowSize )
+
+        ( GotSizes (Ok _), _ ) ->
+            ( Failure "Can't GotSizes when not HasData", Cmd.none )
 
         ( GotSizes (Err (Dom.NotFound e)), _ ) ->
             ( Failure ("Size not found for '" ++ e ++ "' id"), Cmd.none )
 
+        ( GotLayout schema zoom pan, HasSizes _ _ ) ->
+            ( Success schema (Menu (Position 0 0)) (UiState zoom pan Nothing Draggable.init), Cmd.none )
+
+        ( GotLayout _ _ _, _ ) ->
+            ( Failure "Can't GotLayout when not HasSizes", Cmd.none )
+
+        ( StartDragging id, Success schema menu drag ) ->
+            ( Success schema menu { drag | id = Just id }, Cmd.none )
+
         ( StartDragging _, _ ) ->
             ( Failure "Can't StartDragging when not Success", Cmd.none )
+
+        ( StopDragging, Success schema menu drag ) ->
+            ( Success schema menu { drag | id = Nothing }, Cmd.none )
 
         ( StopDragging, _ ) ->
             ( Failure "Can't StopDragging when not Success", Cmd.none )
 
+        ( OnDragBy delta, Success schema menu drag ) ->
+            ( dragItem schema menu drag delta, Cmd.none )
+
         ( OnDragBy _, _ ) ->
             ( Failure "Can't OnDragBy when not Success", Cmd.none )
 
+        ( DragMsg dragMsg, Success schema menu drag ) ->
+            Tuple.mapFirst (\newDrag -> Success schema menu newDrag) (Draggable.update dragConfig dragMsg drag)
+
         ( DragMsg _, _ ) ->
             ( Failure "Can't DragMsg when not Success", Cmd.none )
+
+        ( Zoom zoom, Success schema menu drag ) ->
+            ( zoomCanvas schema menu drag zoom, Cmd.none )
 
         ( Zoom _, _ ) ->
             ( Failure "Can't Zoom when not Success", Cmd.none )
@@ -114,92 +124,25 @@ view model =
             Loading ->
                 text "Loading..."
 
-            HasData schema ->
-                viewApp 1 (Position 0 0) Nothing (Dict.map (\_ t -> tableToUiTable t) schema.tables)
+            HasData tables ->
+                viewApp 1 (Position 0 0) Nothing (fakeSchema tables)
 
-            HasSizes schema ->
-                viewApp 1 (Position 0 0) Nothing (Dict.map (\_ t -> sizedTableToUiTable t) schema.tables)
+            HasSizes _ _ ->
+                text "Rendering..."
 
             Success schema menu drag ->
-                viewApp drag.zoom drag.position (Just menu) schema.tables
+                viewApp drag.zoom drag.position (Just menu) schema
         ]
     }
 
 
-
--- MESSAGE BUILDERS
-
-
-loadSchema : String -> Cmd Msg
-loadSchema url =
-    Http.get { url = url, expect = Http.expectJson GotSchema schemaDecoder }
+fakeSchema : List ( JsonTable, TableId ) -> Schema
+fakeSchema tables =
+    { tables = dictFromList .id (List.map fakeTable tables)
+    , relations = []
+    }
 
 
-getSizes : Schema -> Cmd Msg
-getSizes schema =
-    Task.attempt GotSizes (allSizes schema)
-
-
-renderLayout : SizedSchema -> Size -> Cmd Msg
-renderLayout schema size =
-    Random.generate (\uiSchema -> GotLayout uiSchema 1 (Position 0 0)) (uiSchemaGen schema size)
-
-
-
--- GET SIZES
-
-
-allSizes : Schema -> Task Dom.Error ( SizedSchema, WindowSize )
-allSizes schema =
-    Task.map2 (\sizedSchema size -> ( sizedSchema, size )) (schemaSize schema) windowSize
-
-
-schemaSize : Schema -> Task Dom.Error SizedSchema
-schemaSize schema =
-    Task.map (\tables -> SizedSchema (dictFromList .id tables)) (tablesSize (Dict.values schema.tables))
-
-
-tablesSize : List Table -> Task Dom.Error (List SizedTable)
-tablesSize tables =
-    Task.sequence (List.map (\table -> tableSize table) tables)
-
-
-tableSize : Table -> Task Dom.Error SizedTable
-tableSize table =
-    Task.map (\e -> SizedTable table.id table (Size e.element.width e.element.height)) (Dom.getElement (formatTableId table.id))
-
-
-windowSize : Task x WindowSize
-windowSize =
-    Task.map (\viewport -> Size viewport.viewport.width viewport.viewport.height) Dom.getViewport
-
-
-
--- RANDOM GENERATORS
-
-
-uiSchemaGen : SizedSchema -> Size -> Random.Generator UiSchema
-uiSchemaGen schema size =
-    Random.map (\tables -> UiSchema (dictFromList .id tables)) (uiTablesGen (Dict.values schema.tables) size)
-
-
-uiTablesGen : List SizedTable -> Size -> Random.Generator (List UiTable)
-uiTablesGen tables size =
-    genSequence (List.map (\table -> uiTableGen table size) tables)
-
-
-uiTableGen : SizedTable -> Size -> Random.Generator UiTable
-uiTableGen table size =
-    Random.map2 (\color pos -> UiTable table.id table.sql table.size color pos) colorGen (positionGen table size)
-
-
-positionGen : SizedTable -> Size -> Random.Generator Position
-positionGen table size =
-    Random.map2 (\w h -> Position w h) (Random.float 0 (size.width - table.size.width)) (Random.float 0 (size.height - table.size.height))
-
-
-colorGen : Random.Generator Color
-colorGen =
-    case conf.colors of
-        { pink, purple, darkBlue, blue, turquoise, lightBlue, lightGreen, green, yellow, orange, red, grey } ->
-            genChoose ( pink, [ purple, darkBlue, blue, turquoise, lightBlue, lightGreen, green, yellow, orange, red, grey ] )
+fakeTable : ( JsonTable, TableId ) -> Table
+fakeTable ( table, id ) =
+    buildTable table id (Size 0 0) (Position 0 0) conf.colors.grey

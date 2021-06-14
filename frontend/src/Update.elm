@@ -3,9 +3,14 @@ module Update exposing (..)
 import AssocList as Dict
 import Draggable
 import Draggable.Events exposing (onDragBy, onDragEnd, onDragStart)
-import Libs.SchemaDecoders exposing (TableId(..))
 import Libs.Std exposing (WheelEvent)
-import Models exposing (DragId, DragState, Menu, Model(..), Msg(..), Position, UiSchema, UiTable, ZoomLevel, conf)
+import Models exposing (DragId, Menu, Model(..), Msg(..), UiState, ZoomLevel, conf)
+import Models.Schema exposing (Schema, TableId(..), TableState)
+import Models.Utils exposing (Position)
+
+
+
+-- utility methods to get the update case down to one line
 
 
 dragConfig : Draggable.Config DragId Msg
@@ -17,24 +22,24 @@ dragConfig =
         ]
 
 
-dragItem : UiSchema -> Menu -> DragState -> Draggable.Delta -> Model
+dragItem : Schema -> Menu -> UiState -> Draggable.Delta -> Model
 dragItem schema menu drag delta =
     case drag.id of
         Just id ->
-            if id == menu.id then
+            if id == conf.ids.menu then
                 Success schema (updatePosition menu delta 1) drag
 
-            else if id == "erd" then
+            else if id == conf.ids.erd then
                 Success schema menu (updatePosition drag delta 1)
 
             else
-                Success (updateTable (TableId id) (\table -> updatePosition table delta drag.zoom) schema) menu drag
+                Success (updateSchema (TableId id) (\state -> updatePosition state delta drag.zoom) schema) menu drag
 
         Nothing ->
             Failure "Can't OnDragBy when no drag id"
 
 
-zoomCanvas : UiSchema -> Menu -> DragState -> WheelEvent -> Model
+zoomCanvas : Schema -> Menu -> UiState -> WheelEvent -> Model
 zoomCanvas schema menu drag wheel =
     let
         newZoom : ZoomLevel
@@ -57,9 +62,9 @@ zoomCanvas schema menu drag wheel =
     Success schema menu { drag | zoom = newZoom, position = Position newLeft newTop }
 
 
-updateTable : TableId -> (UiTable -> UiTable) -> UiSchema -> UiSchema
-updateTable id transform schema =
-    { schema | tables = Dict.update id (Maybe.map transform) schema.tables }
+updateSchema : TableId -> (TableState -> TableState) -> Schema -> Schema
+updateSchema id transform schema =
+    { schema | tables = Dict.update id (Maybe.map (\table -> { table | ui = transform table.ui })) schema.tables }
 
 
 updatePosition : { m | position : Position } -> Draggable.Delta -> ZoomLevel -> { m | position : Position }

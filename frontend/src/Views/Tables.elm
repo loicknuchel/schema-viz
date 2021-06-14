@@ -6,9 +6,9 @@ import FontAwesome.Regular as IconLight
 import FontAwesome.Solid as Icon
 import Html exposing (Attribute, Html, div, span, text)
 import Html.Attributes exposing (class, id, style, title)
-import Libs.SchemaDecoders exposing (Column, ColumnComment(..), ColumnName(..), ColumnType(..), ForeignKey, Index, IndexName(..), PrimaryKey(..), SchemaName(..), Table, TableComment(..), TableName(..), UniqueIndex, UniqueIndexName(..))
 import Libs.Std exposing (maybeFilter, maybeFold)
-import Models exposing (Msg, UiTable, conf)
+import Models exposing (Msg, conf)
+import Models.Schema exposing (Column, ColumnComment(..), ColumnName(..), ColumnType(..), ForeignKey, Index, IndexName(..), PrimaryKey, SchemaName(..), Table, TableComment(..), TableName(..), Unique, UniqueName(..))
 import Views.Helpers exposing (dragAttrs, formatTableId, placeAt)
 
 
@@ -16,16 +16,16 @@ import Views.Helpers exposing (dragAttrs, formatTableId, placeAt)
 -- views showing tables, can include Views.Helpers, Models or Libs modules. Nothing else from views.
 
 
-viewTable : UiTable -> Html Msg
+viewTable : Table -> Html Msg
 viewTable table =
     div
-        ([ class "table", placeAt table.position, id (formatTableId table.id) ] ++ dragAttrs (formatTableId table.id))
-        [ div [ class "header", borderTopColor table.color ] ([ text (formatTableName table.sql) ] ++ viewComment (Maybe.map (\(TableComment comment) -> comment) table.sql.comment))
-        , div [ class "columns" ] (List.map (viewColumn table.sql.primaryKey table.sql.uniques table.sql.indexes) (Dict.values table.sql.columns))
+        ([ class "table", placeAt table.ui.position, id (formatTableId table.id) ] ++ dragAttrs (formatTableId table.id))
+        [ div [ class "header", borderTopColor table.ui.color ] ([ text (formatTableName table) ] ++ viewComment (Maybe.map (\(TableComment comment) -> comment) table.comment))
+        , div [ class "columns" ] (List.map (viewColumn table.primaryKey table.uniques table.indexes) (Dict.values table.columns))
         ]
 
 
-viewColumn : Maybe PrimaryKey -> List UniqueIndex -> List Index -> Column -> Html Msg
+viewColumn : Maybe PrimaryKey -> List Unique -> List Index -> Column -> Html Msg
 viewColumn pk uniques indexes column =
     div [ class "column" ]
         [ viewColumnIcon pk uniques indexes column
@@ -34,9 +34,9 @@ viewColumn pk uniques indexes column =
         ]
 
 
-viewColumnIcon : Maybe PrimaryKey -> List UniqueIndex -> List Index -> Column -> Html Msg
+viewColumnIcon : Maybe PrimaryKey -> List Unique -> List Index -> Column -> Html Msg
 viewColumnIcon maybePk uniques indexes column =
-    case ( ( inPrimaryKey column.column maybePk, column.reference ), ( inUniqueIndexes column.column uniques, inIndexes column.column indexes ) ) of
+    case ( ( inPrimaryKey column.column maybePk, column.foreignKey ), ( inUniqueIndexes column.column uniques, inIndexes column.column indexes ) ) of
         ( ( Just pk, _ ), _ ) ->
             span [ class "icon", title (formatPkTitle pk) ] [ viewIcon Icon.key ]
 
@@ -94,10 +94,10 @@ borderTopColor color =
 
 inPrimaryKey : ColumnName -> Maybe PrimaryKey -> Maybe PrimaryKey
 inPrimaryKey column pk =
-    maybeFilter (\(PrimaryKey { columns }) -> hasColumn column columns) pk
+    maybeFilter (\{ columns } -> hasColumn column columns) pk
 
 
-inUniqueIndexes : ColumnName -> List UniqueIndex -> List UniqueIndex
+inUniqueIndexes : ColumnName -> List Unique -> List Unique
 inUniqueIndexes column uniques =
     List.filter (\{ columns } -> hasColumn column columns) uniques
 
@@ -156,7 +156,7 @@ formatFkTitle fk =
     "Foreign key to " ++ formatReference fk
 
 
-formatUniqueTitle : List UniqueIndex -> String
+formatUniqueTitle : List Unique -> String
 formatUniqueTitle uniques =
     "Unique constraint in " ++ String.join ", " (List.map (\unique -> formatUniqueIndexName unique.name) uniques)
 
@@ -177,8 +177,8 @@ formatReference { schema, table, column } =
                 s ++ "." ++ t ++ "." ++ c
 
 
-formatUniqueIndexName : UniqueIndexName -> String
-formatUniqueIndexName (UniqueIndexName name) =
+formatUniqueIndexName : UniqueName -> String
+formatUniqueIndexName (UniqueName name) =
     name
 
 

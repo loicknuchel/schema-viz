@@ -7,9 +7,18 @@ import Json.Decode as Decode exposing (Decoder)
 import Random
 
 
+
+-- generic utils that could be packaged in external lib. Do not use anything project specific!
+
+
 listCollect : (a -> Maybe b) -> List a -> List b
 listCollect transform list =
     List.foldr (\a res -> maybeFold res (\b -> b :: res) (transform a)) [] list
+
+
+listZipWith : (a -> b) -> List a -> List ( a, b )
+listZipWith transform list =
+    List.map (\a -> ( a, transform a )) list
 
 
 genSequence : List (Random.Generator a) -> Random.Generator (List a)

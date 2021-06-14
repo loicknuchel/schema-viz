@@ -22,9 +22,9 @@ loadData url =
 
 buildMsg : Result Http.Error JsonSchema -> Msg
 buildMsg result =
-    GotData (Result.map (\schema -> listZipWith asTableId schema.tables) result)
+    GotData (Result.map (\schema -> listZipWith buildTableId schema.tables) result)
 
 
-asTableId : JsonTable -> TableId
-asTableId table =
+buildTableId : JsonTable -> TableId
+buildTableId table =
     TableId (table.schema ++ "." ++ table.table)

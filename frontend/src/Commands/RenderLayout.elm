@@ -4,7 +4,7 @@ import AssocList as Dict exposing (Dict)
 import Decoders.SchemaDecoder exposing (JsonColumn, JsonForeignKey, JsonIndex, JsonPrimaryKey, JsonTable, JsonUnique)
 import Libs.Std exposing (dictFromList, genChoose, genSequence, listCollect)
 import Models exposing (Msg(..), WindowSize, conf)
-import Models.Schema exposing (Column, ColumnComment(..), ColumnIndex(..), ColumnName(..), ColumnType(..), ForeignKey, ForeignKeyName(..), Index, IndexName(..), PrimaryKey, PrimaryKeyName(..), Schema, SchemaName(..), Table, TableComment(..), TableId, TableName(..), Unique, UniqueName(..))
+import Models.Schema exposing (Column, ColumnComment(..), ColumnIndex(..), ColumnName(..), ColumnType(..), ForeignKey, ForeignKeyName(..), Index, IndexName(..), PrimaryKey, PrimaryKeyName(..), Schema, SchemaName(..), Table, TableComment(..), TableId(..), TableName(..), Unique, UniqueName(..))
 import Models.Utils exposing (Color, Position, Size)
 import Random
 
@@ -63,7 +63,7 @@ buildTable table id size position color =
     { id = id
     , schema = SchemaName table.schema
     , table = TableName table.table
-    , columns = dictFromList .column (List.reverse (List.indexedMap (buildColumn id) table.columns))
+    , columns = dictFromList .column (List.reverse (List.indexedMap buildColumn table.columns))
     , primaryKey = Maybe.map buildPrimaryKey table.primaryKey
     , uniques = List.map buildUnique table.uniques
     , indexes = List.map buildIndex table.indexes
@@ -72,13 +72,13 @@ buildTable table id size position color =
     }
 
 
-buildColumn : TableId -> Int -> JsonColumn -> Column
-buildColumn tableId index column =
+buildColumn : Int -> JsonColumn -> Column
+buildColumn index column =
     { index = ColumnIndex index
     , column = ColumnName column.column
     , kind = ColumnType column.kind
     , nullable = column.nullable
-    , foreignKey = Maybe.map (buildForeignKey tableId) column.reference
+    , foreignKey = Maybe.map buildForeignKey column.reference
     , comment = Maybe.map ColumnComment column.comment
     }
 
@@ -105,14 +105,19 @@ buildIndex index =
     }
 
 
-buildForeignKey : TableId -> JsonForeignKey -> ForeignKey
-buildForeignKey tableId fk =
-    { tableId = tableId
+buildForeignKey : JsonForeignKey -> ForeignKey
+buildForeignKey fk =
+    { tableId = buildTableId fk.schema fk.table
     , schema = SchemaName fk.schema
     , table = TableName fk.table
     , column = ColumnName fk.column
     , name = ForeignKeyName fk.name
     }
+
+
+buildTableId : String -> String -> TableId
+buildTableId schema table =
+    TableId (schema ++ "." ++ table)
 
 
 

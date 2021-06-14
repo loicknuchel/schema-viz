@@ -15,9 +15,9 @@ body {
     width: 300px;
     min-height: 500px;
     background-color: #FFFFFF;
-    z-index: 10;
     cursor: pointer;
 }
+
 
 .erd {
     width: 100%;
@@ -103,4 +103,18 @@ body {
     margin-left: .25rem;
     -webkit-box-flex: 0;
     flex-grow: 0;
+}
+
+/* z-index management: menu > tables > relations */
+
+.menu {
+    z-index: 10;
+}
+
+.table {
+    z-index: 9;
+}
+
+.relation {
+    z-index: 8;
 }

@@ -5,7 +5,7 @@ import Draggable
 import Draggable.Events exposing (onDragBy, onDragEnd, onDragStart)
 import Libs.Std exposing (WheelEvent)
 import Models exposing (DragId, Menu, Model(..), Msg(..), UiState, ZoomLevel, conf)
-import Models.Schema exposing (Schema, TableId(..), TableState)
+import Models.Schema exposing (Schema, Table, TableId(..), TableState)
 import Models.Utils exposing (Position)
 
 
@@ -64,7 +64,19 @@ zoomCanvas schema menu drag wheel =
 
 updateSchema : TableId -> (TableState -> TableState) -> Schema -> Schema
 updateSchema id transform schema =
-    { schema | tables = Dict.update id (Maybe.map (\table -> { table | ui = transform table.ui })) schema.tables }
+    { schema
+        | tables = Dict.update id (Maybe.map (updateTable id transform)) schema.tables
+        , relations = List.map (\( fk, ( st, sc ), ( rt, rc ) ) -> ( fk, ( updateTable id transform st, sc ), ( updateTable id transform rt, rc ) )) schema.relations
+    }
+
+
+updateTable : TableId -> (TableState -> TableState) -> Table -> Table
+updateTable id transform table =
+    if table.id == id then
+        { table | ui = transform table.ui }
+
+    else
+        table
 
 
 updatePosition : { m | position : Position } -> Draggable.Delta -> ZoomLevel -> { m | position : Position }

@@ -13,7 +13,7 @@ import Libs.Std exposing (dictFromList)
 import Models exposing (Menu, Model(..), Msg(..), UiState, conf)
 import Models.Schema exposing (Schema, Table, TableId)
 import Models.Utils exposing (Position, Size)
-import Update exposing (dragConfig, dragItem, hideTable, zoomCanvas)
+import Update exposing (dragConfig, dragItem, hideTable, showTable, zoomCanvas)
 import View exposing (viewApp)
 import Views.Helpers exposing (formatHttpError)
 
@@ -99,6 +99,12 @@ update msg model =
         ( HideTable _, _ ) ->
             ( Failure "can't HideTable when not Success", Cmd.none )
 
+        ( ShowTable id, Success schema menu drag ) ->
+            ( showTable schema menu drag id, Cmd.none )
+
+        ( ShowTable _, _ ) ->
+            ( Failure "can't ShowTable when not Success", Cmd.none )
+
 
 
 -- SUBSCRIPTIONS
@@ -131,15 +137,20 @@ view model =
                 text "Loading..."
 
             HasData tables ->
-                viewApp 1 (Position 0 0) Nothing (fakeSchema tables)
+                viewApp 1 (Position 0 0) fakeMenu (fakeSchema tables)
 
             HasSizes _ _ ->
                 text "Rendering..."
 
             Success schema menu drag ->
-                viewApp drag.zoom drag.position (Just menu) schema
+                viewApp drag.zoom drag.position menu schema
         ]
     }
+
+
+fakeMenu : Menu
+fakeMenu =
+    { position = Position 0 0 }
 
 
 fakeSchema : List ( JsonTable, TableId ) -> Schema

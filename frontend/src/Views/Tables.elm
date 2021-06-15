@@ -10,7 +10,7 @@ import Html.Events exposing (onClick)
 import Libs.Std exposing (maybeFilter, maybeFold)
 import Models exposing (Msg(..), conf)
 import Models.Schema exposing (Column, ColumnComment(..), ColumnName(..), ColumnType(..), ForeignKey, Index, IndexName(..), PrimaryKey, SchemaName(..), Table, TableComment(..), TableName(..), Unique, UniqueName(..))
-import Views.Helpers exposing (dragAttrs, formatTableId, placeAt)
+import Views.Helpers exposing (dragAttrs, formatTableId, formatTableName, placeAt)
 
 
 
@@ -123,17 +123,6 @@ hasColumn column columns =
 
 
 -- formatters
-
-
-formatTableName : Table -> String
-formatTableName table =
-    case ( table.schema, table.table ) of
-        ( SchemaName schema, TableName name ) ->
-            if schema == conf.defaultSchema then
-                name
-
-            else
-                schema ++ "." ++ name
 
 
 formatColumnName : ColumnName -> String

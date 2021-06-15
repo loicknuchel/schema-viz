@@ -4,8 +4,8 @@ import Draggable
 import Html exposing (Attribute)
 import Html.Attributes exposing (style)
 import Http exposing (Error(..))
-import Models exposing (DragId, Msg(..))
-import Models.Schema exposing (TableId(..))
+import Models exposing (DragId, Msg(..), conf)
+import Models.Schema exposing (SchemaName(..), Table, TableId(..), TableName(..))
 import Models.Utils exposing (Position)
 
 
@@ -30,6 +30,17 @@ dragAttrs id =
 formatTableId : TableId -> DragId
 formatTableId (TableId id) =
     id
+
+
+formatTableName : Table -> String
+formatTableName table =
+    case ( table.schema, table.table ) of
+        ( SchemaName schema, TableName name ) ->
+            if schema == conf.defaultSchema then
+                name
+
+            else
+                schema ++ "." ++ name
 
 
 formatHttpError : Http.Error -> String

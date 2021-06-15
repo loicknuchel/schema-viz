@@ -67,6 +67,11 @@ hideTable schema menu drag id =
     Success (visitTable id (setState (\state -> { state | show = False })) schema) menu drag
 
 
+showTable : Schema -> Menu -> UiState -> TableId -> Model
+showTable schema menu drag id =
+    Success (visitTable id (setState (\state -> { state | show = True })) schema) menu drag
+
+
 
 -- update helpers
 

@@ -45,6 +45,7 @@ type Msg
     | DragMsg (Draggable.Msg DragId)
     | Zoom WheelEvent
     | HideTable TableId
+    | ShowTable TableId
 
 
 type alias Menu =

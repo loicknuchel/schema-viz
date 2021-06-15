@@ -15,6 +15,14 @@ module SchemaViz
         end
       end
 
+      def write(path, content)
+        begin
+          Result.of(::File.write(path, content))
+        rescue StandardError => e
+          Result.failure(e)
+        end
+      end
+
       def read_raw_lines(path)
         file = nil
         begin

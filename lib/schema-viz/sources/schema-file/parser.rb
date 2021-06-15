@@ -56,7 +56,7 @@ module SchemaViz
           def parse_column(sql)
             Matcher.new(sql, /^(?<name>[^ ]+) (?<type>.*?)(?: DEFAULT (?<default>.*?))?(?<nullable> NOT NULL)?$/)
                    .slice('name', 'type', 'nullable', 'default')
-                   .map { |name, type, nullable, default| Column.new(name, type, nullable.nil?, Option.of(default)) }
+                   .map { |name, type, nullable, default| Column.new(no_enclosing_quotes(name), type, nullable.nil?, Option.of(default)) }
                    .on_error { |e| ParseError.new(__method__, sql, e) }
           end
 
@@ -137,7 +137,7 @@ module SchemaViz
           def parse_alter_column_default(schema, table, column, property)
             Matcher.new(property, /DEFAULT (?<value>.+)/)
                    .get('value')
-                   .map { |value| SetColumnDefault.new(schema, table, column, value) }
+                   .map { |value| SetColumnDefault.new(schema, table, column, Option.of(value)) }
                    .on_error { |e| ParseError.new(__method__, property, e) }
           end
 
@@ -165,6 +165,10 @@ module SchemaViz
           # from https://stackoverflow.com/questions/18424315/how-do-i-split-a-string-by-commas-except-inside-parenthesis-using-a-regular-exp
           def nested_comma_split(text)
             text.scan(/(?:\([^()]*\)|[^,])+/)
+          end
+
+          def no_enclosing_quotes(text)
+            Matcher.new(text, /^"(.*)"$/).get(0).get_or_else(text)
           end
         end
       end

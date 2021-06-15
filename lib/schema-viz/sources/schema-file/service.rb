@@ -109,11 +109,11 @@ module SchemaViz
       end
 
       class Service
-
         def initialize(file_service)
           @file_service = file_service
         end
 
+        # takes a String path and returns a SchemaViz::Result<SchemaViz::Source::SchemaFile::Structure>
         def parse_schema_file(path)
           @file_service.read(path).map(&:lines).flat_map do |lines|
             statements = build_statements(lines)

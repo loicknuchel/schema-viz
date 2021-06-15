@@ -44,8 +44,9 @@ module SchemaViz
               attributes[cur_attr.get!.to_sym] = cur_args.length == 1 ? cur_args.first : cur_args
             end
           end
-          cur_attr = Option.of(arg.delete_prefix('--'))
-          cur_args = []
+          name, value = arg.delete_prefix('--').split('=')
+          cur_attr = Option.of(name)
+          cur_args = [value].compact
         elsif index.zero?
           command = Option.of(arg)
         elsif cur_attr.some?

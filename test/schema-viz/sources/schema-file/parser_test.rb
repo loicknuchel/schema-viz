@@ -30,6 +30,8 @@ describe SchemaViz::Source::SchemaFile::Parser do
                  parser.parse_column("status character varying(255) DEFAULT 'done'::character varying NOT NULL").get!
     assert_equal parser::Column.new('price', 'numeric(8,2)', true, SchemaViz::Option.empty),
                  parser.parse_column('price numeric(8,2)').get!
+    assert_equal parser::Column.new('id', 'int', false, SchemaViz::Option.empty),
+                 parser.parse_column('"id" int NOT NULL').get!
     assert_equal parser::ParseError, parser.parse_column('bad-text').error!.class
   end
 
@@ -42,7 +44,7 @@ describe SchemaViz::Source::SchemaFile::Parser do
                  parser.parse_alter_table('ALTER TABLE ONLY p.t1 ADD CONSTRAINT name_unique UNIQUE (first_name, last_name);').get!
     assert_equal parser::CheckConstraint.new('p', 't1', '((kind IS NOT NULL)) NOT VALID', 't1_kind_not_null'),
                  parser.parse_alter_table('ALTER TABLE p.t1 ADD CONSTRAINT t1_kind_not_null CHECK ((kind IS NOT NULL)) NOT VALID;').get!
-    assert_equal parser::SetColumnDefault.new('public', 'table1', 'id', '1'),
+    assert_equal parser::SetColumnDefault.new('public', 'table1', 'id', SchemaViz::Option.of('1')),
                  parser.parse_alter_table('ALTER TABLE ONLY public.table1 ALTER COLUMN id SET DEFAULT 1;').get!
     assert_equal parser::SetColumnStatistics.new('public', 'table1', 'table1_id', 5000),
                  parser.parse_alter_table('ALTER TABLE ONLY public.table1 ALTER COLUMN table1_id SET STATISTICS 5000;').get!
@@ -74,5 +76,10 @@ describe SchemaViz::Source::SchemaFile::Parser do
     assert_equal parser::ColumnComment.new('public', 'table1', 'id', 'An ; id'),
                  parser.parse_column_comment("COMMENT ON COLUMN public.table1.id IS 'An ; id';").get!
     assert_equal parser::ParseError, parser.parse_column_comment('bad text').error!.class
+  end
+
+  it 'removes enclosing quotes' do
+    assert_equal 'text', parser.no_enclosing_quotes('text')
+    assert_equal 'text', parser.no_enclosing_quotes('"text"')
   end
 end

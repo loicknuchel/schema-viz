@@ -8,8 +8,9 @@
 /tmp/
 /out/
 /local/
-/test/resources/structure-full.sql
 /frontend/node_modules/
 /frontend/elm-stuff/
 /frontend/review/elm-stuff/
 /frontend/index.js
+/test/resources/structure-full.sql
+/frontend/tests/resources/schema-full.json

@@ -29,12 +29,12 @@ schemaGen tables windowSize =
 
 tablesGen : List ( JsonTable, TableId, Size ) -> WindowSize -> Random.Generator (List Table)
 tablesGen tables windowSize =
-    genSequence (List.map (\table -> tableGen table windowSize) tables)
+    genSequence (List.map (\table -> tableGen (List.length tables) table windowSize) tables)
 
 
-tableGen : ( JsonTable, TableId, Size ) -> WindowSize -> Random.Generator Table
-tableGen ( table, id, size ) windowSize =
-    Random.map2 (buildTable table id size) (positionGen size windowSize) colorGen
+tableGen : Int -> ( JsonTable, TableId, Size ) -> WindowSize -> Random.Generator Table
+tableGen tablesCount ( table, id, size ) windowSize =
+    Random.map2 (buildTable tablesCount table id size) (positionGen size windowSize) colorGen
 
 
 positionGen : Size -> WindowSize -> Random.Generator Position
@@ -58,17 +58,17 @@ buildSchema tables =
     { tables = tables, relations = buildRelations tables }
 
 
-buildTable : JsonTable -> TableId -> Size -> Position -> Color -> Table
-buildTable table id size position color =
+buildTable : Int -> JsonTable -> TableId -> Size -> Position -> Color -> Table
+buildTable tablesCount table id size position color =
     { id = id
     , schema = SchemaName table.schema
     , table = TableName table.table
-    , columns = dictFromList .column (List.reverse (List.indexedMap buildColumn table.columns))
+    , columns = dictFromList .column (List.indexedMap buildColumn table.columns)
     , primaryKey = Maybe.map buildPrimaryKey table.primaryKey
     , uniques = List.map buildUnique table.uniques
     , indexes = List.map buildIndex table.indexes
     , comment = Maybe.map TableComment table.comment
-    , state = { size = size, position = position, color = color, show = True }
+    , state = { size = size, position = position, color = color, show = tablesCount <= conf.showTablesOnLoadingIfLessThan }
     }
 
 

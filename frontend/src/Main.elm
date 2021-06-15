@@ -13,7 +13,7 @@ import Libs.Std exposing (dictFromList)
 import Models exposing (Menu, Model(..), Msg(..), UiState, conf)
 import Models.Schema exposing (Schema, Table, TableId)
 import Models.Utils exposing (Position, Size)
-import Update exposing (dragConfig, dragItem, hideTable, showTable, zoomCanvas)
+import Update exposing (dragConfig, dragItem, hideAllTables, hideTable, showAllTables, showTable, zoomCanvas)
 import View exposing (viewApp)
 import Views.Helpers exposing (formatHttpError)
 
@@ -63,47 +63,59 @@ update msg model =
         ( GotLayout _ _ _, _ ) ->
             ( Failure "can't GotLayout when not HasSizes", Cmd.none )
 
-        ( StartDragging id, Success schema menu drag ) ->
-            ( Success schema menu { drag | id = Just id }, Cmd.none )
+        ( StartDragging id, Success schema menu appState ) ->
+            ( Success schema menu { appState | id = Just id }, Cmd.none )
 
         ( StartDragging _, _ ) ->
             ( Failure "can't StartDragging when not Success", Cmd.none )
 
-        ( StopDragging, Success schema menu drag ) ->
-            ( Success schema menu { drag | id = Nothing }, Cmd.none )
+        ( StopDragging, Success schema menu appState ) ->
+            ( Success schema menu { appState | id = Nothing }, Cmd.none )
 
         ( StopDragging, _ ) ->
             ( Failure "can't StopDragging when not Success", Cmd.none )
 
-        ( OnDragBy delta, Success schema menu drag ) ->
-            ( dragItem schema menu drag delta, Cmd.none )
+        ( OnDragBy delta, Success schema menu appState ) ->
+            ( dragItem schema menu appState delta, Cmd.none )
 
         ( OnDragBy _, _ ) ->
             ( Failure "can't OnDragBy when not Success", Cmd.none )
 
-        ( DragMsg dragMsg, Success schema menu drag ) ->
-            Tuple.mapFirst (\newDrag -> Success schema menu newDrag) (Draggable.update dragConfig dragMsg drag)
+        ( DragMsg dragMsg, Success schema menu appState ) ->
+            Tuple.mapFirst (\newDrag -> Success schema menu newDrag) (Draggable.update dragConfig dragMsg appState)
 
         ( DragMsg _, _ ) ->
             ( Failure "can't DragMsg when not Success", Cmd.none )
 
-        ( Zoom zoom, Success schema menu drag ) ->
-            ( zoomCanvas schema menu drag zoom, Cmd.none )
+        ( Zoom zoom, Success schema menu appState ) ->
+            ( zoomCanvas schema menu appState zoom, Cmd.none )
 
         ( Zoom _, _ ) ->
             ( Failure "can't Zoom when not Success", Cmd.none )
 
-        ( HideTable id, Success schema menu drag ) ->
-            ( hideTable schema menu drag id, Cmd.none )
+        ( HideTable id, Success schema menu appState ) ->
+            ( hideTable schema menu appState id, Cmd.none )
 
         ( HideTable _, _ ) ->
             ( Failure "can't HideTable when not Success", Cmd.none )
 
-        ( ShowTable id, Success schema menu drag ) ->
-            ( showTable schema menu drag id, Cmd.none )
+        ( ShowTable id, Success schema menu appState ) ->
+            ( showTable schema menu appState id, Cmd.none )
 
         ( ShowTable _, _ ) ->
             ( Failure "can't ShowTable when not Success", Cmd.none )
+
+        ( HideAllTables, Success schema menu appState ) ->
+            ( hideAllTables schema menu appState, Cmd.none )
+
+        ( HideAllTables, _ ) ->
+            ( Failure "can't HideAllTables when not Success", Cmd.none )
+
+        ( ShowAllTables, Success schema menu appState ) ->
+            ( showAllTables schema menu appState, Cmd.none )
+
+        ( ShowAllTables, _ ) ->
+            ( Failure "can't ShowAllTables when not Success", Cmd.none )
 
 
 
@@ -162,4 +174,4 @@ fakeSchema tables =
 
 fakeTable : ( JsonTable, TableId ) -> Table
 fakeTable ( table, id ) =
-    buildTable table id (Size 0 0) (Position 0 0) conf.colors.grey
+    buildTable 0 table id (Size 0 0) (Position 0 0) conf.colors.grey

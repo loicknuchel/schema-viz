@@ -1,9 +1,10 @@
 module Views.Relations exposing (viewRelation)
 
+import Libs.Std exposing (listAddIf)
 import Models exposing (Msg)
 import Models.Schema exposing (Column, ColumnIndex(..), ColumnName(..), ForeignKey, ForeignKeyName(..), Table, TableId(..))
 import Svg exposing (Svg, line, svg, text)
-import Svg.Attributes exposing (class, height, style, width, x1, x2, y1, y2)
+import Svg.Attributes exposing (class, height, strokeDasharray, style, width, x1, x2, y1, y2)
 
 
 
@@ -19,21 +20,21 @@ viewRelation ( fk, ( srcTable, srcColumn ), ( refTable, refColumn ) ) =
         ( True, False, name ) ->
             case { x = srcTable.state.position.left + srcTable.state.size.width, y = positionY srcTable srcColumn } of
                 src ->
-                    drawRelation src { x = src.x + 20, y = src.y } name
+                    drawRelation src { x = src.x + 20, y = src.y } srcColumn.nullable name
 
         ( False, True, name ) ->
             case { x = refTable.state.position.left, y = positionY refTable refColumn } of
                 ref ->
-                    drawRelation { x = ref.x - 20, y = ref.y } ref name
+                    drawRelation { x = ref.x - 20, y = ref.y } ref srcColumn.nullable name
 
         ( True, True, name ) ->
             case ( positionX srcTable refTable, ( positionY srcTable srcColumn, positionY refTable refColumn ) ) of
                 ( ( srcX, refX ), ( srcY, refY ) ) ->
-                    drawRelation { x = srcX, y = srcY } { x = refX, y = refY } name
+                    drawRelation { x = srcX, y = srcY } { x = refX, y = refY } srcColumn.nullable name
 
 
-drawRelation : Point -> Point -> String -> Svg Msg
-drawRelation src ref name =
+drawRelation : Point -> Point -> Bool -> String -> Svg Msg
+drawRelation src ref optional name =
     let
         padding : Float
         padding =
@@ -49,20 +50,23 @@ drawRelation src ref name =
         , height (String.fromFloat (abs (src.y - ref.y) + (padding * 2)))
         , style ("position: absolute; left: " ++ String.fromFloat origin.x ++ "px; top: " ++ String.fromFloat origin.y ++ "px;")
         ]
-        [ viewLine (minus src origin) (minus ref origin)
+        [ viewLine (minus src origin) (minus ref origin) optional
         , text name
         ]
 
 
-viewLine : Point -> Point -> Svg Msg
-viewLine p1 p2 =
+viewLine : Point -> Point -> Bool -> Svg Msg
+viewLine p1 p2 optional =
     line
-        [ x1 (String.fromFloat p1.x)
-        , y1 (String.fromFloat p1.y)
-        , x2 (String.fromFloat p2.x)
-        , y2 (String.fromFloat p2.y)
-        , style "stroke: #A0AEC0; stroke-width: 1.5"
-        ]
+        (listAddIf optional
+            (strokeDasharray "4")
+            [ x1 (String.fromFloat p1.x)
+            , y1 (String.fromFloat p1.y)
+            , x2 (String.fromFloat p2.x)
+            , y2 (String.fromFloat p2.y)
+            , style "stroke: #A0AEC0; stroke-width: 1.5"
+            ]
+        )
         []
 
 

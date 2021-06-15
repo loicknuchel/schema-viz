@@ -7,7 +7,7 @@ import FontAwesome.Solid as Icon
 import Html exposing (Attribute, Html, div, span, text)
 import Html.Attributes exposing (class, id, style, title)
 import Html.Events exposing (onClick)
-import Libs.Std exposing (maybeFilter, maybeFold)
+import Libs.Std exposing (listAppendOn, maybeFilter)
 import Models exposing (Msg(..), conf)
 import Models.Schema exposing (Column, ColumnComment(..), ColumnName(..), ColumnType(..), ForeignKey, Index, IndexName(..), PrimaryKey, SchemaName(..), Table, TableComment(..), TableName(..), Unique, UniqueName(..))
 import Views.Helpers exposing (dragAttrs, formatTableId, formatTableName, placeAt)
@@ -29,7 +29,7 @@ viewTable table =
 viewHeader : Table -> Html Msg
 viewHeader table =
     div [ class "header", borderTopColor table.state.color, style "display" "flex", style "align-items" "center" ]
-        [ div [ style "flex-grow" "1" ] ([ text (formatTableName table) ] ++ viewComment (Maybe.map (\(TableComment comment) -> comment) table.comment))
+        [ div [ style "flex-grow" "1" ] (listAppendOn table.comment (\(TableComment comment) -> viewComment comment) [ text (formatTableName table) ])
         , div [ style "font-size" "0.9rem", style "opacity" "0.25", onClick (HideTable table.id) ] [ viewIcon Icon.eyeSlash ]
         ]
 
@@ -50,7 +50,7 @@ viewColumnIcon maybePk uniques indexes column =
             span [ class "icon", title (formatPkTitle pk) ] [ viewIcon Icon.key ]
 
         ( ( _, Just fk ), _ ) ->
-            span [ class "icon", title (formatFkTitle fk) ] [ viewIcon Icon.externalLinkAlt ]
+            span [ class "icon", title (formatFkTitle fk), onClick (ShowTable fk.tableId) ] [ viewIcon Icon.externalLinkAlt ]
 
         ( _, ( u :: us, _ ) ) ->
             span [ class "icon", title (formatUniqueTitle (u :: us)) ] [ viewIcon Icon.fingerprint ]
@@ -75,7 +75,7 @@ viewColumnName pk column =
                     "name"
     in
     span [ class className ]
-        ([ text (formatColumnName column.column) ] ++ viewComment (Maybe.map (\(ColumnComment comment) -> comment) column.comment))
+        (listAppendOn column.comment (\(ColumnComment comment) -> viewComment comment) [ text (formatColumnName column.column) ])
 
 
 viewColumnType : Column -> Html Msg
@@ -83,9 +83,9 @@ viewColumnType column =
     span [ class "type" ] [ text (formatColumnType column.kind ++ formatNullable column) ]
 
 
-viewComment : Maybe String -> List (Html Msg)
+viewComment : String -> Html Msg
 viewComment comment =
-    maybeFold [] (\c -> [ span [ title c, style "margin-left" ".25rem", style "font-size" ".9rem", style "opacity" ".25" ] [ viewIcon IconLight.commentDots ] ]) comment
+    span [ title comment, style "margin-left" ".25rem", style "font-size" ".9rem", style "opacity" ".25" ] [ viewIcon IconLight.commentDots ]
 
 
 

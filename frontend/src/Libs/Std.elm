@@ -21,14 +21,33 @@ listZipWith transform list =
     List.map (\a -> ( a, transform a )) list
 
 
-genSequence : List (Random.Generator a) -> Random.Generator (List a)
-genSequence generators =
-    List.foldr (Random.map2 (::)) (Random.constant []) generators
+listAddIf : Bool -> a -> List a -> List a
+listAddIf cond item list =
+    if cond then
+        item :: list
+
+    else
+        list
 
 
-genChoose : ( a, List a ) -> Random.Generator a
-genChoose ( item, list ) =
-    Random.map (\num -> Maybe.withDefault item (List.head (List.drop num list))) (Random.int 0 (List.length list))
+listAddOn : Maybe b -> (b -> a) -> List a -> List a
+listAddOn maybe transform list =
+    case maybe of
+        Just b ->
+            transform b :: list
+
+        Nothing ->
+            list
+
+
+listAppendOn : Maybe b -> (b -> a) -> List a -> List a
+listAppendOn maybe transform list =
+    case maybe of
+        Just b ->
+            list ++ [ transform b ]
+
+        Nothing ->
+            list
 
 
 maybeFilter : (a -> Bool) -> Maybe a -> Maybe a
@@ -56,7 +75,17 @@ maybeFold empty transform maybe =
 
 dictFromList : (a -> k) -> List a -> Dict k a
 dictFromList getKey list =
-    Dict.fromList (List.map (\item -> ( getKey item, item )) list)
+    Dict.fromList (List.map (\item -> ( getKey item, item )) (List.reverse list))
+
+
+genSequence : List (Random.Generator a) -> Random.Generator (List a)
+genSequence generators =
+    List.foldr (Random.map2 (::)) (Random.constant []) generators
+
+
+genChoose : ( a, List a ) -> Random.Generator a
+genChoose ( item, list ) =
+    Random.map (\num -> Maybe.withDefault item (List.head (List.drop num list))) (Random.int 0 (List.length list))
 
 
 type alias WheelEvent =

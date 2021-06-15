@@ -23,53 +23,63 @@ dragConfig =
 
 
 dragItem : Schema -> Menu -> UiState -> Draggable.Delta -> Model
-dragItem schema menu drag delta =
-    case drag.id of
+dragItem schema menu appState delta =
+    case appState.id of
         Just id ->
             if id == conf.ids.menu then
-                Success schema (setPosition delta 1 menu) drag
+                Success schema (setPosition delta 1 menu) appState
 
             else if id == conf.ids.erd then
-                Success schema menu (setPosition delta 1 drag)
+                Success schema menu (setPosition delta 1 appState)
 
             else
-                Success (visitTable (TableId id) (setState (setPosition delta drag.zoom)) schema) menu drag
+                Success (visitTable (TableId id) (setState (setPosition delta appState.zoom)) schema) menu appState
 
         Nothing ->
             Failure "Can't OnDragBy when no drag id"
 
 
 zoomCanvas : Schema -> Menu -> UiState -> WheelEvent -> Model
-zoomCanvas schema menu drag wheel =
+zoomCanvas schema menu appState wheel =
     let
         newZoom : ZoomLevel
         newZoom =
-            (drag.zoom + (wheel.delta.y * conf.zoom.speed)) |> clamp conf.zoom.min conf.zoom.max
+            (appState.zoom + (wheel.delta.y * conf.zoom.speed)) |> clamp conf.zoom.min conf.zoom.max
 
         zoomFactor : Float
         zoomFactor =
-            newZoom / drag.zoom
+            newZoom / appState.zoom
 
         -- to zoom on cursor, works only if origin is top left (CSS property: "transform-origin: top left;")
         newLeft : Float
         newLeft =
-            drag.position.left - ((wheel.mouse.x - drag.position.left) * (zoomFactor - 1))
+            appState.position.left - ((wheel.mouse.x - appState.position.left) * (zoomFactor - 1))
 
         newTop : Float
         newTop =
-            drag.position.top - ((wheel.mouse.y - drag.position.top) * (zoomFactor - 1))
+            appState.position.top - ((wheel.mouse.y - appState.position.top) * (zoomFactor - 1))
     in
-    Success schema menu { drag | zoom = newZoom, position = Position newLeft newTop }
+    Success schema menu { appState | zoom = newZoom, position = Position newLeft newTop }
 
 
 hideTable : Schema -> Menu -> UiState -> TableId -> Model
-hideTable schema menu drag id =
-    Success (visitTable id (setState (\state -> { state | show = False })) schema) menu drag
+hideTable schema menu appState id =
+    Success (visitTable id (setState (\state -> { state | show = False })) schema) menu appState
 
 
 showTable : Schema -> Menu -> UiState -> TableId -> Model
-showTable schema menu drag id =
-    Success (visitTable id (setState (\state -> { state | show = True })) schema) menu drag
+showTable schema menu appState id =
+    Success (visitTable id (setState (\state -> { state | show = True })) schema) menu appState
+
+
+hideAllTables : Schema -> Menu -> UiState -> Model
+hideAllTables schema menu appState =
+    Success (visitTables (setState (\state -> { state | show = False })) schema) menu appState
+
+
+showAllTables : Schema -> Menu -> UiState -> Model
+showAllTables schema menu appState =
+    Success (visitTables (setState (\state -> { state | show = True })) schema) menu appState
 
 
 

@@ -3,7 +3,7 @@ module Views.Relations exposing (viewRelation)
 import Models exposing (Msg)
 import Models.Schema exposing (Column, ColumnIndex(..), ColumnName(..), ForeignKey, ForeignKeyName(..), Table, TableId(..))
 import Svg exposing (Svg, line, svg, text)
-import Svg.Attributes as Attributes exposing (class, height, style, width)
+import Svg.Attributes exposing (class, height, style, width, x1, x2, y1, y2)
 
 
 
@@ -12,34 +12,55 @@ import Svg.Attributes as Attributes exposing (class, height, style, width)
 
 viewRelation : ( ForeignKey, ( Table, Column ), ( Table, Column ) ) -> Svg Msg
 viewRelation ( fk, ( srcTable, srcColumn ), ( refTable, refColumn ) ) =
+    case ( srcTable.state.show, refTable.state.show, formatText fk srcTable srcColumn refTable refColumn ) of
+        ( False, False, name ) ->
+            svg [ class "relation" ] [ text name ]
+
+        ( True, False, name ) ->
+            case { x = srcTable.state.position.left + srcTable.state.size.width, y = positionY srcTable srcColumn } of
+                src ->
+                    drawRelation src { x = src.x + 20, y = src.y } name
+
+        ( False, True, name ) ->
+            case { x = refTable.state.position.left, y = positionY refTable refColumn } of
+                ref ->
+                    drawRelation { x = ref.x - 20, y = ref.y } ref name
+
+        ( True, True, name ) ->
+            case ( positionX srcTable refTable, ( positionY srcTable srcColumn, positionY refTable refColumn ) ) of
+                ( ( srcX, refX ), ( srcY, refY ) ) ->
+                    drawRelation { x = srcX, y = srcY } { x = refX, y = refY } name
+
+
+drawRelation : Point -> Point -> String -> Svg Msg
+drawRelation src ref name =
     let
-        ( srcY, refY ) =
-            ( columnY srcTable srcColumn, columnY refTable refColumn )
+        padding : Float
+        padding =
+            10
 
-        ( srcX, refX ) =
-            columnX srcTable refTable
-
-        ( x0, y0 ) =
-            ( min srcX refX, min srcY refY )
+        origin : Point
+        origin =
+            { x = min src.x ref.x - padding, y = min src.y ref.y - padding }
     in
     svg
         [ class "relation"
-        , width (String.fromFloat (abs (srcX - refX)))
-        , height (String.fromFloat (abs (srcY - refY)))
-        , style ("position: absolute; left: " ++ String.fromFloat x0 ++ "px; top: " ++ String.fromFloat y0 ++ "px;")
+        , width (String.fromFloat (abs (src.x - ref.x) + (padding * 2)))
+        , height (String.fromFloat (abs (src.y - ref.y) + (padding * 2)))
+        , style ("position: absolute; left: " ++ String.fromFloat origin.x ++ "px; top: " ++ String.fromFloat origin.y ++ "px;")
         ]
-        [ viewLine (srcX - x0) (srcY - y0) (refX - x0) (refY - y0)
-        , text (formatRef srcTable srcColumn ++ " -> " ++ formatForeignKeyName fk.name ++ " -> " ++ formatRef refTable refColumn)
+        [ viewLine (minus src origin) (minus ref origin)
+        , text name
         ]
 
 
-viewLine : Float -> Float -> Float -> Float -> Svg Msg
-viewLine x1 y1 x2 y2 =
+viewLine : Point -> Point -> Svg Msg
+viewLine p1 p2 =
     line
-        [ Attributes.x1 (String.fromFloat x1)
-        , Attributes.y1 (String.fromFloat y1)
-        , Attributes.x2 (String.fromFloat x2)
-        , Attributes.y2 (String.fromFloat y2)
+        [ x1 (String.fromFloat p1.x)
+        , y1 (String.fromFloat p1.y)
+        , x2 (String.fromFloat p2.x)
+        , y2 (String.fromFloat p2.y)
         , style "stroke: #A0AEC0; stroke-width: 1.5"
         ]
         []
@@ -49,25 +70,12 @@ viewLine x1 y1 x2 y2 =
 -- helpers
 
 
-headerHeight : Float
-headerHeight =
-    48
+type alias Point =
+    { x : Float, y : Float }
 
 
-columnHeight : Float
-columnHeight =
-    31.19
-
-
-columnY : Table -> Column -> Float
-columnY table column =
-    case column.index of
-        ColumnIndex index ->
-            table.ui.position.top + headerHeight + (columnHeight * (0.5 + toFloat index))
-
-
-columnX : Table -> Table -> ( Float, Float )
-columnX srcTable refTable =
+positionX : Table -> Table -> ( Float, Float )
+positionX srcTable refTable =
     case ( tablePositions srcTable, tablePositions refTable ) of
         ( ( srcLeft, srcCenter, srcRight ), ( refLeft, refCenter, refRight ) ) ->
             if srcRight < refLeft then
@@ -85,11 +93,43 @@ columnX srcTable refTable =
 
 tablePositions : Table -> ( Float, Float, Float )
 tablePositions table =
-    ( table.ui.position.left, table.ui.position.left + (table.ui.size.width / 2), table.ui.position.left + table.ui.size.width )
+    ( table.state.position.left, table.state.position.left + (table.state.size.width / 2), table.state.position.left + table.state.size.width )
+
+
+headerHeight : Float
+headerHeight =
+    48
+
+
+columnHeight : Float
+columnHeight =
+    31.19
+
+
+positionY : Table -> Column -> Float
+positionY table column =
+    case column.index of
+        ColumnIndex index ->
+            table.state.position.top + headerHeight + (columnHeight * (0.5 + toFloat index))
+
+
+minus : Point -> Point -> Point
+minus p1 p2 =
+    { x = p1.x - p2.x, y = p1.y - p2.y }
 
 
 
 -- formatters
+
+
+formatText : ForeignKey -> Table -> Column -> Table -> Column -> String
+formatText fk srcTable srcColumn refTable refColumn =
+    formatRef srcTable srcColumn ++ " -> " ++ formatForeignKeyName fk.name ++ " -> " ++ formatRef refTable refColumn
+
+
+formatRef : Table -> Column -> String
+formatRef table column =
+    formatTableId table.id ++ "." ++ formatColumnName column.column
 
 
 formatTableId : TableId -> String
@@ -105,8 +145,3 @@ formatColumnName (ColumnName name) =
 formatForeignKeyName : ForeignKeyName -> String
 formatForeignKeyName (ForeignKeyName name) =
     name
-
-
-formatRef : Table -> Column -> String
-formatRef table column =
-    formatTableId table.id ++ "." ++ formatColumnName column.column

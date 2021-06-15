@@ -44,6 +44,7 @@ type Msg
     | OnDragBy Draggable.Delta
     | DragMsg (Draggable.Msg DragId)
     | Zoom WheelEvent
+    | HideTable TableId
 
 
 type alias Menu =

@@ -13,7 +13,7 @@ import Libs.Std exposing (dictFromList)
 import Models exposing (Menu, Model(..), Msg(..), UiState, conf)
 import Models.Schema exposing (Schema, Table, TableId)
 import Models.Utils exposing (Position, Size)
-import Update exposing (dragConfig, dragItem, zoomCanvas)
+import Update exposing (dragConfig, dragItem, hideTable, zoomCanvas)
 import View exposing (viewApp)
 import Views.Helpers exposing (formatHttpError)
 
@@ -43,7 +43,7 @@ update msg model =
             ( HasData tables, getSizes tables )
 
         ( GotData (Ok _), _ ) ->
-            ( Failure "Can't GotData when not Loading", Cmd.none )
+            ( Failure "can't GotData when not Loading", Cmd.none )
 
         ( GotData (Err e), _ ) ->
             ( Failure (formatHttpError e), Cmd.none )
@@ -52,7 +52,7 @@ update msg model =
             ( HasSizes tableSizes windowSize, renderLayout tableSizes windowSize )
 
         ( GotSizes (Ok _), _ ) ->
-            ( Failure "Can't GotSizes when not HasData", Cmd.none )
+            ( Failure "can't GotSizes when not HasData", Cmd.none )
 
         ( GotSizes (Err (Dom.NotFound e)), _ ) ->
             ( Failure ("Size not found for '" ++ e ++ "' id"), Cmd.none )
@@ -61,37 +61,43 @@ update msg model =
             ( Success schema (Menu (Position 0 0)) (UiState zoom pan Nothing Draggable.init), Cmd.none )
 
         ( GotLayout _ _ _, _ ) ->
-            ( Failure "Can't GotLayout when not HasSizes", Cmd.none )
+            ( Failure "can't GotLayout when not HasSizes", Cmd.none )
 
         ( StartDragging id, Success schema menu drag ) ->
             ( Success schema menu { drag | id = Just id }, Cmd.none )
 
         ( StartDragging _, _ ) ->
-            ( Failure "Can't StartDragging when not Success", Cmd.none )
+            ( Failure "can't StartDragging when not Success", Cmd.none )
 
         ( StopDragging, Success schema menu drag ) ->
             ( Success schema menu { drag | id = Nothing }, Cmd.none )
 
         ( StopDragging, _ ) ->
-            ( Failure "Can't StopDragging when not Success", Cmd.none )
+            ( Failure "can't StopDragging when not Success", Cmd.none )
 
         ( OnDragBy delta, Success schema menu drag ) ->
             ( dragItem schema menu drag delta, Cmd.none )
 
         ( OnDragBy _, _ ) ->
-            ( Failure "Can't OnDragBy when not Success", Cmd.none )
+            ( Failure "can't OnDragBy when not Success", Cmd.none )
 
         ( DragMsg dragMsg, Success schema menu drag ) ->
             Tuple.mapFirst (\newDrag -> Success schema menu newDrag) (Draggable.update dragConfig dragMsg drag)
 
         ( DragMsg _, _ ) ->
-            ( Failure "Can't DragMsg when not Success", Cmd.none )
+            ( Failure "can't DragMsg when not Success", Cmd.none )
 
         ( Zoom zoom, Success schema menu drag ) ->
             ( zoomCanvas schema menu drag zoom, Cmd.none )
 
         ( Zoom _, _ ) ->
-            ( Failure "Can't Zoom when not Success", Cmd.none )
+            ( Failure "can't Zoom when not Success", Cmd.none )
+
+        ( HideTable id, Success schema menu drag ) ->
+            ( hideTable schema menu drag id, Cmd.none )
+
+        ( HideTable _, _ ) ->
+            ( Failure "can't HideTable when not Success", Cmd.none )
 
 
 
@@ -119,7 +125,7 @@ view model =
         [ Icon.css
         , case model of
             Failure e ->
-                text ("Unable to load your schema: " ++ e)
+                text ("Oooups an error happened, " ++ e)
 
             Loading ->
                 text "Loading..."

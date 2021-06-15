@@ -23,12 +23,12 @@ type alias Table =
     , uniques : List Unique
     , indexes : List Index
     , comment : Maybe TableComment
-    , ui : TableState
+    , state : TableState
     }
 
 
 type alias TableState =
-    { size : Size, position : Position, color : Color }
+    { size : Size, position : Position, color : Color, show : Bool }
 
 
 type alias Column =

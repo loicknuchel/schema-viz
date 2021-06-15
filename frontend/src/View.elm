@@ -33,7 +33,7 @@ viewMenu menu =
 viewErd : ZoomLevel -> CanvasPosition -> Schema -> Html Msg
 viewErd zoom pan schema =
     div ([ class "erd", handleWheel Zoom ] ++ dragAttrs conf.ids.erd)
-        [ div [ class "canvas", placeAndZoom zoom pan ] (List.map viewTable (Dict.values schema.tables) ++ List.map viewRelation schema.relations) ]
+        [ div [ class "canvas", placeAndZoom zoom pan ] (List.map viewTable (List.filter (\t -> t.state.show) (Dict.values schema.tables)) ++ List.map viewRelation schema.relations) ]
 
 
 

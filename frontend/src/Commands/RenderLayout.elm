@@ -68,7 +68,7 @@ buildTable table id size position color =
     , uniques = List.map buildUnique table.uniques
     , indexes = List.map buildIndex table.indexes
     , comment = Maybe.map TableComment table.comment
-    , ui = { size = size, position = position, color = color }
+    , state = { size = size, position = position, color = color, show = True }
     }
 
 

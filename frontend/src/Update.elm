@@ -27,13 +27,13 @@ dragItem schema menu drag delta =
     case drag.id of
         Just id ->
             if id == conf.ids.menu then
-                Success schema (updatePosition menu delta 1) drag
+                Success schema (setPosition delta 1 menu) drag
 
             else if id == conf.ids.erd then
-                Success schema menu (updatePosition drag delta 1)
+                Success schema menu (setPosition delta 1 drag)
 
             else
-                Success (updateSchema (TableId id) (\state -> updatePosition state delta drag.zoom) schema) menu drag
+                Success (visitTable (TableId id) (setState (setPosition delta drag.zoom)) schema) menu drag
 
         Nothing ->
             Failure "Can't OnDragBy when no drag id"
@@ -62,23 +62,45 @@ zoomCanvas schema menu drag wheel =
     Success schema menu { drag | zoom = newZoom, position = Position newLeft newTop }
 
 
-updateSchema : TableId -> (TableState -> TableState) -> Schema -> Schema
-updateSchema id transform schema =
+hideTable : Schema -> Menu -> UiState -> TableId -> Model
+hideTable schema menu drag id =
+    Success (visitTable id (setState (\state -> { state | show = False })) schema) menu drag
+
+
+
+-- update helpers
+
+
+visitTables : (Table -> Table) -> Schema -> Schema
+visitTables transform schema =
     { schema
-        | tables = Dict.update id (Maybe.map (updateTable id transform)) schema.tables
-        , relations = List.map (\( fk, ( st, sc ), ( rt, rc ) ) -> ( fk, ( updateTable id transform st, sc ), ( updateTable id transform rt, rc ) )) schema.relations
+        | tables = Dict.map (\_ table -> transform table) schema.tables
+        , relations = List.map (\( fk, ( st, sc ), ( rt, rc ) ) -> ( fk, ( transform st, sc ), ( transform rt, rc ) )) schema.relations
     }
 
 
-updateTable : TableId -> (TableState -> TableState) -> Table -> Table
-updateTable id transform table =
+visitTable : TableId -> (Table -> Table) -> Schema -> Schema
+visitTable id transform schema =
+    { schema
+        | tables = Dict.update id (Maybe.map transform) schema.tables
+        , relations = List.map (\( fk, ( st, sc ), ( rt, rc ) ) -> ( fk, ( cond id transform st, sc ), ( cond id transform rt, rc ) )) schema.relations
+    }
+
+
+cond : TableId -> (Table -> Table) -> Table -> Table
+cond id transform table =
     if table.id == id then
-        { table | ui = transform table.ui }
+        transform table
 
     else
         table
 
 
-updatePosition : { m | position : Position } -> Draggable.Delta -> ZoomLevel -> { m | position : Position }
-updatePosition item ( dx, dy ) zoom =
+setState : (TableState -> TableState) -> Table -> Table
+setState stateTransform table =
+    { table | state = stateTransform table.state }
+
+
+setPosition : Draggable.Delta -> ZoomLevel -> { m | position : Position } -> { m | position : Position }
+setPosition ( dx, dy ) zoom item =
     { item | position = Position (item.position.left + (dx / zoom)) (item.position.top + (dy / zoom)) }

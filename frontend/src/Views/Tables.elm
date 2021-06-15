@@ -6,8 +6,9 @@ import FontAwesome.Regular as IconLight
 import FontAwesome.Solid as Icon
 import Html exposing (Attribute, Html, div, span, text)
 import Html.Attributes exposing (class, id, style, title)
+import Html.Events exposing (onClick)
 import Libs.Std exposing (maybeFilter, maybeFold)
-import Models exposing (Msg, conf)
+import Models exposing (Msg(..), conf)
 import Models.Schema exposing (Column, ColumnComment(..), ColumnName(..), ColumnType(..), ForeignKey, Index, IndexName(..), PrimaryKey, SchemaName(..), Table, TableComment(..), TableName(..), Unique, UniqueName(..))
 import Views.Helpers exposing (dragAttrs, formatTableId, placeAt)
 
@@ -19,9 +20,17 @@ import Views.Helpers exposing (dragAttrs, formatTableId, placeAt)
 viewTable : Table -> Html Msg
 viewTable table =
     div
-        ([ class "table", placeAt table.ui.position, id (formatTableId table.id) ] ++ dragAttrs (formatTableId table.id))
-        [ div [ class "header", borderTopColor table.ui.color ] ([ text (formatTableName table) ] ++ viewComment (Maybe.map (\(TableComment comment) -> comment) table.comment))
+        ([ class "table", placeAt table.state.position, id (formatTableId table.id) ] ++ dragAttrs (formatTableId table.id))
+        [ viewHeader table
         , div [ class "columns" ] (List.map (viewColumn table.primaryKey table.uniques table.indexes) (Dict.values table.columns))
+        ]
+
+
+viewHeader : Table -> Html Msg
+viewHeader table =
+    div [ class "header", borderTopColor table.state.color, style "display" "flex", style "align-items" "center" ]
+        [ div [ style "flex-grow" "1" ] ([ text (formatTableName table) ] ++ viewComment (Maybe.map (\(TableComment comment) -> comment) table.comment))
+        , div [ style "font-size" "0.9rem", style "opacity" "0.25", onClick (HideTable table.id) ] [ viewIcon Icon.eyeSlash ]
         ]
 
 

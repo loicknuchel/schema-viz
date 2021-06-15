@@ -134,16 +134,16 @@ view model =
                 text ("Oooups an error happened, " ++ e)
 
             Loading ->
-                text "Loading..."
+                viewApp fakeMenu (fakeSchema []) (Just "Loading...") 1 (Position 0 0)
 
             HasData tables ->
-                viewApp 1 (Position 0 0) fakeMenu (fakeSchema tables)
+                viewApp fakeMenu (fakeSchema tables) (Just ("Rendering " ++ String.fromInt (List.length tables) ++ " tables...")) 1 (Position 0 0)
 
-            HasSizes _ _ ->
-                text "Rendering..."
+            HasSizes tables _ ->
+                viewApp fakeMenu (fakeSchema (List.map (\( t, i, _ ) -> ( t, i )) tables)) (Just ("Positioning " ++ String.fromInt (List.length tables) ++ " tables...")) 1 (Position 0 0)
 
             Success schema menu drag ->
-                viewApp drag.zoom drag.position menu schema
+                viewApp menu schema Nothing drag.zoom drag.position
         ]
     }
 

@@ -10,6 +10,16 @@ body {
     left: 0;
 }
 
+.loading {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    background-color: #F1F6F8;
+    z-index: 1000;
+}
+
 .menu {
     position: absolute;
     width: 300px;

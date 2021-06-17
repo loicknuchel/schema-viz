@@ -6,8 +6,9 @@ import FontAwesome.Solid as Icon
 import Html exposing (Html, button, div, text)
 import Html.Attributes exposing (class, style)
 import Html.Events exposing (onClick)
+import Libs.Std exposing (listFilterMap)
 import Models exposing (Menu, Msg(..), conf)
-import Models.Schema exposing (Table, TableId)
+import Models.Schema exposing (Schema, Table, TableId)
 import Views.Helpers exposing (dragAttrs, formatTableName, placeAt)
 
 
@@ -15,13 +16,23 @@ import Views.Helpers exposing (dragAttrs, formatTableName, placeAt)
 -- menu view, can include Views.Helpers, Models or Libs modules. Nothing else from views.
 
 
-viewMenu : Menu -> Dict TableId Table -> Html Msg
-viewMenu menu tables =
+viewMenu : Menu -> Schema -> Html Msg
+viewMenu menu schema =
     div ([ class "menu", placeAt menu.position ] ++ dragAttrs conf.ids.menu)
-        ([ div [] [ text ("menu (" ++ String.fromInt (Dict.size tables) ++ " tables)") ]
+        ([ div []
+            [ text
+                ("menu ("
+                    ++ String.fromInt (Dict.size schema.tables)
+                    ++ " tables, "
+                    ++ String.fromInt (Dict.foldl (\_ t c -> c + Dict.size t.columns) 0 schema.tables)
+                    ++ " columns, "
+                    ++ String.fromInt (List.length schema.relations)
+                    ++ " relations)"
+                )
+            ]
          , div [] [ button [ onClick HideAllTables ] [ text "hide all tables" ], button [ onClick ShowAllTables ] [ text "show all tables" ] ]
          ]
-            ++ List.map viewHiddenTable (List.filter (\t -> not t.state.show) (Dict.values tables))
+            ++ listFilterMap (\t -> not t.state.show) viewHiddenTable (Dict.values schema.tables)
         )
 
 

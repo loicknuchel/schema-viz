@@ -41,7 +41,7 @@ Currently, it has two parts:
 
 First, you need to install Ruby & Bundler in your machine, then run `bundle install` to get the dependencies.
 
-- launch the program: `exe/schema-viz generate --structure ./test/resources/structure.sql`
+- launch the program: `exe/schema-viz generate --structure ./test/resources/structure.sql --output frontend/tests/resources/schema.json`
 - launch the tests: `rake test`
 - launch a Ruby console: `bin/console`
 
@@ -51,7 +51,7 @@ Ruby folders are `lib/schema-viz` for sources & `test` for tests.
 
 First, you need to install Elm & NPM on your machine, then move to `frontend` folder and run `npm install` to get the dependencies.
 
-- launch dev env: `elm reactor` or `elm-live src/Main.elm --open --start-page=index.html -- --output=index.js`
+- launch dev env: `elm-live src/Main.elm --open --start-page=index.html -- --output=index.js`
 - launch the tests: `npx elm-test`
 - run linter: `npx elm-review`
 - compile to the demo file: `elm make src/Main.elm`

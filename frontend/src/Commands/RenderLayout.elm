@@ -2,7 +2,7 @@ module Commands.RenderLayout exposing (buildTable, renderLayout)
 
 import AssocList as Dict exposing (Dict)
 import Decoders.SchemaDecoder exposing (JsonColumn, JsonForeignKey, JsonIndex, JsonPrimaryKey, JsonTable, JsonUnique)
-import Libs.Std exposing (dictFromList, genChoose, genSequence, listCollect)
+import Libs.Std exposing (dictFromList, genChoose, genSequence)
 import Models exposing (Msg(..), WindowSize, conf)
 import Models.Schema exposing (Column, ColumnComment(..), ColumnIndex(..), ColumnName(..), ColumnType(..), ForeignKey, ForeignKeyName(..), Index, IndexName(..), PrimaryKey, PrimaryKeyName(..), Schema, SchemaName(..), Table, TableComment(..), TableId(..), TableName(..), Unique, UniqueName(..))
 import Models.Utils exposing (Color, Position, Size)
@@ -131,7 +131,7 @@ buildRelations tables =
 
 includeRefTable : Dict TableId Table -> List ( ForeignKey, ( Table, Column ) ) -> List ( ForeignKey, ( Table, Column ), ( Table, Column ) )
 includeRefTable tables relations =
-    listCollect (\( fk, src ) -> Maybe.map (\ref -> ( fk, src, ref )) (getTableAndColumn ( fk.tableId, fk.column ) tables)) relations
+    List.filterMap (\( fk, src ) -> Maybe.map (\ref -> ( fk, src, ref )) (getTableAndColumn ( fk.tableId, fk.column ) tables)) relations
 
 
 getTableAndColumn : ( TableId, ColumnName ) -> Dict TableId Table -> Maybe ( Table, Column )
@@ -141,4 +141,4 @@ getTableAndColumn ( tableId, columnName ) tables =
 
 getColumnsWithForeignKey : Table -> List ( ForeignKey, ( Table, Column ) )
 getColumnsWithForeignKey table =
-    listCollect (\column -> Maybe.map (\fk -> ( fk, ( table, column ) )) column.foreignKey) (Dict.values table.columns)
+    List.filterMap (\column -> Maybe.map (\fk -> ( fk, ( table, column ) )) column.foreignKey) (Dict.values table.columns)

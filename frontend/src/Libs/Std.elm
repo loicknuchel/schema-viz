@@ -11,9 +11,18 @@ import Random
 -- generic utils that could be packaged in external lib. Do not use anything project specific!
 
 
-listCollect : (a -> Maybe b) -> List a -> List b
-listCollect transform list =
-    List.foldr (\a res -> maybeFold res (\b -> b :: res) (transform a)) [] list
+cond : Bool -> (() -> a) -> (() -> a) -> a
+cond predicate true false =
+    if predicate then
+        true ()
+
+    else
+        false ()
+
+
+listFilterMap : (a -> Bool) -> (a -> b) -> List a -> List b
+listFilterMap predicate transform list =
+    List.foldr (\a res -> cond (predicate a) (\_ -> transform a :: res) (\_ -> res)) [] list
 
 
 listZipWith : (a -> b) -> List a -> List ( a, b )
@@ -22,8 +31,8 @@ listZipWith transform list =
 
 
 listAddIf : Bool -> a -> List a -> List a
-listAddIf cond item list =
-    if cond then
+listAddIf predicate item list =
+    if predicate then
         item :: list
 
     else
@@ -52,15 +61,7 @@ listAppendOn maybe transform list =
 
 maybeFilter : (a -> Bool) -> Maybe a -> Maybe a
 maybeFilter predicate maybe =
-    Maybe.andThen
-        (\a ->
-            if predicate a then
-                maybe
-
-            else
-                Nothing
-        )
-        maybe
+    Maybe.andThen (\a -> cond (predicate a) (\_ -> maybe) (\_ -> Nothing)) maybe
 
 
 maybeFold : b -> (a -> b) -> Maybe a -> b

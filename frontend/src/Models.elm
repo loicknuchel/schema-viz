@@ -21,7 +21,7 @@ conf :
     , showTablesOnLoadingIfLessThan : Int
     }
 conf =
-    { zoom = { min = 0.2, max = 5, speed = 0.001 }
+    { zoom = { min = 0.1, max = 5, speed = 0.001 }
     , colors = { pink = "#F66D9B", purple = "#9561E2", darkBlue = "#6574CD", blue = "#3490DC", turquoise = "#4DC0B5", lightBlue = "#22D3EE", lightGreen = "#84CC16", green = "#38C172", yellow = "#FFED4A", orange = "#F6993F", red = "#E3342F", grey = "#B8C2CC" }
     , defaultSchema = "public"
     , ids = { menu = "menu", erd = "erd" }

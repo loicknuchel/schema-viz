@@ -12,5 +12,5 @@
 /frontend/elm-stuff/
 /frontend/review/elm-stuff/
 /frontend/index.js
-/test/resources/structure-full.sql
-/frontend/tests/resources/schema-full.json
+/test/resources/samples/
+/frontend/tests/resources/samples/

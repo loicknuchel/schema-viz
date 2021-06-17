@@ -98,12 +98,12 @@ visitTable : TableId -> (Table -> Table) -> Schema -> Schema
 visitTable id transform schema =
     { schema
         | tables = Dict.update id (Maybe.map transform) schema.tables
-        , relations = List.map (\( fk, ( st, sc ), ( rt, rc ) ) -> ( fk, ( cond id transform st, sc ), ( cond id transform rt, rc ) )) schema.relations
+        , relations = List.map (\( fk, ( st, sc ), ( rt, rc ) ) -> ( fk, ( ifTable id transform st, sc ), ( ifTable id transform rt, rc ) )) schema.relations
     }
 
 
-cond : TableId -> (Table -> Table) -> Table -> Table
-cond id transform table =
+ifTable : TableId -> (Table -> Table) -> Table -> Table
+ifTable id transform table =
     if table.id == id then
         transform table
 

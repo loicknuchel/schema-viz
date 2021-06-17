@@ -8,7 +8,7 @@ import Html exposing (Attribute, Html, div, span, text)
 import Html.Attributes exposing (class, id, style, title)
 import Html.Events exposing (onClick)
 import Libs.Std exposing (listAppendOn, maybeFilter)
-import Models exposing (Msg(..), conf)
+import Models exposing (Msg(..), ZoomLevel, conf)
 import Models.Schema exposing (Column, ColumnComment(..), ColumnName(..), ColumnType(..), ForeignKey, Index, IndexName(..), PrimaryKey, SchemaName(..), Table, TableComment(..), TableName(..), Unique, UniqueName(..))
 import Views.Helpers exposing (dragAttrs, formatTableId, formatTableName, placeAt)
 
@@ -17,19 +17,19 @@ import Views.Helpers exposing (dragAttrs, formatTableId, formatTableName, placeA
 -- views showing tables, can include Views.Helpers, Models or Libs modules. Nothing else from views.
 
 
-viewTable : Table -> Html Msg
-viewTable table =
+viewTable : ZoomLevel -> Table -> Html Msg
+viewTable zoom table =
     div
         ([ class "table", placeAt table.state.position, id (formatTableId table.id) ] ++ dragAttrs (formatTableId table.id))
-        [ viewHeader table
+        [ viewHeader zoom table
         , div [ class "columns" ] (List.map (viewColumn table.primaryKey table.uniques table.indexes) (Dict.values table.columns))
         ]
 
 
-viewHeader : Table -> Html Msg
-viewHeader table =
+viewHeader : ZoomLevel -> Table -> Html Msg
+viewHeader zoom table =
     div [ class "header", borderTopColor table.state.color, style "display" "flex", style "align-items" "center" ]
-        [ div [ style "flex-grow" "1" ] (listAppendOn table.comment (\(TableComment comment) -> viewComment comment) [ text (formatTableName table) ])
+        [ div [ style "flex-grow" "1" ] (listAppendOn table.comment (\(TableComment comment) -> viewComment comment) [ span (tableNameSize zoom) [ text (formatTableName table) ] ])
         , div [ style "font-size" "0.9rem", style "opacity" "0.25", onClick (HideTable table.id) ] [ viewIcon Icon.eyeSlash ]
         ]
 
@@ -95,6 +95,16 @@ viewComment comment =
 borderTopColor : String -> Attribute msg
 borderTopColor color =
     style "border-top-color" color
+
+
+tableNameSize : ZoomLevel -> List (Attribute msg)
+tableNameSize zoom =
+    -- when zoom is small, keep the table name readable
+    if zoom < 0.5 then
+        [ style "font-size" (String.fromFloat (10 / zoom) ++ "px") ]
+
+    else
+        []
 
 
 

@@ -10,8 +10,28 @@ import Models.Utils exposing (Color, Position, Size)
 
 type alias Schema =
     { tables : Dict TableId Table
-    , relations : List ( ForeignKey, ( Table, Column ), ( Table, Column ) )
+    , relations : List RelationRef
     }
+
+
+type alias RelationRef =
+    { key : ForeignKeyName, src : ColumnRef, ref : ColumnRef, state : RelationState }
+
+
+type alias ColumnRef =
+    { table : TableId, column : ColumnName }
+
+
+type alias Relation =
+    { key : ForeignKeyName, src : TableAndColumn, ref : TableAndColumn, state : RelationState }
+
+
+type alias TableAndColumn =
+    { table : Table, column : Column }
+
+
+type alias RelationState =
+    { show : Bool }
 
 
 type alias Table =
@@ -28,7 +48,14 @@ type alias Table =
 
 
 type alias TableState =
-    { size : Size, position : Position, color : Color, show : Bool }
+    { status : TableStatus, size : Size, position : Position, color : Color }
+
+
+type TableStatus
+    = Uninitialized
+    | Ready
+    | Hidden
+    | Visible
 
 
 type alias Column =
@@ -38,7 +65,12 @@ type alias Column =
     , nullable : Bool
     , foreignKey : Maybe ForeignKey
     , comment : Maybe ColumnComment
+    , state : ColumnState
     }
+
+
+type alias ColumnState =
+    { order : Maybe Int }
 
 
 type alias PrimaryKey =
@@ -103,3 +135,8 @@ type IndexName
 
 type ForeignKeyName
     = ForeignKeyName String
+
+
+formatTableId : TableId -> String
+formatTableId (TableId id) =
+    id

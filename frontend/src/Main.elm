@@ -1,19 +1,19 @@
 module Main exposing (..)
 
+import AssocList as Dict
 import Browser
 import Browser.Dom as Dom
 import Commands.FetchData exposing (loadData)
-import Commands.GetSizes exposing (getSizes)
-import Commands.RenderLayout exposing (buildTable, renderLayout)
-import Decoders.SchemaDecoder exposing (JsonTable)
+import Commands.GetSize exposing (getWindowSize)
+import Commands.InitializeTable exposing (initializeTable)
 import Draggable
 import FontAwesome.Styles as Icon
 import Html exposing (text)
-import Libs.Std exposing (dictFromList)
-import Models exposing (Menu, Model(..), Msg(..), UiState, conf)
-import Models.Schema exposing (Schema, Table, TableId)
+import Mappers.SchemaMapper exposing (buildSchema)
+import Models exposing (Menu, Model, Msg(..), State, Status(..))
+import Models.Schema exposing (Schema)
 import Models.Utils exposing (Position, Size)
-import Update exposing (dragConfig, dragItem, hideAllTables, hideTable, showAllTables, showTable, zoomCanvas)
+import Update exposing (dragConfig, dragItem, hideAllTables, hideTable, setState, showAllTables, showTable, updateTable, zoomCanvas)
 import View exposing (viewApp)
 import Views.Helpers exposing (formatHttpError)
 
@@ -29,7 +29,24 @@ main =
 
 init : () -> ( Model, Cmd Msg )
 init _ =
-    ( Loading, loadData "/tests/resources/schema.json" )
+    ( { state = initState, menu = initMenu, schema = initSchema }
+    , Cmd.batch [ getWindowSize, loadData "/tests/resources/schema.json" ]
+    )
+
+
+initState : State
+initState =
+    { status = Loading, windowSize = Size 0 0, zoom = 1, position = Position 0 0, dragId = Nothing, drag = Draggable.init }
+
+
+initMenu : Menu
+initMenu =
+    { position = Position 0 0 }
+
+
+initSchema : Schema
+initSchema =
+    { tables = Dict.empty, relations = [] }
 
 
 
@@ -38,84 +55,54 @@ init _ =
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
-    case ( msg, model ) of
-        ( GotData (Ok tables), Loading ) ->
-            ( HasData tables, getSizes tables )
+    case msg of
+        GotWindowSize (Ok windowSize) ->
+            ( setState (\state -> { state | windowSize = windowSize }) model, Cmd.none )
 
-        ( GotData (Ok _), _ ) ->
-            ( Failure "can't GotData when not Loading", Cmd.none )
+        GotWindowSize (Err (Dom.NotFound e)) ->
+            ( setState (\state -> { state | status = Failure ("Size not found for '" ++ e ++ "'") }) model, Cmd.none )
 
-        ( GotData (Err e), _ ) ->
-            ( Failure (formatHttpError e), Cmd.none )
+        GotData (Ok tables) ->
+            ( setState (\state -> { state | status = Success }) { model | schema = buildSchema tables }, Cmd.none )
 
-        ( GotSizes (Ok ( tableSizes, windowSize )), HasData _ ) ->
-            ( HasSizes tableSizes windowSize, renderLayout tableSizes windowSize )
+        GotData (Err e) ->
+            ( setState (\state -> { state | status = Failure (formatHttpError e) }) model, Cmd.none )
 
-        ( GotSizes (Ok _), _ ) ->
-            ( Failure "can't GotSizes when not HasData", Cmd.none )
+        HideTable id ->
+            ( { model | schema = hideTable model.schema id }, Cmd.none )
 
-        ( GotSizes (Err (Dom.NotFound e)), _ ) ->
-            ( Failure ("Size not found for '" ++ e ++ "' id"), Cmd.none )
+        ShowTable id ->
+            showTable model id
 
-        ( GotLayout schema zoom pan, HasSizes _ _ ) ->
-            ( Success schema (Menu (Position 0 0)) (UiState zoom pan Nothing Draggable.init), Cmd.none )
+        GotTableSize (Ok ( id, size )) ->
+            ( model, initializeTable id size model.state.windowSize )
 
-        ( GotLayout _ _ _, _ ) ->
-            ( Failure "can't GotLayout when not HasSizes", Cmd.none )
+        GotTableSize (Err (Dom.NotFound e)) ->
+            ( setState (\state -> { state | status = Failure ("Size not found for '" ++ e ++ "' id") }) model, Cmd.none )
 
-        ( StartDragging id, Success schema menu appState ) ->
-            ( Success schema menu { appState | id = Just id }, Cmd.none )
+        InitializedTable id size position color ->
+            ( { model | schema = updateTable model.schema id size position color }, Cmd.none )
 
-        ( StartDragging _, _ ) ->
-            ( Failure "can't StartDragging when not Success", Cmd.none )
+        HideAllTables ->
+            ( { model | schema = hideAllTables model.schema }, Cmd.none )
 
-        ( StopDragging, Success schema menu appState ) ->
-            ( Success schema menu { appState | id = Nothing }, Cmd.none )
+        ShowAllTables ->
+            showAllTables model
 
-        ( StopDragging, _ ) ->
-            ( Failure "can't StopDragging when not Success", Cmd.none )
+        Zoom zoom ->
+            ( { model | state = zoomCanvas model.state zoom }, Cmd.none )
 
-        ( OnDragBy delta, Success schema menu appState ) ->
-            ( dragItem schema menu appState delta, Cmd.none )
+        DragMsg dragMsg ->
+            Tuple.mapFirst (\newState -> { model | state = newState }) (Draggable.update dragConfig dragMsg model.state)
 
-        ( OnDragBy _, _ ) ->
-            ( Failure "can't OnDragBy when not Success", Cmd.none )
+        StartDragging id ->
+            ( setState (\state -> { state | dragId = Just id }) model, Cmd.none )
 
-        ( DragMsg dragMsg, Success schema menu appState ) ->
-            Tuple.mapFirst (\newDrag -> Success schema menu newDrag) (Draggable.update dragConfig dragMsg appState)
+        StopDragging ->
+            ( setState (\state -> { state | dragId = Nothing }) model, Cmd.none )
 
-        ( DragMsg _, _ ) ->
-            ( Failure "can't DragMsg when not Success", Cmd.none )
-
-        ( Zoom zoom, Success schema menu appState ) ->
-            ( zoomCanvas schema menu appState zoom, Cmd.none )
-
-        ( Zoom _, _ ) ->
-            ( Failure "can't Zoom when not Success", Cmd.none )
-
-        ( HideTable id, Success schema menu appState ) ->
-            ( hideTable schema menu appState id, Cmd.none )
-
-        ( HideTable _, _ ) ->
-            ( Failure "can't HideTable when not Success", Cmd.none )
-
-        ( ShowTable id, Success schema menu appState ) ->
-            ( showTable schema menu appState id, Cmd.none )
-
-        ( ShowTable _, _ ) ->
-            ( Failure "can't ShowTable when not Success", Cmd.none )
-
-        ( HideAllTables, Success schema menu appState ) ->
-            ( hideAllTables schema menu appState, Cmd.none )
-
-        ( HideAllTables, _ ) ->
-            ( Failure "can't HideAllTables when not Success", Cmd.none )
-
-        ( ShowAllTables, Success schema menu appState ) ->
-            ( showAllTables schema menu appState, Cmd.none )
-
-        ( ShowAllTables, _ ) ->
-            ( Failure "can't ShowAllTables when not Success", Cmd.none )
+        OnDragBy delta ->
+            ( dragItem model delta, Cmd.none )
 
 
 
@@ -124,12 +111,7 @@ update msg model =
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    case model of
-        Success _ _ { drag } ->
-            Draggable.subscriptions DragMsg drag
-
-        _ ->
-            Sub.none
+    Draggable.subscriptions DragMsg model.state.drag
 
 
 
@@ -141,37 +123,14 @@ view model =
     { title = "Schema Viz"
     , body =
         [ Icon.css
-        , case model of
+        , case model.state.status of
             Failure e ->
                 text ("Oooups an error happened, " ++ e)
 
             Loading ->
-                viewApp fakeMenu (fakeSchema []) (Just "Loading...") 1 (Position 0 0)
+                viewApp model (Just "Loading...")
 
-            HasData tables ->
-                viewApp fakeMenu (fakeSchema tables) (Just ("Rendering " ++ String.fromInt (List.length tables) ++ " tables...")) 1 (Position 0 0)
-
-            HasSizes tables _ ->
-                viewApp fakeMenu (fakeSchema (List.map (\( t, i, _ ) -> ( t, i )) tables)) (Just ("Positioning " ++ String.fromInt (List.length tables) ++ " tables...")) 1 (Position 0 0)
-
-            Success schema menu drag ->
-                viewApp menu schema Nothing drag.zoom drag.position
+            Success ->
+                viewApp model Nothing
         ]
     }
-
-
-fakeMenu : Menu
-fakeMenu =
-    { position = Position 0 0 }
-
-
-fakeSchema : List ( JsonTable, TableId ) -> Schema
-fakeSchema tables =
-    { tables = dictFromList .id (List.map fakeTable tables)
-    , relations = []
-    }
-
-
-fakeTable : ( JsonTable, TableId ) -> Table
-fakeTable ( table, id ) =
-    buildTable 0 table id (Size 0 0) (Position 0 0) conf.colors.grey

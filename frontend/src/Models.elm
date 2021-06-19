@@ -18,46 +18,49 @@ conf :
     , colors : { pink : Color, purple : Color, darkBlue : Color, blue : Color, turquoise : Color, lightBlue : Color, lightGreen : Color, green : Color, yellow : Color, orange : Color, red : Color, grey : Color }
     , defaultSchema : String
     , ids : { menu : String, erd : String }
-    , showTablesOnLoadingIfLessThan : Int
+    , loading : { showTablesThreshold : Int }
     }
 conf =
     { zoom = { min = 0.1, max = 5, speed = 0.001 }
     , colors = { pink = "#F66D9B", purple = "#9561E2", darkBlue = "#6574CD", blue = "#3490DC", turquoise = "#4DC0B5", lightBlue = "#22D3EE", lightGreen = "#84CC16", green = "#38C172", yellow = "#FFED4A", orange = "#F6993F", red = "#E3342F", grey = "#B8C2CC" }
     , defaultSchema = "public"
     , ids = { menu = "menu", erd = "erd" }
-    , showTablesOnLoadingIfLessThan = 20
+    , loading = { showTablesThreshold = 20 }
     }
 
 
-type Model
-    = Loading
-    | Failure Error
-    | HasData (List ( JsonTable, TableId ))
-    | HasSizes (List ( JsonTable, TableId, Size )) WindowSize
-    | Success Schema Menu UiState
+type alias Model =
+    { state : State, menu : Menu, schema : Schema }
 
 
-type Msg
-    = GotData (Result Http.Error (List ( JsonTable, TableId )))
-    | GotSizes (Result Dom.Error ( List ( JsonTable, TableId, Size ), WindowSize ))
-    | GotLayout Schema ZoomLevel CanvasPosition
-    | StartDragging DragId
-    | StopDragging
-    | OnDragBy Draggable.Delta
-    | DragMsg (Draggable.Msg DragId)
-    | Zoom WheelEvent
-    | HideTable TableId
-    | ShowTable TableId
-    | HideAllTables
-    | ShowAllTables
+type alias State =
+    { status : Status, windowSize : WindowSize, zoom : ZoomLevel, position : CanvasPosition, dragId : Maybe DragId, drag : Draggable.State DragId }
 
 
 type alias Menu =
     { position : Position }
 
 
-type alias UiState =
-    { zoom : ZoomLevel, position : CanvasPosition, id : Maybe DragId, drag : Draggable.State DragId }
+type Status
+    = Loading
+    | Failure Error
+    | Success
+
+
+type Msg
+    = GotWindowSize (Result Dom.Error WindowSize)
+    | GotData (Result Http.Error (List ( JsonTable, TableId )))
+    | HideTable TableId
+    | ShowTable TableId
+    | GotTableSize (Result Dom.Error ( TableId, Size ))
+    | InitializedTable TableId Size Position Color
+    | HideAllTables
+    | ShowAllTables
+    | Zoom WheelEvent
+    | DragMsg (Draggable.Msg DragId)
+    | StartDragging DragId
+    | StopDragging
+    | OnDragBy Draggable.Delta
 
 
 type alias WindowSize =

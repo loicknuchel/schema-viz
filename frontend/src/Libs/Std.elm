@@ -64,6 +64,11 @@ maybeFilter predicate maybe =
     Maybe.andThen (\a -> cond (predicate a) (\_ -> maybe) (\_ -> Nothing)) maybe
 
 
+maybeAdd : (a -> Maybe b) -> Maybe a -> Maybe ( a, b )
+maybeAdd get maybe =
+    Maybe.andThen (\a -> Maybe.map (\b -> ( a, b )) (get a)) maybe
+
+
 maybeFold : b -> (a -> b) -> Maybe a -> b
 maybeFold empty transform maybe =
     case maybe of

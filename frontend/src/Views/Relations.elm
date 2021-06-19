@@ -2,7 +2,7 @@ module Views.Relations exposing (viewRelation)
 
 import Libs.Std exposing (listAddIf)
 import Models exposing (Msg)
-import Models.Schema exposing (Column, ColumnIndex(..), ColumnName(..), ForeignKey, ForeignKeyName(..), Table, TableId(..))
+import Models.Schema exposing (Column, ColumnIndex(..), ColumnName(..), ForeignKeyName(..), Relation, Table, TableAndColumn, TableStatus(..), formatTableId)
 import Svg exposing (Svg, line, svg, text)
 import Svg.Attributes exposing (class, height, strokeDasharray, style, width, x1, x2, y1, y2)
 
@@ -11,26 +11,26 @@ import Svg.Attributes exposing (class, height, strokeDasharray, style, width, x1
 -- views showing table relations, can include Views.Helpers, Models or Libs modules. Nothing else from views.
 
 
-viewRelation : ( ForeignKey, ( Table, Column ), ( Table, Column ) ) -> Svg Msg
-viewRelation ( fk, ( srcTable, srcColumn ), ( refTable, refColumn ) ) =
-    case ( srcTable.state.show, refTable.state.show, formatText fk srcTable srcColumn refTable refColumn ) of
+viewRelation : Relation -> Svg Msg
+viewRelation { key, src, ref, state } =
+    case ( src.table.state.status == Visible, ref.table.state.status == Visible, formatText key src ref ) of
         ( False, False, name ) ->
             svg [ class "relation" ] [ text name ]
 
         ( True, False, name ) ->
-            case { x = srcTable.state.position.left + srcTable.state.size.width, y = positionY srcTable srcColumn } of
-                src ->
-                    drawRelation src { x = src.x + 20, y = src.y } srcColumn.nullable name
+            case { x = src.table.state.position.left + src.table.state.size.width, y = positionY src.table src.column } of
+                srcPos ->
+                    drawRelation srcPos { x = srcPos.x + 20, y = srcPos.y } src.column.nullable name
 
         ( False, True, name ) ->
-            case { x = refTable.state.position.left, y = positionY refTable refColumn } of
-                ref ->
-                    drawRelation { x = ref.x - 20, y = ref.y } ref srcColumn.nullable name
+            case { x = ref.table.state.position.left, y = positionY ref.table ref.column } of
+                refPos ->
+                    drawRelation { x = refPos.x - 20, y = refPos.y } refPos src.column.nullable name
 
         ( True, True, name ) ->
-            case ( positionX srcTable refTable, ( positionY srcTable srcColumn, positionY refTable refColumn ) ) of
+            case ( positionX src.table ref.table, ( positionY src.table src.column, positionY ref.table ref.column ) ) of
                 ( ( srcX, refX ), ( srcY, refY ) ) ->
-                    drawRelation { x = srcX, y = srcY } { x = refX, y = refY } srcColumn.nullable name
+                    drawRelation { x = srcX, y = srcY } { x = refX, y = refY } src.column.nullable name
 
 
 drawRelation : Point -> Point -> Bool -> String -> Svg Msg
@@ -126,19 +126,14 @@ minus p1 p2 =
 -- formatters
 
 
-formatText : ForeignKey -> Table -> Column -> Table -> Column -> String
-formatText fk srcTable srcColumn refTable refColumn =
-    formatRef srcTable srcColumn ++ " -> " ++ formatForeignKeyName fk.name ++ " -> " ++ formatRef refTable refColumn
+formatText : ForeignKeyName -> TableAndColumn -> TableAndColumn -> String
+formatText fk src ref =
+    formatRef src.table src.column ++ " -> " ++ formatForeignKeyName fk ++ " -> " ++ formatRef ref.table ref.column
 
 
 formatRef : Table -> Column -> String
 formatRef table column =
     formatTableId table.id ++ "." ++ formatColumnName column.column
-
-
-formatTableId : TableId -> String
-formatTableId (TableId id) =
-    id
 
 
 formatColumnName : ColumnName -> String

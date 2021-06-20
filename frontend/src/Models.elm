@@ -1,4 +1,4 @@
-module Models exposing (CanvasPosition, DragId, Error, Menu, Model, Msg(..), State, Status(..), WindowSize, ZoomLevel, conf)
+module Models exposing (CanvasPosition, DragId, Error, Flags, Menu, Model, Msg(..), State, Status(..), WindowSize, ZoomLevel, conf)
 
 import Browser.Dom as Dom
 import Decoders.SchemaDecoder exposing (JsonTable)
@@ -27,6 +27,10 @@ conf =
     , ids = { menu = "menu", erd = "erd" }
     , loading = { showTablesThreshold = 20 }
     }
+
+
+type alias Flags =
+    ()
 
 
 type alias Model =

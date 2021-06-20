@@ -1,8 +1,10 @@
 module Main exposing (main)
 
 import AssocList as Dict
+import Basics
 import Browser
 import Browser.Dom as Dom
+import Browser.Events
 import Commands.FetchData exposing (loadData)
 import Commands.GetSize exposing (getWindowSize)
 import Commands.InitializeTable exposing (initializeTable)
@@ -10,7 +12,7 @@ import Draggable
 import FontAwesome.Styles as Icon
 import Html exposing (text)
 import Mappers.SchemaMapper exposing (buildSchema)
-import Models exposing (Menu, Model, Msg(..), State, Status(..))
+import Models exposing (Flags, Menu, Model, Msg(..), State, Status(..), WindowSize)
 import Models.Schema exposing (Schema)
 import Models.Utils exposing (Position, Size)
 import Update exposing (dragConfig, dragItem, hideAllTables, hideTable, setState, showAllTables, showTable, updateTable, zoomCanvas)
@@ -18,44 +20,36 @@ import View exposing (viewApp)
 import Views.Helpers exposing (formatHttpError)
 
 
+dataUrl =
+    "/tests/resources/schema.json"
+
+
 
 -- MAIN: program entry point \o/
 
 
-main : Program () Model Msg
+main : Program Flags Model Msg
 main =
-    Browser.document { init = init, update = update, subscriptions = subscriptions, view = view }
+    Browser.document { init = init, update = update, view = view, subscriptions = subscriptions }
 
 
-init : () -> ( Model, Cmd Msg )
+init : Flags -> ( Model, Cmd Msg )
 init _ =
-    ( { state = initState, menu = initMenu, schema = initSchema }
-    , Cmd.batch [ getWindowSize, loadData "/tests/resources/schema.json" ]
+    ( { state = { status = Loading, windowSize = Size 0 0, zoom = 1, position = Position 0 0, dragId = Nothing, drag = Draggable.init }
+      , menu = { position = Position 0 0 }
+      , schema = { tables = Dict.empty, relations = [] }
+      }
+    , Cmd.batch
+        [ getWindowSize
+        , loadData dataUrl
+        ]
     )
-
-
-initState : State
-initState =
-    { status = Loading, windowSize = Size 0 0, zoom = 1, position = Position 0 0, dragId = Nothing, drag = Draggable.init }
-
-
-initMenu : Menu
-initMenu =
-    { position = Position 0 0 }
-
-
-initSchema : Schema
-initSchema =
-    { tables = Dict.empty, relations = [] }
-
-
-
--- UPDATE: each case should be one line or call a function in Update file
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
+        -- each case should be one line or call a function in Update file
         GotWindowSize (Ok windowSize) ->
             ( setState (\state -> { state | windowSize = windowSize }) model, Cmd.none )
 
@@ -105,25 +99,13 @@ update msg model =
             ( dragItem model delta, Cmd.none )
 
 
-
--- SUBSCRIPTIONS
-
-
-subscriptions : Model -> Sub Msg
-subscriptions model =
-    Draggable.subscriptions DragMsg model.state.drag
-
-
-
--- VIEW: each case should be one line
-
-
 view : Model -> Browser.Document Msg
 view model =
     { title = "Schema Viz"
     , body =
         [ Icon.css
         , case model.state.status of
+            -- each case should be one line
             Failure e ->
                 text ("Oooups an error happened, " ++ e)
 
@@ -134,3 +116,11 @@ view model =
                 viewApp model Nothing
         ]
     }
+
+
+subscriptions : Model -> Sub Msg
+subscriptions model =
+    Sub.batch
+        [ Draggable.subscriptions DragMsg model.state.drag
+        , Browser.Events.onResize (\w h -> GotWindowSize (Ok (Size (toFloat w) (toFloat h))))
+        ]

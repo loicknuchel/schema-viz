@@ -13,6 +13,7 @@ when inside the directory containing this file.
 
 import NoDebug.Log
 import NoDebug.TodoOrToString
+import NoExposingEverything
 import NoMissingSubscriptionsCall
 import NoMissingTypeAnnotation
 import NoMissingTypeAnnotationInLetIn
@@ -26,13 +27,14 @@ import NoUnused.Parameters
 import NoUnused.Patterns
 import NoUnused.Variables
 import NoUselessSubscriptions
-import Review.Rule exposing (Rule)
+import Review.Rule as Rule exposing (Rule)
 
 
 config : List Rule
 config =
     [ NoDebug.Log.rule
     , NoDebug.TodoOrToString.rule
+    , NoExposingEverything.rule |> Rule.ignoreErrorsForDirectories [ "tests/" ]
     , NoMissingSubscriptionsCall.rule
     , NoRecursiveUpdate.rule
     , NoUselessSubscriptions.rule
@@ -45,5 +47,5 @@ config =
     , NoUnused.Modules.rule
     , NoUnused.Parameters.rule
     , NoUnused.Patterns.rule
-    , NoUnused.Variables.rule
+    , NoUnused.Variables.rule |> Rule.ignoreErrorsForFiles [ "src/Libs/Std.elm" ]
     ]

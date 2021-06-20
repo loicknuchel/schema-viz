@@ -1,4 +1,4 @@
-module Models exposing (..)
+module Models exposing (CanvasPosition, DragId, Error, Menu, Model, Msg(..), State, Status(..), WindowSize, ZoomLevel, conf)
 
 import Browser.Dom as Dom
 import Decoders.SchemaDecoder exposing (JsonTable)

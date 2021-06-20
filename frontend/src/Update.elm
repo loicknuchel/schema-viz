@@ -1,4 +1,4 @@
-module Update exposing (..)
+module Update exposing (dragConfig, dragItem, hideAllTables, hideTable, setState, showAllTables, showTable, updateTable, zoomCanvas)
 
 import AssocList as Dict
 import Commands.GetSize exposing (getTableSize)

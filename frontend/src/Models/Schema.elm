@@ -1,4 +1,4 @@
-module Models.Schema exposing (..)
+module Models.Schema exposing (Column, ColumnComment(..), ColumnIndex(..), ColumnName(..), ColumnRef, ColumnState, ColumnType(..), ForeignKey, ForeignKeyName(..), Index, IndexName(..), PrimaryKey, PrimaryKeyName(..), Relation, RelationRef, RelationState, Schema, SchemaName(..), Table, TableAndColumn, TableComment(..), TableId(..), TableName(..), TableState, TableStatus(..), Unique, UniqueName(..), formatTableId)
 
 import AssocList exposing (Dict)
 import Models.Utils exposing (Color, Position, Size)

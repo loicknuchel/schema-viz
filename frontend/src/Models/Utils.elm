@@ -1,4 +1,4 @@
-module Models.Utils exposing (..)
+module Models.Utils exposing (Color, Position, Size)
 
 -- generic types to use everywhere, should not include any project value, only libs if really needed
 

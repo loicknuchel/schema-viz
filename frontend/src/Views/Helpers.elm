@@ -1,4 +1,4 @@
-module Views.Helpers exposing (..)
+module Views.Helpers exposing (dragAttrs, formatHttpError, formatTableId, formatTableName, placeAt)
 
 import Draggable
 import Html exposing (Attribute)

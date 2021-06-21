@@ -61,7 +61,7 @@ tableDecoder =
         (field "schema" string)
         (field "table" string)
         (field "columns" (list columnDecoder))
-        (maybe (field "primaryKey" primaryKeyDecoder))
+        (maybe (field "primary_key" primaryKeyDecoder))
         (field "uniques" (list uniqueIndexDecoder))
         (field "indexes" (list indexDecoder))
         (maybe (field "comment" string))

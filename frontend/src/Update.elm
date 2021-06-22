@@ -24,7 +24,7 @@ showTable : Model -> TableId -> ( Model, Cmd Msg )
 showTable model id =
     case Maybe.map (\t -> t.state.status) (getTable id model.schema) of
         Just Uninitialized ->
-            ( { model | schema = visitTable id (setState (\state -> { state | status = Hidden })) model.schema }, getTableSize id )
+            ( { model | schema = visitTable id (setState (\state -> { state | status = Hidden })) model.schema }, getTableSize model.state.zoom id )
 
         Just Ready ->
             ( { model | schema = visitTable id (setState (\state -> { state | status = Visible })) model.schema }, Cmd.none )

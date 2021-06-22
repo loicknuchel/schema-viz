@@ -56,8 +56,9 @@ type Msg
     | GotData (Result Http.Error (List ( JsonTable, TableId )))
     | HideTable TableId
     | ShowTable TableId
-    | GotTableSize (Result Dom.Error ( TableId, Size ))
+    | InitializedTableSize (Result Dom.Error ( TableId, Size ))
     | InitializedTable TableId Size Position Color
+    | GotTableSize (Result Dom.Error ( TableId, Size ))
     | HideAllTables
     | ShowAllTables
     | Zoom WheelEvent

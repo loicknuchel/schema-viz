@@ -6,14 +6,15 @@ import Browser
 import Browser.Dom as Dom
 import Browser.Events
 import Commands.FetchData exposing (loadData)
-import Commands.GetSize exposing (getWindowSize)
+import Commands.GetSize exposing (getTableSize, getWindowSize)
 import Commands.InitializeTable exposing (initializeTable)
 import Draggable
 import FontAwesome.Styles as Icon
 import Html exposing (text)
+import Libs.Std exposing (listFilterMap)
 import Mappers.SchemaMapper exposing (buildSchema)
 import Models exposing (Flags, Menu, Model, Msg(..), State, Status(..), WindowSize)
-import Models.Schema exposing (Schema)
+import Models.Schema exposing (Schema, TableStatus(..))
 import Models.Utils exposing (Position, Size)
 import Update exposing (dragConfig, dragItem, hideAllTables, hideTable, setState, showAllTables, showTable, updateTable, zoomCanvas)
 import View exposing (viewApp)
@@ -68,14 +69,20 @@ update msg model =
         ShowTable id ->
             showTable model id
 
-        GotTableSize (Ok ( id, size )) ->
+        InitializedTableSize (Ok ( id, size )) ->
             ( model, initializeTable id size model.state.windowSize )
+
+        InitializedTableSize (Err (Dom.NotFound e)) ->
+            ( setState (\state -> { state | status = Failure ("Init size not found for '" ++ e ++ "' id") }) model, Cmd.none )
+
+        InitializedTable id size position color ->
+            ( { model | schema = updateTable (\state -> { state | status = Visible, size = size, position = position, color = color }) id model.schema }, Cmd.none )
+
+        GotTableSize (Ok ( id, size )) ->
+            ( { model | schema = updateTable (\state -> { state | size = size }) id model.schema }, Cmd.none )
 
         GotTableSize (Err (Dom.NotFound e)) ->
             ( setState (\state -> { state | status = Failure ("Size not found for '" ++ e ++ "' id") }) model, Cmd.none )
-
-        InitializedTable id size position color ->
-            ( { model | schema = updateTable model.schema id size position color }, Cmd.none )
 
         HideAllTables ->
             ( { model | schema = hideAllTables model.schema }, Cmd.none )
@@ -84,7 +91,7 @@ update msg model =
             showAllTables model
 
         Zoom zoom ->
-            ( { model | state = zoomCanvas model.state zoom }, Cmd.none )
+            zoomCanvas zoom model
 
         DragMsg dragMsg ->
             Tuple.mapFirst (\newState -> { model | state = newState }) (Draggable.update dragConfig dragMsg model.state)

@@ -1,12 +1,12 @@
 module Update exposing (dragConfig, dragItem, hideAllTables, hideTable, setState, showAllTables, showTable, updateTable, zoomCanvas)
 
 import AssocList as Dict
-import Commands.GetSize exposing (getTableSize)
+import Commands.GetSize exposing (getTableSize, initializeTableSize)
 import Draggable
 import Draggable.Events exposing (onDragBy, onDragEnd, onDragStart)
-import Libs.Std exposing (WheelEvent)
+import Libs.Std exposing (WheelEvent, listFilterMap)
 import Models exposing (DragId, Model, Msg(..), State, Status(..), ZoomLevel, conf)
-import Models.Schema exposing (Schema, Table, TableId(..), TableStatus(..), formatTableId)
+import Models.Schema exposing (Schema, Table, TableId(..), TableState, TableStatus(..), formatTableId)
 import Models.Utils exposing (Color, Position, Size)
 import Task
 
@@ -24,7 +24,7 @@ showTable : Model -> TableId -> ( Model, Cmd Msg )
 showTable model id =
     case Maybe.map (\t -> t.state.status) (getTable id model.schema) of
         Just Uninitialized ->
-            ( { model | schema = visitTable id (setState (\state -> { state | status = Hidden })) model.schema }, getTableSize model.state.zoom id )
+            ( { model | schema = visitTable id (setState (\state -> { state | status = Hidden })) model.schema }, initializeTableSize model.state.zoom id )
 
         Just Ready ->
             ( { model | schema = visitTable id (setState (\state -> { state | status = Visible })) model.schema }, Cmd.none )
@@ -39,9 +39,9 @@ showTable model id =
             ( setState (\state -> { state | status = Failure ("Can't show table (" ++ formatTableId id ++ "), not found") }) model, Cmd.none )
 
 
-updateTable : Schema -> TableId -> Size -> Position -> Color -> Schema
-updateTable schema id size position color =
-    visitTable id (setState (\state -> { state | status = Visible, size = size, position = position, color = color })) schema
+updateTable : (TableState -> TableState) -> TableId -> Schema -> Schema
+updateTable transform id schema =
+    visitTable id (setState transform) schema
 
 
 hideAllTables : Schema -> Schema
@@ -49,18 +49,11 @@ hideAllTables schema =
     visitTables
         (setState
             (\state ->
-                case state.status of
-                    Uninitialized ->
-                        state
+                if state.status == Visible then
+                    { state | status = Ready }
 
-                    Ready ->
-                        state
-
-                    Hidden ->
-                        state
-
-                    Visible ->
-                        { state | status = Ready }
+                else
+                    state
             )
         )
         schema
@@ -87,27 +80,33 @@ showAllTables model =
     )
 
 
-zoomCanvas : State -> WheelEvent -> State
-zoomCanvas state wheel =
+zoomCanvas : WheelEvent -> Model -> ( Model, Cmd Msg )
+zoomCanvas wheel model =
     let
         newZoom : ZoomLevel
         newZoom =
-            (state.zoom + (wheel.delta.y * conf.zoom.speed)) |> clamp conf.zoom.min conf.zoom.max
+            (model.state.zoom + (wheel.delta.y * conf.zoom.speed)) |> clamp conf.zoom.min conf.zoom.max
 
         zoomFactor : Float
         zoomFactor =
-            newZoom / state.zoom
+            newZoom / model.state.zoom
 
         -- to zoom on cursor, works only if origin is top left (CSS property: "transform-origin: top left;")
         newLeft : Float
         newLeft =
-            state.position.left - ((wheel.mouse.x - state.position.left) * (zoomFactor - 1))
+            model.state.position.left - ((wheel.mouse.x - model.state.position.left) * (zoomFactor - 1))
 
         newTop : Float
         newTop =
-            state.position.top - ((wheel.mouse.y - state.position.top) * (zoomFactor - 1))
+            model.state.position.top - ((wheel.mouse.y - model.state.position.top) * (zoomFactor - 1))
+
+        newModel =
+            setState (\state -> { state | zoom = newZoom, position = Position newLeft newTop }) model
+
+        visibleTableIds =
+            listFilterMap (\t -> t.state.status == Visible) .id (Dict.values model.schema.tables)
     in
-    { state | zoom = newZoom, position = Position newLeft newTop }
+    ( newModel, Cmd.batch (List.map (getTableSize newModel.state.zoom) visibleTableIds) )
 
 
 dragConfig : Draggable.Config DragId Msg

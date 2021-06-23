@@ -1,13 +1,14 @@
-module Update exposing (dragConfig, dragItem, hideAllTables, hideTable, setState, showAllTables, showTable, updateTable, zoomCanvas)
+module Update exposing (dragConfig, dragItem, hideAllTables, hideTable, setState, showAllTables, showTable, updateSizes, updateTable, zoomCanvas)
 
 import AssocList as Dict
-import Commands.GetSize exposing (getTableSize, initializeTableSize)
+import Commands.GetSize exposing (initializeTableSize)
 import Draggable
 import Draggable.Events exposing (onDragBy, onDragEnd, onDragStart)
-import Libs.Std exposing (WheelEvent, listFilterMap)
-import Models exposing (DragId, Model, Msg(..), State, Status(..), ZoomLevel, conf)
+import Libs.Std exposing (WheelEvent)
+import Models exposing (DragId, Model, Msg(..), SizeChange, State, Status(..), ZoomLevel, conf)
 import Models.Schema exposing (Schema, Table, TableId(..), TableState, TableStatus(..), formatTableId)
 import Models.Utils exposing (Color, Position, Size)
+import Ports exposing (observeTableSize)
 import Task
 
 
@@ -27,7 +28,7 @@ showTable model id =
             ( { model | schema = visitTable id (setState (\state -> { state | status = Hidden })) model.schema }, initializeTableSize model.state.zoom id )
 
         Just Ready ->
-            ( { model | schema = visitTable id (setState (\state -> { state | status = Visible })) model.schema }, Cmd.none )
+            ( { model | schema = visitTable id (setState (\state -> { state | status = Visible })) model.schema }, observeTableSize id )
 
         Just Hidden ->
             ( setState (\state -> { state | status = Failure ("Can't show a Hidden table (" ++ formatTableId id ++ ")") }) model, Cmd.none )
@@ -80,7 +81,12 @@ showAllTables model =
     )
 
 
-zoomCanvas : WheelEvent -> Model -> ( Model, Cmd Msg )
+updateSizes : List SizeChange -> Model -> Model
+updateSizes sizeChanges model =
+    List.foldr (\change m -> { m | schema = updateTable (\s -> { s | size = change.size }) (TableId change.id) m.schema }) model sizeChanges
+
+
+zoomCanvas : WheelEvent -> Model -> Model
 zoomCanvas wheel model =
     let
         newZoom : ZoomLevel
@@ -102,11 +108,8 @@ zoomCanvas wheel model =
 
         newModel =
             setState (\state -> { state | zoom = newZoom, position = Position newLeft newTop }) model
-
-        visibleTableIds =
-            listFilterMap (\t -> t.state.status == Visible) .id (Dict.values model.schema.tables)
     in
-    ( newModel, Cmd.batch (List.map (getTableSize newModel.state.zoom) visibleTableIds) )
+    newModel
 
 
 dragConfig : Draggable.Config DragId Msg

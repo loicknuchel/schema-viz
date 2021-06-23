@@ -1,4 +1,4 @@
-module Models exposing (CanvasPosition, DragId, Error, Flags, Menu, Model, Msg(..), State, Status(..), WindowSize, ZoomLevel, conf)
+module Models exposing (CanvasPosition, DragId, Error, Flags, Menu, Model, Msg(..), SizeChange, State, Status(..), WindowSize, ZoomLevel, conf)
 
 import Browser.Dom as Dom
 import Decoders.SchemaDecoder exposing (JsonTable)
@@ -58,7 +58,7 @@ type Msg
     | ShowTable TableId
     | InitializedTableSize (Result Dom.Error ( TableId, Size ))
     | InitializedTable TableId Size Position Color
-    | GotTableSize (Result Dom.Error ( TableId, Size ))
+    | SizesChanged (List SizeChange)
     | HideAllTables
     | ShowAllTables
     | Zoom WheelEvent
@@ -86,6 +86,10 @@ type alias ZoomDelta =
 
 type alias CanvasPosition =
     Position
+
+
+type alias SizeChange =
+    { id : String, size : Size }
 
 
 type alias Error =

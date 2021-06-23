@@ -2,7 +2,7 @@ module View exposing (viewApp)
 
 import AssocList as Dict
 import Html exposing (Attribute, Html, div, text)
-import Html.Attributes exposing (class, style)
+import Html.Attributes exposing (class, id, style)
 import Libs.Std exposing (handleWheel, listAddOn, listFilterMap)
 import Models exposing (CanvasPosition, Model, Msg(..), ZoomLevel, conf)
 import Models.Schema exposing (ColumnRef, Relation, RelationRef, Schema, Table, TableAndColumn, TableStatus(..))
@@ -29,7 +29,7 @@ viewApp model loading =
 
 viewErd : ZoomLevel -> CanvasPosition -> Schema -> Html Msg
 viewErd zoom pan schema =
-    div ([ class "erd", handleWheel Zoom ] ++ dragAttrs conf.ids.erd)
+    div ([ class "erd", id "erd", handleWheel Zoom ] ++ dragAttrs conf.ids.erd)
         [ div [ class "canvas", placeAndZoom zoom pan ]
             (listFilterMap shouldDrawTable (viewTable zoom) (Dict.values schema.tables)
                 ++ listFilterMap shouldDrawRelation viewRelation (List.filterMap (buildRelation schema) schema.relations)

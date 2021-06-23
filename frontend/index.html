@@ -13,6 +13,20 @@
         node: document.getElementById("app"),
         flags: null
     })
+
+    const resizeObserver = new ResizeObserver(entries => {
+        const sizes = entries.map(entry => ({
+            id: entry.target.id,
+            size: {
+                width: entry.contentRect.width,
+                height: entry.contentRect.height
+            }
+        }))
+        app.ports.sizesReceiver.send(sizes)
+    })
+    app.ports.observeSizes.subscribe(ids => {
+        ids.forEach(id => resizeObserver.observe(document.getElementById(id)))
+    })
 </script>
 </body>
 </html>

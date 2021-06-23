@@ -6,17 +6,17 @@ import Browser
 import Browser.Dom as Dom
 import Browser.Events
 import Commands.FetchData exposing (loadData)
-import Commands.GetSize exposing (getTableSize, getWindowSize)
+import Commands.GetSize exposing (getWindowSize)
 import Commands.InitializeTable exposing (initializeTable)
 import Draggable
 import FontAwesome.Styles as Icon
 import Html exposing (text)
-import Libs.Std exposing (listFilterMap)
 import Mappers.SchemaMapper exposing (buildSchema)
-import Models exposing (Flags, Menu, Model, Msg(..), State, Status(..), WindowSize)
+import Models exposing (Flags, Menu, Model, Msg(..), SizeChange, State, Status(..), WindowSize)
 import Models.Schema exposing (Schema, TableStatus(..))
 import Models.Utils exposing (Position, Size)
-import Update exposing (dragConfig, dragItem, hideAllTables, hideTable, setState, showAllTables, showTable, updateTable, zoomCanvas)
+import Ports exposing (observeTableSize, sizesReceiver)
+import Update exposing (dragConfig, dragItem, hideAllTables, hideTable, setState, showAllTables, showTable, updateSizes, updateTable, zoomCanvas)
 import View exposing (viewApp)
 import Views.Helpers exposing (formatHttpError)
 
@@ -76,13 +76,10 @@ update msg model =
             ( setState (\state -> { state | status = Failure ("Init size not found for '" ++ e ++ "' id") }) model, Cmd.none )
 
         InitializedTable id size position color ->
-            ( { model | schema = updateTable (\state -> { state | status = Visible, size = size, position = position, color = color }) id model.schema }, Cmd.none )
+            ( { model | schema = updateTable (\state -> { state | status = Visible, size = size, position = position, color = color }) id model.schema }, observeTableSize id )
 
-        GotTableSize (Ok ( id, size )) ->
-            ( { model | schema = updateTable (\state -> { state | size = size }) id model.schema }, Cmd.none )
-
-        GotTableSize (Err (Dom.NotFound e)) ->
-            ( setState (\state -> { state | status = Failure ("Size not found for '" ++ e ++ "' id") }) model, Cmd.none )
+        SizesChanged sizes ->
+            ( updateSizes sizes model, Cmd.none )
 
         HideAllTables ->
             ( { model | schema = hideAllTables model.schema }, Cmd.none )
@@ -91,7 +88,7 @@ update msg model =
             showAllTables model
 
         Zoom zoom ->
-            zoomCanvas zoom model
+            ( zoomCanvas zoom model, Cmd.none )
 
         DragMsg dragMsg ->
             Tuple.mapFirst (\newState -> { model | state = newState }) (Draggable.update dragConfig dragMsg model.state)
@@ -130,4 +127,5 @@ subscriptions model =
     Sub.batch
         [ Draggable.subscriptions DragMsg model.state.drag
         , Browser.Events.onResize (\w h -> GotWindowSize (Ok (Size (toFloat w) (toFloat h))))
+        , sizesReceiver SizesChanged
         ]

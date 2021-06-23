@@ -1,4 +1,4 @@
-module Commands.GetSize exposing (getTableSize, getWindowSize, initializeTableSize)
+module Commands.GetSize exposing (getWindowSize, initializeTableSize)
 
 import Browser.Dom as Dom
 import Models exposing (Msg(..), WindowSize, ZoomLevel)
@@ -20,11 +20,6 @@ getWindowSize =
 initializeTableSize : ZoomLevel -> TableId -> Cmd Msg
 initializeTableSize zoom id =
     Task.attempt InitializedTableSize (Task.map (\size -> ( id, size )) (elementSize zoom (formatTableId id)))
-
-
-getTableSize : ZoomLevel -> TableId -> Cmd Msg
-getTableSize zoom id =
-    Task.attempt GotTableSize (Task.map (\size -> ( id, size )) (elementSize zoom (formatTableId id)))
 
 
 

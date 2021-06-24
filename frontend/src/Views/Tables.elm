@@ -20,7 +20,7 @@ import Views.Helpers exposing (dragAttrs, formatTableId, formatTableName, placeA
 viewTable : ZoomLevel -> Table -> Html Msg
 viewTable zoom table =
     div
-        (listAddIf (table.state.status == Hidden)
+        (listAddIf (table.state.status == Initializing)
             (style "visibility" "hidden")
             [ class "table"
             , placeAt table.state.position

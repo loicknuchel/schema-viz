@@ -1,26 +1,25 @@
 module Main exposing (main)
 
 import AssocList as Dict
-import Basics
 import Browser
 import Browser.Dom as Dom
 import Browser.Events
 import Commands.FetchData exposing (loadData)
 import Commands.GetSize exposing (getWindowSize)
-import Commands.InitializeTable exposing (initializeTable)
 import Draggable
 import FontAwesome.Styles as Icon
 import Html exposing (text)
 import Mappers.SchemaMapper exposing (buildSchema)
-import Models exposing (Flags, Menu, Model, Msg(..), SizeChange, State, Status(..), WindowSize)
-import Models.Schema exposing (Schema, TableStatus(..))
+import Models exposing (Flags, Model, Msg(..), Status(..))
+import Models.Schema exposing (TableStatus(..))
 import Models.Utils exposing (Position, Size)
-import Ports exposing (observeTableSize, sizesReceiver)
+import Ports exposing (sizesReceiver)
 import Update exposing (dragConfig, dragItem, hideAllTables, hideTable, setState, showAllTables, showTable, updateSizes, updateTable, zoomCanvas)
 import View exposing (viewApp)
 import Views.Helpers exposing (formatHttpError)
 
 
+dataUrl : String
 dataUrl =
     "/tests/resources/schema.json"
 
@@ -69,17 +68,11 @@ update msg model =
         ShowTable id ->
             showTable model id
 
-        InitializedTableSize (Ok ( id, size )) ->
-            ( model, initializeTable id size model.state.windowSize )
-
-        InitializedTableSize (Err (Dom.NotFound e)) ->
-            ( setState (\state -> { state | status = Failure ("Init size not found for '" ++ e ++ "' id") }) model, Cmd.none )
-
         InitializedTable id size position color ->
-            ( { model | schema = updateTable (\state -> { state | status = Visible, size = size, position = position, color = color }) id model.schema }, observeTableSize id )
+            ( { model | schema = updateTable (\state -> { state | status = Shown, size = size, position = position, color = color }) id model.schema }, Cmd.none )
 
         SizesChanged sizes ->
-            ( updateSizes sizes model, Cmd.none )
+            updateSizes sizes model
 
         HideAllTables ->
             ( { model | schema = hideAllTables model.schema }, Cmd.none )

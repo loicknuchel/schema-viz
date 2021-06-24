@@ -56,7 +56,6 @@ type Msg
     | GotData (Result Http.Error (List ( JsonTable, TableId )))
     | HideTable TableId
     | ShowTable TableId
-    | InitializedTableSize (Result Dom.Error ( TableId, Size ))
     | InitializedTable TableId Size Position Color
     | SizesChanged (List SizeChange)
     | HideAllTables

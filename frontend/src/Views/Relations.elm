@@ -12,8 +12,8 @@ import Svg.Attributes exposing (class, height, strokeDasharray, style, width, x1
 
 
 viewRelation : Relation -> Svg Msg
-viewRelation { key, src, ref, state } =
-    case ( src.table.state.status == Visible, ref.table.state.status == Visible, formatText key src ref ) of
+viewRelation { key, src, ref } =
+    case ( src.table.state.status == Shown, ref.table.state.status == Shown, formatText key src ref ) of
         ( False, False, name ) ->
             svg [ class "relation" ] [ text name ]
 

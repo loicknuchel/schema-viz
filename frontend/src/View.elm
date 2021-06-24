@@ -52,19 +52,19 @@ shouldDrawTable table =
         Uninitialized ->
             False
 
-        Ready ->
+        Hidden ->
             False
 
-        Hidden ->
+        Initializing ->
             True
 
-        Visible ->
+        Shown ->
             True
 
 
 shouldDrawRelation : Relation -> Bool
 shouldDrawRelation relation =
-    relation.state.show && (relation.src.table.state.status == Visible || relation.ref.table.state.status == Visible)
+    relation.state.show && (relation.src.table.state.status == Shown || relation.ref.table.state.status == Shown)
 
 
 buildRelation : Schema -> RelationRef -> Maybe Relation

@@ -1,13 +1,13 @@
 module Update exposing (dragConfig, dragItem, hideAllTables, hideTable, setState, showAllTables, showTable, updateSizes, updateTable, zoomCanvas)
 
-import AssocList as Dict
-import Commands.GetSize exposing (initializeTableSize)
+import AssocList as Dict exposing (Dict)
+import Commands.InitializeTable exposing (initializeTable)
 import Draggable
 import Draggable.Events exposing (onDragBy, onDragEnd, onDragStart)
-import Libs.Std exposing (WheelEvent)
-import Models exposing (DragId, Model, Msg(..), SizeChange, State, Status(..), ZoomLevel, conf)
+import Libs.Std exposing (WheelEvent, maybeFilter)
+import Models exposing (DragId, Model, Msg(..), SizeChange, Status(..), ZoomLevel, conf)
 import Models.Schema exposing (Schema, Table, TableId(..), TableState, TableStatus(..), formatTableId)
-import Models.Utils exposing (Color, Position, Size)
+import Models.Utils exposing (Position)
 import Ports exposing (observeTableSize)
 import Task
 
@@ -18,23 +18,24 @@ import Task
 
 hideTable : Schema -> TableId -> Schema
 hideTable schema id =
-    visitTable id (setState (\state -> { state | status = Ready })) schema
+    visitTable id (setState (\state -> { state | status = Hidden })) schema
 
 
 showTable : Model -> TableId -> ( Model, Cmd Msg )
 showTable model id =
     case Maybe.map (\t -> t.state.status) (getTable id model.schema) of
         Just Uninitialized ->
-            ( { model | schema = visitTable id (setState (\state -> { state | status = Hidden })) model.schema }, initializeTableSize model.state.zoom id )
+            -- race condition problem when observe is performed before table is shown :(
+            ( { model | schema = visitTable id (setState (\state -> { state | status = Initializing })) model.schema }, observeTableSize id )
 
-        Just Ready ->
-            ( { model | schema = visitTable id (setState (\state -> { state | status = Visible })) model.schema }, observeTableSize id )
+        Just Initializing ->
+            ( setState (\state -> { state | status = Failure ("Can't show an Initializing table (" ++ formatTableId id ++ ")") }) model, Cmd.none )
 
         Just Hidden ->
-            ( setState (\state -> { state | status = Failure ("Can't show a Hidden table (" ++ formatTableId id ++ ")") }) model, Cmd.none )
+            ( { model | schema = visitTable id (setState (\state -> { state | status = Shown })) model.schema }, observeTableSize id )
 
-        Just Visible ->
-            ( model, Cmd.none )
+        Just Shown ->
+            ( setState (\state -> { state | status = Failure ("Table (" ++ formatTableId id ++ ") is already Shown") }) model, Cmd.none )
 
         Nothing ->
             ( setState (\state -> { state | status = Failure ("Can't show table (" ++ formatTableId id ++ "), not found") }) model, Cmd.none )
@@ -50,8 +51,8 @@ hideAllTables schema =
     visitTables
         (setState
             (\state ->
-                if state.status == Visible then
-                    { state | status = Ready }
+                if state.status == Shown then
+                    { state | status = Hidden }
 
                 else
                     state
@@ -70,7 +71,7 @@ showAllTables model =
                     Uninitialized ->
                         Just (Task.perform ShowTable (Task.succeed table.id))
 
-                    Ready ->
+                    Hidden ->
                         Just (Task.perform ShowTable (Task.succeed table.id))
 
                     _ ->
@@ -81,9 +82,16 @@ showAllTables model =
     )
 
 
-updateSizes : List SizeChange -> Model -> Model
+updateSizes : List SizeChange -> Model -> ( Model, Cmd Msg )
 updateSizes sizeChanges model =
-    List.foldr (\change m -> { m | schema = updateTable (\s -> { s | size = change.size }) (TableId change.id) m.schema }) model sizeChanges
+    ( List.foldr (\change m -> { m | schema = updateTable (\s -> { s | size = change.size }) (TableId change.id) m.schema }) model sizeChanges
+    , Cmd.batch (List.filterMap (\{ id, size } -> getInitTable id model.schema.tables |> Maybe.map (\t -> initializeTable t.id size model.state.windowSize)) sizeChanges)
+    )
+
+
+getInitTable : String -> Dict TableId Table -> Maybe Table
+getInitTable id tables =
+    Dict.get (TableId id) tables |> maybeFilter (\t -> t.state.status == Initializing)
 
 
 zoomCanvas : WheelEvent -> Model -> Model
@@ -106,6 +114,7 @@ zoomCanvas wheel model =
         newTop =
             model.state.position.top - ((wheel.mouse.y - model.state.position.top) * (zoomFactor - 1))
 
+        newModel : Model
         newModel =
             setState (\state -> { state | zoom = newZoom, position = Position newLeft newTop }) model
     in

@@ -32,7 +32,7 @@ viewMenu menu schema =
             ]
          , div [] [ button [ onClick HideAllTables ] [ text "hide all tables" ], button [ onClick ShowAllTables ] [ text "show all tables" ] ]
          ]
-            ++ listFilterMap (\t -> not (t.state.status == Visible)) viewHiddenTable (Dict.values schema.tables)
+            ++ listFilterMap (\t -> not (t.state.status == Shown)) viewHiddenTable (Dict.values schema.tables)
         )
 
 

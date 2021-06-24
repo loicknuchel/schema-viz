@@ -53,9 +53,9 @@ type alias TableState =
 
 type TableStatus
     = Uninitialized
-    | Ready
+    | Initializing
     | Hidden
-    | Visible
+    | Shown
 
 
 type alias Column =

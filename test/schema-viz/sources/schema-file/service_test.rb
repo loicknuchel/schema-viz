@@ -7,7 +7,7 @@ describe SchemaViz::Source::SchemaFile::Service do
   service = pkg::Service.new(SchemaViz::File::Service.new)
 
   it 'parse a sql file' do
-    file = './test/resources/structure.sql'
+    file = './test/resources/tests.sql'
     structure = service.parse_schema_file(file).get!
     assert_equal 2, structure.tables.length
     # primary key is added
@@ -23,7 +23,7 @@ describe SchemaViz::Source::SchemaFile::Service do
     assert_equal [], structure.table('public', 'table2').checks
     assert_equal '((user_id > 10)) NOT VALID', structure.table('public', 'table1').checks[0].predicate
     # column default
-    assert_equal "nextval('public.table2_id_seq'::regclass)", structure.column('public', 'table2', 'id').default
+    assert_equal SchemaViz::Option.of("nextval('public.table2_id_seq'::regclass)"), structure.column('public', 'table2', 'id').default
     # comments are added
     assert_equal SchemaViz::Option.empty, structure.table('public', 'table2').comment
     assert_equal SchemaViz::Option.empty, structure.column('public', 'table1', 'id').comment
@@ -40,7 +40,7 @@ describe SchemaViz::Source::SchemaFile::Service do
   end
 
   it 'builds statements from lines' do
-    file = 'structure.sql'
+    file = 'file.sql'
     lines = [
       '',
       '-- a comment',

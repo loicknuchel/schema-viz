@@ -31,7 +31,7 @@
           "nullable": true
         }
       ],
-      "primaryKey": {
+      "primary_key": {
         "columns": [
           "id"
         ],
@@ -99,7 +99,7 @@
           "nullable": false
         }
       ],
-      "primaryKey": {
+      "primary_key": {
         "columns": [
           "id"
         ],
@@ -119,7 +119,9 @@
           "name": "roles_name_uniq"
         }
       ],
-      "indexes": []
+      "indexes": [
+
+      ]
     },
     {
       "schema": "public",
@@ -163,14 +165,18 @@
           "nullable": false
         }
       ],
-      "primaryKey": {
+      "primary_key": {
         "columns": [
           "id"
         ],
         "name": "role_user_pk"
       },
-      "uniques": [],
-      "indexes": []
+      "uniques": [
+
+      ],
+      "indexes": [
+
+      ]
     }
   ]
 }

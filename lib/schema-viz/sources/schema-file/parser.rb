@@ -100,7 +100,7 @@ module SchemaViz
           end
 
           def parse_add_foreign_key(schema, table, name, constraint)
-            Matcher.new(constraint, /FOREIGN KEY \((?<column>[^)]+)\) REFERENCES (?<schema_b>[^ .]+)\.(?<table_b>[^ .]+)\((?<column_b>[^)]+)\)/)
+            Matcher.new(constraint, /FOREIGN KEY \((?<column>[^)]+)\) REFERENCES (?<schema_b>[^ .]+)\.(?<table_b>[^ .]+) ?\((?<column_b>[^)]+)\)/)
                    .slice('column', 'schema_b', 'table_b', 'column_b')
                    .map { |column, schema_b, table_b, column_b| ForeignKey.new(schema, table, column, schema_b, table_b, column_b, name) }
                    .on_error { |e| ParseError.new(__method__, constraint, e) }

@@ -41,7 +41,7 @@ Currently, it has two parts:
 
 First, you need to install Ruby & Bundler in your machine, then run `bundle install` to get the dependencies.
 
-- launch the program: `exe/schema-viz generate --structure ./test/resources/structure.sql --output frontend/tests/resources/schema.json`
+- launch the program: `exe/schema-viz generate --structure ./test/resources/schema.sql --output frontend/tests/resources/schema.json`
 - launch the tests: `rake test`
 - launch a Ruby console: `bin/console`
 

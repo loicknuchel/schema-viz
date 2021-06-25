@@ -39,7 +39,7 @@ describe SchemaViz::Source::SchemaFile::Parser do
     assert_equal parser::PrimaryKey.new('public', 't2', ['id'], 't2_id_pkey'),
                  parser.parse_alter_table('ALTER TABLE ONLY public.t2 ADD CONSTRAINT t2_id_pkey PRIMARY KEY (id);').get!
     assert_equal parser::ForeignKey.new('p', 't2', 't1_id', 'p', 't1', 'id', 't2_t1_id_fk'),
-                 parser.parse_alter_table('ALTER TABLE ONLY p.t2 ADD CONSTRAINT t2_t1_id_fk FOREIGN KEY (t1_id) REFERENCES p.t1(id);').get!
+                 parser.parse_alter_table('ALTER TABLE ONLY p.t2 ADD CONSTRAINT t2_t1_id_fk FOREIGN KEY (t1_id) REFERENCES p.t1 (id);').get!
     assert_equal parser::UniqueConstraint.new('p', 't1', %w[first_name last_name], 'name_unique'),
                  parser.parse_alter_table('ALTER TABLE ONLY p.t1 ADD CONSTRAINT name_unique UNIQUE (first_name, last_name);').get!
     assert_equal parser::CheckConstraint.new('p', 't1', '((kind IS NOT NULL)) NOT VALID', 't1_kind_not_null'),

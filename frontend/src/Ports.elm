@@ -1,4 +1,4 @@
-port module Ports exposing (observeSize, observeTableSize, sizesReceiver)
+port module Ports exposing (observeSize, observeTableSize, observeTablesSize, sizesReceiver)
 
 import Models exposing (SizeChange)
 import Models.Schema exposing (TableId, formatTableId)
@@ -18,3 +18,8 @@ observeSize id =
 observeTableSize : TableId -> Cmd msg
 observeTableSize id =
     observeSizes [ formatTableId id ]
+
+
+observeTablesSize : List TableId -> Cmd msg
+observeTablesSize ids =
+    observeSizes (List.map formatTableId ids)

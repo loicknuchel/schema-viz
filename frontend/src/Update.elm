@@ -4,12 +4,11 @@ import AssocList as Dict exposing (Dict)
 import Commands.InitializeTable exposing (initializeTable)
 import Draggable
 import Draggable.Events exposing (onDragBy, onDragEnd, onDragStart)
-import Libs.Std exposing (WheelEvent, maybeFilter)
+import Libs.Std exposing (WheelEvent, dictFromList, maybeFilter)
 import Models exposing (Canvas, DragId, Model, Msg(..), SizeChange, Status(..), ZoomLevel, conf)
 import Models.Schema exposing (Schema, Table, TableId(..), TableState, TableStatus(..), formatTableId)
 import Models.Utils exposing (Area, Position)
-import Ports exposing (observeTableSize)
-import Task
+import Ports exposing (observeTableSize, observeTablesSize)
 
 
 
@@ -63,23 +62,28 @@ hideAllTables schema =
 
 showAllTables : Model -> ( Model, Cmd Msg )
 showAllTables model =
-    ( model
-    , Cmd.batch
-        (List.filterMap
-            (\table ->
-                case table.state.status of
-                    Uninitialized ->
-                        Just (Task.perform ShowTable (Task.succeed table.id))
+    let
+        ( cmds, tables ) =
+            model.schema.tables
+                |> Dict.values
+                |> List.map
+                    (\table ->
+                        case table.state.status of
+                            Uninitialized ->
+                                ( Just table.id, setState (\state -> { state | status = Initializing }) table )
 
-                    Hidden ->
-                        Just (Task.perform ShowTable (Task.succeed table.id))
+                            Initializing ->
+                                ( Nothing, table )
 
-                    _ ->
-                        Nothing
-            )
-            (Dict.values model.schema.tables)
-        )
-    )
+                            Hidden ->
+                                ( Just table.id, setState (\state -> { state | status = Shown }) table )
+
+                            Shown ->
+                                ( Nothing, table )
+                    )
+                |> List.unzip
+    in
+    ( { model | schema = setTables tables model.schema }, observeTablesSize (List.filterMap identity cmds) )
 
 
 updateSizes : List SizeChange -> Model -> ( Model, Cmd Msg )
@@ -183,12 +187,17 @@ getTable id schema =
     Dict.get id schema.tables
 
 
-setState : (state -> state) -> { item | state : state } -> { item | state : state }
+setTables : List Table -> Schema -> Schema
+setTables tables schema =
+    { schema | tables = dictFromList .id tables }
+
+
+setState : (s -> s) -> { item | state : s } -> { item | state : s }
 setState transform item =
     { item | state = transform item.state }
 
 
-setSize : (size -> size) -> { item | size : size } -> { item | size : size }
+setSize : (s -> s) -> { item | size : s } -> { item | size : s }
 setSize transform item =
     { item | size = transform item.size }
 

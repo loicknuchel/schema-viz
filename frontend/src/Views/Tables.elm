@@ -5,12 +5,12 @@ import FontAwesome.Icon exposing (viewIcon)
 import FontAwesome.Regular as IconLight
 import FontAwesome.Solid as Icon
 import Html exposing (Attribute, Html, div, span, text)
-import Html.Attributes exposing (attribute, class, id, style, title)
+import Html.Attributes exposing (class, id, style, title)
 import Html.Events exposing (onClick)
 import Libs.Std exposing (listAddIf, listAppendOn, maybeFilter)
 import Models exposing (Msg(..), ZoomLevel, conf)
 import Models.Schema exposing (Column, ColumnComment(..), ColumnName(..), ColumnType(..), ForeignKey, Index, IndexName(..), PrimaryKey, SchemaName(..), Table, TableComment(..), TableName(..), TableStatus(..), Unique, UniqueName(..))
-import Views.Helpers exposing (dragAttrs, formatTableId, formatTableName, placeAt)
+import Views.Helpers exposing (dragAttrs, formatTableId, formatTableName, placeAt, sizeAttrs)
 
 
 
@@ -22,12 +22,8 @@ viewTable zoom table =
     div
         (listAddIf (table.state.status == Initializing)
             (style "visibility" "hidden")
-            [ class "table"
-            , placeAt table.state.position
-            , id (formatTableId table.id)
-            , attribute "width" (String.fromFloat table.state.size.width)
-            , attribute "height" (String.fromFloat table.state.size.height)
-            ]
+            [ class "table", id (formatTableId table.id), placeAt table.state.position ]
+            ++ sizeAttrs table.state.size
             ++ dragAttrs (formatTableId table.id)
         )
         [ viewHeader zoom table

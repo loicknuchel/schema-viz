@@ -5,7 +5,7 @@ import Commands.InitializeTable exposing (initializeTable)
 import Draggable
 import Draggable.Events exposing (onDragBy, onDragEnd, onDragStart)
 import Libs.Std exposing (WheelEvent, maybeFilter)
-import Models exposing (DragId, Model, Msg(..), SizeChange, Status(..), ZoomLevel, conf)
+import Models exposing (Canvas, DragId, Model, Msg(..), SizeChange, Status(..), ZoomLevel, conf)
 import Models.Schema exposing (Schema, Table, TableId(..), TableState, TableStatus(..), formatTableId)
 import Models.Utils exposing (Position)
 import Ports exposing (observeTableSize)
@@ -84,41 +84,49 @@ showAllTables model =
 
 updateSizes : List SizeChange -> Model -> ( Model, Cmd Msg )
 updateSizes sizeChanges model =
-    ( List.foldr (\change m -> { m | schema = updateTable (\s -> { s | size = change.size }) (TableId change.id) m.schema }) model sizeChanges
-    , Cmd.batch (List.filterMap (\{ id, size } -> getInitTable id model.schema.tables |> Maybe.map (\t -> initializeTable t.id size model.state.windowSize)) sizeChanges)
-    )
+    ( List.foldr updateSize model sizeChanges, Cmd.batch (List.filterMap (maybeChangeCmd model) sizeChanges) )
 
 
-getInitTable : String -> Dict TableId Table -> Maybe Table
-getInitTable id tables =
+updateSize : SizeChange -> Model -> Model
+updateSize change model =
+    if change.id == conf.ids.erd then
+        { model | canvas = setSize (\_ -> change.size) model.canvas }
+
+    else
+        { model | schema = updateTable (\s -> { s | size = change.size }) (TableId change.id) model.schema }
+
+
+maybeChangeCmd : Model -> SizeChange -> Maybe (Cmd Msg)
+maybeChangeCmd model { id, size } =
+    getInitializingTable id model.schema.tables |> Maybe.map (\t -> initializeTable t.id size model.canvas.size)
+
+
+getInitializingTable : String -> Dict TableId Table -> Maybe Table
+getInitializingTable id tables =
     Dict.get (TableId id) tables |> maybeFilter (\t -> t.state.status == Initializing)
 
 
-zoomCanvas : WheelEvent -> Model -> Model
-zoomCanvas wheel model =
+zoomCanvas : WheelEvent -> Canvas -> Canvas
+zoomCanvas wheel canvas =
     let
         newZoom : ZoomLevel
         newZoom =
-            (model.state.zoom + (wheel.delta.y * conf.zoom.speed)) |> clamp conf.zoom.min conf.zoom.max
+            (canvas.zoom + (wheel.delta.y * conf.zoom.speed)) |> clamp conf.zoom.min conf.zoom.max
 
         zoomFactor : Float
         zoomFactor =
-            newZoom / model.state.zoom
+            newZoom / canvas.zoom
 
         -- to zoom on cursor, works only if origin is top left (CSS property: "transform-origin: top left;")
         newLeft : Float
         newLeft =
-            model.state.position.left - ((wheel.mouse.x - model.state.position.left) * (zoomFactor - 1))
+            canvas.position.left - ((wheel.mouse.x - canvas.position.left) * (zoomFactor - 1))
 
         newTop : Float
         newTop =
-            model.state.position.top - ((wheel.mouse.y - model.state.position.top) * (zoomFactor - 1))
-
-        newModel : Model
-        newModel =
-            setState (\state -> { state | zoom = newZoom, position = Position newLeft newTop }) model
+            canvas.position.top - ((wheel.mouse.y - canvas.position.top) * (zoomFactor - 1))
     in
-    newModel
+    { canvas | zoom = newZoom, position = Position newLeft newTop }
 
 
 dragConfig : Draggable.Config DragId Msg
@@ -135,13 +143,13 @@ dragItem model delta =
     case model.state.dragId of
         Just id ->
             if id == conf.ids.menu then
-                { model | menu = setPosition delta 1 model.menu }
+                { model | menu = updatePosition delta 1 model.menu }
 
             else if id == conf.ids.erd then
-                { model | state = setPosition delta 1 model.state }
+                { model | canvas = updatePosition delta 1 model.canvas }
 
             else
-                { model | schema = visitTable (TableId id) (setState (setPosition delta model.state.zoom)) model.schema }
+                { model | schema = visitTable (TableId id) (setState (updatePosition delta model.canvas.zoom)) model.schema }
 
         Nothing ->
             setState (\state -> { state | status = Failure "Can't OnDragBy when no drag id" }) model
@@ -171,6 +179,11 @@ setState transform item =
     { item | state = transform item.state }
 
 
-setPosition : Draggable.Delta -> ZoomLevel -> { item | position : Position } -> { item | position : Position }
-setPosition ( dx, dy ) zoom item =
+setSize : (size -> size) -> { item | size : size } -> { item | size : size }
+setSize transform item =
+    { item | size = transform item.size }
+
+
+updatePosition : Draggable.Delta -> ZoomLevel -> { item | position : Position } -> { item | position : Position }
+updatePosition ( dx, dy ) zoom item =
     { item | position = Position (item.position.left + (dx / zoom)) (item.position.top + (dy / zoom)) }

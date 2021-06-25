@@ -2,18 +2,15 @@ module Main exposing (main)
 
 import AssocList as Dict
 import Browser
-import Browser.Dom as Dom
-import Browser.Events
 import Commands.FetchData exposing (loadData)
-import Commands.GetSize exposing (getWindowSize)
 import Draggable
 import FontAwesome.Styles as Icon
 import Html exposing (text)
 import Mappers.SchemaMapper exposing (buildSchema)
-import Models exposing (Flags, Model, Msg(..), Status(..))
+import Models exposing (Flags, Model, Msg(..), Status(..), conf)
 import Models.Schema exposing (TableStatus(..))
 import Models.Utils exposing (Position, Size)
-import Ports exposing (sizesReceiver)
+import Ports exposing (observeSize, sizesReceiver)
 import Update exposing (dragConfig, dragItem, hideAllTables, hideTable, setState, showAllTables, showTable, updateSizes, updateTable, zoomCanvas)
 import View exposing (viewApp)
 import Views.Helpers exposing (formatHttpError)
@@ -35,12 +32,13 @@ main =
 
 init : Flags -> ( Model, Cmd Msg )
 init _ =
-    ( { state = { status = Loading, windowSize = Size 0 0, zoom = 1, position = Position 0 0, dragId = Nothing, drag = Draggable.init }
+    ( { state = { status = Loading, dragId = Nothing, drag = Draggable.init }
       , menu = { position = Position 0 0 }
+      , canvas = { size = Size 0 0, zoom = 1, position = Position 0 0 }
       , schema = { tables = Dict.empty, relations = [] }
       }
     , Cmd.batch
-        [ getWindowSize
+        [ observeSize conf.ids.erd
         , loadData dataUrl
         ]
     )
@@ -50,12 +48,6 @@ update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         -- each case should be one line or call a function in Update file
-        GotWindowSize (Ok windowSize) ->
-            ( setState (\state -> { state | windowSize = windowSize }) model, Cmd.none )
-
-        GotWindowSize (Err (Dom.NotFound e)) ->
-            ( setState (\state -> { state | status = Failure ("Size not found for '" ++ e ++ "'") }) model, Cmd.none )
-
         GotData (Ok tables) ->
             ( setState (\state -> { state | status = Success }) { model | schema = buildSchema tables }, Cmd.none )
 
@@ -81,7 +73,7 @@ update msg model =
             showAllTables model
 
         Zoom zoom ->
-            ( zoomCanvas zoom model, Cmd.none )
+            ( { model | canvas = zoomCanvas zoom model.canvas }, Cmd.none )
 
         DragMsg dragMsg ->
             Tuple.mapFirst (\newState -> { model | state = newState }) (Draggable.update dragConfig dragMsg model.state)
@@ -119,6 +111,5 @@ subscriptions : Model -> Sub Msg
 subscriptions model =
     Sub.batch
         [ Draggable.subscriptions DragMsg model.state.drag
-        , Browser.Events.onResize (\w h -> GotWindowSize (Ok (Size (toFloat w) (toFloat h))))
         , sizesReceiver SizesChanged
         ]

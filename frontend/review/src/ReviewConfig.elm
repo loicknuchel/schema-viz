@@ -34,7 +34,7 @@ config : List Rule
 config =
     [ NoDebug.Log.rule
     , NoDebug.TodoOrToString.rule
-    , NoExposingEverything.rule |> Rule.ignoreErrorsForDirectories [ "tests/" ]
+    , NoExposingEverything.rule |> Rule.ignoreErrorsForFiles [ "src/Libs/Std.elm" ] |> Rule.ignoreErrorsForDirectories [ "tests/" ]
     , NoMissingSubscriptionsCall.rule
     , NoRecursiveUpdate.rule
     , NoUselessSubscriptions.rule

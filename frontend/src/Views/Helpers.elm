@@ -1,12 +1,12 @@
-module Views.Helpers exposing (dragAttrs, formatHttpError, formatTableId, formatTableName, placeAt)
+module Views.Helpers exposing (dragAttrs, formatHttpError, formatTableId, formatTableName, placeAt, sizeAttrs)
 
 import Draggable
 import Html exposing (Attribute)
-import Html.Attributes exposing (style)
+import Html.Attributes exposing (attribute, style)
 import Http exposing (Error(..))
 import Models exposing (DragId, Msg(..), conf)
 import Models.Schema exposing (SchemaName(..), Table, TableId(..), TableName(..))
-import Models.Utils exposing (Position)
+import Models.Utils exposing (Position, Size)
 
 
 
@@ -21,6 +21,11 @@ placeAt p =
 dragAttrs : DragId -> List (Attribute Msg)
 dragAttrs id =
     Draggable.mouseTrigger id DragMsg :: Draggable.touchTriggers id DragMsg
+
+
+sizeAttrs : Size -> List (Attribute Msg)
+sizeAttrs size =
+    [ attribute "width" (String.fromFloat size.width), attribute "height" (String.fromFloat size.height) ]
 
 
 

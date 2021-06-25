@@ -3,10 +3,11 @@ module View exposing (viewApp)
 import AssocList as Dict
 import Html exposing (Attribute, Html, div, text)
 import Html.Attributes exposing (class, id, style)
-import Libs.Std exposing (handleWheel, listAddOn, listFilterMap)
-import Models exposing (CanvasPosition, Model, Msg(..), ZoomLevel, conf)
+import Libs.Std exposing (handleWheel, listAppendOn, listFilterMap)
+import Models exposing (Canvas, Model, Msg(..), ZoomLevel, conf)
 import Models.Schema exposing (ColumnRef, Relation, RelationRef, Schema, Table, TableAndColumn, TableStatus(..))
-import Views.Helpers exposing (dragAttrs)
+import Models.Utils exposing (Position)
+import Views.Helpers exposing (dragAttrs, sizeAttrs)
 import Views.Menu exposing (viewMenu)
 import Views.Relations exposing (viewRelation)
 import Views.Tables exposing (viewTable)
@@ -19,19 +20,19 @@ import Views.Tables exposing (viewTable)
 viewApp : Model -> Maybe String -> Html Msg
 viewApp model loading =
     div [ class "app" ]
-        (listAddOn loading
+        (listAppendOn loading
             (\msg -> div [ class "loading" ] [ text msg ])
             [ viewMenu model.menu model.schema
-            , viewErd model.state.zoom model.state.position model.schema
+            , viewErd model.canvas model.schema
             ]
         )
 
 
-viewErd : ZoomLevel -> CanvasPosition -> Schema -> Html Msg
-viewErd zoom pan schema =
-    div ([ class "erd", id "erd", handleWheel Zoom ] ++ dragAttrs conf.ids.erd)
-        [ div [ class "canvas", placeAndZoom zoom pan ]
-            (listFilterMap shouldDrawTable (viewTable zoom) (Dict.values schema.tables)
+viewErd : Canvas -> Schema -> Html Msg
+viewErd canvas schema =
+    div ([ class "erd", id conf.ids.erd, handleWheel Zoom ] ++ sizeAttrs canvas.size ++ dragAttrs conf.ids.erd)
+        [ div [ class "canvas", placeAndZoom canvas.zoom canvas.position ]
+            (listFilterMap shouldDrawTable (viewTable canvas.zoom) (Dict.values schema.tables)
                 ++ listFilterMap shouldDrawRelation viewRelation (List.filterMap (buildRelation schema) schema.relations)
             )
         ]
@@ -41,7 +42,7 @@ viewErd zoom pan schema =
 -- view helpers
 
 
-placeAndZoom : ZoomLevel -> CanvasPosition -> Attribute msg
+placeAndZoom : ZoomLevel -> Position -> Attribute msg
 placeAndZoom zoom pan =
     style "transform" ("translate(" ++ String.fromFloat pan.left ++ "px, " ++ String.fromFloat pan.top ++ "px) scale(" ++ String.fromFloat zoom ++ ")")
 

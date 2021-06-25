@@ -1,6 +1,5 @@
-module Models exposing (CanvasPosition, DragId, Error, Flags, Menu, Model, Msg(..), SizeChange, State, Status(..), WindowSize, ZoomLevel, conf)
+module Models exposing (Canvas, DragId, Error, Flags, Menu, Model, Msg(..), SizeChange, State, Status(..), WindowSize, ZoomLevel, conf)
 
-import Browser.Dom as Dom
 import Decoders.SchemaDecoder exposing (JsonTable)
 import Draggable
 import Http
@@ -34,15 +33,19 @@ type alias Flags =
 
 
 type alias Model =
-    { state : State, menu : Menu, schema : Schema }
+    { state : State, menu : Menu, canvas : Canvas, schema : Schema }
 
 
 type alias State =
-    { status : Status, windowSize : WindowSize, zoom : ZoomLevel, position : CanvasPosition, dragId : Maybe DragId, drag : Draggable.State DragId }
+    { status : Status, dragId : Maybe DragId, drag : Draggable.State DragId }
 
 
 type alias Menu =
     { position : Position }
+
+
+type alias Canvas =
+    { size : Size, zoom : ZoomLevel, position : Position }
 
 
 type Status
@@ -52,8 +55,7 @@ type Status
 
 
 type Msg
-    = GotWindowSize (Result Dom.Error WindowSize)
-    | GotData (Result Http.Error (List ( JsonTable, TableId )))
+    = GotData (Result Http.Error (List ( JsonTable, TableId )))
     | HideTable TableId
     | ShowTable TableId
     | InitializedTable TableId Size Position Color
@@ -81,10 +83,6 @@ type alias ZoomLevel =
 
 type alias ZoomDelta =
     Float
-
-
-type alias CanvasPosition =
-    Position
 
 
 type alias SizeChange =

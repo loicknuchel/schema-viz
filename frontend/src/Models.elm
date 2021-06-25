@@ -1,4 +1,4 @@
-module Models exposing (Canvas, DragId, Error, Flags, Menu, Model, Msg(..), SizeChange, State, Status(..), WindowSize, ZoomLevel, conf)
+module Models exposing (Canvas, DragId, Error, Flags, Menu, Model, Msg(..), SizeChange, State, Status(..), ZoomLevel, conf)
 
 import Decoders.SchemaDecoder exposing (JsonTable)
 import Draggable
@@ -67,10 +67,6 @@ type Msg
     | StartDragging DragId
     | StopDragging
     | OnDragBy Draggable.Delta
-
-
-type alias WindowSize =
-    Size
 
 
 type alias DragId =

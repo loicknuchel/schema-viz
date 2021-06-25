@@ -7,7 +7,7 @@ import Draggable.Events exposing (onDragBy, onDragEnd, onDragStart)
 import Libs.Std exposing (WheelEvent, maybeFilter)
 import Models exposing (Canvas, DragId, Model, Msg(..), SizeChange, Status(..), ZoomLevel, conf)
 import Models.Schema exposing (Schema, Table, TableId(..), TableState, TableStatus(..), formatTableId)
-import Models.Utils exposing (Position)
+import Models.Utils exposing (Area, Position)
 import Ports exposing (observeTableSize)
 import Task
 
@@ -98,7 +98,16 @@ updateSize change model =
 
 maybeChangeCmd : Model -> SizeChange -> Maybe (Cmd Msg)
 maybeChangeCmd model { id, size } =
-    getInitializingTable id model.schema.tables |> Maybe.map (\t -> initializeTable t.id size model.canvas.size)
+    getInitializingTable id model.schema.tables |> Maybe.map (\t -> initializeTable size (getArea model.canvas) t.id)
+
+
+getArea : Canvas -> Area
+getArea canvas =
+    { left = (0 - canvas.position.left) / canvas.zoom
+    , right = (canvas.size.width - canvas.position.left) / canvas.zoom
+    , top = (0 - canvas.position.top) / canvas.zoom
+    , bottom = (canvas.size.height - canvas.position.top) / canvas.zoom
+    }
 
 
 getInitializingTable : String -> Dict TableId Table -> Maybe Table

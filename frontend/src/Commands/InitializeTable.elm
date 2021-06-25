@@ -1,9 +1,9 @@
 module Commands.InitializeTable exposing (initializeTable)
 
 import Libs.Std exposing (genChoose)
-import Models exposing (Msg(..), WindowSize, conf)
+import Models exposing (Msg(..), conf)
 import Models.Schema exposing (TableId)
-import Models.Utils exposing (Color, Position, Size)
+import Models.Utils exposing (Area, Color, Position, Size)
 import Random
 
 
@@ -11,23 +11,23 @@ import Random
 -- initialize table using random data
 
 
-initializeTable : TableId -> Size -> WindowSize -> Cmd Msg
-initializeTable id size windowSize =
-    Random.generate (\( pos, color ) -> InitializedTable id size pos color) (positionAndColorGen size windowSize)
+initializeTable : Size -> Area -> TableId -> Cmd Msg
+initializeTable size area id =
+    Random.generate (\( pos, color ) -> InitializedTable id size pos color) (positionAndColorGen size area)
 
 
 
 -- RANDOM GENERATORS
 
 
-positionAndColorGen : Size -> WindowSize -> Random.Generator ( Position, Color )
-positionAndColorGen size windowSize =
-    Random.map2 (\p c -> ( p, c )) (positionGen size windowSize) colorGen
+positionAndColorGen : Size -> Area -> Random.Generator ( Position, Color )
+positionAndColorGen size area =
+    Random.map2 (\position color -> ( position, color )) (positionGen size area) colorGen
 
 
-positionGen : Size -> WindowSize -> Random.Generator Position
-positionGen table windowSize =
-    Random.map2 (\w h -> Position w h) (Random.float 0 (windowSize.width - table.width)) (Random.float 0 (windowSize.height - table.height))
+positionGen : Size -> Area -> Random.Generator Position
+positionGen size area =
+    Random.map2 (\left top -> Position left top) (Random.float area.left (area.right - size.width)) (Random.float area.top (area.bottom - size.height))
 
 
 colorGen : Random.Generator Color

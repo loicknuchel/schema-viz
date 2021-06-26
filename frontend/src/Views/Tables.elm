@@ -22,7 +22,7 @@ viewTable zoom table =
     div
         (listAddIf (table.state.status == Initializing)
             (style "visibility" "hidden")
-            [ class "table", id (formatTableId table.id), placeAt table.state.position ]
+            [ class "erd-table", id (formatTableId table.id), placeAt table.state.position ]
             ++ sizeAttrs table.state.size
             ++ dragAttrs (formatTableId table.id)
         )

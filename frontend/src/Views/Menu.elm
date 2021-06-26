@@ -3,12 +3,13 @@ module Views.Menu exposing (viewMenu)
 import AssocList as Dict
 import FontAwesome.Icon exposing (viewIcon)
 import FontAwesome.Solid as Icon
-import Html exposing (Html, button, div, text)
+import Html exposing (Html, div, text)
 import Html.Attributes exposing (class, style)
 import Html.Events exposing (onClick)
 import Libs.Std exposing (listFilterMap)
 import Models exposing (Menu, Msg(..), conf)
 import Models.Schema exposing (Schema, Table, TableStatus(..))
+import Views.Bootstrap exposing (Color(..), button, buttonGroup)
 import Views.Helpers exposing (dragAttrs, formatTableName, placeAt)
 
 
@@ -30,7 +31,12 @@ viewMenu menu schema =
                     ++ " relations)"
                 )
             ]
-         , div [] [ button [ onClick HideAllTables ] [ text "hide all tables" ], button [ onClick ShowAllTables ] [ text "show all tables" ] ]
+         , div []
+            [ buttonGroup "Toggle all"
+                [ button Secondary [ onClick HideAllTables ] [ text "Hide all tables" ]
+                , button Secondary [ onClick ShowAllTables ] [ text "Show all tables" ]
+                ]
+            ]
          ]
             ++ listFilterMap (\t -> not (t.state.status == Shown)) viewHiddenTable (Dict.values schema.tables)
         )

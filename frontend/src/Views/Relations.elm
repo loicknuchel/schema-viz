@@ -15,7 +15,7 @@ viewRelation : Relation -> Svg Msg
 viewRelation { key, src, ref } =
     case ( src.table.state.status == Shown, ref.table.state.status == Shown, formatText key src ref ) of
         ( False, False, name ) ->
-            svg [ class "relation" ] [ text name ]
+            svg [ class "erd-relation" ] [ text name ]
 
         ( True, False, name ) ->
             case { x = src.table.state.position.left + src.table.state.size.width, y = positionY src.table src.column } of
@@ -107,7 +107,7 @@ headerHeight =
 
 columnHeight : Float
 columnHeight =
-    31.19
+    31
 
 
 positionY : Table -> Column -> Float

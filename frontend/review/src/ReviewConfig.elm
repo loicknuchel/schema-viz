@@ -34,14 +34,14 @@ config : List Rule
 config =
     [ NoDebug.Log.rule
     , NoDebug.TodoOrToString.rule
-    , NoExposingEverything.rule |> Rule.ignoreErrorsForFiles [ "src/Libs/Std.elm" ] |> Rule.ignoreErrorsForDirectories [ "tests/" ]
+    , NoExposingEverything.rule |> Rule.ignoreErrorsForFiles [ "src/Libs/Std.elm", "src/Views/Bootstrap.elm" ] |> Rule.ignoreErrorsForDirectories [ "tests/" ]
     , NoMissingSubscriptionsCall.rule
     , NoRecursiveUpdate.rule
     , NoUselessSubscriptions.rule
     , NoMissingTypeAnnotation.rule
     , NoMissingTypeAnnotationInLetIn.rule
     , NoMissingTypeExpose.rule
-    , NoUnused.CustomTypeConstructors.rule []
+    , NoUnused.CustomTypeConstructors.rule [] |> Rule.ignoreErrorsForFiles [ "src/Views/Bootstrap.elm" ]
     , NoUnused.Dependencies.rule
     , NoUnused.Exports.rule
     , NoUnused.Modules.rule

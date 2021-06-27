@@ -1,9 +1,9 @@
 module Mappers.SchemaMapper exposing (buildSchema)
 
 import AssocList as Dict exposing (Dict)
+import Conf exposing (conf)
 import Decoders.SchemaDecoder exposing (JsonColumn, JsonForeignKey, JsonIndex, JsonPrimaryKey, JsonTable, JsonUnique)
 import Libs.Std exposing (dictFromList)
-import Models exposing (conf)
 import Models.Schema exposing (Column, ColumnComment(..), ColumnIndex(..), ColumnName(..), ColumnType(..), ForeignKey, ForeignKeyName(..), Index, IndexName(..), PrimaryKey, PrimaryKeyName(..), RelationRef, Schema, SchemaName(..), Table, TableComment(..), TableId(..), TableName(..), TableStatus(..), Unique, UniqueName(..))
 import Models.Utils exposing (Color, Position, Size)
 
@@ -73,7 +73,7 @@ buildIndex index =
 
 buildForeignKey : JsonForeignKey -> ForeignKey
 buildForeignKey fk =
-    { tableId = buildTableId fk.schema fk.table
+    { tableId = buildTableId fk
     , schema = SchemaName fk.schema
     , table = TableName fk.table
     , column = ColumnName fk.column
@@ -81,9 +81,9 @@ buildForeignKey fk =
     }
 
 
-buildTableId : String -> String -> TableId
-buildTableId schema table =
-    TableId (schema ++ "." ++ table)
+buildTableId : JsonForeignKey -> TableId
+buildTableId fk =
+    TableId (SchemaName fk.schema) (TableName fk.table)
 
 
 

@@ -2,13 +2,15 @@ module Update exposing (dragConfig, dragItem, hideAllTables, hideTable, setState
 
 import AssocList as Dict exposing (Dict)
 import Commands.InitializeTable exposing (initializeTable)
+import Conf exposing (conf)
 import Draggable
 import Draggable.Events exposing (onDragBy, onDragEnd, onDragStart)
 import Libs.Std exposing (WheelEvent, dictFromList, maybeFilter)
-import Models exposing (Canvas, DragId, Model, Msg(..), SizeChange, Status(..), ZoomLevel, conf)
-import Models.Schema exposing (Schema, Table, TableId(..), TableState, TableStatus(..), formatTableId)
-import Models.Utils exposing (Area, Position)
+import Models exposing (Canvas, DragId, Model, Msg(..), SizeChange, Status(..))
+import Models.Schema exposing (Schema, Table, TableId, TableState, TableStatus(..))
+import Models.Utils exposing (Area, Position, ZoomLevel)
 import Ports exposing (observeTableSize, observeTablesSize)
+import Views.Helpers exposing (formatTableId, parseTableId)
 
 
 
@@ -34,7 +36,7 @@ showTable model id =
             ( { model | schema = visitTable id (setState (\state -> { state | status = Shown })) model.schema }, observeTableSize id )
 
         Just Shown ->
-            ( setState (\state -> { state | status = Failure ("Table (" ++ formatTableId id ++ ") is already Shown") }) model, Cmd.none )
+            ( model, Cmd.none )
 
         Nothing ->
             ( setState (\state -> { state | status = Failure ("Can't show table (" ++ formatTableId id ++ "), not found") }) model, Cmd.none )
@@ -97,12 +99,17 @@ updateSize change model =
         { model | canvas = setSize (\_ -> change.size) model.canvas }
 
     else
-        { model | schema = updateTable (\s -> { s | size = change.size }) (TableId change.id) model.schema }
+        { model | schema = updateTable (\s -> { s | size = change.size }) (parseTableId change.id) model.schema }
 
 
 maybeChangeCmd : Model -> SizeChange -> Maybe (Cmd Msg)
 maybeChangeCmd model { id, size } =
-    getInitializingTable id model.schema.tables |> Maybe.map (\t -> initializeTable size (getArea model.canvas) t.id)
+    getInitializingTable (parseTableId id) model.schema.tables |> Maybe.map (\t -> initializeTable size (getArea model.canvas) t.id)
+
+
+getInitializingTable : TableId -> Dict TableId Table -> Maybe Table
+getInitializingTable id tables =
+    Dict.get id tables |> maybeFilter (\t -> t.state.status == Initializing)
 
 
 getArea : Canvas -> Area
@@ -112,11 +119,6 @@ getArea canvas =
     , top = (0 - canvas.position.top) / canvas.zoom
     , bottom = (canvas.size.height - canvas.position.top) / canvas.zoom
     }
-
-
-getInitializingTable : String -> Dict TableId Table -> Maybe Table
-getInitializingTable id tables =
-    Dict.get (TableId id) tables |> maybeFilter (\t -> t.state.status == Initializing)
 
 
 zoomCanvas : WheelEvent -> Canvas -> Canvas
@@ -162,7 +164,7 @@ dragItem model delta =
                 { model | canvas = updatePosition delta 1 model.canvas }
 
             else
-                { model | schema = visitTable (TableId id) (setState (updatePosition delta model.canvas.zoom)) model.schema }
+                { model | schema = visitTable (parseTableId id) (setState (updatePosition delta model.canvas.zoom)) model.schema }
 
         Nothing ->
             setState (\state -> { state | status = Failure "Can't OnDragBy when no drag id" }) model

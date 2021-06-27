@@ -2,9 +2,10 @@ module Views.Relations exposing (viewRelation)
 
 import Libs.Std exposing (listAddIf)
 import Models exposing (Msg)
-import Models.Schema exposing (Column, ColumnIndex(..), ColumnName(..), ForeignKeyName(..), Relation, Table, TableAndColumn, TableStatus(..), formatTableId)
+import Models.Schema exposing (Column, ColumnIndex(..), ForeignKeyName(..), Relation, Table, TableAndColumn, TableStatus(..))
 import Svg exposing (Svg, line, svg, text)
 import Svg.Attributes exposing (class, height, strokeDasharray, style, width, x1, x2, y1, y2)
+import Views.Helpers exposing (formatTableId, withColumnName)
 
 
 
@@ -133,12 +134,7 @@ formatText fk src ref =
 
 formatRef : Table -> Column -> String
 formatRef table column =
-    formatTableId table.id ++ "." ++ formatColumnName column.column
-
-
-formatColumnName : ColumnName -> String
-formatColumnName (ColumnName name) =
-    name
+    formatTableId table.id |> withColumnName column.column
 
 
 formatForeignKeyName : ForeignKeyName -> String

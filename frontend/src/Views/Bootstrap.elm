@@ -1,7 +1,7 @@
 module Views.Bootstrap exposing (..)
 
 import Html exposing (Attribute, Html, div)
-import Html.Attributes exposing (attribute, class)
+import Html.Attributes exposing (attribute, class, id)
 
 
 type Color
@@ -15,8 +15,18 @@ type Color
     | Dark
 
 
+dropdown : String -> (List (Attribute msg) -> Html msg) -> (List (Attribute msg) -> Html msg) -> Html msg
+dropdown dropdownId toggleElement dropdownContent =
+    -- TODO find a nice way to give the "dropdown-menu-end" option
+    div [ class "dropdown" ]
+        [ toggleElement [ attribute "data-bs-toggle" "dropdown", id dropdownId, attribute "aria-expanded" "false" ]
+        , dropdownContent [ class "dropdown-menu dropdown-menu-end", attribute "aria-labelledby" dropdownId ]
+        ]
+
+
 button : Color -> List (Attribute msg) -> List (Html msg) -> Html msg
 button color attrs children =
+    -- TODO find a nice way to give the "outline" option
     Html.button ([ attribute "type" "button", class "btn", class ("btn-outline-" ++ colorToString color) ] ++ attrs) children
 
 

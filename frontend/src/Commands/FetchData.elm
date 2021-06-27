@@ -4,7 +4,7 @@ import Decoders.SchemaDecoder exposing (JsonSchema, JsonTable, schemaDecoder)
 import Http
 import Libs.Std exposing (listZipWith)
 import Models exposing (Msg(..))
-import Models.Schema exposing (TableId(..))
+import Models.Schema exposing (SchemaName(..), TableId(..), TableName(..))
 
 
 
@@ -27,4 +27,4 @@ buildMsg result =
 
 buildTableId : JsonTable -> TableId
 buildTableId table =
-    TableId (table.schema ++ "." ++ table.table)
+    TableId (SchemaName table.schema) (TableName table.table)

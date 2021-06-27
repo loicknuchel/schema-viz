@@ -95,6 +95,7 @@ body {
 .erd-table .column .icon {
     color: #8795A1;
     width: 15px;
+    height: 100%;
     margin-right: .25rem;
     flex-shrink: 0;
 }

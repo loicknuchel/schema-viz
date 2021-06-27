@@ -1,4 +1,4 @@
-module Models.Schema exposing (Column, ColumnComment(..), ColumnIndex(..), ColumnName(..), ColumnRef, ColumnState, ColumnType(..), ForeignKey, ForeignKeyName(..), Index, IndexName(..), PrimaryKey, PrimaryKeyName(..), Relation, RelationRef, RelationState, Schema, SchemaName(..), Table, TableAndColumn, TableComment(..), TableId(..), TableName(..), TableState, TableStatus(..), Unique, UniqueName(..), formatTableId)
+module Models.Schema exposing (Column, ColumnComment(..), ColumnIndex(..), ColumnName(..), ColumnRef, ColumnState, ColumnType(..), ForeignKey, ForeignKeyName(..), Index, IndexName(..), PrimaryKey, PrimaryKeyName(..), Relation, RelationRef, RelationState, Schema, SchemaName(..), Table, TableAndColumn, TableComment(..), TableId(..), TableName(..), TableState, TableStatus(..), Unique, UniqueName(..))
 
 import AssocList exposing (Dict)
 import Models.Utils exposing (Color, Position, Size)
@@ -102,7 +102,7 @@ type SchemaName
 
 
 type TableId
-    = TableId String
+    = TableId SchemaName TableName
 
 
 type TableName
@@ -135,8 +135,3 @@ type IndexName
 
 type ForeignKeyName
     = ForeignKeyName String
-
-
-formatTableId : TableId -> String
-formatTableId (TableId id) =
-    id

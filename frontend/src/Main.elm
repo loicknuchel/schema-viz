@@ -3,11 +3,12 @@ module Main exposing (main)
 import AssocList as Dict
 import Browser
 import Commands.FetchData exposing (loadData)
+import Conf exposing (conf)
 import Draggable
 import FontAwesome.Styles as Icon
 import Html exposing (text)
 import Mappers.SchemaMapper exposing (buildSchema)
-import Models exposing (Flags, Model, Msg(..), Status(..), conf)
+import Models exposing (Flags, Model, Msg(..), Status(..))
 import Models.Schema exposing (TableStatus(..))
 import Models.Utils exposing (Position, Size)
 import Ports exposing (observeSize, sizesReceiver)

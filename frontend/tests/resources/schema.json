@@ -125,6 +125,44 @@
     },
     {
       "schema": "public",
+      "table": "credentials",
+      "columns": [
+        {
+          "column": "user_id",
+          "type": "int",
+          "nullable": false,
+          "reference": {
+            "schema": "public",
+            "table": "users",
+            "column": "id",
+            "name": "credentials_user_id_fk"
+          }
+        },
+        {
+          "column": "login",
+          "type": "varchar(255)",
+          "nullable": false
+        },
+        {
+          "column": "password",
+          "type": "varchar(255)",
+          "nullable": false
+        }
+      ],
+      "uniques": [
+        {
+          "columns": [
+            "login"
+          ],
+          "name": "credentials_login_uniq"
+        }
+      ],
+      "indexes": [
+
+      ]
+    },
+    {
+      "schema": "public",
       "table": "role_user",
       "columns": [
         {

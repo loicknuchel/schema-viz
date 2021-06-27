@@ -1,7 +1,8 @@
 port module Ports exposing (observeSize, observeTableSize, observeTablesSize, sizesReceiver)
 
 import Models exposing (SizeChange)
-import Models.Schema exposing (TableId, formatTableId)
+import Models.Schema exposing (TableId)
+import Views.Helpers exposing (formatTableId)
 
 
 port observeSizes : List String -> Cmd msg

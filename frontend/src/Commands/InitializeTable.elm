@@ -1,7 +1,8 @@
 module Commands.InitializeTable exposing (initializeTable)
 
+import Conf exposing (conf)
 import Libs.Std exposing (genChoose)
-import Models exposing (Msg(..), conf)
+import Models exposing (Msg(..))
 import Models.Schema exposing (TableId)
 import Models.Utils exposing (Area, Color, Position, Size)
 import Random

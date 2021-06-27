@@ -1,6 +1,10 @@
-module Models.Utils exposing (Area, Color, Position, Size)
+module Models.Utils exposing (Area, Color, Position, Size, ZoomLevel)
 
 -- generic types to use everywhere, should not include any project value, only libs if really needed
+
+
+type alias ZoomLevel =
+    Float
 
 
 type alias Size =

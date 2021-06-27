@@ -1,13 +1,14 @@
 module Views.Menu exposing (viewMenu)
 
 import AssocList as Dict
+import Conf exposing (conf)
 import FontAwesome.Icon exposing (viewIcon)
 import FontAwesome.Solid as Icon
 import Html exposing (Html, div, text)
 import Html.Attributes exposing (class, style)
 import Html.Events exposing (onClick)
 import Libs.Std exposing (listFilterMap)
-import Models exposing (Menu, Msg(..), conf)
+import Models exposing (Menu, Msg(..))
 import Models.Schema exposing (Schema, Table, TableStatus(..))
 import Views.Bootstrap exposing (Color(..), button, buttonGroup)
 import Views.Helpers exposing (dragAttrs, formatTableName, placeAt)
@@ -45,6 +46,6 @@ viewMenu menu schema =
 viewHiddenTable : Table -> Html Msg
 viewHiddenTable table =
     div [ style "display" "flex", style "align-items" "center" ]
-        [ div [ style "flex-grow" "1" ] [ text (formatTableName table) ]
+        [ div [ style "flex-grow" "1" ] [ text (formatTableName table.table table.schema) ]
         , div [ style "font-size" "0.9rem", style "opacity" "0.25", onClick (ShowTable table.id) ] [ viewIcon Icon.eye ]
         ]

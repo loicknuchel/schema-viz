@@ -37,6 +37,19 @@ ALTER TABLE ONLY public.roles
 ALTER TABLE ONLY public.roles
     ADD CONSTRAINT roles_name_uniq UNIQUE (name);
 
+CREATE TABLE public.credentials
+(
+    user_id  int          NOT NULL,
+    login    varchar(255) NOT NULL,
+    password varchar(255) NOT NULL
+);
+
+ALTER TABLE ONLY public.credentials
+    ADD CONSTRAINT credentials_user_id_fk FOREIGN KEY (user_id) REFERENCES public.users (id);
+
+ALTER TABLE ONLY public.credentials
+    ADD CONSTRAINT credentials_login_uniq UNIQUE (login);
+
 CREATE TABLE public.role_user
 (
     id         int       NOT NULL,

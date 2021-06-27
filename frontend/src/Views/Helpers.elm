@@ -1,11 +1,12 @@
-module Views.Helpers exposing (dragAttrs, formatHttpError, formatTableId, formatTableName, placeAt, sizeAttrs)
+module Views.Helpers exposing (dragAttrs, extractColumnName, extractColumnType, formatHttpError, formatTableId, formatTableName, parseTableId, placeAt, sizeAttrs, withColumnName, withNullableInfo)
 
+import Conf exposing (conf)
 import Draggable
 import Html exposing (Attribute)
 import Html.Attributes exposing (attribute, style)
 import Http exposing (Error(..))
-import Models exposing (DragId, Msg(..), conf)
-import Models.Schema exposing (SchemaName(..), Table, TableId(..), TableName(..))
+import Models exposing (DragId, Msg(..))
+import Models.Schema exposing (ColumnName(..), ColumnType(..), SchemaName(..), TableId(..), TableName(..))
 import Models.Utils exposing (Position, Size)
 
 
@@ -32,20 +33,52 @@ sizeAttrs size =
 -- formatters
 
 
-formatTableId : TableId -> DragId
-formatTableId (TableId id) =
-    id
+extractColumnName : ColumnName -> String
+extractColumnName (ColumnName name) =
+    name
 
 
-formatTableName : Table -> String
-formatTableName table =
-    case ( table.schema, table.table ) of
-        ( SchemaName schema, TableName name ) ->
-            if schema == conf.defaultSchema then
-                name
+extractColumnType : ColumnType -> String
+extractColumnType (ColumnType kind) =
+    kind
 
-            else
-                schema ++ "." ++ name
+
+formatTableId : TableId -> String
+formatTableId (TableId schema table) =
+    formatTableName table schema
+
+
+parseTableId : String -> TableId
+parseTableId id =
+    case String.split "." id of
+        schema :: table :: [] ->
+            TableId (SchemaName schema) (TableName table)
+
+        _ ->
+            TableId (SchemaName conf.defaultSchema) (TableName id)
+
+
+formatTableName : TableName -> SchemaName -> String
+formatTableName (TableName table) (SchemaName schema) =
+    if schema == conf.defaultSchema then
+        table
+
+    else
+        schema ++ "." ++ table
+
+
+withColumnName : ColumnName -> String -> String
+withColumnName (ColumnName column) table =
+    table ++ "." ++ column
+
+
+withNullableInfo : Bool -> String -> String
+withNullableInfo nullable text =
+    if nullable then
+        text ++ "?"
+
+    else
+        text
 
 
 formatHttpError : Http.Error -> String

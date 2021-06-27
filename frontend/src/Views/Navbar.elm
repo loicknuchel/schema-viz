@@ -15,7 +15,7 @@ viewNavbar : String -> List Table -> Html Msg
 viewNavbar search tables =
     nav [ class "navbar navbar-expand-md navbar-light bg-white shadow-sm", id "navbar" ]
         [ div [ class "container-fluid" ]
-            [ a [ href "#", class "navbar-brand" ] [ img [ src "/assets/logo.png", alt "logo", height 24, class "d-inline-block align-text-top" ] [], text " Schema Viz" ]
+            [ a [ href "#", class "navbar-brand" ] [ img [ src "assets/logo.png", alt "logo", height 24, class "d-inline-block align-text-top" ] [], text " Schema Viz" ]
             , button [ type_ "button", class "navbar-toggler", attribute "data-bs-toggle" "collapse", attribute "data-bs-target" "#navbar-content", attribute "aria-controls" "navbar-content", attribute "aria-expanded" "false", attribute "aria-label" "Toggle navigation" ]
                 [ span [ class "navbar-toggler-icon" ] []
                 ]

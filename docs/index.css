@@ -1,13 +1,13 @@
-body {
-    background-color: #F1F6F8;
+:root {
+    --navbar-height: 56px;
+    --offcanvas-z-index: 1050;
+    --table-z-index: 10;
+    --relation-z-index: 9;
+    --loading-z-index: 10000; /* should be on top of everything */
+    --bg-light: #F1F6F8;
 }
 
 .app {
-    position: absolute;
-    top: 0;
-    right: 0;
-    bottom: 0;
-    left: 0;
     overflow: hidden;
 }
 
@@ -17,46 +17,45 @@ body {
     right: 0;
     bottom: 0;
     left: 0;
-    background-color: #F1F6F8;
-    z-index: 1000;
+    background-color: var(--bg-light);
+    z-index: var(--loading-z-index);
 }
 
-.menu {
-    position: absolute;
-    min-width: 250px;
-    min-height: 500px;
-    max-height: 100%;
-    overflow-y: auto;
-    background-color: #FFFFFF;
-    cursor: pointer;
+#navbar {
+    z-index: calc(var(--offcanvas-z-index) + 1);
 }
 
+#menu {
+    top: var(--navbar-height);
+}
 
-.erd {
+#erd {
     width: 100%;
-    height: 100%;
+    height: calc(100vh - var(--navbar-height));
     overflow: hidden;
+    background-color: var(--bg-light);
 }
 
-.canvas {
+#erd .canvas {
     /* needed to have a correct zoom to cursor computing */
     transform-origin: top left;
 }
 
-.table {
+.erd-table {
     position: absolute;
     min-width: 200px;
     background-color: #FFFFFF;
     border-radius: .5rem;
     box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
     cursor: pointer;
+    z-index: var(--table-z-index);
 }
 
-.table:hover {
+.erd-table:hover {
     box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
 }
 
-.table .header {
+.erd-table .header {
     background-color: #F8FAFC;
     border-top: 8px solid #B8C2CC;
     border-bottom: 1px solid #E2E8F0;
@@ -66,37 +65,41 @@ body {
     color: #4A5568;
     font-size: 1.25rem;
     font-weight: 500;
-    height: 23px;
+    height: 48px;
 }
 
-.table:hover .header {
+.erd-table:hover .header {
     background-color: #EBF4FF;
 }
 
-.table .column {
+.erd-table .column {
     display: -webkit-box;
     display: flex;
     padding: 0.35rem 1rem 0.35rem .5rem;
     line-height: 1.25;
+    height: 31px;
 }
 
-.table .column:hover {
+.erd-table .column:hover {
     background-color: #F5F7FA;
 }
 
-.table .column:hover .icon, .table .column:hover .name, .table .column:hover .type {
+.erd-table .column:hover .icon,
+.erd-table .column:hover .name,
+.erd-table .column:hover .type {
     color: #9F7AEA;
     opacity: 1;
 }
 
-.table .column .icon {
+.erd-table .column .icon {
     color: #8795A1;
     width: 15px;
+    height: 100%;
     margin-right: .25rem;
     flex-shrink: 0;
 }
 
-.table .column .name {
+.erd-table .column .name {
     color: #606F7B;
     -webkit-box-flex: 1;
     flex-grow: 1;
@@ -109,27 +112,25 @@ body {
     flex-direction: row;
 }
 
-.table .column .name.bold {
+.erd-table .column .name.bold {
     font-weight: 700;
 }
 
-.table .column .type {
+.erd-table .column .type {
     opacity: .25;
     margin-left: .25rem;
     -webkit-box-flex: 0;
     flex-grow: 0;
 }
 
-/* z-index management: menu > tables > relations */
-
-.menu {
-    z-index: 10;
+.erd-relation {
+    z-index: var(--relation-z-index);
 }
 
-.table {
-    z-index: 9;
-}
 
-.relation {
-    z-index: 8;
+/* Styles for Bootstrap */
+
+.dropdown-menu {
+    max-height: 1000px;
+    overflow-y: auto;
 }

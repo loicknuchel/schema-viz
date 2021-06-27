@@ -21,7 +21,7 @@ type alias Model =
 
 
 type alias State =
-    { status : Status, dragId : Maybe DragId, drag : Draggable.State DragId }
+    { status : Status, search : String, dragId : Maybe DragId, drag : Draggable.State DragId }
 
 
 type alias Canvas =
@@ -36,6 +36,7 @@ type Status
 
 type Msg
     = GotData (Result Http.Error (List ( JsonTable, TableId )))
+    | ChangedSearch String
     | HideTable TableId
     | ShowTable TableId
     | InitializedTable TableId Size Position Color

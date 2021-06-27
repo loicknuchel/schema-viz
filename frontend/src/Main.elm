@@ -33,7 +33,7 @@ main =
 
 init : Flags -> ( Model, Cmd Msg )
 init _ =
-    ( { state = { status = Loading, dragId = Nothing, drag = Draggable.init }
+    ( { state = { status = Loading, search = "", dragId = Nothing, drag = Draggable.init }
       , canvas = { size = Size 0 0, zoom = 1, position = Position 0 0 }
       , schema = { tables = Dict.empty, relations = [] }
       }
@@ -53,6 +53,9 @@ update msg model =
 
         GotData (Err e) ->
             ( setState (\state -> { state | status = Failure (formatHttpError e) }) model, Cmd.none )
+
+        ChangedSearch search ->
+            ( setState (\state -> { state | search = search }) model, Cmd.none )
 
         HideTable id ->
             ( { model | schema = hideTable model.schema id }, Cmd.none )

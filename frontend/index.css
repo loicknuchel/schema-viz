@@ -7,6 +7,10 @@
     --bg-light: #F1F6F8;
 }
 
+.app {
+    overflow: hidden;
+}
+
 .loading {
     position: absolute;
     top: 0;

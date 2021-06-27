@@ -7,7 +7,7 @@ import Html exposing (Html, a, b, button, div, form, img, input, li, nav, span, 
 import Html.Attributes exposing (alt, attribute, autocomplete, class, height, href, id, placeholder, src, style, type_, value)
 import Html.Events exposing (onClick, onInput)
 import Models exposing (Msg(..))
-import Models.Schema exposing (Table, TableName(..))
+import Models.Schema exposing (Column, ColumnName(..), Table, TableName(..), TableStatus(..))
 import Views.Helpers exposing (extractColumnName, formatTableId)
 
 
@@ -25,7 +25,7 @@ viewNavbar search tables =
                     ]
                 , form [ class "d-flex" ]
                     [ div [ class "dropdown" ]
-                        [ input [ type_ "search", class "form-control", id "search", value search, onInput ChangedSearch, placeholder "Search", attribute "aria-label" "Search", attribute "data-bs-toggle" "dropdown", autocomplete False ] []
+                        [ input [ type_ "search", class "form-control", id "search", value search, placeholder "Search", attribute "aria-label" "Search", attribute "data-bs-toggle" "dropdown", autocomplete False, onInput ChangedSearch ] []
                         , ul [ class "dropdown-menu dropdown-menu-end" ]
                             (buildSuggestions search tables |> List.map (\s -> li [] [ a [ class "dropdown-item", style "cursor" "pointer", onClick s.msg ] s.content ]))
                         ]
@@ -41,20 +41,35 @@ type alias Suggestion =
 
 buildSuggestions : String -> List Table -> List Suggestion
 buildSuggestions search tables =
-    tables |> List.map (asSuggestion search) |> List.sortBy .priority |> List.take 30
+    tables |> List.concatMap (asSuggestions search) |> List.sortBy .priority |> List.take 30
 
 
-asSuggestion : String -> Table -> Suggestion
-asSuggestion search table =
+asSuggestions : String -> Table -> List Suggestion
+asSuggestions search table =
     { priority = 0 - matchStrength search table
     , content = viewIcon Icon.angleRight :: text " " :: highlightMatch search (formatTableId table.id)
     , msg = ShowTable table.id
     }
+        :: List.filterMap (columnSuggestion search table) (Dict.values table.columns)
+
+
+columnSuggestion : String -> Table -> Column -> Maybe Suggestion
+columnSuggestion search table column =
+    case column.column of
+        ColumnName name ->
+            if name == search then
+                Just
+                    { priority = 0 - 0.5
+                    , content = viewIcon Icon.angleDoubleRight :: [ text (" " ++ formatTableId table.id ++ "."), b [] [ text (extractColumnName column.column) ] ]
+                    , msg = ShowTable table.id
+                    }
+
+            else
+                Nothing
 
 
 highlightMatch : String -> String -> List (Html msg)
 highlightMatch search value =
-    -- [ span [] [ text value ] ]
     List.drop 1 (List.foldr (\i acc -> b [] [ text search ] :: i :: acc) [] (List.map text (String.split search value)))
 
 
@@ -62,15 +77,26 @@ matchStrength : String -> Table -> Float
 matchStrength search table =
     case table.table of
         TableName name ->
-            exactMatchAtBeginning search name
-                + exactMatchNotAtBeginning search name
-                + hasColumnMatching search table
-                + shortNameBonus name
+            exactMatch search name
+                + matchAtBeginning search name
+                + matchNotAtBeginning search name
+                + tableShownMalus table
+                + columnMatchingBonus search table
                 + (5 * manyColumnBonus table)
+                + shortNameBonus name
 
 
-exactMatchAtBeginning : String -> String -> Float
-exactMatchAtBeginning search text =
+exactMatch : String -> String -> Float
+exactMatch search text =
+    if text == search then
+        3
+
+    else
+        0
+
+
+matchAtBeginning : String -> String -> Float
+matchAtBeginning search text =
     if not (search == "") && String.startsWith search text then
         2
 
@@ -78,8 +104,8 @@ exactMatchAtBeginning search text =
         0
 
 
-exactMatchNotAtBeginning : String -> String -> Float
-exactMatchNotAtBeginning search text =
+matchNotAtBeginning : String -> String -> Float
+matchNotAtBeginning search text =
     if not (search == "") && String.contains search text && not (String.startsWith search text) then
         1
 
@@ -87,10 +113,25 @@ exactMatchNotAtBeginning search text =
         0
 
 
-hasColumnMatching : String -> Table -> Float
-hasColumnMatching search table =
-    if not (search == "") && List.any (\c -> not (exactMatchAtBeginning search (extractColumnName c.column) == 0)) (Dict.values table.columns) then
-        0.5
+columnMatchingBonus : String -> Table -> Float
+columnMatchingBonus search table =
+    let
+        columnNames : List String
+        columnNames =
+            Dict.values table.columns |> List.map (\c -> extractColumnName c.column)
+    in
+    if not (search == "") then
+        if List.any (\columnName -> not (exactMatch search columnName == 0)) columnNames then
+            0.5
+
+        else if List.any (\columnName -> not (matchAtBeginning search columnName == 0)) columnNames then
+            0.2
+
+        else if List.any (\columnName -> not (matchNotAtBeginning search columnName == 0)) columnNames then
+            0.1
+
+        else
+            0
 
     else
         0
@@ -108,3 +149,12 @@ shortNameBonus name =
 manyColumnBonus : Table -> Float
 manyColumnBonus table =
     -1 / toFloat (Dict.size table.columns)
+
+
+tableShownMalus : Table -> Float
+tableShownMalus table =
+    if table.state.status == Shown then
+        -2
+
+    else
+        0

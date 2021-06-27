@@ -4,7 +4,7 @@ import AssocList as Dict
 import FontAwesome.Icon exposing (viewIcon)
 import FontAwesome.Regular as IconLight
 import FontAwesome.Solid as Icon
-import Html exposing (Attribute, Html, a, div, li, span, text, ul)
+import Html exposing (Attribute, Html, a, b, div, li, span, text, ul)
 import Html.Attributes exposing (class, id, style, title)
 import Html.Events exposing (onClick)
 import Libs.Std exposing (listAddIf, listAppendOn, maybeFilter)
@@ -74,7 +74,16 @@ viewColumnDropdown : List Relation -> (List (Attribute Msg) -> Html Msg) -> Html
 viewColumnDropdown incomingColumnRelations element =
     case
         List.map
-            (\r -> li [] [ a [ class "dropdown-item", onClick (ShowTable r.src.table.id) ] [ viewIcon Icon.externalLinkAlt, text " ", text (formatColumnRef r.src) ] ])
+            (\r ->
+                li []
+                    [ a [ class "dropdown-item", onClick (ShowTable r.src.table.id) ]
+                        [ viewIcon Icon.externalLinkAlt
+                        , text " "
+                        , b [] [ text (formatTableId r.src.table.id) ]
+                        , text ("" |> withColumnName r.src.column.column |> withNullableInfo r.src.column.nullable)
+                        ]
+                    ]
+            )
             (List.filter (\r -> not (r.src.table.state.status == Shown)) incomingColumnRelations)
     of
         [] ->
@@ -192,11 +201,6 @@ formatIndexTitle indexes =
 formatReference : ForeignKey -> String
 formatReference { schema, table, column } =
     formatTableName table schema |> withColumnName column
-
-
-formatColumnRef : TableAndColumn -> String
-formatColumnRef { table, column } =
-    formatTableId table.id |> withColumnName column.column |> withNullableInfo column.nullable
 
 
 formatUniqueIndexName : UniqueName -> String

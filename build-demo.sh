@@ -1,6 +1,7 @@
 #!/bin/bash
 
 cd frontend || exit
+cp -r assets ../docs
 cp index.html ../docs
 cp index.css ../docs
 cp tests/resources/schema.json ../docs

@@ -10,6 +10,7 @@ import Models.Schema exposing (ColumnRef, Relation, RelationRef, Schema, Table, 
 import Models.Utils exposing (Position, ZoomLevel)
 import Views.Helpers exposing (dragAttrs, sizeAttrs)
 import Views.Menu exposing (viewMenu)
+import Views.Navbar exposing (viewNavbar)
 import Views.Relations exposing (viewRelation)
 import Views.Tables exposing (viewTable)
 
@@ -23,7 +24,8 @@ viewApp model loading =
     div [ class "app" ]
         (listAppendOn loading
             (\msg -> div [ class "loading" ] [ text msg ])
-            [ viewMenu model.menu model.schema
+            [ viewNavbar
+            , viewMenu model.schema
             , viewErd model.canvas model.schema
             ]
         )

@@ -4,12 +4,16 @@
     <title>Schema Viz</title>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="icon" type="image/png" sizes="16x16" href="/assets/favicon-16x16.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32x32.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="/assets/apple-touch-icon.png">
+    <link rel="manifest" href="/assets/site.webmanifest">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
     <link rel="stylesheet" href="index.css">
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
     <script type="text/javascript" src="index.js"></script>
     <script type="text/javascript">
-        window.onload = function() {
+        window.onload = function () {
             const app = Elm.Main.init({
                 node: document.getElementById("elm-app"),
                 flags: null
@@ -26,7 +30,11 @@
                 app.ports.sizesReceiver.send(sizes)
             })
             app.ports.observeSizes.subscribe(ids => {
-                ids.forEach(id => resizeObserver.observe(document.getElementById(id)))
+                // a ugly hack to avoid race conditions
+                // elements are displayed and observed in the same time, so sometimes, it's called before rendering and cause errors :(
+                setTimeout(function () {
+                    ids.forEach(id => resizeObserver.observe(document.getElementById(id)))
+                }, 100)
             })
         };
     </script>

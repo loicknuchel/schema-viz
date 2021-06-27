@@ -30,7 +30,7 @@ showTable model id =
             ( { model | schema = visitTable id (setState (\state -> { state | status = Initializing })) model.schema }, observeTableSize id )
 
         Just Initializing ->
-            ( setState (\state -> { state | status = Failure ("Can't show an Initializing table (" ++ formatTableId id ++ ")") }) model, Cmd.none )
+            ( model, Cmd.none )
 
         Just Hidden ->
             ( { model | schema = visitTable id (setState (\state -> { state | status = Shown })) model.schema }, observeTableSize id )
@@ -157,10 +157,7 @@ dragItem : Model -> Draggable.Delta -> Model
 dragItem model delta =
     case model.state.dragId of
         Just id ->
-            if id == conf.ids.menu then
-                { model | menu = updatePosition delta 1 model.menu }
-
-            else if id == conf.ids.erd then
+            if id == conf.ids.erd then
                 { model | canvas = updatePosition delta 1 model.canvas }
 
             else

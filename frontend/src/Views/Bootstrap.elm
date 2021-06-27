@@ -1,10 +1,10 @@
-module Views.Bootstrap exposing (..)
+module Views.Bootstrap exposing (BsColor(..), bsButton, bsButtonGroup, bsDropdown)
 
 import Html exposing (Attribute, Html, div)
 import Html.Attributes exposing (attribute, class, id)
 
 
-type Color
+type BsColor
     = Primary
     | Secondary
     | Success
@@ -15,8 +15,8 @@ type Color
     | Dark
 
 
-dropdown : String -> (List (Attribute msg) -> Html msg) -> (List (Attribute msg) -> Html msg) -> Html msg
-dropdown dropdownId toggleElement dropdownContent =
+bsDropdown : String -> (List (Attribute msg) -> Html msg) -> (List (Attribute msg) -> Html msg) -> Html msg
+bsDropdown dropdownId toggleElement dropdownContent =
     -- TODO find a nice way to give the "dropdown-menu-end" option
     div [ class "dropdown" ]
         [ toggleElement [ attribute "data-bs-toggle" "dropdown", id dropdownId, attribute "aria-expanded" "false" ]
@@ -24,18 +24,18 @@ dropdown dropdownId toggleElement dropdownContent =
         ]
 
 
-button : Color -> List (Attribute msg) -> List (Html msg) -> Html msg
-button color attrs children =
+bsButton : BsColor -> List (Attribute msg) -> List (Html msg) -> Html msg
+bsButton color attrs children =
     -- TODO find a nice way to give the "outline" option
     Html.button ([ attribute "type" "button", class "btn", class ("btn-outline-" ++ colorToString color) ] ++ attrs) children
 
 
-buttonGroup : String -> List (Html msg) -> Html msg
-buttonGroup label buttons =
+bsButtonGroup : String -> List (Html msg) -> Html msg
+bsButtonGroup label buttons =
     div [ class "btn-group", attribute "role" "group", attribute "aria-label" label ] buttons
 
 
-colorToString : Color -> String
+colorToString : BsColor -> String
 colorToString color =
     case color of
         Primary ->

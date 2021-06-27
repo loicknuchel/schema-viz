@@ -1,14 +1,10 @@
-body {
-    background-color: #F1F6F8;
-}
-
-.app {
-    position: absolute;
-    top: 0;
-    right: 0;
-    bottom: 0;
-    left: 0;
-    overflow: hidden;
+:root {
+    --navbar-height: 56px;
+    --offcanvas-z-index: 1050;
+    --table-z-index: 10;
+    --relation-z-index: 9;
+    --loading-z-index: 10000; /* should be on top of everything */
+    --bg-light: #F1F6F8;
 }
 
 .loading {
@@ -17,28 +13,26 @@ body {
     right: 0;
     bottom: 0;
     left: 0;
-    background-color: #F1F6F8;
-    z-index: 1000;
+    background-color: var(--bg-light);
+    z-index: var(--loading-z-index);
 }
 
-.menu {
-    position: absolute;
-    min-width: 250px;
-    min-height: 500px;
-    max-height: 100%;
-    overflow-y: auto;
-    background-color: #FFFFFF;
-    cursor: pointer;
+#navbar {
+    z-index: calc(var(--offcanvas-z-index) + 1);
 }
 
+#menu {
+    top: var(--navbar-height);
+}
 
-.erd {
+#erd {
     width: 100%;
-    height: 100%;
+    height: calc(100vh - var(--navbar-height));
     overflow: hidden;
+    background-color: var(--bg-light);
 }
 
-.canvas {
+#erd .canvas {
     /* needed to have a correct zoom to cursor computing */
     transform-origin: top left;
 }
@@ -50,6 +44,7 @@ body {
     border-radius: .5rem;
     box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
     cursor: pointer;
+    z-index: var(--table-z-index);
 }
 
 .erd-table:hover {
@@ -124,16 +119,6 @@ body {
     flex-grow: 0;
 }
 
-/* z-index management: menu > tables > relations */
-
-.menu {
-    z-index: 10;
-}
-
-.erd-table {
-    z-index: 9;
-}
-
 .erd-relation {
-    z-index: 8;
+    z-index: var(--relation-z-index);
 }

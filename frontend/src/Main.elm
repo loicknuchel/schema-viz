@@ -34,7 +34,6 @@ main =
 init : Flags -> ( Model, Cmd Msg )
 init _ =
     ( { state = { status = Loading, dragId = Nothing, drag = Draggable.init }
-      , menu = { position = Position 0 0 }
       , canvas = { size = Size 0 0, zoom = 1, position = Position 0 0 }
       , schema = { tables = Dict.empty, relations = [] }
       }

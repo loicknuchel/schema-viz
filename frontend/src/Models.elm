@@ -1,4 +1,4 @@
-module Models exposing (Canvas, DragId, Error, Flags, Menu, Model, Msg(..), SizeChange, State, Status(..))
+module Models exposing (Canvas, DragId, Error, Flags, Model, Msg(..), SizeChange, State, Status(..))
 
 import Decoders.SchemaDecoder exposing (JsonTable)
 import Draggable
@@ -17,15 +17,11 @@ type alias Flags =
 
 
 type alias Model =
-    { state : State, menu : Menu, canvas : Canvas, schema : Schema }
+    { state : State, canvas : Canvas, schema : Schema }
 
 
 type alias State =
     { status : Status, dragId : Maybe DragId, drag : Draggable.State DragId }
-
-
-type alias Menu =
-    { position : Position }
 
 
 type alias Canvas =

@@ -11,7 +11,7 @@ import Libs.Std exposing (listAddIf, listAppendOn, maybeFilter)
 import Models exposing (Msg(..))
 import Models.Schema exposing (Column, ColumnComment(..), ColumnName, ForeignKey, Index, IndexName(..), PrimaryKey, Relation, Table, TableAndColumn, TableComment(..), TableStatus(..), Unique, UniqueName(..))
 import Models.Utils exposing (ZoomLevel)
-import Views.Bootstrap exposing (dropdown)
+import Views.Bootstrap exposing (bsDropdown)
 import Views.Helpers exposing (dragAttrs, extractColumnName, extractColumnType, formatTableId, formatTableName, placeAt, sizeAttrs, withColumnName, withNullableInfo)
 
 
@@ -81,7 +81,7 @@ viewColumnDropdown incomingColumnRelations element =
             element []
 
         items ->
-            dropdown "drop"
+            bsDropdown "drop"
                 (\attrs -> element attrs)
                 (\attrs -> ul attrs items)
 

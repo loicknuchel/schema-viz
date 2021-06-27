@@ -19,6 +19,19 @@
                 flags: null
             })
 
+            app.ports.activateTooltipsAndPopovers.subscribe(() => {
+                // a ugly hack to avoid race conditions
+                // elements are rendered and selected in the same time, so sometimes, it's called before rendering and cause errors :(
+                setTimeout(function () {
+                    document.querySelectorAll('[data-bs-toggle="tooltip"]').forEach(e => bootstrap.Tooltip.getOrCreateInstance(e))
+                    document.querySelectorAll('[data-bs-toggle="popover"]').forEach(e => bootstrap.Popover.getOrCreateInstance(e))
+                }, 100)
+            })
+            app.ports.observeSizes.subscribe(ids => {
+                setTimeout(function () {
+                    ids.forEach(id => resizeObserver.observe(document.getElementById(id)))
+                }, 100)
+            })
             const resizeObserver = new ResizeObserver(entries => {
                 const sizes = entries.map(entry => ({
                     id: entry.target.id,
@@ -28,13 +41,6 @@
                     }
                 }))
                 app.ports.sizesReceiver.send(sizes)
-            })
-            app.ports.observeSizes.subscribe(ids => {
-                // a ugly hack to avoid race conditions
-                // elements are displayed and observed in the same time, so sometimes, it's called before rendering and cause errors :(
-                setTimeout(function () {
-                    ids.forEach(id => resizeObserver.observe(document.getElementById(id)))
-                }, 100)
             })
         };
     </script>

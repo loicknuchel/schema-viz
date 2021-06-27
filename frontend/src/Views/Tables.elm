@@ -5,11 +5,11 @@ import FontAwesome.Icon exposing (viewIcon)
 import FontAwesome.Regular as IconLight
 import FontAwesome.Solid as Icon
 import Html exposing (Attribute, Html, a, b, div, li, span, text, ul)
-import Html.Attributes exposing (class, id, style, title)
+import Html.Attributes exposing (attribute, class, classList, id, style, title)
 import Html.Events exposing (onClick)
 import Libs.Std exposing (listAddIf, listAppendOn, maybeFilter)
 import Models exposing (Msg(..))
-import Models.Schema exposing (Column, ColumnComment(..), ColumnName, ForeignKey, Index, IndexName(..), PrimaryKey, Relation, Table, TableAndColumn, TableComment(..), TableStatus(..), Unique, UniqueName(..))
+import Models.Schema exposing (Column, ColumnComment(..), ColumnName, ForeignKey, Index, IndexName(..), PrimaryKey, Relation, Table, TableComment(..), TableStatus(..), Unique, UniqueName(..))
 import Models.Utils exposing (ZoomLevel)
 import Views.Bootstrap exposing (bsDropdown)
 import Views.Helpers exposing (dragAttrs, extractColumnName, extractColumnType, formatTableId, formatTableName, placeAt, sizeAttrs, withColumnName, withNullableInfo)
@@ -54,17 +54,17 @@ viewColumnIcon : Maybe PrimaryKey -> List Unique -> List Index -> Column -> List
 viewColumnIcon maybePk uniques indexes column attrs =
     case ( ( inPrimaryKey column.column maybePk, column.foreignKey ), ( inUniqueIndexes column.column uniques, inIndexes column.column indexes ) ) of
         ( ( Just pk, _ ), _ ) ->
-            div ([ class "icon", title (formatPkTitle pk) ] ++ attrs) [ viewIcon Icon.key ]
+            div (class "icon" :: attrs) [ div [ title (formatPkTitle pk), attribute "data-bs-toggle" "tooltip" ] [ viewIcon Icon.key ] ]
 
         ( ( _, Just fk ), _ ) ->
             -- TODO: know fk table state to not put onClick when it's already shown (so Update.elm#showTable on Shown state could issue an error)
-            div ([ class "icon", title (formatFkTitle fk), onClick (ShowTable fk.tableId) ] ++ attrs) [ viewIcon Icon.externalLinkAlt ]
+            div (class "icon" :: onClick (ShowTable fk.tableId) :: attrs) [ div [ title (formatFkTitle fk), attribute "data-bs-toggle" "tooltip" ] [ viewIcon Icon.externalLinkAlt ] ]
 
         ( _, ( u :: us, _ ) ) ->
-            div ([ class "icon", title (formatUniqueTitle (u :: us)) ] ++ attrs) [ viewIcon Icon.fingerprint ]
+            div (class "icon" :: attrs) [ div [ title (formatUniqueTitle (u :: us)), attribute "data-bs-toggle" "tooltip" ] [ viewIcon Icon.fingerprint ] ]
 
         ( _, ( _, i :: is ) ) ->
-            div ([ class "icon", title (formatIndexTitle (i :: is)) ] ++ attrs) [ viewIcon Icon.sortAmountDownAlt ]
+            div (class "icon" :: attrs) [ div [ title (formatIndexTitle (i :: is)), attribute "data-bs-toggle" "tooltip" ] [ viewIcon Icon.sortAmountDownAlt ] ]
 
         _ ->
             div ([ class "icon" ] ++ attrs) []
@@ -74,17 +74,17 @@ viewColumnDropdown : List Relation -> (List (Attribute Msg) -> Html Msg) -> Html
 viewColumnDropdown incomingColumnRelations element =
     case
         List.map
-            (\r ->
+            (\relation ->
                 li []
-                    [ a [ class "dropdown-item", onClick (ShowTable r.src.table.id) ]
+                    [ a [ class "dropdown-item", classList [ ( "disabled", relation.src.table.state.status == Shown ) ], onClick (ShowTable relation.src.table.id) ]
                         [ viewIcon Icon.externalLinkAlt
                         , text " "
-                        , b [] [ text (formatTableId r.src.table.id) ]
-                        , text ("" |> withColumnName r.src.column.column |> withNullableInfo r.src.column.nullable)
+                        , b [] [ text (formatTableId relation.src.table.id) ]
+                        , text ("" |> withColumnName relation.src.column.column |> withNullableInfo relation.src.column.nullable)
                         ]
                     ]
             )
-            (List.filter (\r -> not (r.src.table.state.status == Shown)) incomingColumnRelations)
+            incomingColumnRelations
     of
         [] ->
             element []
@@ -118,7 +118,7 @@ viewColumnType column =
 
 viewComment : String -> Html msg
 viewComment comment =
-    span [ title comment, style "margin-left" ".25rem", style "font-size" ".9rem", style "opacity" ".25" ] [ viewIcon IconLight.commentDots ]
+    span [ title comment, attribute "data-bs-toggle" "tooltip", style "margin-left" ".25rem", style "font-size" ".9rem", style "opacity" ".25" ] [ viewIcon IconLight.commentDots ]
 
 
 

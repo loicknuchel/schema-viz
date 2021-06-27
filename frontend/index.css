@@ -126,3 +126,11 @@
 .erd-relation {
     z-index: var(--relation-z-index);
 }
+
+
+/* Styles for Bootstrap */
+
+.dropdown-menu {
+    max-height: 1000px;
+    overflow-y: auto;
+}

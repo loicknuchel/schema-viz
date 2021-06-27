@@ -9,7 +9,7 @@ import Libs.Std exposing (WheelEvent, dictFromList, maybeFilter)
 import Models exposing (Canvas, DragId, Model, Msg(..), SizeChange, Status(..))
 import Models.Schema exposing (Schema, Table, TableId, TableState, TableStatus(..))
 import Models.Utils exposing (Area, Position, ZoomLevel)
-import Ports exposing (observeTableSize, observeTablesSize)
+import Ports exposing (activateTooltipsAndPopovers, observeTableSize, observeTablesSize)
 import Views.Helpers exposing (formatTableId, parseTableId)
 
 
@@ -27,13 +27,13 @@ showTable model id =
     case Maybe.map (\t -> t.state.status) (getTable id model.schema) of
         Just Uninitialized ->
             -- race condition problem when observe is performed before table is shown :(
-            ( { model | schema = visitTable id (setState (\state -> { state | status = Initializing })) model.schema }, observeTableSize id )
+            ( { model | schema = visitTable id (setState (\state -> { state | status = Initializing })) model.schema }, Cmd.batch [ observeTableSize id, activateTooltipsAndPopovers () ] )
 
         Just Initializing ->
             ( model, Cmd.none )
 
         Just Hidden ->
-            ( { model | schema = visitTable id (setState (\state -> { state | status = Shown })) model.schema }, observeTableSize id )
+            ( { model | schema = visitTable id (setState (\state -> { state | status = Shown })) model.schema }, Cmd.batch [ observeTableSize id, activateTooltipsAndPopovers () ] )
 
         Just Shown ->
             ( model, Cmd.none )
@@ -85,7 +85,7 @@ showAllTables model =
                     )
                 |> List.unzip
     in
-    ( { model | schema = setTables tables model.schema }, observeTablesSize (List.filterMap identity cmds) )
+    ( { model | schema = setTables tables model.schema }, Cmd.batch [ observeTablesSize (List.filterMap identity cmds), activateTooltipsAndPopovers () ] )
 
 
 updateSizes : List SizeChange -> Model -> ( Model, Cmd Msg )

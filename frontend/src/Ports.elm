@@ -1,8 +1,11 @@
-port module Ports exposing (observeSize, observeTableSize, observeTablesSize, sizesReceiver)
+port module Ports exposing (activateTooltipsAndPopovers, observeSize, observeTableSize, observeTablesSize, sizesReceiver)
 
 import Models exposing (SizeChange)
 import Models.Schema exposing (TableId)
 import Views.Helpers exposing (formatTableId)
+
+
+port activateTooltipsAndPopovers : () -> Cmd msg
 
 
 port observeSizes : List String -> Cmd msg

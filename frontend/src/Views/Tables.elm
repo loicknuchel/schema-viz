@@ -119,7 +119,8 @@ viewColumnDropdown incomingColumnRelations element =
                 )
     of
         [] ->
-            element []
+            -- needs the same structure than dropdown to not change nodes and cause bootstrap errors: (Bootstrap doesn't allow more than one instance per element)
+            div [] [ element [] ]
 
         items ->
             bsDropdown "drop"

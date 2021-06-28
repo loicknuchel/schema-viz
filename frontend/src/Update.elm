@@ -1,4 +1,4 @@
-module Update exposing (dragConfig, dragItem, hideAllTables, hideTable, showAllTables, showTable, updateSizes, updateTable, zoomCanvas)
+module Update exposing (dragConfig, dragItem, hideAllTables, hideColumn, hideTable, showAllTables, showColumn, showTable, updateSizes, visitTable, zoomCanvas)
 
 import AssocList as Dict exposing (Dict)
 import Commands.InitializeTable exposing (initializeTable)
@@ -7,7 +7,7 @@ import Draggable
 import Draggable.Events exposing (onDragBy, onDragEnd, onDragStart)
 import Libs.Std exposing (WheelEvent, dictFromList, maybeFilter, setState)
 import Models exposing (Canvas, DragId, Model, Msg(..), SizeChange, Status(..))
-import Models.Schema exposing (Schema, Table, TableId, TableState, TableStatus(..))
+import Models.Schema exposing (Column, ColumnName, Schema, Table, TableId, TableStatus(..))
 import Models.Utils exposing (Area, Position, ZoomLevel)
 import Ports exposing (activateTooltipsAndPopovers, observeTableSize, observeTablesSize)
 import Views.Helpers exposing (formatTableId, parseTableId)
@@ -42,9 +42,49 @@ showTable model id =
             ( model |> setState (\state -> { state | status = Failure ("Can't show table (" ++ formatTableId id ++ "), not found") }), Cmd.none )
 
 
-updateTable : TableId -> (TableState -> TableState) -> Schema -> Schema
-updateTable id transform schema =
-    schema |> visitTable id (setState transform)
+hideColumn : ColumnName -> Dict ColumnName Column -> Dict ColumnName Column
+hideColumn columnName columns =
+    columns
+        |> Dict.update columnName (Maybe.map (setState (\state -> { state | order = Nothing })))
+        |> setSequentialOrder
+
+
+setSequentialOrder : Dict ColumnName Column -> Dict ColumnName Column
+setSequentialOrder columns =
+    columns
+        |> Dict.values
+        |> List.sortBy (\c -> c.state.order |> Maybe.withDefault (Dict.size columns))
+        |> List.indexedMap
+            (\index column ->
+                if column.state.order == Nothing then
+                    column
+
+                else
+                    column |> setState (\state -> { state | order = Just index })
+            )
+        |> dictFromList .column
+
+
+showColumn : ColumnName -> Int -> Dict ColumnName Column -> Dict ColumnName Column
+showColumn columnName index columns =
+    columns
+        |> Dict.map
+            (\_ column ->
+                case column.state.order of
+                    Just order ->
+                        if order < index then
+                            column
+
+                        else
+                            column |> setState (\state -> { state | order = Just (order + 1) })
+
+                    Nothing ->
+                        if column.column == columnName then
+                            column |> setState (\state -> { state | order = Just index })
+
+                        else
+                            column
+            )
 
 
 hideAllTables : Schema -> Schema
@@ -99,7 +139,7 @@ updateSize change model =
         { model | canvas = model.canvas |> setSize (\_ -> change.size) }
 
     else
-        { model | schema = model.schema |> updateTable (parseTableId change.id) (\state -> { state | size = change.size }) }
+        { model | schema = model.schema |> visitTable (parseTableId change.id) (setState (\state -> { state | size = change.size })) }
 
 
 maybeChangeCmd : Model -> SizeChange -> Maybe (Cmd Msg)

@@ -73,7 +73,20 @@ shouldDrawTable table =
 
 shouldDrawRelation : Relation -> Bool
 shouldDrawRelation relation =
-    relation.state.show && (relation.src.table.state.status == Shown || relation.ref.table.state.status == Shown)
+    relation.state.show
+        && (case ( relation.src.table.state.status, relation.ref.table.state.status ) of
+                ( Shown, Shown ) ->
+                    not (relation.src.column.state.order == Nothing) && not (relation.ref.column.state.order == Nothing)
+
+                ( Shown, _ ) ->
+                    not (relation.src.column.state.order == Nothing)
+
+                ( _, Shown ) ->
+                    not (relation.ref.column.state.order == Nothing)
+
+                _ ->
+                    False
+           )
 
 
 incomingTableRelations : List Relation -> Table -> List Relation

@@ -2,7 +2,7 @@ module Views.Relations exposing (viewRelation)
 
 import Libs.Std exposing (listAddIf)
 import Models exposing (Msg)
-import Models.Schema exposing (Column, ColumnIndex(..), ForeignKeyName(..), Relation, Table, TableAndColumn, TableStatus(..))
+import Models.Schema exposing (Column, ForeignKeyName(..), Relation, Table, TableAndColumn, TableStatus(..))
 import Svg exposing (Svg, line, svg, text)
 import Svg.Attributes exposing (class, height, strokeDasharray, style, width, x1, x2, y1, y2)
 import Views.Helpers exposing (formatTableId, withColumnName)
@@ -19,17 +19,17 @@ viewRelation { key, src, ref } =
             svg [ class "erd-relation" ] [ text name ]
 
         ( True, False, name ) ->
-            case { x = src.table.state.position.left + src.table.state.size.width, y = positionY src.table src.column } of
+            case { x = src.table.state.position.left + src.table.state.size.width, y = positionY src } of
                 srcPos ->
                     drawRelation srcPos { x = srcPos.x + 20, y = srcPos.y } src.column.nullable name
 
         ( False, True, name ) ->
-            case { x = ref.table.state.position.left, y = positionY ref.table ref.column } of
+            case { x = ref.table.state.position.left, y = positionY ref } of
                 refPos ->
                     drawRelation { x = refPos.x - 20, y = refPos.y } refPos src.column.nullable name
 
         ( True, True, name ) ->
-            case ( positionX src.table ref.table, ( positionY src.table src.column, positionY ref.table ref.column ) ) of
+            case ( positionX src.table ref.table, ( positionY src, positionY ref ) ) of
                 ( ( srcX, refX ), ( srcY, refY ) ) ->
                     drawRelation { x = srcX, y = srcY } { x = refX, y = refY } src.column.nullable name
 
@@ -111,11 +111,9 @@ columnHeight =
     31
 
 
-positionY : Table -> Column -> Float
-positionY table column =
-    case column.index of
-        ColumnIndex index ->
-            table.state.position.top + headerHeight + (columnHeight * (0.5 + toFloat index))
+positionY : TableAndColumn -> Float
+positionY { table, column } =
+    table.state.position.top + headerHeight + (columnHeight * (0.5 + (column.state.order |> Maybe.withDefault -1 |> toFloat)))
 
 
 minus : Point -> Point -> Point

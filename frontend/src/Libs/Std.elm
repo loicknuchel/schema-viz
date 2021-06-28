@@ -1,7 +1,7 @@
 module Libs.Std exposing (..)
 
 import AssocList as Dict exposing (Dict)
-import Html exposing (Attribute)
+import Html exposing (Attribute, Html, div)
 import Html.Events
 import Json.Decode as Decode exposing (Decoder)
 import Random
@@ -92,6 +92,27 @@ maybeFold empty transform maybe =
 dictFromList : (a -> k) -> List a -> Dict k a
 dictFromList getKey list =
     list |> List.reverse |> List.map (\item -> ( getKey item, item )) |> Dict.fromList
+
+
+divIf : Bool -> List (Attribute msg) -> List (Html msg) -> Html msg
+divIf predicate attrs children =
+    if predicate then
+        div attrs children
+
+    else
+        div [] []
+
+
+plural : Int -> String -> String -> String -> String
+plural count none one many =
+    if count == 0 then
+        none
+
+    else if count == 1 then
+        one
+
+    else
+        String.fromInt count ++ many
 
 
 genSequence : List (Random.Generator a) -> Random.Generator (List a)

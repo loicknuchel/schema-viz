@@ -1,4 +1,4 @@
-module Views.Helpers exposing (dragAttrs, extractColumnName, extractColumnType, formatHttpError, formatTableId, formatTableName, parseTableId, placeAt, sizeAttrs, withColumnName, withNullableInfo)
+module Views.Helpers exposing (dragAttrs, extractColumnIndex, extractColumnName, extractColumnType, formatHttpError, formatTableId, formatTableName, parseTableId, placeAt, sizeAttrs, withColumnName, withNullableInfo)
 
 import Conf exposing (conf)
 import Draggable
@@ -6,7 +6,7 @@ import Html exposing (Attribute)
 import Html.Attributes exposing (attribute, style)
 import Http exposing (Error(..))
 import Models exposing (DragId, Msg(..))
-import Models.Schema exposing (ColumnName(..), ColumnType(..), SchemaName(..), TableId(..), TableName(..))
+import Models.Schema exposing (ColumnIndex(..), ColumnName(..), ColumnType(..), SchemaName(..), TableId(..), TableName(..))
 import Models.Utils exposing (Position, Size)
 
 
@@ -31,6 +31,11 @@ sizeAttrs size =
 
 
 -- formatters
+
+
+extractColumnIndex : ColumnIndex -> Int
+extractColumnIndex (ColumnIndex index) =
+    index
 
 
 extractColumnName : ColumnName -> String

@@ -5,14 +5,14 @@ import FontAwesome.Icon exposing (viewIcon)
 import FontAwesome.Regular as IconLight
 import FontAwesome.Solid as Icon
 import Html exposing (Attribute, Html, a, b, div, li, span, text, ul)
-import Html.Attributes exposing (attribute, class, classList, id, style, title)
-import Html.Events exposing (onClick)
-import Libs.Std exposing (listAddIf, listAppendOn, maybeFilter)
+import Html.Attributes exposing (attribute, class, classList, href, id, style, title)
+import Html.Events exposing (onClick, onDoubleClick)
+import Libs.Std exposing (divIf, listAddIf, listAppendOn, maybeFilter, plural)
 import Models exposing (Msg(..))
-import Models.Schema exposing (Column, ColumnComment(..), ColumnName, ForeignKey, Index, IndexName(..), PrimaryKey, Relation, Table, TableComment(..), TableStatus(..), Unique, UniqueName(..))
+import Models.Schema exposing (Column, ColumnComment(..), ColumnName, ForeignKey, Index, IndexName(..), PrimaryKey, Relation, Table, TableComment(..), TableId, TableStatus(..), Unique, UniqueName(..))
 import Models.Utils exposing (ZoomLevel)
 import Views.Bootstrap exposing (bsDropdown)
-import Views.Helpers exposing (dragAttrs, extractColumnName, extractColumnType, formatTableId, formatTableName, placeAt, sizeAttrs, withColumnName, withNullableInfo)
+import Views.Helpers exposing (dragAttrs, extractColumnIndex, extractColumnName, extractColumnType, formatTableId, formatTableName, placeAt, sizeAttrs, withColumnName, withNullableInfo)
 
 
 
@@ -21,6 +21,14 @@ import Views.Helpers exposing (dragAttrs, extractColumnName, extractColumnType, 
 
 viewTable : ZoomLevel -> List Relation -> Table -> Html Msg
 viewTable zoom incomingTableRelations table =
+    let
+        ( hiddenColumns, visibleColumns ) =
+            table.columns |> Dict.values |> List.partition (\column -> column.state.order == Nothing)
+
+        collapseId : String
+        collapseId =
+            formatTableId table.id ++ "-hidden-columns-collapse"
+    in
     div
         (listAddIf (table.state.status == Initializing)
             (style "visibility" "hidden")
@@ -29,7 +37,22 @@ viewTable zoom incomingTableRelations table =
             ++ dragAttrs (formatTableId table.id)
         )
         [ viewHeader zoom table
-        , div [ class "columns" ] (table.columns |> Dict.values |> List.map (\c -> viewColumn table.primaryKey table.uniques table.indexes (filterIncomingColumnRelations incomingTableRelations c) c))
+        , div [ class "columns" ]
+            (visibleColumns
+                |> List.sortBy (\c -> c.state.order |> Maybe.withDefault -1)
+                |> List.map (\c -> viewColumn table.id table.primaryKey table.uniques table.indexes (filterIncomingColumnRelations incomingTableRelations c) c)
+            )
+        , divIf (List.length hiddenColumns > 0)
+            [ class "hidden-columns" ]
+            [ a [ href ("#" ++ collapseId), class "toggle", attribute "data-bs-toggle" "collapse", attribute "role" "button", attribute "aria-expanded" "false", attribute "aria-controls" collapseId ]
+                [ text (plural (hiddenColumns |> List.length) "No hidden column" "1 hidden column" " hidden columns")
+                ]
+            , div [ class "collapse", id collapseId ]
+                (hiddenColumns
+                    |> List.sortBy (\column -> extractColumnIndex column.index)
+                    |> List.map (viewHiddenColumn table.id table.primaryKey table.uniques table.indexes)
+                )
+            ]
         ]
 
 
@@ -41,10 +64,19 @@ viewHeader zoom table =
         ]
 
 
-viewColumn : Maybe PrimaryKey -> List Unique -> List Index -> List Relation -> Column -> Html Msg
-viewColumn pk uniques indexes columnRelations column =
-    div [ class "column" ]
+viewColumn : TableId -> Maybe PrimaryKey -> List Unique -> List Index -> List Relation -> Column -> Html Msg
+viewColumn tableId pk uniques indexes columnRelations column =
+    div [ class "column", onDoubleClick (HideColumn tableId column.column) ]
         [ viewColumnDropdown columnRelations (viewColumnIcon pk uniques indexes column)
+        , viewColumnName pk column
+        , viewColumnType column
+        ]
+
+
+viewHiddenColumn : TableId -> Maybe PrimaryKey -> List Unique -> List Index -> Column -> Html Msg
+viewHiddenColumn tableId pk uniques indexes column =
+    div [ class "hidden-column", onDoubleClick (ShowColumn tableId column.column (extractColumnIndex column.index)) ]
+        [ viewColumnIcon pk uniques indexes column []
         , viewColumnName pk column
         , viewColumnType column
         ]

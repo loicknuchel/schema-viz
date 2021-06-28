@@ -7,13 +7,13 @@ import Conf exposing (conf)
 import Draggable
 import FontAwesome.Styles as Icon
 import Html exposing (text)
-import Libs.Std exposing (set)
+import Libs.Std exposing (set, setState)
 import Mappers.SchemaMapper exposing (buildSchema)
 import Models exposing (Flags, Model, Msg(..), Status(..))
 import Models.Schema exposing (TableStatus(..))
 import Models.Utils exposing (Position, Size)
-import Ports exposing (observeSize, sizesReceiver)
-import Update exposing (dragConfig, dragItem, hideAllTables, hideTable, showAllTables, showTable, updateSizes, updateTable, zoomCanvas)
+import Ports exposing (activateTooltipsAndPopovers, observeSize, sizesReceiver)
+import Update exposing (dragConfig, dragItem, hideAllTables, hideColumn, hideTable, showAllTables, showColumn, showTable, updateSizes, visitTable, zoomCanvas)
 import View exposing (viewApp)
 import Views.Helpers exposing (formatHttpError)
 
@@ -65,7 +65,7 @@ update msg model =
             showTable model id
 
         InitializedTable id size position color ->
-            ( { model | schema = model.schema |> updateTable id (\state -> { state | status = Shown, size = size, position = position, color = color }) }, Cmd.none )
+            ( { model | schema = model.schema |> visitTable id (setState (\state -> { state | status = Shown, size = size, position = position, color = color })) }, Cmd.none )
 
         SizesChanged sizes ->
             updateSizes sizes model
@@ -75,6 +75,12 @@ update msg model =
 
         ShowAllTables ->
             showAllTables model
+
+        HideColumn tableId columnName ->
+            ( { model | schema = model.schema |> visitTable tableId (\table -> { table | columns = table.columns |> hideColumn columnName }) }, activateTooltipsAndPopovers () )
+
+        ShowColumn tableId columnName index ->
+            ( { model | schema = model.schema |> visitTable tableId (\table -> { table | columns = table.columns |> showColumn columnName index }) }, activateTooltipsAndPopovers () )
 
         Zoom zoom ->
             ( { model | canvas = zoomCanvas zoom model.canvas }, Cmd.none )

@@ -20,14 +20,24 @@ cond predicate true false =
         false ()
 
 
+set : (a -> a) -> a -> a
+set transform item =
+    transform item
+
+
+setState : (s -> s) -> { item | state : s } -> { item | state : s }
+setState transform item =
+    { item | state = item.state |> transform }
+
+
 listFilterMap : (a -> Bool) -> (a -> b) -> List a -> List b
 listFilterMap predicate transform list =
-    List.foldr (\a res -> cond (predicate a) (\_ -> transform a :: res) (\_ -> res)) [] list
+    list |> List.foldr (\a res -> cond (predicate a) (\_ -> transform a :: res) (\_ -> res)) []
 
 
 listZipWith : (a -> b) -> List a -> List ( a, b )
 listZipWith transform list =
-    List.map (\a -> ( a, transform a )) list
+    list |> List.map (\a -> ( a, transform a ))
 
 
 listAddIf : Bool -> a -> List a -> List a
@@ -61,12 +71,12 @@ listAppendOn maybe transform list =
 
 maybeFilter : (a -> Bool) -> Maybe a -> Maybe a
 maybeFilter predicate maybe =
-    Maybe.andThen (\a -> cond (predicate a) (\_ -> maybe) (\_ -> Nothing)) maybe
+    maybe |> Maybe.andThen (\a -> cond (predicate a) (\_ -> maybe) (\_ -> Nothing))
 
 
 maybeAdd : (a -> Maybe b) -> Maybe a -> Maybe ( a, b )
 maybeAdd get maybe =
-    Maybe.andThen (\a -> Maybe.map (\b -> ( a, b )) (get a)) maybe
+    maybe |> Maybe.andThen (\a -> get a |> Maybe.map (\b -> ( a, b )))
 
 
 maybeFold : b -> (a -> b) -> Maybe a -> b
@@ -81,17 +91,17 @@ maybeFold empty transform maybe =
 
 dictFromList : (a -> k) -> List a -> Dict k a
 dictFromList getKey list =
-    Dict.fromList (List.map (\item -> ( getKey item, item )) (List.reverse list))
+    list |> List.reverse |> List.map (\item -> ( getKey item, item )) |> Dict.fromList
 
 
 genSequence : List (Random.Generator a) -> Random.Generator (List a)
 genSequence generators =
-    List.foldr (Random.map2 (::)) (Random.constant []) generators
+    generators |> List.foldr (Random.map2 (::)) (Random.constant [])
 
 
 genChoose : ( a, List a ) -> Random.Generator a
 genChoose ( item, list ) =
-    Random.map (\num -> Maybe.withDefault item (List.head (List.drop num list))) (Random.int 0 (List.length list))
+    Random.int 0 (list |> List.length) |> Random.map (\num -> list |> List.drop num |> List.head |> Maybe.withDefault item)
 
 
 type alias WheelEvent =

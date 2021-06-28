@@ -28,11 +28,11 @@ viewMenu schema =
                     ]
                 ]
             , text
-                (String.fromInt (Dict.size schema.tables)
+                ((schema.tables |> Dict.size |> String.fromInt)
                     ++ " tables, "
-                    ++ String.fromInt (Dict.foldl (\_ t c -> c + Dict.size t.columns) 0 schema.tables)
+                    ++ (schema.tables |> Dict.foldl (\_ t c -> c + Dict.size t.columns) 0 |> String.fromInt)
                     ++ " columns, "
-                    ++ String.fromInt (List.length schema.relations)
+                    ++ (schema.relations |> List.length |> String.fromInt)
                     ++ " relations"
                 )
             ]

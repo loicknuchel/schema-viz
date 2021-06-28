@@ -36,12 +36,12 @@ viewErd canvas schema =
     let
         relations : List Relation
         relations =
-            List.filterMap (buildRelation schema) schema.relations
+            schema.relations |> List.filterMap (buildRelation schema)
     in
     div ([ class "erd", id conf.ids.erd, handleWheel Zoom ] ++ sizeAttrs canvas.size ++ dragAttrs conf.ids.erd)
         [ div [ class "canvas", placeAndZoom canvas.zoom canvas.position ]
-            (listFilterMap shouldDrawTable (\t -> viewTable canvas.zoom (incomingTableRelations relations t) t) (Dict.values schema.tables)
-                ++ listFilterMap shouldDrawRelation viewRelation relations
+            ((schema.tables |> Dict.values |> listFilterMap shouldDrawTable (\t -> viewTable canvas.zoom (incomingTableRelations relations t) t))
+                ++ (relations |> listFilterMap shouldDrawRelation viewRelation)
             )
         ]
 
@@ -78,7 +78,7 @@ shouldDrawRelation relation =
 
 incomingTableRelations : List Relation -> Table -> List Relation
 incomingTableRelations relations table =
-    List.filter (\r -> r.ref.table.id == table.id) relations
+    relations |> List.filter (\r -> r.ref.table.id == table.id)
 
 
 buildRelation : Schema -> RelationRef -> Maybe Relation
@@ -88,4 +88,4 @@ buildRelation schema rel =
 
 getTableAndColumn : ColumnRef -> Schema -> Maybe TableAndColumn
 getTableAndColumn ref schema =
-    Maybe.andThen (\table -> Maybe.map (\column -> { table = table, column = column }) (Dict.get ref.column table.columns)) (Dict.get ref.table schema.tables)
+    schema.tables |> Dict.get ref.table |> Maybe.andThen (\table -> table.columns |> Dict.get ref.column |> Maybe.map (\column -> { table = table, column = column }))

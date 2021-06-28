@@ -14,7 +14,7 @@ import Random
 
 initializeTable : Size -> Area -> TableId -> Cmd Msg
 initializeTable size area id =
-    Random.generate (\( pos, color ) -> InitializedTable id size pos color) (positionAndColorGen size area)
+    positionAndColorGen size area |> Random.generate (\( pos, color ) -> InitializedTable id size pos color)
 
 
 

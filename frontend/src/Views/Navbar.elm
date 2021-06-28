@@ -50,7 +50,7 @@ asSuggestions search table =
     , content = viewIcon Icon.angleRight :: text " " :: highlightMatch search (formatTableId table.id)
     , msg = ShowTable table.id
     }
-        :: List.filterMap (columnSuggestion search table) (Dict.values table.columns)
+        :: (table.columns |> Dict.values |> List.filterMap (columnSuggestion search table))
 
 
 columnSuggestion : String -> Table -> Column -> Maybe Suggestion
@@ -70,7 +70,7 @@ columnSuggestion search table column =
 
 highlightMatch : String -> String -> List (Html msg)
 highlightMatch search value =
-    List.drop 1 (List.foldr (\i acc -> b [] [ text search ] :: i :: acc) [] (List.map text (String.split search value)))
+    value |> String.split search |> List.map text |> List.foldr (\i acc -> b [] [ text search ] :: i :: acc) [] |> List.drop 1
 
 
 matchStrength : String -> Table -> Float
@@ -121,13 +121,13 @@ columnMatchingBonus search table =
             Dict.values table.columns |> List.map (\c -> extractColumnName c.column)
     in
     if not (search == "") then
-        if List.any (\columnName -> not (exactMatch search columnName == 0)) columnNames then
+        if columnNames |> List.any (\columnName -> not (exactMatch search columnName == 0)) then
             0.5
 
-        else if List.any (\columnName -> not (matchAtBeginning search columnName == 0)) columnNames then
+        else if columnNames |> List.any (\columnName -> not (matchAtBeginning search columnName == 0)) then
             0.2
 
-        else if List.any (\columnName -> not (matchNotAtBeginning search columnName == 0)) columnNames then
+        else if columnNames |> List.any (\columnName -> not (matchNotAtBeginning search columnName == 0)) then
             0.1
 
         else

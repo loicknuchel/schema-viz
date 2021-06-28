@@ -20,64 +20,64 @@ buildSchemaType tables =
 
 buildTables : List ( JsonTable, TableId ) -> Dict TableId Table
 buildTables tables =
-    dictFromList .id (List.map (buildTable conf.colors.grey (Size 0 0) (Position 0 0)) tables)
+    tables |> List.map (buildTable conf.colors.grey (Size 0 0) (Position 0 0)) |> dictFromList .id
 
 
 buildTable : Color -> Size -> Position -> ( JsonTable, TableId ) -> Table
 buildTable color size position ( table, id ) =
     { id = id
-    , schema = SchemaName table.schema
-    , table = TableName table.table
-    , columns = dictFromList .column (List.indexedMap buildColumn table.columns)
-    , primaryKey = Maybe.map buildPrimaryKey table.primaryKey
-    , uniques = List.map buildUnique table.uniques
-    , indexes = List.map buildIndex table.indexes
-    , comment = Maybe.map TableComment table.comment
+    , schema = table.schema |> SchemaName
+    , table = table.table |> TableName
+    , columns = table.columns |> List.indexedMap buildColumn |> dictFromList .column
+    , primaryKey = table.primaryKey |> Maybe.map buildPrimaryKey
+    , uniques = table.uniques |> List.map buildUnique
+    , indexes = table.indexes |> List.map buildIndex
+    , comment = table.comment |> Maybe.map TableComment
     , state = { status = Uninitialized, color = color, size = size, position = position }
     }
 
 
 buildColumn : Int -> JsonColumn -> Column
 buildColumn index column =
-    { index = ColumnIndex index
-    , column = ColumnName column.column
-    , kind = ColumnType column.kind
+    { index = index |> ColumnIndex
+    , column = column.column |> ColumnName
+    , kind = column.kind |> ColumnType
     , nullable = column.nullable
-    , foreignKey = Maybe.map buildForeignKey column.reference
-    , comment = Maybe.map ColumnComment column.comment
+    , foreignKey = column.reference |> Maybe.map buildForeignKey
+    , comment = column.comment |> Maybe.map ColumnComment
     , state = { order = Just index }
     }
 
 
 buildPrimaryKey : JsonPrimaryKey -> PrimaryKey
 buildPrimaryKey pk =
-    { columns = List.map ColumnName pk.columns
-    , name = PrimaryKeyName pk.name
+    { columns = pk.columns |> List.map ColumnName
+    , name = pk.name |> PrimaryKeyName
     }
 
 
 buildUnique : JsonUnique -> Unique
 buildUnique unique =
-    { columns = List.map ColumnName unique.columns
-    , name = UniqueName unique.name
+    { columns = unique.columns |> List.map ColumnName
+    , name = unique.name |> UniqueName
     }
 
 
 buildIndex : JsonIndex -> Index
 buildIndex index =
-    { columns = List.map ColumnName index.columns
+    { columns = index.columns |> List.map ColumnName
     , definition = index.definition
-    , name = IndexName index.name
+    , name = index.name |> IndexName
     }
 
 
 buildForeignKey : JsonForeignKey -> ForeignKey
 buildForeignKey fk =
-    { tableId = buildTableId fk
-    , schema = SchemaName fk.schema
-    , table = TableName fk.table
-    , column = ColumnName fk.column
-    , name = ForeignKeyName fk.name
+    { tableId = fk |> buildTableId
+    , schema = fk.schema |> SchemaName
+    , table = fk.table |> TableName
+    , column = fk.column |> ColumnName
+    , name = fk.name |> ForeignKeyName
     }
 
 
@@ -92,12 +92,12 @@ buildTableId fk =
 
 buildRelations : Dict TableId Table -> List RelationRef
 buildRelations tables =
-    List.foldr (\table res -> buildTableRelations table ++ res) [] (Dict.values tables)
+    tables |> Dict.values |> List.foldr (\table res -> buildTableRelations table ++ res) []
 
 
 buildTableRelations : Table -> List RelationRef
 buildTableRelations table =
-    List.filterMap (\col -> Maybe.map (buildRelation table col) col.foreignKey) (Dict.values table.columns)
+    table.columns |> Dict.values |> List.filterMap (\col -> col.foreignKey |> Maybe.map (buildRelation table col))
 
 
 buildRelation : Table -> Column -> ForeignKey -> RelationRef

@@ -29,7 +29,7 @@ viewTable zoom incomingTableRelations table =
             ++ dragAttrs (formatTableId table.id)
         )
         [ viewHeader zoom table
-        , div [ class "columns" ] (List.map (\c -> viewColumn table.primaryKey table.uniques table.indexes (filterIncomingColumnRelations incomingTableRelations c) c) (Dict.values table.columns))
+        , div [ class "columns" ] (table.columns |> Dict.values |> List.map (\c -> viewColumn table.primaryKey table.uniques table.indexes (filterIncomingColumnRelations incomingTableRelations c) c))
         ]
 
 
@@ -73,18 +73,18 @@ viewColumnIcon maybePk uniques indexes column attrs =
 viewColumnDropdown : List Relation -> (List (Attribute Msg) -> Html Msg) -> Html Msg
 viewColumnDropdown incomingColumnRelations element =
     case
-        List.map
-            (\relation ->
-                li []
-                    [ a [ class "dropdown-item", classList [ ( "disabled", relation.src.table.state.status == Shown ) ], onClick (ShowTable relation.src.table.id) ]
-                        [ viewIcon Icon.externalLinkAlt
-                        , text " "
-                        , b [] [ text (formatTableId relation.src.table.id) ]
-                        , text ("" |> withColumnName relation.src.column.column |> withNullableInfo relation.src.column.nullable)
+        incomingColumnRelations
+            |> List.map
+                (\relation ->
+                    li []
+                        [ a [ class "dropdown-item", classList [ ( "disabled", relation.src.table.state.status == Shown ) ], onClick (ShowTable relation.src.table.id) ]
+                            [ viewIcon Icon.externalLinkAlt
+                            , text " "
+                            , b [] [ text (formatTableId relation.src.table.id) ]
+                            , text ("" |> withColumnName relation.src.column.column |> withNullableInfo relation.src.column.nullable)
+                            ]
                         ]
-                    ]
-            )
-            incomingColumnRelations
+                )
     of
         [] ->
             element []
@@ -108,7 +108,7 @@ viewColumnName pk column =
                     "name"
     in
     div [ class className ]
-        (listAppendOn column.comment (\(ColumnComment comment) -> viewComment comment) [ text (extractColumnName column.column) ])
+        ([ text (extractColumnName column.column) ] |> listAppendOn column.comment (\(ColumnComment comment) -> viewComment comment))
 
 
 viewColumnType : Column -> Html msg
@@ -146,27 +146,27 @@ tableNameSize zoom =
 
 filterIncomingColumnRelations : List Relation -> Column -> List Relation
 filterIncomingColumnRelations incomingTableRelations column =
-    List.filter (\r -> r.ref.column.column == column.column) incomingTableRelations
+    incomingTableRelations |> List.filter (\r -> r.ref.column.column == column.column)
 
 
 inPrimaryKey : ColumnName -> Maybe PrimaryKey -> Maybe PrimaryKey
 inPrimaryKey column pk =
-    maybeFilter (\{ columns } -> hasColumn column columns) pk
+    pk |> maybeFilter (\{ columns } -> columns |> hasColumn column)
 
 
 inUniqueIndexes : ColumnName -> List Unique -> List Unique
 inUniqueIndexes column uniques =
-    List.filter (\{ columns } -> hasColumn column columns) uniques
+    uniques |> List.filter (\{ columns } -> columns |> hasColumn column)
 
 
 inIndexes : ColumnName -> List Index -> List Index
 inIndexes column indexes =
-    List.filter (\{ columns } -> hasColumn column columns) indexes
+    indexes |> List.filter (\{ columns } -> columns |> hasColumn column)
 
 
 hasColumn : ColumnName -> List ColumnName -> Bool
 hasColumn column columns =
-    List.any (\c -> c == column) columns
+    columns |> List.any (\c -> c == column)
 
 
 
@@ -190,12 +190,12 @@ formatFkTitle fk =
 
 formatUniqueTitle : List Unique -> String
 formatUniqueTitle uniques =
-    "Unique constraint in " ++ String.join ", " (List.map (\unique -> formatUniqueIndexName unique.name) uniques)
+    "Unique constraint in " ++ (uniques |> List.map (\unique -> formatUniqueIndexName unique.name) |> String.join ", ")
 
 
 formatIndexTitle : List Index -> String
 formatIndexTitle indexes =
-    "Indexed by " ++ String.join ", " (List.map (\index -> formatIndexName index.name) indexes)
+    "Indexed by " ++ (indexes |> List.map (\index -> formatIndexName index.name) |> String.join ", ")
 
 
 formatReference : ForeignKey -> String

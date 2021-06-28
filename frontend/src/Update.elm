@@ -1,11 +1,11 @@
-module Update exposing (dragConfig, dragItem, hideAllTables, hideTable, setState, showAllTables, showTable, updateSizes, updateTable, zoomCanvas)
+module Update exposing (dragConfig, dragItem, hideAllTables, hideTable, showAllTables, showTable, updateSizes, updateTable, zoomCanvas)
 
 import AssocList as Dict exposing (Dict)
 import Commands.InitializeTable exposing (initializeTable)
 import Conf exposing (conf)
 import Draggable
 import Draggable.Events exposing (onDragBy, onDragEnd, onDragStart)
-import Libs.Std exposing (WheelEvent, dictFromList, maybeFilter)
+import Libs.Std exposing (WheelEvent, dictFromList, maybeFilter, setState)
 import Models exposing (Canvas, DragId, Model, Msg(..), SizeChange, Status(..))
 import Models.Schema exposing (Schema, Table, TableId, TableState, TableStatus(..))
 import Models.Utils exposing (Area, Position, ZoomLevel)
@@ -17,49 +17,49 @@ import Views.Helpers exposing (formatTableId, parseTableId)
 -- utility methods to get the update case down to one line
 
 
-hideTable : Schema -> TableId -> Schema
-hideTable schema id =
-    visitTable id (setState (\state -> { state | status = Hidden })) schema
+hideTable : TableId -> Schema -> Schema
+hideTable id schema =
+    schema |> visitTable id (setState (\state -> { state | status = Hidden }))
 
 
 showTable : Model -> TableId -> ( Model, Cmd Msg )
 showTable model id =
-    case Maybe.map (\t -> t.state.status) (getTable id model.schema) of
+    case getTable id model.schema |> Maybe.map (\t -> t.state.status) of
         Just Uninitialized ->
             -- race condition problem when observe is performed before table is shown :(
-            ( { model | schema = visitTable id (setState (\state -> { state | status = Initializing })) model.schema }, Cmd.batch [ observeTableSize id, activateTooltipsAndPopovers () ] )
+            ( { model | schema = model.schema |> visitTable id (setState (\state -> { state | status = Initializing })) }, Cmd.batch [ observeTableSize id, activateTooltipsAndPopovers () ] )
 
         Just Initializing ->
             ( model, Cmd.none )
 
         Just Hidden ->
-            ( { model | schema = visitTable id (setState (\state -> { state | status = Shown })) model.schema }, Cmd.batch [ observeTableSize id, activateTooltipsAndPopovers () ] )
+            ( { model | schema = model.schema |> visitTable id (setState (\state -> { state | status = Shown })) }, Cmd.batch [ observeTableSize id, activateTooltipsAndPopovers () ] )
 
         Just Shown ->
             ( model, Cmd.none )
 
         Nothing ->
-            ( setState (\state -> { state | status = Failure ("Can't show table (" ++ formatTableId id ++ "), not found") }) model, Cmd.none )
+            ( model |> setState (\state -> { state | status = Failure ("Can't show table (" ++ formatTableId id ++ "), not found") }), Cmd.none )
 
 
-updateTable : (TableState -> TableState) -> TableId -> Schema -> Schema
-updateTable transform id schema =
-    visitTable id (setState transform) schema
+updateTable : TableId -> (TableState -> TableState) -> Schema -> Schema
+updateTable id transform schema =
+    schema |> visitTable id (setState transform)
 
 
 hideAllTables : Schema -> Schema
 hideAllTables schema =
-    visitTables
-        (setState
-            (\state ->
-                if state.status == Shown then
-                    { state | status = Hidden }
+    schema
+        |> visitTables
+            (setState
+                (\state ->
+                    if state.status == Shown then
+                        { state | status = Hidden }
 
-                else
-                    state
+                    else
+                        state
+                )
             )
-        )
-        schema
 
 
 showAllTables : Model -> ( Model, Cmd Msg )
@@ -85,26 +85,26 @@ showAllTables model =
                     )
                 |> List.unzip
     in
-    ( { model | schema = setTables tables model.schema }, Cmd.batch [ observeTablesSize (List.filterMap identity cmds), activateTooltipsAndPopovers () ] )
+    ( { model | schema = model.schema |> setTables tables }, Cmd.batch [ observeTablesSize (cmds |> List.filterMap identity), activateTooltipsAndPopovers () ] )
 
 
 updateSizes : List SizeChange -> Model -> ( Model, Cmd Msg )
 updateSizes sizeChanges model =
-    ( List.foldr updateSize model sizeChanges, Cmd.batch (List.filterMap (maybeChangeCmd model) sizeChanges) )
+    ( sizeChanges |> List.foldr updateSize model, Cmd.batch (sizeChanges |> List.filterMap (maybeChangeCmd model)) )
 
 
 updateSize : SizeChange -> Model -> Model
 updateSize change model =
     if change.id == conf.ids.erd then
-        { model | canvas = setSize (\_ -> change.size) model.canvas }
+        { model | canvas = model.canvas |> setSize (\_ -> change.size) }
 
     else
-        { model | schema = updateTable (\s -> { s | size = change.size }) (parseTableId change.id) model.schema }
+        { model | schema = model.schema |> updateTable (parseTableId change.id) (\state -> { state | size = change.size }) }
 
 
 maybeChangeCmd : Model -> SizeChange -> Maybe (Cmd Msg)
 maybeChangeCmd model { id, size } =
-    getInitializingTable (parseTableId id) model.schema.tables |> Maybe.map (\t -> initializeTable size (getArea model.canvas) t.id)
+    model.schema.tables |> getInitializingTable (parseTableId id) |> Maybe.map (\t -> t.id |> initializeTable size (getArea model.canvas))
 
 
 getInitializingTable : TableId -> Dict TableId Table -> Maybe Table
@@ -158,13 +158,13 @@ dragItem model delta =
     case model.state.dragId of
         Just id ->
             if id == conf.ids.erd then
-                { model | canvas = updatePosition delta 1 model.canvas }
+                { model | canvas = model.canvas |> updatePosition delta 1 }
 
             else
-                { model | schema = visitTable (parseTableId id) (setState (updatePosition delta model.canvas.zoom)) model.schema }
+                { model | schema = model.schema |> visitTable (parseTableId id) (setState (updatePosition delta model.canvas.zoom)) }
 
         Nothing ->
-            setState (\state -> { state | status = Failure "Can't OnDragBy when no drag id" }) model
+            model |> setState (\state -> { state | status = Failure "Can't OnDragBy when no drag id" })
 
 
 
@@ -173,32 +173,27 @@ dragItem model delta =
 
 visitTables : (Table -> Table) -> Schema -> Schema
 visitTables transform schema =
-    { schema | tables = Dict.map (\_ table -> transform table) schema.tables }
+    { schema | tables = schema.tables |> Dict.map (\_ table -> transform table) }
 
 
 visitTable : TableId -> (Table -> Table) -> Schema -> Schema
 visitTable id transform schema =
-    { schema | tables = Dict.update id (Maybe.map transform) schema.tables }
+    { schema | tables = schema.tables |> Dict.update id (Maybe.map transform) }
 
 
 getTable : TableId -> Schema -> Maybe Table
 getTable id schema =
-    Dict.get id schema.tables
+    schema.tables |> Dict.get id
 
 
 setTables : List Table -> Schema -> Schema
 setTables tables schema =
-    { schema | tables = dictFromList .id tables }
-
-
-setState : (s -> s) -> { item | state : s } -> { item | state : s }
-setState transform item =
-    { item | state = transform item.state }
+    { schema | tables = tables |> dictFromList .id }
 
 
 setSize : (s -> s) -> { item | size : s } -> { item | size : s }
 setSize transform item =
-    { item | size = transform item.size }
+    { item | size = item.size |> transform }
 
 
 updatePosition : Draggable.Delta -> ZoomLevel -> { item | position : Position } -> { item | position : Position }

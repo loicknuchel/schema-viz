@@ -7,12 +7,13 @@ import Conf exposing (conf)
 import Draggable
 import FontAwesome.Styles as Icon
 import Html exposing (text)
+import Libs.Std exposing (set)
 import Mappers.SchemaMapper exposing (buildSchema)
 import Models exposing (Flags, Model, Msg(..), Status(..))
 import Models.Schema exposing (TableStatus(..))
 import Models.Utils exposing (Position, Size)
 import Ports exposing (observeSize, sizesReceiver)
-import Update exposing (dragConfig, dragItem, hideAllTables, hideTable, setState, showAllTables, showTable, updateSizes, updateTable, zoomCanvas)
+import Update exposing (dragConfig, dragItem, hideAllTables, hideTable, showAllTables, showTable, updateSizes, updateTable, zoomCanvas)
 import View exposing (viewApp)
 import Views.Helpers exposing (formatHttpError)
 
@@ -49,22 +50,22 @@ update msg model =
     case msg of
         -- each case should be one line or call a function in Update file
         GotData (Ok tables) ->
-            ( setState (\state -> { state | status = Success }) { model | schema = buildSchema tables }, Cmd.none )
+            ( { model | state = model.state |> set (\state -> { state | status = Success }), schema = buildSchema tables }, Cmd.none )
 
         GotData (Err e) ->
-            ( setState (\state -> { state | status = Failure (formatHttpError e) }) model, Cmd.none )
+            ( { model | state = model.state |> set (\state -> { state | status = Failure (formatHttpError e) }) }, Cmd.none )
 
         ChangedSearch search ->
-            ( setState (\state -> { state | search = search }) model, Cmd.none )
+            ( { model | state = model.state |> set (\state -> { state | search = search }) }, Cmd.none )
 
         HideTable id ->
-            ( { model | schema = hideTable model.schema id }, Cmd.none )
+            ( { model | schema = model.schema |> hideTable id }, Cmd.none )
 
         ShowTable id ->
             showTable model id
 
         InitializedTable id size position color ->
-            ( { model | schema = updateTable (\state -> { state | status = Shown, size = size, position = position, color = color }) id model.schema }, Cmd.none )
+            ( { model | schema = model.schema |> updateTable id (\state -> { state | status = Shown, size = size, position = position, color = color }) }, Cmd.none )
 
         SizesChanged sizes ->
             updateSizes sizes model
@@ -82,10 +83,10 @@ update msg model =
             Tuple.mapFirst (\newState -> { model | state = newState }) (Draggable.update dragConfig dragMsg model.state)
 
         StartDragging id ->
-            ( setState (\state -> { state | dragId = Just id }) model, Cmd.none )
+            ( { model | state = model.state |> set (\state -> { state | dragId = Just id }) }, Cmd.none )
 
         StopDragging ->
-            ( setState (\state -> { state | dragId = Nothing }) model, Cmd.none )
+            ( { model | state = model.state |> set (\state -> { state | dragId = Nothing }) }, Cmd.none )
 
         OnDragBy delta ->
             ( dragItem model delta, Cmd.none )

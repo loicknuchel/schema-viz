@@ -1,7 +1,8 @@
 module Libs.Std exposing (..)
 
 import AssocList as Dict exposing (Dict)
-import Html exposing (Attribute, Html, div)
+import Html exposing (Attribute, Html, b, code, div, text)
+import Html.Attributes exposing (attribute)
 import Html.Events
 import Json.Decode as Decode exposing (Decoder)
 import Random
@@ -94,6 +95,11 @@ dictFromList getKey list =
     list |> List.reverse |> List.map (\item -> ( getKey item, item )) |> Dict.fromList
 
 
+role : String -> Attribute msg
+role text =
+    attribute "role" text
+
+
 divIf : Bool -> List (Attribute msg) -> List (Html msg) -> Html msg
 divIf predicate attrs children =
     if predicate then
@@ -101,6 +107,16 @@ divIf predicate attrs children =
 
     else
         div [] []
+
+
+bText : String -> Html msg
+bText content =
+    b [] [ text content ]
+
+
+codeText : String -> Html msg
+codeText content =
+    code [] [ text content ]
 
 
 plural : Int -> String -> String -> String -> String

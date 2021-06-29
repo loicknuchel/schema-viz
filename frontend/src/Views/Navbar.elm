@@ -3,32 +3,58 @@ module Views.Navbar exposing (viewNavbar)
 import AssocList as Dict
 import FontAwesome.Icon exposing (viewIcon)
 import FontAwesome.Solid as Icon
-import Html exposing (Html, a, b, button, div, form, img, input, li, nav, span, text, ul)
-import Html.Attributes exposing (alt, autocomplete, class, height, href, id, placeholder, src, style, type_, value)
+import Html exposing (Html, a, b, button, div, form, h5, img, input, li, nav, span, text, ul)
+import Html.Attributes exposing (alt, autocomplete, class, height, href, id, placeholder, src, style, tabindex, type_, value)
 import Html.Events exposing (onClick, onInput)
+import Libs.Std exposing (bText, codeText)
 import Models exposing (Msg(..))
 import Models.Schema exposing (Column, ColumnName(..), Table, TableName(..), TableStatus(..))
-import Views.Bootstrap exposing (ariaLabel, bsToggleCollapse, bsToggleDropdown, bsToggleOffcanvas)
+import Views.Bootstrap exposing (Toggle(..), ariaHidden, ariaLabel, ariaLabelledBy, bsDismiss, bsToggleCollapse, bsToggleDropdown, bsToggleModal, bsToggleOffcanvas)
 import Views.Helpers exposing (extractColumnName, formatTableId)
 
 
 viewNavbar : String -> List Table -> Html Msg
 viewNavbar search tables =
-    nav [ class "navbar navbar-expand-md navbar-light bg-white shadow-sm", id "navbar" ]
-        [ div [ class "container-fluid" ]
-            [ a [ href "#", class "navbar-brand" ] [ img [ src "assets/logo.png", alt "logo", height 24, class "d-inline-block align-text-top" ] [], text " Schema Viz" ]
-            , button ([ type_ "button", class "navbar-toggler", ariaLabel "Toggle navigation" ] ++ bsToggleCollapse "navbar-content")
-                [ span [ class "navbar-toggler-icon" ] []
-                ]
-            , div [ class "collapse navbar-collapse", id "navbar-content" ]
-                [ ul [ class "navbar-nav me-auto" ]
-                    [ li [ class "nav-item" ] [ a ([ href "#", class "nav-link" ] ++ bsToggleOffcanvas "menu") [ text "Toggle menu" ] ]
+    div []
+        [ nav [ class "navbar navbar-expand-md navbar-light bg-white shadow-sm", id "navbar" ]
+            [ div [ class "container-fluid" ]
+                [ a [ href "#", class "navbar-brand" ] [ img [ src "assets/logo.png", alt "logo", height 24, class "d-inline-block align-text-top" ] [], text " Schema Viz" ]
+                , button ([ type_ "button", class "navbar-toggler", ariaLabel "Toggle navigation" ] ++ bsToggleCollapse "navbar-content")
+                    [ span [ class "navbar-toggler-icon" ] []
                     ]
-                , form [ class "d-flex" ]
-                    [ div [ class "dropdown" ]
-                        [ input ([ type_ "search", class "form-control", value search, placeholder "Search", ariaLabel "Search", autocomplete False, onInput ChangedSearch ] ++ bsToggleDropdown "search") []
-                        , ul [ class "dropdown-menu dropdown-menu-end" ]
-                            (buildSuggestions search tables |> List.map (\s -> li [] [ a [ class "dropdown-item", style "cursor" "pointer", onClick s.msg ] s.content ]))
+                , div [ class "collapse navbar-collapse", id "navbar-content" ]
+                    [ ul [ class "navbar-nav me-auto" ]
+                        [ li [ class "nav-item" ] [ a ([ href "#", class "nav-link" ] ++ bsToggleOffcanvas "menu") [ text "Toggle menu" ] ]
+                        , li [ class "nav-item" ] [ a ([ href "#", class "nav-link" ] ++ bsToggleModal "help-modal") [ text "?" ] ]
+                        ]
+                    , form [ class "d-flex" ]
+                        [ div [ class "dropdown" ]
+                            [ input ([ type_ "search", class "form-control", value search, placeholder "Search", ariaLabel "Search", autocomplete False, onInput ChangedSearch ] ++ bsToggleDropdown "search") []
+                            , ul [ class "dropdown-menu dropdown-menu-end" ]
+                                (buildSuggestions search tables |> List.map (\s -> li [] [ a [ class "dropdown-item", style "cursor" "pointer", onClick s.msg ] s.content ]))
+                            ]
+                        ]
+                    ]
+                ]
+            ]
+        , div [ class "modal fade", id "help-modal", tabindex -1, ariaLabelledBy "help-modal-label", ariaHidden True ]
+            [ div [ class "modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable" ]
+                [ div [ class "modal-content" ]
+                    [ div [ class "modal-header" ]
+                        [ h5 [ class "modal-title", id "help-modal-label" ] [ text "Schema Viz cheatsheet" ]
+                        , button [ type_ "button", class "btn-close", bsDismiss Modal, ariaLabel "Close" ] []
+                        ]
+                    , div [ class "modal-body" ]
+                        [ ul []
+                            [ li [] [ text "In ", bText "search", text ", you can look for tables and columns, then click on one to show it" ]
+                            , li [] [ text "Not connected relations on the left are ", bText "incoming foreign keys", text ". Click on the column icon to see tables referencing it and then show them" ]
+                            , li [] [ text "Not connected relations on the right are ", bText "column foreign keys", text ". Click on the column icon to show referenced table" ]
+                            , li [] [ text "You can ", bText "hide/show a column", text " with a ", codeText "double click", text " on it" ]
+                            , li [] [ text "You can ", bText "zoom in/out", text " using scrolling action, ", bText "move tables", text " around by dragging them or even ", bText "move everything", text " by dragging the background" ]
+                            ]
+                        ]
+                    , div [ class "modal-footer" ]
+                        [ button [ type_ "button", class "btn btn-primary", bsDismiss Modal ] [ text "Thanks!" ]
                         ]
                     ]
                 ]

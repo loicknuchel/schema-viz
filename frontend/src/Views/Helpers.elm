@@ -3,7 +3,7 @@ module Views.Helpers exposing (dragAttrs, extractColumnIndex, extractColumnName,
 import Conf exposing (conf)
 import Draggable
 import Html exposing (Attribute)
-import Html.Attributes exposing (attribute, style)
+import Html.Attributes exposing (height, style, width)
 import Http exposing (Error(..))
 import Models exposing (DragId, Msg(..))
 import Models.Schema exposing (ColumnIndex(..), ColumnName(..), ColumnType(..), SchemaName(..), TableId(..), TableName(..))
@@ -26,7 +26,7 @@ dragAttrs id =
 
 sizeAttrs : Size -> List (Attribute Msg)
 sizeAttrs size =
-    [ attribute "width" (String.fromFloat size.width), attribute "height" (String.fromFloat size.height) ]
+    [ width (round size.width), height (round size.height) ]
 
 
 

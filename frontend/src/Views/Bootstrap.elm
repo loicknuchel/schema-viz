@@ -2,6 +2,7 @@ module Views.Bootstrap exposing (BsColor(..), Toggle(..), ariaHidden, ariaLabel,
 
 import Html exposing (Attribute, Html, div)
 import Html.Attributes exposing (attribute, class, id, type_)
+import Libs.Std exposing (role)
 
 
 type BsColor
@@ -149,7 +150,7 @@ bsButton color attrs children =
 
 bsButtonGroup : String -> List (Html msg) -> Html msg
 bsButtonGroup label buttons =
-    div [ class "btn-group", attribute "role" "group", ariaLabel label ] buttons
+    div [ class "btn-group", role "group", ariaLabel label ] buttons
 
 
 colorToString : BsColor -> String

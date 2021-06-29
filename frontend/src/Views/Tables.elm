@@ -4,14 +4,14 @@ import AssocList as Dict
 import FontAwesome.Icon exposing (viewIcon)
 import FontAwesome.Regular as IconLight
 import FontAwesome.Solid as Icon
-import Html exposing (Attribute, Html, a, b, div, li, span, text, ul)
-import Html.Attributes exposing (attribute, class, classList, href, id, style, title)
+import Html exposing (Attribute, Html, a, b, button, div, li, span, text, ul)
+import Html.Attributes exposing (class, classList, id, style, title, type_)
 import Html.Events exposing (onClick, onDoubleClick)
 import Libs.Std exposing (divIf, listAddIf, listAppendOn, maybeFilter, plural)
 import Models exposing (Msg(..))
 import Models.Schema exposing (Column, ColumnComment(..), ColumnName, ForeignKey, Index, IndexName(..), PrimaryKey, Relation, Table, TableComment(..), TableId, TableStatus(..), Unique, UniqueName(..))
 import Models.Utils exposing (ZoomLevel)
-import Views.Bootstrap exposing (bsDropdown)
+import Views.Bootstrap exposing (Toggle(..), bsDropdown, bsToggle, bsToggleCollapse)
 import Views.Helpers exposing (dragAttrs, extractColumnIndex, extractColumnName, extractColumnType, formatTableId, formatTableName, placeAt, sizeAttrs, withColumnName, withNullableInfo)
 
 
@@ -44,7 +44,7 @@ viewTable zoom incomingTableRelations table =
             )
         , divIf (List.length hiddenColumns > 0)
             [ class "hidden-columns" ]
-            [ a [ href ("#" ++ collapseId), class "toggle", attribute "data-bs-toggle" "collapse", attribute "role" "button", attribute "aria-expanded" "false", attribute "aria-controls" collapseId ]
+            [ button ([ class "toggle", type_ "button" ] ++ bsToggleCollapse collapseId)
                 [ text (plural (hiddenColumns |> List.length) "No hidden column" "1 hidden column" " hidden columns")
                 ]
             , div [ class "collapse", id collapseId ]
@@ -86,17 +86,17 @@ viewColumnIcon : Maybe PrimaryKey -> List Unique -> List Index -> Column -> List
 viewColumnIcon maybePk uniques indexes column attrs =
     case ( ( inPrimaryKey column.column maybePk, column.foreignKey ), ( inUniqueIndexes column.column uniques, inIndexes column.column indexes ) ) of
         ( ( Just pk, _ ), _ ) ->
-            div (class "icon" :: attrs) [ div [ title (formatPkTitle pk), attribute "data-bs-toggle" "tooltip" ] [ viewIcon Icon.key ] ]
+            div (class "icon" :: attrs) [ div [ title (formatPkTitle pk), bsToggle Tooltip ] [ viewIcon Icon.key ] ]
 
         ( ( _, Just fk ), _ ) ->
             -- TODO: know fk table state to not put onClick when it's already shown (so Update.elm#showTable on Shown state could issue an error)
-            div (class "icon" :: onClick (ShowTable fk.tableId) :: attrs) [ div [ title (formatFkTitle fk), attribute "data-bs-toggle" "tooltip" ] [ viewIcon Icon.externalLinkAlt ] ]
+            div (class "icon" :: onClick (ShowTable fk.tableId) :: attrs) [ div [ title (formatFkTitle fk), bsToggle Tooltip ] [ viewIcon Icon.externalLinkAlt ] ]
 
         ( _, ( u :: us, _ ) ) ->
-            div (class "icon" :: attrs) [ div [ title (formatUniqueTitle (u :: us)), attribute "data-bs-toggle" "tooltip" ] [ viewIcon Icon.fingerprint ] ]
+            div (class "icon" :: attrs) [ div [ title (formatUniqueTitle (u :: us)), bsToggle Tooltip ] [ viewIcon Icon.fingerprint ] ]
 
         ( _, ( _, i :: is ) ) ->
-            div (class "icon" :: attrs) [ div [ title (formatIndexTitle (i :: is)), attribute "data-bs-toggle" "tooltip" ] [ viewIcon Icon.sortAmountDownAlt ] ]
+            div (class "icon" :: attrs) [ div [ title (formatIndexTitle (i :: is)), bsToggle Tooltip ] [ viewIcon Icon.sortAmountDownAlt ] ]
 
         _ ->
             div ([ class "icon" ] ++ attrs) []
@@ -151,7 +151,7 @@ viewColumnType column =
 
 viewComment : String -> Html msg
 viewComment comment =
-    span [ title comment, attribute "data-bs-toggle" "tooltip", style "margin-left" ".25rem", style "font-size" ".9rem", style "opacity" ".25" ] [ viewIcon IconLight.commentDots ]
+    span [ title comment, bsToggle Tooltip, style "margin-left" ".25rem", style "font-size" ".9rem", style "opacity" ".25" ] [ viewIcon IconLight.commentDots ]
 
 
 

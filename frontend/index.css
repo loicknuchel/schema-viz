@@ -145,6 +145,7 @@
     font-weight: 600;
     text-transform: uppercase;
     text-decoration: none;
+    border: none;
 }
 
 .erd-table .hidden-column {

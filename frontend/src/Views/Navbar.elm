@@ -4,10 +4,11 @@ import AssocList as Dict
 import FontAwesome.Icon exposing (viewIcon)
 import FontAwesome.Solid as Icon
 import Html exposing (Html, a, b, button, div, form, img, input, li, nav, span, text, ul)
-import Html.Attributes exposing (alt, attribute, autocomplete, class, height, href, id, placeholder, src, style, type_, value)
+import Html.Attributes exposing (alt, autocomplete, class, height, href, id, placeholder, src, style, type_, value)
 import Html.Events exposing (onClick, onInput)
 import Models exposing (Msg(..))
 import Models.Schema exposing (Column, ColumnName(..), Table, TableName(..), TableStatus(..))
+import Views.Bootstrap exposing (ariaLabel, bsToggleCollapse, bsToggleDropdown, bsToggleOffcanvas)
 import Views.Helpers exposing (extractColumnName, formatTableId)
 
 
@@ -16,16 +17,16 @@ viewNavbar search tables =
     nav [ class "navbar navbar-expand-md navbar-light bg-white shadow-sm", id "navbar" ]
         [ div [ class "container-fluid" ]
             [ a [ href "#", class "navbar-brand" ] [ img [ src "assets/logo.png", alt "logo", height 24, class "d-inline-block align-text-top" ] [], text " Schema Viz" ]
-            , button [ type_ "button", class "navbar-toggler", attribute "data-bs-toggle" "collapse", attribute "data-bs-target" "#navbar-content", attribute "aria-controls" "navbar-content", attribute "aria-expanded" "false", attribute "aria-label" "Toggle navigation" ]
+            , button ([ type_ "button", class "navbar-toggler", ariaLabel "Toggle navigation" ] ++ bsToggleCollapse "navbar-content")
                 [ span [ class "navbar-toggler-icon" ] []
                 ]
             , div [ class "collapse navbar-collapse", id "navbar-content" ]
                 [ ul [ class "navbar-nav me-auto" ]
-                    [ li [ class "nav-item" ] [ a [ href "#", class "nav-link", attribute "data-bs-toggle" "offcanvas", attribute "data-bs-target" "#menu", attribute "aria-controls" "menu" ] [ text "Toggle menu" ] ]
+                    [ li [ class "nav-item" ] [ a ([ href "#", class "nav-link" ] ++ bsToggleOffcanvas "menu") [ text "Toggle menu" ] ]
                     ]
                 , form [ class "d-flex" ]
                     [ div [ class "dropdown" ]
-                        [ input [ type_ "search", class "form-control", id "search", value search, placeholder "Search", attribute "aria-label" "Search", attribute "data-bs-toggle" "dropdown", autocomplete False, onInput ChangedSearch ] []
+                        [ input ([ type_ "search", class "form-control", value search, placeholder "Search", ariaLabel "Search", autocomplete False, onInput ChangedSearch ] ++ bsToggleDropdown "search") []
                         , ul [ class "dropdown-menu dropdown-menu-end" ]
                             (buildSuggestions search tables |> List.map (\s -> li [] [ a [ class "dropdown-item", style "cursor" "pointer", onClick s.msg ] s.content ]))
                         ]

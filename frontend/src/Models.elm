@@ -1,10 +1,10 @@
 module Models exposing (Canvas, DragId, Error, Flags, Model, Msg(..), SizeChange, State, Status(..))
 
-import Decoders.SchemaDecoder exposing (JsonTable)
 import Draggable
 import Http
+import JsonFormats.SchemaDecoder exposing (JsonTable)
 import Libs.Std exposing (WheelEvent)
-import Models.Schema exposing (ColumnName, Schema, TableId)
+import Models.Schema exposing (ColumnName, Schema, TableId, TableStatus(..))
 import Models.Utils exposing (Color, Position, Size, ZoomLevel)
 
 
@@ -21,7 +21,7 @@ type alias Model =
 
 
 type alias State =
-    { status : Status, search : String, dragId : Maybe DragId, drag : Draggable.State DragId }
+    { status : Status, search : String, newLayout : Maybe String, dragId : Maybe DragId, drag : Draggable.State DragId }
 
 
 type alias Canvas =
@@ -50,6 +50,11 @@ type Msg
     | StartDragging DragId
     | StopDragging
     | OnDragBy Draggable.Delta
+    | NewLayout String
+    | CreateLayout
+    | LoadLayout String
+    | UpdateLayout String
+    | DeleteLayout String
 
 
 type alias DragId =

@@ -25,7 +25,7 @@ viewApp model loading =
         (listAppendOn loading
             (\msg -> div [ class "loading" ] [ text msg ])
             [ viewNavbar model.state.search (Dict.values model.schema.tables)
-            , viewMenu model.schema
+            , viewMenu model.state.newLayout model.schema
             , viewErd model.canvas model.schema
             ]
         )

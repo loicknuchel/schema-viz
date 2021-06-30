@@ -1,4 +1,4 @@
-module Decoders.SchemaDecoder exposing (JsonColumn, JsonForeignKey, JsonIndex, JsonPrimaryKey, JsonSchema, JsonTable, JsonUnique, schemaDecoder)
+module JsonFormats.SchemaDecoder exposing (JsonColumn, JsonForeignKey, JsonIndex, JsonPrimaryKey, JsonSchema, JsonTable, JsonUnique, schemaDecoder)
 
 import Json.Decode exposing (Decoder, bool, field, list, map, map2, map3, map4, map5, map7, maybe, string)
 

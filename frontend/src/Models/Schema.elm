@@ -1,7 +1,7 @@
-module Models.Schema exposing (Column, ColumnComment(..), ColumnIndex(..), ColumnName(..), ColumnRef, ColumnState, ColumnType(..), ForeignKey, ForeignKeyName(..), Index, IndexName(..), PrimaryKey, PrimaryKeyName(..), Relation, RelationRef, RelationState, Schema, SchemaName(..), Table, TableAndColumn, TableComment(..), TableId(..), TableName(..), TableState, TableStatus(..), Unique, UniqueName(..))
+module Models.Schema exposing (CanvasProps, Column, ColumnComment(..), ColumnIndex(..), ColumnName(..), ColumnProps, ColumnRef, ColumnState, ColumnType(..), ForeignKey, ForeignKeyName(..), Index, IndexName(..), Layout, PrimaryKey, PrimaryKeyName(..), Relation, RelationRef, RelationState, Schema, SchemaName(..), Table, TableAndColumn, TableComment(..), TableId(..), TableName(..), TableProps, TableState, TableStatus(..), Unique, UniqueName(..))
 
 import AssocList exposing (Dict)
-import Models.Utils exposing (Color, Position, Size)
+import Models.Utils exposing (Color, Position, Size, ZoomLevel)
 
 
 
@@ -11,6 +11,7 @@ import Models.Utils exposing (Color, Position, Size)
 type alias Schema =
     { tables : Dict TableId Table
     , relations : List RelationRef
+    , layouts : List Layout
     }
 
 
@@ -87,6 +88,22 @@ type alias Index =
 
 type alias ForeignKey =
     { tableId : TableId, schema : SchemaName, table : TableName, column : ColumnName, name : ForeignKeyName }
+
+
+type alias Layout =
+    { name : String, canvas : CanvasProps, tables : Dict TableId TableProps }
+
+
+type alias CanvasProps =
+    { zoom : ZoomLevel, position : Position }
+
+
+type alias TableProps =
+    { position : Position, color : Color, columns : Dict ColumnName ColumnProps }
+
+
+type alias ColumnProps =
+    { position : Int }
 
 
 type TableComment

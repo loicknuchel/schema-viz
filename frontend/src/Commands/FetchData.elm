@@ -1,7 +1,7 @@
 module Commands.FetchData exposing (loadData)
 
-import Decoders.SchemaDecoder exposing (JsonSchema, JsonTable, schemaDecoder)
 import Http
+import JsonFormats.SchemaDecoder exposing (JsonSchema, JsonTable, schemaDecoder)
 import Libs.Std exposing (listZipWith)
 import Models exposing (Msg(..))
 import Models.Schema exposing (SchemaName(..), TableId(..), TableName(..))

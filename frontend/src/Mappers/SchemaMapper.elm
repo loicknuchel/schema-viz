@@ -2,7 +2,7 @@ module Mappers.SchemaMapper exposing (buildSchema)
 
 import AssocList as Dict exposing (Dict)
 import Conf exposing (conf)
-import Decoders.SchemaDecoder exposing (JsonColumn, JsonForeignKey, JsonIndex, JsonPrimaryKey, JsonTable, JsonUnique)
+import JsonFormats.SchemaDecoder exposing (JsonColumn, JsonForeignKey, JsonIndex, JsonPrimaryKey, JsonTable, JsonUnique)
 import Libs.Std exposing (dictFromList)
 import Models.Schema exposing (Column, ColumnComment(..), ColumnIndex(..), ColumnName(..), ColumnType(..), ForeignKey, ForeignKeyName(..), Index, IndexName(..), PrimaryKey, PrimaryKeyName(..), RelationRef, Schema, SchemaName(..), Table, TableComment(..), TableId(..), TableName(..), TableStatus(..), Unique, UniqueName(..))
 import Models.Utils exposing (Color, Position, Size)
@@ -15,7 +15,7 @@ buildSchema tables =
 
 buildSchemaType : Dict TableId Table -> Schema
 buildSchemaType tables =
-    { tables = tables, relations = buildRelations tables }
+    { tables = tables, relations = buildRelations tables, layouts = [] }
 
 
 buildTables : List ( JsonTable, TableId ) -> Dict TableId Table

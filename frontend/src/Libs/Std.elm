@@ -31,6 +31,11 @@ setState transform item =
     { item | state = item.state |> transform }
 
 
+setSchema : (s -> s) -> { item | schema : s } -> { item | schema : s }
+setSchema transform item =
+    { item | schema = item.schema |> transform }
+
+
 listFilterMap : (a -> Bool) -> (a -> b) -> List a -> List b
 listFilterMap predicate transform list =
     list |> List.foldr (\a res -> cond (predicate a) (\_ -> transform a :: res) (\_ -> res)) []
@@ -68,6 +73,20 @@ listAppendOn maybe transform list =
 
         Nothing ->
             list
+
+
+listFind : (a -> Bool) -> List a -> Maybe a
+listFind predicate list =
+    case list of
+        [] ->
+            Nothing
+
+        first :: rest ->
+            if predicate first then
+                Just first
+
+            else
+                listFind predicate rest
 
 
 maybeFilter : (a -> Bool) -> Maybe a -> Maybe a

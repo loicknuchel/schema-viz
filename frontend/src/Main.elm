@@ -7,13 +7,13 @@ import Conf exposing (conf)
 import Draggable
 import FontAwesome.Styles as Icon
 import Html exposing (text)
-import Libs.Std exposing (set, setState)
+import Libs.Std exposing (cond, set, setSchema, setState)
 import Mappers.SchemaMapper exposing (buildSchema)
 import Models exposing (Flags, Model, Msg(..), Status(..))
 import Models.Schema exposing (TableStatus(..))
 import Models.Utils exposing (Position, Size)
 import Ports exposing (activateTooltipsAndPopovers, observeSize, sizesReceiver)
-import Update exposing (dragConfig, dragItem, hideAllTables, hideColumn, hideTable, showAllTables, showColumn, showTable, updateSizes, visitTable, zoomCanvas)
+import Update exposing (dragConfig, dragItem, hideAllTables, hideColumn, hideTable, loadLayout, showAllTables, showColumn, showTable, toLayout, updateSizes, visitTable, zoomCanvas)
 import View exposing (viewApp)
 import Views.Helpers exposing (formatHttpError)
 
@@ -34,9 +34,9 @@ main =
 
 init : Flags -> ( Model, Cmd Msg )
 init _ =
-    ( { state = { status = Loading, search = "", dragId = Nothing, drag = Draggable.init }
+    ( { state = { status = Loading, search = "", newLayout = Nothing, dragId = Nothing, drag = Draggable.init }
       , canvas = { size = Size 0 0, zoom = 1, position = Position 0 0 }
-      , schema = { tables = Dict.empty, relations = [] }
+      , schema = { tables = Dict.empty, relations = [], layouts = [] }
       }
     , Cmd.batch
         [ observeSize conf.ids.erd
@@ -96,6 +96,21 @@ update msg model =
 
         OnDragBy delta ->
             ( dragItem model delta, Cmd.none )
+
+        NewLayout name ->
+            ( model |> setState (\s -> { s | newLayout = cond (String.length name == 0) (\_ -> Nothing) (\_ -> Just name) }), Cmd.none )
+
+        CreateLayout ->
+            ( model |> setState (\s -> { s | newLayout = Nothing }) |> setSchema (\s -> { s | layouts = (model |> toLayout (model.state.newLayout |> Maybe.withDefault "No name")) :: s.layouts }), Cmd.none )
+
+        LoadLayout name ->
+            loadLayout name model
+
+        UpdateLayout name ->
+            ( model |> setSchema (\s -> { s | layouts = s.layouts |> List.map (\l -> cond (l.name == name) (\_ -> model |> toLayout name) (\_ -> l)) }), Cmd.none )
+
+        DeleteLayout name ->
+            ( model |> setSchema (\s -> { s | layouts = s.layouts |> List.filter (\l -> not (l.name == name)) }), Cmd.none )
 
 
 view : Model -> Browser.Document Msg

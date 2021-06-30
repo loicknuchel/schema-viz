@@ -1,13 +1,13 @@
-module Update exposing (dragConfig, dragItem, hideAllTables, hideColumn, hideTable, showAllTables, showColumn, showTable, updateSizes, visitTable, zoomCanvas)
+module Update exposing (dragConfig, dragItem, hideAllTables, hideColumn, hideTable, loadLayout, showAllTables, showColumn, showTable, toLayout, updateSizes, visitTable, zoomCanvas)
 
 import AssocList as Dict exposing (Dict)
 import Commands.InitializeTable exposing (initializeTable)
 import Conf exposing (conf)
 import Draggable
 import Draggable.Events exposing (onDragBy, onDragEnd, onDragStart)
-import Libs.Std exposing (WheelEvent, dictFromList, maybeFilter, setState)
+import Libs.Std exposing (WheelEvent, dictFromList, listFind, maybeFilter, set, setState)
 import Models exposing (Canvas, DragId, Model, Msg(..), SizeChange, Status(..))
-import Models.Schema exposing (Column, ColumnName, Schema, Table, TableId, TableStatus(..))
+import Models.Schema exposing (Column, ColumnName, ColumnProps, Layout, Schema, Table, TableId, TableProps, TableStatus(..))
 import Models.Utils exposing (Area, Position, ZoomLevel)
 import Ports exposing (activateTooltipsAndPopovers, observeTableSize, observeTablesSize)
 import Views.Helpers exposing (formatTableId, parseTableId)
@@ -108,24 +108,110 @@ showAllTables model =
         ( cmds, tables ) =
             model.schema.tables
                 |> Dict.values
-                |> List.map
-                    (\table ->
-                        case table.state.status of
-                            Uninitialized ->
-                                ( Just table.id, setState (\state -> { state | status = Initializing }) table )
-
-                            Initializing ->
-                                ( Nothing, table )
-
-                            Hidden ->
-                                ( Just table.id, setState (\state -> { state | status = Shown }) table )
-
-                            Shown ->
-                                ( Nothing, table )
-                    )
+                |> List.map showTableByState
                 |> List.unzip
     in
-    ( { model | schema = model.schema |> setTables tables }, Cmd.batch [ observeTablesSize (cmds |> List.filterMap identity), activateTooltipsAndPopovers () ] )
+    ( { model | schema = model.schema |> setTables tables }
+    , Cmd.batch [ observeTablesSize (cmds |> List.filterMap identity), activateTooltipsAndPopovers () ]
+    )
+
+
+showTableByState : Table -> ( Maybe TableId, Table )
+showTableByState table =
+    case table.state.status of
+        Uninitialized ->
+            ( Just table.id, table |> setState (\state -> { state | status = Initializing }) )
+
+        Initializing ->
+            ( Nothing, table )
+
+        Hidden ->
+            ( Just table.id, table |> setState (\state -> { state | status = Shown }) )
+
+        Shown ->
+            ( Nothing, table )
+
+
+toLayout : String -> Model -> Layout
+toLayout name model =
+    { name = name
+    , canvas = { zoom = model.canvas.zoom, position = model.canvas.position }
+    , tables = model.schema.tables |> Dict.values |> List.filter (\t -> t.state.status == Shown) |> List.map tableToLayout |> Dict.fromList
+    }
+
+
+tableToLayout : Table -> ( TableId, TableProps )
+tableToLayout table =
+    ( table.id
+    , { position = table.state.position
+      , color = table.state.color
+      , columns = table.columns |> Dict.values |> List.filterMap columnToLayout |> Dict.fromList
+      }
+    )
+
+
+columnToLayout : Column -> Maybe ( ColumnName, ColumnProps )
+columnToLayout column =
+    Maybe.map (\order -> ( column.column, { position = order } )) column.state.order
+
+
+loadLayout : String -> Model -> ( Model, Cmd Msg )
+loadLayout layoutName model =
+    model.schema.layouts
+        |> listFind (\layout -> layout.name == layoutName)
+        |> Maybe.map
+            (\layout ->
+                let
+                    ( cmds, tables ) =
+                        model.schema.tables
+                            |> Dict.values
+                            |> List.map (\table -> showTableWithLayout (layout.tables |> Dict.get table.id) table)
+                            |> List.unzip
+                in
+                ( { model
+                    | canvas = { size = model.canvas.size, zoom = layout.canvas.zoom, position = layout.canvas.position }
+                    , schema = model.schema |> setTables tables
+                  }
+                , Cmd.batch [ observeTablesSize (cmds |> List.filterMap identity), activateTooltipsAndPopovers () ]
+                )
+            )
+        |> Maybe.withDefault ( model, Cmd.none )
+
+
+showTableWithLayout : Maybe TableProps -> Table -> ( Maybe TableId, Table )
+showTableWithLayout maybeProps table =
+    case ( table.state.status, maybeProps ) of
+        ( Uninitialized, Just props ) ->
+            ( Just table.id, table |> setState (\state -> { state | status = Initializing }) |> setTableLayout props )
+
+        ( Uninitialized, Nothing ) ->
+            ( Nothing, table )
+
+        ( Initializing, Just props ) ->
+            ( Nothing, table |> setTableLayout props )
+
+        ( Initializing, Nothing ) ->
+            ( Nothing, table |> setState (\state -> { state | status = Uninitialized }) )
+
+        ( Hidden, Just props ) ->
+            ( Just table.id, table |> setState (\state -> { state | status = Shown }) |> setTableLayout props )
+
+        ( Hidden, Nothing ) ->
+            ( Nothing, table )
+
+        ( Shown, Just props ) ->
+            ( Nothing, table |> setTableLayout props )
+
+        ( Shown, Nothing ) ->
+            ( Nothing, table |> setState (\state -> { state | status = Hidden }) )
+
+
+setTableLayout : TableProps -> Table -> Table
+setTableLayout props table =
+    { table
+        | state = table.state |> set (\state -> { state | position = props.position, color = props.color })
+        , columns = table.columns |> Dict.map (\name column -> column |> setState (\state -> { state | order = props.columns |> Dict.get name |> Maybe.map .position }))
+    }
 
 
 updateSizes : List SizeChange -> Model -> ( Model, Cmd Msg )

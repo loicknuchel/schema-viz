@@ -2,7 +2,7 @@ module Commands.InitializeTable exposing (initializeTable)
 
 import Models exposing (Msg(..))
 import Models.Schema exposing (TableId)
-import Models.Utils exposing (Area, Color, Position, Size)
+import Models.Utils exposing (Area, Position, Size)
 import Random
 
 

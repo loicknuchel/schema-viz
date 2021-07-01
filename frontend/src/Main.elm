@@ -76,11 +76,11 @@ update msg model =
         ShowAllTables ->
             showAllTables model
 
-        HideColumn tableId columnName ->
-            ( { model | schema = model.schema |> visitTable tableId (\table -> { table | columns = table.columns |> hideColumn columnName }) }, activateTooltipsAndPopovers () )
+        HideColumn ref ->
+            ( { model | schema = model.schema |> visitTable ref.table (\table -> { table | columns = table.columns |> hideColumn ref.column }) }, activateTooltipsAndPopovers () )
 
-        ShowColumn tableId columnName index ->
-            ( { model | schema = model.schema |> visitTable tableId (\table -> { table | columns = table.columns |> showColumn columnName index }) }, activateTooltipsAndPopovers () )
+        ShowColumn ref index ->
+            ( { model | schema = model.schema |> visitTable ref.table (\table -> { table | columns = table.columns |> showColumn ref.column index }) }, activateTooltipsAndPopovers () )
 
         Zoom zoom ->
             ( { model | canvas = zoomCanvas zoom model.canvas }, Cmd.none )
@@ -101,7 +101,7 @@ update msg model =
             ( model |> setState (\s -> { s | newLayout = cond (String.length name == 0) (\_ -> Nothing) (\_ -> Just name) }), Cmd.none )
 
         CreateLayout ->
-            ( model |> setState (\s -> { s | newLayout = Nothing }) |> setSchema (\s -> { s | layouts = (model |> toLayout (model.state.newLayout |> Maybe.withDefault "No name")) :: s.layouts }), Cmd.none )
+            ( model |> setState (\s -> { s | newLayout = Nothing }) |> setSchema (\s -> { s | layouts = (model |> toLayout (model.state.newLayout |> Maybe.withDefault "No name")) :: s.layouts }), activateTooltipsAndPopovers () )
 
         LoadLayout name ->
             loadLayout name model

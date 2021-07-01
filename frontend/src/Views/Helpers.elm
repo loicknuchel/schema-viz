@@ -1,4 +1,4 @@
-module Views.Helpers exposing (dragAttrs, extractColumnIndex, extractColumnName, extractColumnType, formatHttpError, formatTableId, formatTableName, parseTableId, placeAt, sizeAttrs, withColumnName, withNullableInfo)
+module Views.Helpers exposing (dragAttrs, extractColumnIndex, extractColumnName, extractColumnType, formatColumnRef, formatHttpError, formatTableId, formatTableName, parseTableId, placeAt, sizeAttrs, withColumnName, withNullableInfo)
 
 import Conf exposing (conf)
 import Draggable
@@ -6,7 +6,7 @@ import Html exposing (Attribute)
 import Html.Attributes exposing (height, style, width)
 import Http exposing (Error(..))
 import Models exposing (DragId, Msg(..))
-import Models.Schema exposing (ColumnIndex(..), ColumnName(..), ColumnType(..), SchemaName(..), TableId(..), TableName(..))
+import Models.Schema exposing (ColumnIndex(..), ColumnName(..), ColumnRef, ColumnType(..), SchemaName(..), TableId(..), TableName(..))
 import Models.Utils exposing (Position, Size)
 
 
@@ -75,6 +75,11 @@ formatTableName (TableName table) (SchemaName schema) =
 withColumnName : ColumnName -> String -> String
 withColumnName (ColumnName column) table =
     table ++ "." ++ column
+
+
+formatColumnRef : ColumnRef -> String
+formatColumnRef ref =
+    formatTableId ref.table |> withColumnName ref.column
 
 
 withNullableInfo : Bool -> String -> String

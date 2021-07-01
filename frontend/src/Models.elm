@@ -4,8 +4,8 @@ import Draggable
 import Http
 import JsonFormats.SchemaDecoder exposing (JsonTable)
 import Libs.Std exposing (WheelEvent)
-import Models.Schema exposing (ColumnName, Schema, TableId, TableStatus(..))
-import Models.Utils exposing (Color, Position, Size, ZoomLevel)
+import Models.Schema exposing (ColumnRef, Schema, TableId, TableStatus(..))
+import Models.Utils exposing (Position, Size, ZoomLevel)
 
 
 
@@ -43,8 +43,8 @@ type Msg
     | SizesChanged (List SizeChange)
     | HideAllTables
     | ShowAllTables
-    | HideColumn TableId ColumnName
-    | ShowColumn TableId ColumnName Int
+    | HideColumn ColumnRef
+    | ShowColumn ColumnRef Int
     | Zoom WheelEvent
     | DragMsg (Draggable.Msg DragId)
     | StartDragging DragId

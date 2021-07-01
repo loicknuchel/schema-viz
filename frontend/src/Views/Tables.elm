@@ -5,14 +5,14 @@ import FontAwesome.Icon exposing (viewIcon)
 import FontAwesome.Regular as IconLight
 import FontAwesome.Solid as Icon
 import Html exposing (Attribute, Html, a, b, button, div, li, span, text, ul)
-import Html.Attributes exposing (class, classList, id, style, title, type_)
+import Html.Attributes exposing (class, classList, href, id, style, title, type_)
 import Html.Events exposing (onClick, onDoubleClick)
 import Libs.Std exposing (divIf, listAddIf, listAppendOn, maybeFilter, plural)
 import Models exposing (Msg(..))
-import Models.Schema exposing (Column, ColumnComment(..), ColumnName, ForeignKey, Index, IndexName(..), PrimaryKey, Relation, Table, TableComment(..), TableId, TableStatus(..), Unique, UniqueName(..))
+import Models.Schema exposing (Column, ColumnComment(..), ColumnName, ColumnRef, ForeignKey, Index, IndexName(..), PrimaryKey, Relation, Table, TableComment(..), TableStatus(..), Unique, UniqueName(..))
 import Models.Utils exposing (ZoomLevel)
 import Views.Bootstrap exposing (Toggle(..), bsDropdown, bsToggle, bsToggleCollapse)
-import Views.Helpers exposing (dragAttrs, extractColumnIndex, extractColumnName, extractColumnType, formatTableId, formatTableName, placeAt, sizeAttrs, withColumnName, withNullableInfo)
+import Views.Helpers exposing (dragAttrs, extractColumnIndex, extractColumnName, extractColumnType, formatColumnRef, formatTableId, formatTableName, placeAt, sizeAttrs, withColumnName, withNullableInfo)
 
 
 
@@ -40,7 +40,7 @@ viewTable zoom incomingTableRelations table =
         , div [ class "columns" ]
             (visibleColumns
                 |> List.sortBy (\c -> c.state.order |> Maybe.withDefault -1)
-                |> List.map (\c -> viewColumn table.id table.primaryKey table.uniques table.indexes (filterIncomingColumnRelations incomingTableRelations c) c)
+                |> List.map (\c -> viewColumn { table = table.id, column = c.column } table.primaryKey table.uniques table.indexes (filterIncomingColumnRelations incomingTableRelations c) c)
             )
         , divIf (List.length hiddenColumns > 0)
             [ class "hidden-columns" ]
@@ -50,7 +50,7 @@ viewTable zoom incomingTableRelations table =
             , div [ class "collapse", id collapseId ]
                 (hiddenColumns
                     |> List.sortBy (\column -> extractColumnIndex column.index)
-                    |> List.map (viewHiddenColumn table.id table.primaryKey table.uniques table.indexes)
+                    |> List.map (\c -> viewHiddenColumn { table = table.id, column = c.column } table.primaryKey table.uniques table.indexes c)
                 )
             ]
         ]
@@ -60,22 +60,25 @@ viewHeader : ZoomLevel -> Table -> Html Msg
 viewHeader zoom table =
     div [ class "header", borderTopColor table.state.color, style "display" "flex", style "align-items" "center" ]
         [ div [ style "flex-grow" "1" ] (listAppendOn table.comment (\(TableComment comment) -> viewComment comment) [ span (tableNameSize zoom) [ text (formatTableName table.table table.schema) ] ])
-        , div [ style "font-size" "0.9rem", style "opacity" "0.25", onClick (HideTable table.id) ] [ viewIcon Icon.eyeSlash ]
+        , bsDropdown (formatTableId table.id ++ "-settings-dropdown")
+            []
+            (\attrs -> div ([ style "font-size" "0.9rem", style "opacity" "0.25", style "width" "30px", style "margin-left" "-10px", style "margin-right" "-20px" ] ++ attrs) [ viewIcon Icon.ellipsisV ])
+            (\attrs -> ul attrs [ li [] [ a [ class "dropdown-item", href "#", onClick (HideTable table.id) ] [ text "Hide table" ] ] ])
         ]
 
 
-viewColumn : TableId -> Maybe PrimaryKey -> List Unique -> List Index -> List Relation -> Column -> Html Msg
-viewColumn tableId pk uniques indexes columnRelations column =
-    div [ class "column", onDoubleClick (HideColumn tableId column.column) ]
-        [ viewColumnDropdown columnRelations (viewColumnIcon pk uniques indexes column)
+viewColumn : ColumnRef -> Maybe PrimaryKey -> List Unique -> List Index -> List Relation -> Column -> Html Msg
+viewColumn ref pk uniques indexes columnRelations column =
+    div [ class "column", onDoubleClick (HideColumn ref) ]
+        [ viewColumnDropdown columnRelations ref (viewColumnIcon pk uniques indexes column)
         , viewColumnName pk column
         , viewColumnType column
         ]
 
 
-viewHiddenColumn : TableId -> Maybe PrimaryKey -> List Unique -> List Index -> Column -> Html Msg
-viewHiddenColumn tableId pk uniques indexes column =
-    div [ class "hidden-column", onDoubleClick (ShowColumn tableId column.column (extractColumnIndex column.index)) ]
+viewHiddenColumn : ColumnRef -> Maybe PrimaryKey -> List Unique -> List Index -> Column -> Html Msg
+viewHiddenColumn ref pk uniques indexes column =
+    div [ class "hidden-column", onDoubleClick (ShowColumn ref (extractColumnIndex column.index)) ]
         [ viewColumnIcon pk uniques indexes column []
         , viewColumnName pk column
         , viewColumnType column
@@ -102,8 +105,8 @@ viewColumnIcon maybePk uniques indexes column attrs =
             div ([ class "icon" ] ++ attrs) []
 
 
-viewColumnDropdown : List Relation -> (List (Attribute Msg) -> Html Msg) -> Html Msg
-viewColumnDropdown incomingColumnRelations element =
+viewColumnDropdown : List Relation -> ColumnRef -> (List (Attribute Msg) -> Html Msg) -> Html Msg
+viewColumnDropdown incomingColumnRelations ref element =
     case
         incomingColumnRelations
             |> List.map
@@ -123,7 +126,8 @@ viewColumnDropdown incomingColumnRelations element =
             div [] [ element [] ]
 
         items ->
-            bsDropdown "drop"
+            bsDropdown (formatColumnRef ref ++ "-relations-dropdown")
+                [ class "dropdown-menu-end" ]
                 (\attrs -> element attrs)
                 (\attrs -> ul attrs items)
 

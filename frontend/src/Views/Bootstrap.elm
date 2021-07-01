@@ -133,12 +133,12 @@ bsToggleOffcanvas targetId =
     [ bsToggle Offcanvas, bsTarget targetId, ariaControls targetId ]
 
 
-bsDropdown : String -> (List (Attribute msg) -> Html msg) -> (List (Attribute msg) -> Html msg) -> Html msg
-bsDropdown dropdownId toggleElement dropdownContent =
+bsDropdown : String -> List (Attribute msg) -> (List (Attribute msg) -> Html msg) -> (List (Attribute msg) -> Html msg) -> Html msg
+bsDropdown dropdownId contentAttrs toggleElement dropdownContent =
     -- TODO find a nice way to give the "dropdown-menu-end" option
     div [ class "dropdown" ]
         [ toggleElement (bsToggleDropdown dropdownId)
-        , dropdownContent [ class "dropdown-menu dropdown-menu-end", ariaLabelledBy dropdownId ]
+        , dropdownContent ([ class "dropdown-menu", ariaLabelledBy dropdownId ] ++ contentAttrs)
         ]
 
 

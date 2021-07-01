@@ -1,4 +1,4 @@
-module Conf exposing (conf)
+module Conf exposing (colorList, conf)
 
 import Models.Utils exposing (Color, ZoomLevel)
 
@@ -17,3 +17,10 @@ conf =
     , ids = { erd = "erd" }
     , loading = { showTablesThreshold = 20 }
     }
+
+
+colorList : List Color
+colorList =
+    case conf.colors of
+        { pink, purple, darkBlue, blue, turquoise, lightBlue, lightGreen, green, yellow, orange, red, grey } ->
+            [ pink, purple, darkBlue, blue, turquoise, lightBlue, lightGreen, green, yellow, orange, red, grey ]

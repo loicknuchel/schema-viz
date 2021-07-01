@@ -39,7 +39,7 @@ type Msg
     | ChangedSearch String
     | HideTable TableId
     | ShowTable TableId
-    | InitializedTable TableId Size Position Color
+    | InitializedTable TableId Size Position
     | SizesChanged (List SizeChange)
     | HideAllTables
     | ShowAllTables

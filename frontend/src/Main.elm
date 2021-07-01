@@ -64,8 +64,8 @@ update msg model =
         ShowTable id ->
             showTable model id
 
-        InitializedTable id size position color ->
-            ( { model | schema = model.schema |> visitTable id (setState (\state -> { state | status = Shown, size = size, position = position, color = color })) }, Cmd.none )
+        InitializedTable id size position ->
+            ( { model | schema = model.schema |> visitTable id (setState (\state -> { state | status = Shown, size = size, position = position })) }, Cmd.none )
 
         SizesChanged sizes ->
             updateSizes sizes model

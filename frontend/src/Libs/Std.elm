@@ -1,6 +1,7 @@
 module Libs.Std exposing (..)
 
 import AssocList as Dict exposing (Dict)
+import Bitwise
 import Html exposing (Attribute, Html, b, code, div, text)
 import Html.Attributes exposing (attribute)
 import Html.Events
@@ -89,6 +90,11 @@ listFind predicate list =
                 listFind predicate rest
 
 
+listGet : Int -> List a -> Maybe a
+listGet index list =
+    list |> List.drop index |> List.head
+
+
 maybeFilter : (a -> Bool) -> Maybe a -> Maybe a
 maybeFilter predicate maybe =
     maybe |> Maybe.andThen (\a -> cond (predicate a) (\_ -> maybe) (\_ -> Nothing))
@@ -126,6 +132,21 @@ divIf predicate attrs children =
 
     else
         div [] []
+
+
+stringWordSplit : String -> List String
+stringWordSplit input =
+    List.foldl (\sep words -> words |> List.concatMap (\word -> String.split sep word)) [ input ] [ "_", "-", " " ]
+
+
+stringHashCode : String -> Int
+stringHashCode input =
+    String.foldl updateHash 5381 input
+
+
+updateHash : Char -> Int -> Int
+updateHash char hashCode =
+    Bitwise.shiftLeftBy hashCode (5 + hashCode + Char.toCode char)
 
 
 bText : String -> Html msg

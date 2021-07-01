@@ -19,6 +19,7 @@
                 flags: null
             })
 
+            // bootstrap ports
             app.ports.activateTooltipsAndPopovers.subscribe(() => {
                 // a ugly hack to avoid race conditions
                 // elements are rendered and selected in the same time, so sometimes, it's called before rendering and cause errors :(
@@ -27,6 +28,8 @@
                     document.querySelectorAll('[data-bs-toggle="popover"]').forEach(e => bootstrap.Popover.getOrCreateInstance(e))
                 }, 100)
             })
+
+            // resize ports
             app.ports.observeSizes.subscribe(ids => {
                 setTimeout(function () {
                     ids.forEach(id => resizeObserver.observe(document.getElementById(id)))

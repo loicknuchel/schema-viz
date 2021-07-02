@@ -4,7 +4,7 @@ import AssocList as Dict
 import Conf exposing (conf)
 import Html exposing (Attribute, Html, div, text)
 import Html.Attributes exposing (class, id, style)
-import Libs.Std exposing (handleWheel, listAppendOn, listFilterMap)
+import Libs.Std exposing (listAppendOn, listFilterMap, onWheel)
 import Models exposing (Canvas, Model, Msg(..))
 import Models.Schema exposing (ColumnRef, Relation, RelationRef, Schema, Table, TableAndColumn, TableStatus(..))
 import Models.Utils exposing (Position, ZoomLevel)
@@ -38,7 +38,7 @@ viewErd canvas schema =
         relations =
             schema.relations |> List.filterMap (buildRelation schema)
     in
-    div ([ class "erd", id conf.ids.erd, handleWheel Zoom ] ++ sizeAttrs canvas.size ++ dragAttrs conf.ids.erd)
+    div ([ class "erd", id conf.ids.erd, onWheel Zoom ] ++ sizeAttrs canvas.size ++ dragAttrs conf.ids.erd)
         [ div [ class "canvas", placeAndZoom canvas.zoom canvas.position ]
             ((schema.tables |> Dict.values |> listFilterMap shouldDrawTable (\t -> viewTable canvas.zoom (incomingTableRelations relations t) t))
                 ++ (relations |> listFilterMap shouldDrawRelation viewRelation)

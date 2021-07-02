@@ -59,7 +59,19 @@
                 }))
                 app.ports.sizesReceiver.send(sizes)
             })
-        };
+
+            // read text file ports
+            app.ports.readTextFile.subscribe(file => {
+                if (!["text/plain", "application/json", "application/sql"].includes(file.type)) {
+                    console.error('File is not text.', file.type, file)
+                    return
+                }
+
+                const reader = new FileReader()
+                reader.onload = (() => (e) => app.ports.textFileRead.send([file, e.target.result]))()
+                reader.readAsText(file)
+            })
+        }
     </script>
 </head>
 <body>

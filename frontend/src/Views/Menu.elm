@@ -1,6 +1,7 @@
 module Views.Menu exposing (viewMenu)
 
 import AssocList as Dict
+import FileValue exposing (hiddenInputSingle)
 import FontAwesome.Icon exposing (viewIcon)
 import FontAwesome.Solid as Icon
 import Html exposing (Html, button, div, h5, input, label, span, text)
@@ -53,6 +54,18 @@ viewMenu newLayout schema =
                                     ]
                             )
                     )
+                , div []
+                    [ hiddenInputSingle "file-loader" [ ".sql,.json,.txt" ] FileSelected
+                    , label [ for "file-loader", class "btn btn-outline-primary" ] [ text "Click to load a file" ]
+                    ]
+                , div
+                    (FileValue.onDrop
+                        { onOver = FileDragOver
+                        , onLeave = Just { id = "file-drop", msg = FileDragLeave }
+                        , onDrop = FileDropped
+                        }
+                    )
+                    [ text "Or drop a file here" ]
                 ]
             ]
         , div [ class "modal fade", id "new-layout-modal", tabindex -1, ariaLabelledBy "new-layout-modal-label", ariaHidden True ]

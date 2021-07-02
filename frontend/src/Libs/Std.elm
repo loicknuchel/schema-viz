@@ -203,6 +203,42 @@ genChoose ( item, list ) =
     Random.int 0 (list |> List.length) |> Random.map (\num -> list |> List.drop num |> List.head |> Maybe.withDefault item)
 
 
+type alias FileEvent =
+    { inputId : String, file : List FileInfo }
+
+
+type alias FileInfo =
+    { name : String, kind : String, size : Int, lastModified : Int }
+
+
+onFileChange : (FileEvent -> msg) -> Attribute msg
+onFileChange callback =
+    -- Elm: no error message when decoder fail, hard to get it correct :(
+    let
+        fileDecoder : Decoder FileInfo
+        fileDecoder =
+            Decode.map4 FileInfo
+                (Decode.field "name" Decode.string)
+                (Decode.field "type" Decode.string)
+                (Decode.field "size" Decode.int)
+                (Decode.field "lastModified" Decode.int)
+
+        decoder : Decoder msg
+        decoder =
+            Decode.field "target"
+                (Decode.map2 FileEvent
+                    (Decode.field "id" Decode.string)
+                    (Decode.field "files" (Decode.list fileDecoder))
+                )
+                |> Decode.map callback
+
+        preventDefaultAndStopPropagation : msg -> { message : msg, stopPropagation : Bool, preventDefault : Bool }
+        preventDefaultAndStopPropagation msg =
+            { message = msg, stopPropagation = True, preventDefault = True }
+    in
+    Html.Events.custom "change" (Decode.map preventDefaultAndStopPropagation decoder)
+
+
 type alias WheelEvent =
     { delta : { x : Float, y : Float, z : Float }
     , mouse : { x : Float, y : Float }
@@ -210,11 +246,11 @@ type alias WheelEvent =
     }
 
 
-handleWheel : (WheelEvent -> msg) -> Attribute msg
-handleWheel onWheel =
+onWheel : (WheelEvent -> msg) -> Attribute msg
+onWheel callback =
     let
-        wheelDecoder : Decoder msg
-        wheelDecoder =
+        decoder : Decoder msg
+        decoder =
             Decode.map3 WheelEvent
                 (Decode.map3 (\x y z -> { x = x, y = y, z = z })
                     (Decode.field "deltaX" Decode.float)
@@ -231,10 +267,10 @@ handleWheel onWheel =
                     (Decode.field "shiftKey" Decode.bool)
                     (Decode.field "metaKey" Decode.bool)
                 )
-                |> Decode.map onWheel
+                |> Decode.map callback
 
         preventDefaultAndStopPropagation : msg -> { message : msg, stopPropagation : Bool, preventDefault : Bool }
         preventDefaultAndStopPropagation msg =
             { message = msg, stopPropagation = True, preventDefault = True }
     in
-    Html.Events.custom "wheel" (Decode.map preventDefaultAndStopPropagation wheelDecoder)
+    Html.Events.custom "wheel" (Decode.map preventDefaultAndStopPropagation decoder)

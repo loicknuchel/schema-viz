@@ -1,6 +1,7 @@
 module Models exposing (Canvas, DragId, Error, Flags, Model, Msg(..), SizeChange, State, Status(..))
 
 import Draggable
+import FileValue exposing (File)
 import Http
 import JsonFormats.SchemaDecoder exposing (JsonTable)
 import Libs.Std exposing (WheelEvent)
@@ -55,6 +56,11 @@ type Msg
     | LoadLayout String
     | UpdateLayout String
     | DeleteLayout String
+    | FileSelected File
+    | FileDragOver File (List File)
+    | FileDragLeave
+    | FileDropped File (List File)
+    | FileRead ( File, String )
 
 
 type alias DragId =

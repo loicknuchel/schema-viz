@@ -12,7 +12,7 @@ import Mappers.SchemaMapper exposing (buildSchema)
 import Models exposing (Flags, Model, Msg(..), Status(..))
 import Models.Schema exposing (TableStatus(..))
 import Models.Utils exposing (Position, Size)
-import Ports exposing (activateTooltipsAndPopovers, observeSize, sizesReceiver)
+import Ports exposing (activateTooltipsAndPopovers, fileRead, observeSize, readFile, sizesReceiver)
 import Update exposing (dragConfig, dragItem, hideAllTables, hideColumn, hideTable, loadLayout, showAllTables, showColumn, showTable, toLayout, updateSizes, visitTable, zoomCanvas)
 import View exposing (viewApp)
 import Views.Helpers exposing (formatHttpError)
@@ -112,6 +112,26 @@ update msg model =
         DeleteLayout name ->
             ( model |> setSchema (\s -> { s | layouts = s.layouts |> List.filter (\l -> not (l.name == name)) }), Cmd.none )
 
+        FileSelected file ->
+            -- TODO: add loading animation
+            ( model, readFile file )
+
+        FileDragOver _ _ ->
+            -- TODO: add drop zone hover + warn if multiple files
+            ( model, Cmd.none )
+
+        FileDragLeave ->
+            -- TODO: remove drop zone hover
+            ( model, Cmd.none )
+
+        FileDropped file _ ->
+            -- TODO display error on multiple files, add loading animation
+            ( model, readFile file )
+
+        FileRead ( file, content ) ->
+            -- TODO parse content
+            ( model, Debug.log ("FileRead: " ++ Debug.toString file ++ " / " ++ Debug.toString content) Cmd.none )
+
 
 view : Model -> Browser.Document Msg
 view model =
@@ -137,4 +157,5 @@ subscriptions model =
     Sub.batch
         [ Draggable.subscriptions DragMsg model.state.drag
         , sizesReceiver SizesChanged
+        , fileRead FileRead
         ]

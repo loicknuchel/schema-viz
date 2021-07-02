@@ -1,4 +1,4 @@
-module SqlParser.SqlParser exposing (ColumnUpdate(..), Statement(..), TableConstraint(..), TableUpdate(..), commaSplit, parseAlterTable, parseColumnComment, parseCreateTable, parseCreateTableColumn, parseStatement, parseTableComment)
+module SqlParser.SqlParser exposing (CheckInner, Column, ColumnName, ColumnType, ColumnUpdate(..), ColumnValue, Command(..), Comment, CommentOnColumn, CommentOnTable, ConstraintName, ForeignKeyInner, ParseError, Predicate, PrimaryKeyInner, RawSql, SchemaName, Table, TableConstraint(..), TableName, TableUpdate(..), UniqueInner, commaSplit, parseAlterTable, parseColumnComment, parseCommand, parseCreateTable, parseCreateTableColumn, parseTableComment)
 
 import Libs.Std exposing (listResultSeq)
 import Regex
@@ -12,7 +12,7 @@ type alias ParseError =
     String
 
 
-type Statement
+type Command
     = CreateTable Table
     | AlterTable TableUpdate
     | TableComment CommentOnTable
@@ -100,8 +100,8 @@ type alias CommentOnColumn =
     { schema : SchemaName, table : TableName, column : ColumnName, comment : Comment }
 
 
-parseStatement : RawSql -> Result (List ParseError) Statement
-parseStatement sql =
+parseCommand : RawSql -> Result (List ParseError) Command
+parseCommand sql =
     if String.startsWith "CREATE TABLE " sql then
         parseCreateTable sql |> Result.map CreateTable
 

@@ -1,18 +1,18 @@
 module SqlParser.SqlParserTest exposing (..)
 
 import Expect
-import SqlParser.SqlParser exposing (ColumnUpdate(..), Statement(..), TableConstraint(..), TableUpdate(..), commaSplit, parseAlterTable, parseColumnComment, parseCreateTable, parseCreateTableColumn, parseStatement, parseTableComment)
+import SqlParser.SqlParser exposing (ColumnUpdate(..), Command(..), TableConstraint(..), TableUpdate(..), commaSplit, parseAlterTable, parseColumnComment, parseCommand, parseCreateTable, parseCreateTableColumn, parseTableComment)
 import Test exposing (Test, describe, test)
 
 
 suite : Test
 suite =
     describe "SqlParser"
-        [ describe "parseStatement"
-            [ test "parse create table" (\_ -> parseStatement "CREATE TABLE aaa.bbb (ccc int);" |> Expect.equal (Ok (CreateTable { schema = "aaa", table = "bbb", columns = [ { name = "ccc", kind = "int", nullable = True, default = Nothing } ] })))
-            , test "parse alter table" (\_ -> parseStatement "ALTER TABLE ONLY public.t2 ADD CONSTRAINT t2_id_pkey PRIMARY KEY (id);" |> Expect.equal (Ok (AlterTable (AddTableConstraint "public" "t2" (PrimaryKey "t2_id_pkey" [ "id" ])))))
-            , test "parse table comment" (\_ -> parseStatement "COMMENT ON TABLE public.table1 IS 'A comment';" |> Expect.equal (Ok (TableComment { schema = "public", table = "table1", comment = "A comment" })))
-            , test "parse column comment" (\_ -> parseStatement "COMMENT ON COLUMN public.table1.col IS 'A comment';" |> Expect.equal (Ok (ColumnComment { schema = "public", table = "table1", column = "col", comment = "A comment" })))
+        [ describe "parseCommand"
+            [ test "parse create table" (\_ -> parseCommand "CREATE TABLE aaa.bbb (ccc int);" |> Expect.equal (Ok (CreateTable { schema = "aaa", table = "bbb", columns = [ { name = "ccc", kind = "int", nullable = True, default = Nothing } ] })))
+            , test "parse alter table" (\_ -> parseCommand "ALTER TABLE ONLY public.t2 ADD CONSTRAINT t2_id_pkey PRIMARY KEY (id);" |> Expect.equal (Ok (AlterTable (AddTableConstraint "public" "t2" (PrimaryKey "t2_id_pkey" [ "id" ])))))
+            , test "parse table comment" (\_ -> parseCommand "COMMENT ON TABLE public.table1 IS 'A comment';" |> Expect.equal (Ok (TableComment { schema = "public", table = "table1", comment = "A comment" })))
+            , test "parse column comment" (\_ -> parseCommand "COMMENT ON COLUMN public.table1.col IS 'A comment';" |> Expect.equal (Ok (ColumnComment { schema = "public", table = "table1", column = "col", comment = "A comment" })))
             ]
         , describe "parseCreateTable"
             [ test "basic" (\_ -> parseCreateTable "CREATE TABLE aaa.bbb (ccc int);" |> Expect.equal (Ok { schema = "aaa", table = "bbb", columns = [ { name = "ccc", kind = "int", nullable = True, default = Nothing } ] }))

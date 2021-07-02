@@ -95,6 +95,28 @@ listGet index list =
     list |> List.drop index |> List.head
 
 
+listResultSeq : List (Result e a) -> Result (List e) (List a)
+listResultSeq list =
+    case
+        List.foldr
+            (\r ( errs, res ) ->
+                case r of
+                    Ok a ->
+                        ( errs, a :: res )
+
+                    Err e ->
+                        ( e :: errs, res )
+            )
+            ( [], [] )
+            list
+    of
+        ( [], res ) ->
+            Ok res
+
+        ( errs, _ ) ->
+            Err errs
+
+
 maybeFilter : (a -> Bool) -> Maybe a -> Maybe a
 maybeFilter predicate maybe =
     maybe |> Maybe.andThen (\a -> cond (predicate a) (\_ -> maybe) (\_ -> Nothing))

@@ -61,7 +61,7 @@ module SchemaViz
           end
 
           def parse_alter_table(sql)
-            Matcher.new(sql, /ALTER TABLE (?:ONLY )?(?<schema>[^ .]+)\.(?<table>[^ .]+) (?<command>.*);/)
+            Matcher.new(sql, /^ALTER TABLE (?:ONLY )?(?<schema>[^ .]+)\.(?<table>[^ .]+) (?<command>.*);$/)
                    .slice('schema', 'table', 'command')
                    .flat_map do |schema, table, command|
               if command.start_with?('ADD CONSTRAINT')

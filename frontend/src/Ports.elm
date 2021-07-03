@@ -1,11 +1,11 @@
-port module Ports exposing (activateTooltipsAndPopovers, fileRead, observeSize, observeTableSize, observeTablesSize, readFile, sizesReceiver)
+port module Ports exposing (activateTooltipsAndPopovers, fileRead, hideModal, hideOffcanvas, observeSize, observeTableSize, observeTablesSize, readFile, showModal, sizesReceiver, toastError, toastInfo)
 
 import FileValue exposing (File)
 import Json.Decode as Decode
 import Json.Encode as Encode
 import Models exposing (SizeChange)
 import Models.Schema exposing (TableId)
-import Models.Utils exposing (FileContent, HtmlId)
+import Models.Utils exposing (FileContent, HtmlId, Text)
 import Time
 import Views.Helpers exposing (formatTableId)
 
@@ -32,6 +32,32 @@ observeTableSize id =
 observeTablesSize : List TableId -> Cmd msg
 observeTablesSize ids =
     observeSizes (List.map formatTableId ids)
+
+
+port showModal : HtmlId -> Cmd msg
+
+
+port hideModal : HtmlId -> Cmd msg
+
+
+port hideOffcanvas : HtmlId -> Cmd msg
+
+
+type alias Toast =
+    { kind : String, message : Text }
+
+
+port showToast : Toast -> Cmd msg
+
+
+toastInfo : Text -> Cmd msg
+toastInfo message =
+    showToast { kind = "info", message = message }
+
+
+toastError : Text -> Cmd msg
+toastError message =
+    showToast { kind = "error", message = message }
 
 
 port readTextFile : Decode.Value -> Cmd msg

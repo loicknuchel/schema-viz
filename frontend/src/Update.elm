@@ -10,10 +10,10 @@ import Json.Decode as Decode
 import JsonFormats.SchemaDecoder exposing (schemaDecoder)
 import Libs.Std exposing (WheelEvent, cond, dictFromList, listFind, maybeFilter, set, setSchema, setState)
 import Mappers.SchemaMapper exposing (buildSchemaFromJson, buildSchemaFromSql)
-import Models exposing (Canvas, DragId, Model, Msg(..), SizeChange, Status(..))
+import Models exposing (Canvas, DragId, Model, Msg(..), SizeChange)
 import Models.Schema exposing (Column, ColumnName, ColumnProps, Layout, LayoutName, Schema, Table, TableId, TableProps, TableStatus(..))
 import Models.Utils exposing (Area, FileContent, Position, ZoomLevel)
-import Ports exposing (activateTooltipsAndPopovers, observeTableSize, observeTablesSize)
+import Ports exposing (activateTooltipsAndPopovers, observeTableSize, observeTablesSize, toastError, toastInfo)
 import SqlParser.SchemaParser exposing (parseSchema)
 import Views.Helpers exposing (formatTableId, parseTableId)
 
@@ -63,10 +63,10 @@ showTable model id =
             ( { model | schema = model.schema |> visitTable id (setState (\state -> { state | status = Shown, selected = False })) }, Cmd.batch [ observeTableSize id, activateTooltipsAndPopovers () ] )
 
         Just Shown ->
-            ( model, Cmd.none )
+            ( model, toastInfo ("Table <b>" ++ formatTableId id ++ "</b> is already shown") )
 
         Nothing ->
-            ( model |> setState (\state -> { state | status = Failure ("Can't show table (" ++ formatTableId id ++ "), not found") }), Cmd.none )
+            ( model, toastError ("Can't show table <b>" ++ formatTableId id ++ "</b>: not found") )
 
 
 hideColumn : ColumnName -> Dict ColumnName Column -> Dict ColumnName Column
@@ -334,18 +334,18 @@ dragConfig =
         ]
 
 
-dragItem : Model -> Draggable.Delta -> Model
+dragItem : Model -> Draggable.Delta -> ( Model, Cmd Msg )
 dragItem model delta =
     case model.state.dragId of
         Just id ->
             if id == conf.ids.erd then
-                { model | canvas = model.canvas |> updatePosition delta 1 }
+                ( { model | canvas = model.canvas |> updatePosition delta 1 }, Cmd.none )
 
             else
-                { model | schema = model.schema |> visitTable (parseTableId id) (setState (updatePosition delta model.canvas.zoom)) }
+                ( { model | schema = model.schema |> visitTable (parseTableId id) (setState (updatePosition delta model.canvas.zoom)) }, Cmd.none )
 
         Nothing ->
-            model |> setState (\state -> { state | status = Failure "Can't OnDragBy when no drag id" })
+            ( model, toastError "Can't dragItem when no drag id" )
 
 
 

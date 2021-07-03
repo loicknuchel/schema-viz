@@ -95,22 +95,22 @@ formatHttpError : Http.Error -> String
 formatHttpError error =
     case error of
         BadUrl url ->
-            "The URL " ++ url ++ " was invalid"
+            "the URL " ++ url ++ " was invalid"
 
         Timeout ->
-            "Unable to reach the server, try again"
+            "unable to reach the server, try again"
 
         NetworkError ->
-            "Unable to reach the server, check your network connection"
+            "unable to reach the server, check your network connection"
 
         BadStatus 500 ->
-            "The server had a problem, try again later"
+            "the server had a problem, try again later"
 
         BadStatus 400 ->
-            "Verify your information and try again"
+            "verify your information and try again"
 
         BadStatus _ ->
-            "Unknown error"
+            "unknown error"
 
         BadBody errorMessage ->
             errorMessage

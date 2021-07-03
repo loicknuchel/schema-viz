@@ -1,12 +1,13 @@
 module Views.Navbar exposing (viewNavbar)
 
 import AssocList as Dict
+import Conf exposing (conf)
 import FontAwesome.Icon exposing (viewIcon)
 import FontAwesome.Solid as Icon
 import Html exposing (Html, a, b, button, div, form, h5, img, input, label, li, nav, span, text, ul)
 import Html.Attributes exposing (alt, autocomplete, autofocus, class, disabled, for, height, href, id, placeholder, src, style, tabindex, title, type_, value)
 import Html.Events exposing (onClick, onInput)
-import Libs.Std exposing (bText, codeText)
+import Libs.Std exposing (bText, codeText, cond)
 import Models exposing (Msg(..), Search)
 import Models.Schema exposing (Column, ColumnName(..), Layout, LayoutName, Table, TableName(..), TableStatus(..))
 import Models.Utils exposing (Text)
@@ -14,39 +15,54 @@ import Views.Bootstrap exposing (BsColor(..), Toggle(..), ariaExpanded, ariaHidd
 import Views.Helpers exposing (extractColumnName, formatTableId)
 
 
-viewNavbar : Search -> Maybe LayoutName -> Maybe LayoutName -> List Layout -> List Table -> Html Msg
+viewNavbar : Search -> Maybe LayoutName -> Maybe LayoutName -> List Layout -> List Table -> List (Html Msg)
 viewNavbar search newLayout currentLayout layouts tables =
-    div []
-        [ nav [ class "navbar navbar-expand-md navbar-light bg-white shadow-sm", id "navbar" ]
-            [ div [ class "container-fluid" ]
-                [ a ([ href "#", class "navbar-brand" ] ++ bsToggleOffcanvas "menu") [ img [ src "assets/logo.png", alt "logo", height 24, class "d-inline-block align-text-top" ] [], text " Schema Viz" ]
-                , button ([ type_ "button", class "navbar-toggler", ariaLabel "Toggle navigation" ] ++ bsToggleCollapse "navbar-content")
-                    [ span [ class "navbar-toggler-icon" ] []
+    [ nav [ class "navbar navbar-expand-md navbar-light bg-white shadow-sm", id "navbar" ]
+        [ div [ class "container-fluid" ]
+            [ a ([ href "#", class "navbar-brand" ] ++ bsToggleOffcanvas conf.ids.menu) [ img [ src "assets/logo.png", alt "logo", height 24, class "d-inline-block align-text-top" ] [], text " Schema Viz" ]
+            , button ([ type_ "button", class "navbar-toggler", ariaLabel "Toggle navigation" ] ++ bsToggleCollapse "navbar-content")
+                [ span [ class "navbar-toggler-icon" ] []
+                ]
+            , div [ class "collapse navbar-collapse", id "navbar-content" ]
+                [ viewSearchBar search tables
+                , ul [ class "navbar-nav me-auto" ]
+                    [ li [ class "nav-item" ] [ a ([ href "#", class "nav-link" ] ++ bsToggleModal conf.ids.helpModal) [ text "?" ] ]
                     ]
-                , div [ class "collapse navbar-collapse", id "navbar-content" ]
-                    [ form [ class "d-flex" ]
-                        [ div [ class "dropdown" ]
-                            [ input ([ type_ "search", class "form-control", value search, placeholder "Search", ariaLabel "Search", autocomplete False, onInput ChangedSearch ] ++ bsToggleDropdown "search") []
-                            , ul [ class "dropdown-menu" ]
-                                (buildSuggestions search tables |> List.map (\s -> li [] [ a [ class "dropdown-item", style "cursor" "pointer", onClick s.msg ] s.content ]))
-                            ]
-                        ]
-                    , ul [ class "navbar-nav me-auto" ]
-                        [ li [ class "nav-item" ] [ a ([ href "#", class "nav-link" ] ++ bsToggleModal "help-modal") [ text "?" ] ]
-                        ]
-                    , viewLayoutButton currentLayout layouts
-                    ]
+                , cond (List.length tables > 0) (\_ -> viewLayoutButton currentLayout layouts) (\_ -> div [] [])
                 ]
             ]
-        , viewCreateLayoutModal (newLayout |> Maybe.withDefault "")
-        , viewHelpModal
         ]
+    , viewCreateLayoutModal (newLayout |> Maybe.withDefault "")
+    , viewHelpModal
+    ]
+
+
+viewSearchBar : Search -> List Table -> Html Msg
+viewSearchBar search tables =
+    if List.isEmpty tables then
+        form [ class "d-flex" ]
+            [ div []
+                [ input [ type_ "search", class "form-control", value search, placeholder "Search", ariaLabel "Search", autocomplete False, onInput ChangedSearch ] []
+                ]
+            ]
+
+    else
+        form [ class "d-flex" ]
+            [ div [ class "dropdown" ]
+                [ input ([ type_ "search", class "form-control", value search, placeholder "Search", ariaLabel "Search", autocomplete False, onInput ChangedSearch ] ++ bsToggleDropdown "search") []
+                , ul [ class "dropdown-menu" ]
+                    (tables
+                        |> buildSuggestions search
+                        |> List.map (\s -> li [] [ a [ class "dropdown-item", style "cursor" "pointer", onClick s.msg ] s.content ])
+                    )
+                ]
+            ]
 
 
 viewLayoutButton : Maybe LayoutName -> List Layout -> Html Msg
 viewLayoutButton currentLayout layouts =
     if List.isEmpty layouts then
-        bsButton Primary ([ title "Save your current layout to reload it later" ] ++ bsToggleModal "new-layout-modal") [ text "Save layout" ]
+        bsButton Primary ([ title "Save your current layout to reload it later" ] ++ bsToggleModal conf.ids.newLayoutModal) [ text "Save layout" ]
 
     else
         div [ class "btn-group" ]
@@ -60,7 +76,7 @@ viewLayoutButton currentLayout layouts =
                 |> Maybe.withDefault [ bsButton Primary [ class "dropdown-toggle", bsToggle Dropdown, ariaExpanded False ] [ text "Layouts" ] ]
              )
                 ++ [ ul [ class "dropdown-menu dropdown-menu-end" ]
-                        ([ li [] [ a ([ class "dropdown-item", href "#" ] ++ bsToggleModal "new-layout-modal") [ viewIcon Icon.plus, text " Create new layout" ] ] ]
+                        ([ li [] [ a ([ class "dropdown-item", href "#" ] ++ bsToggleModal conf.ids.newLayoutModal) [ viewIcon Icon.plus, text " Create new layout" ] ] ]
                             ++ (layouts
                                     |> List.map
                                         (\l ->
@@ -84,11 +100,11 @@ viewLayoutButton currentLayout layouts =
 
 viewCreateLayoutModal : LayoutName -> Html Msg
 viewCreateLayoutModal newLayout =
-    div [ class "modal fade", id "new-layout-modal", tabindex -1, ariaLabelledBy "new-layout-modal-label", ariaHidden True ]
+    div [ class "modal fade", id conf.ids.newLayoutModal, tabindex -1, ariaLabelledBy (conf.ids.newLayoutModal ++ "-label"), ariaHidden True ]
         [ div [ class "modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable" ]
             [ div [ class "modal-content" ]
                 [ div [ class "modal-header" ]
-                    [ h5 [ class "modal-title", id "new-layout-modal-label" ] [ text "Save layout" ]
+                    [ h5 [ class "modal-title", id (conf.ids.newLayoutModal ++ "-label") ] [ text "Save layout" ]
                     , button [ type_ "button", class "btn-close", bsDismiss Modal, ariaLabel "Close" ] []
                     ]
                 , div [ class "modal-body" ]
@@ -108,11 +124,11 @@ viewCreateLayoutModal newLayout =
 
 viewHelpModal : Html Msg
 viewHelpModal =
-    div [ class "modal fade", id "help-modal", tabindex -1, ariaLabelledBy "help-modal-label", ariaHidden True ]
+    div [ class "modal fade", id conf.ids.helpModal, tabindex -1, ariaLabelledBy (conf.ids.helpModal ++ "-label"), ariaHidden True ]
         [ div [ class "modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable" ]
             [ div [ class "modal-content" ]
                 [ div [ class "modal-header" ]
-                    [ h5 [ class "modal-title", id "help-modal-label" ] [ text "Schema Viz cheatsheet" ]
+                    [ h5 [ class "modal-title", id (conf.ids.helpModal ++ "-label") ] [ text "Schema Viz cheatsheet" ]
                     , button [ type_ "button", class "btn-close", bsDismiss Modal, ariaLabel "Close" ] []
                     ]
                 , div [ class "modal-body" ]

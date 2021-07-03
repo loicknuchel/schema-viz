@@ -1,4 +1,4 @@
-module Models exposing (Canvas, DragId, Error, Flags, Model, Msg(..), Search, SizeChange, State, Status(..))
+module Models exposing (Canvas, DragId, Flags, Model, Msg(..), Search, SizeChange, State)
 
 import Draggable
 import FileValue exposing (File)
@@ -22,21 +22,22 @@ type alias Model =
 
 
 type alias State =
-    { status : Status, search : Search, newLayout : Maybe LayoutName, currentLayout : Maybe LayoutName, dragId : Maybe DragId, drag : Draggable.State DragId }
+    { search : Search, newLayout : Maybe LayoutName, currentLayout : Maybe LayoutName, dragId : Maybe DragId, drag : Draggable.State DragId }
 
 
 type alias Canvas =
     { size : Size, zoom : ZoomLevel, position : Position }
 
 
-type Status
-    = Loading
-    | Failure Error
-    | Success
-
-
 type Msg
-    = GotData (Result Http.Error JsonSchema)
+    = ChangeSchema
+    | FileSelected File
+    | FileDragOver File (List File)
+    | FileDragLeave
+    | FileDropped File (List File)
+    | FileRead ( File, FileContent )
+    | LoadSampleData
+    | GotData (Result Http.Error JsonSchema)
     | ChangedSearch Search
     | SelectTable TableId
     | HideTable TableId
@@ -57,11 +58,6 @@ type Msg
     | LoadLayout LayoutName
     | UpdateLayout LayoutName
     | DeleteLayout LayoutName
-    | FileSelected File
-    | FileDragOver File (List File)
-    | FileDragLeave
-    | FileDropped File (List File)
-    | FileRead ( File, FileContent )
     | Noop
 
 
@@ -79,7 +75,3 @@ type alias ZoomDelta =
 
 type alias SizeChange =
     { id : HtmlId, size : Size }
-
-
-type alias Error =
-    String

@@ -2,12 +2,16 @@ module View exposing (viewApp)
 
 import AssocList as Dict
 import Conf exposing (conf)
-import Html exposing (Attribute, Html, div, text)
-import Html.Attributes exposing (class, id, style)
-import Libs.Std exposing (listAppendOn, listFilterMap, onWheel)
+import FileValue exposing (hiddenInputSingle)
+import FontAwesome.Styles as Icon
+import Html exposing (Attribute, Html, button, div, h5, label, text)
+import Html.Attributes exposing (class, for, id, style, tabindex, type_)
+import Html.Events exposing (onClick)
+import Libs.Std exposing (cond, listFilterMap, onWheel)
 import Models exposing (Canvas, Model, Msg(..))
 import Models.Schema exposing (ColumnRef, Relation, RelationRef, Schema, Table, TableAndColumn, TableStatus(..))
-import Models.Utils exposing (Position, Text, ZoomLevel)
+import Models.Utils exposing (Position, ZoomLevel)
+import Views.Bootstrap exposing (BsColor(..), Toggle(..), ariaHidden, ariaLabel, ariaLabelledBy, bsButton, bsDismiss)
 import Views.Helpers exposing (dragAttrs, sizeAttrs)
 import Views.Menu exposing (viewMenu)
 import Views.Navbar exposing (viewNavbar)
@@ -19,16 +23,15 @@ import Views.Tables exposing (viewTable)
 -- view entry point, can include any module from Views, Models or Libs
 
 
-viewApp : Model -> Maybe Text -> Html Msg
-viewApp model loading =
-    div [ class "app" ]
-        (listAppendOn loading
-            (\msg -> div [ class "loading" ] [ text msg ])
-            [ viewNavbar model.state.search model.state.newLayout model.state.currentLayout model.schema.layouts (Dict.values model.schema.tables)
-            , viewMenu model.schema
-            , viewErd model.canvas model.schema
-            ]
-        )
+viewApp : Model -> List (Html Msg)
+viewApp model =
+    [ Icon.css ]
+        ++ viewNavbar model.state.search model.state.newLayout model.state.currentLayout model.schema.layouts (Dict.values model.schema.tables)
+        ++ viewMenu model.schema
+        ++ [ viewErd model.canvas model.schema
+           , viewSchemaSwitchModal model.schema
+           , viewToasts
+           ]
 
 
 viewErd : Canvas -> Schema -> Html Msg
@@ -44,6 +47,42 @@ viewErd canvas schema =
                 ++ (relations |> listFilterMap shouldDrawRelation viewRelation)
             )
         ]
+
+
+viewSchemaSwitchModal : Schema -> Html Msg
+viewSchemaSwitchModal schema =
+    div [ class "modal fade", id conf.ids.schemaSwitchModal, tabindex -1, ariaLabelledBy (conf.ids.schemaSwitchModal ++ "-label"), ariaHidden True ]
+        [ div [ class "modal-dialog modal-lg modal-dialog-centered" ]
+            [ div [ class "modal-content" ]
+                [ div [ class "modal-header" ]
+                    [ h5 [ class "modal-title", id (conf.ids.schemaSwitchModal ++ "-label") ]
+                        [ text (cond (Dict.isEmpty schema.tables) (\_ -> "Welcome to Schema Viz") (\_ -> "Load a new schema"))
+                        ]
+                    , button [ type_ "button", class "btn-close", bsDismiss Modal, ariaLabel "Close" ] []
+                    ]
+                , div [ class "modal-body" ]
+                    [ div []
+                        [ hiddenInputSingle "file-loader" [ ".sql,.json" ] FileSelected
+                        , label [ for "file-loader", class "btn btn-outline-primary" ] [ text "Click to load a file" ]
+                        ]
+                    , div
+                        (FileValue.onDrop
+                            { onOver = FileDragOver
+                            , onLeave = Just { id = "file-drop", msg = FileDragLeave }
+                            , onDrop = FileDropped
+                            }
+                        )
+                        [ text "Or drop a file here" ]
+                    , bsButton Primary [ onClick LoadSampleData ] [ text "Or try our sample schema" ]
+                    ]
+                ]
+            ]
+        ]
+
+
+viewToasts : Html Msg
+viewToasts =
+    div [ id "toast-container" ] []
 
 
 

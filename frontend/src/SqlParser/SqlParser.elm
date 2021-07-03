@@ -1,4 +1,4 @@
-module SqlParser.SqlParser exposing (CheckInner, Column, ColumnName, ColumnType, ColumnUpdate(..), ColumnValue, Command(..), Comment, CommentOnColumn, CommentOnTable, ConstraintName, ForeignKeyInner, ParseError, Predicate, PrimaryKeyInner, RawSql, SchemaName, Table, TableConstraint(..), TableName, TableUpdate(..), UniqueInner, commaSplit, parseAlterTable, parseColumnComment, parseCommand, parseCreateTable, parseCreateTableColumn, parseTableComment)
+module SqlParser.SqlParser exposing (CheckInner, ColumnName, ColumnType, ColumnUpdate(..), ColumnValue, Command(..), Comment, CommentOnColumn, CommentOnTable, ConstraintName, ForeignKeyInner, ParseError, ParsedColumn, ParsedTable, Predicate, PrimaryKeyInner, RawSql, SchemaName, TableConstraint(..), TableName, TableUpdate(..), UniqueInner, commaSplit, parseAlterTable, parseColumnComment, parseCommand, parseCreateTable, parseCreateTableColumn, parseTableComment)
 
 import Libs.Std exposing (listResultSeq)
 import Regex
@@ -13,10 +13,11 @@ type alias ParseError =
 
 
 type Command
-    = CreateTable Table
+    = CreateTable ParsedTable
     | AlterTable TableUpdate
     | TableComment CommentOnTable
     | ColumnComment CommentOnColumn
+    | Ignored RawSql
 
 
 type alias SchemaName =
@@ -39,11 +40,11 @@ type alias ColumnValue =
     String
 
 
-type alias Table =
-    { schema : SchemaName, table : TableName, columns : List Column }
+type alias ParsedTable =
+    { schema : SchemaName, table : TableName, columns : List ParsedColumn }
 
 
-type alias Column =
+type alias ParsedColumn =
     { name : ColumnName, kind : ColumnType, nullable : Bool, default : Maybe ColumnValue }
 
 
@@ -57,10 +58,10 @@ type alias ConstraintName =
 
 
 type TableConstraint
-    = PrimaryKey ConstraintName PrimaryKeyInner
-    | ForeignKey ConstraintName ForeignKeyInner
-    | Unique ConstraintName UniqueInner
-    | Check ConstraintName CheckInner
+    = ParsedPrimaryKey ConstraintName PrimaryKeyInner
+    | ParsedForeignKey ConstraintName ForeignKeyInner
+    | ParsedUnique ConstraintName UniqueInner
+    | ParsedCheck ConstraintName CheckInner
 
 
 type alias PrimaryKeyInner =
@@ -114,13 +115,70 @@ parseCommand sql =
     else if String.startsWith "COMMENT ON COLUMN " sql then
         parseColumnComment sql |> Result.map ColumnComment
 
+    else if String.startsWith "CREATE VIEW " sql then
+        Ok (Ignored sql)
+
+    else if String.startsWith "CREATE MATERIALIZED VIEW " sql then
+        Ok (Ignored sql)
+
+    else if String.startsWith "CREATE OR REPLACE VIEW " sql then
+        Ok (Ignored sql)
+
+    else if String.startsWith "COMMENT ON VIEW " sql then
+        Ok (Ignored sql)
+
+    else if String.startsWith "CREATE INDEX " sql then
+        Ok (Ignored sql)
+
+    else if String.startsWith "CREATE UNIQUE INDEX " sql then
+        Ok (Ignored sql)
+
+    else if String.startsWith "COMMENT ON INDEX " sql then
+        Ok (Ignored sql)
+
+    else if String.startsWith "CREATE TYPE " sql then
+        Ok (Ignored sql)
+
+    else if String.startsWith "CREATE FUNCTION " sql then
+        Ok (Ignored sql)
+
+    else if String.startsWith "CREATE SCHEMA " sql then
+        Ok (Ignored sql)
+
+    else if String.startsWith "CREATE EXTENSION " sql then
+        Ok (Ignored sql)
+
+    else if String.startsWith "COMMENT ON EXTENSION " sql then
+        Ok (Ignored sql)
+
+    else if String.startsWith "CREATE TEXT SEARCH CONFIGURATION " sql then
+        Ok (Ignored sql)
+
+    else if String.startsWith "ALTER TEXT SEARCH CONFIGURATION " sql then
+        Ok (Ignored sql)
+
+    else if String.startsWith "CREATE SEQUENCE " sql then
+        Ok (Ignored sql)
+
+    else if String.startsWith "ALTER SEQUENCE " sql then
+        Ok (Ignored sql)
+
+    else if String.startsWith "SELECT " sql then
+        Ok (Ignored sql)
+
+    else if String.startsWith "INSERT INTO " sql then
+        Ok (Ignored sql)
+
+    else if String.startsWith "SET " sql then
+        Ok (Ignored sql)
+
     else
         Err [ "Statement not handled: '" ++ sql ++ "'" ]
 
 
-parseCreateTable : RawSql -> Result (List ParseError) Table
+parseCreateTable : RawSql -> Result (List ParseError) ParsedTable
 parseCreateTable sql =
-    case regexMatches "^CREATE TABLE (?<schema>[^ .]+)\\.(?<table>[^ .]+) \\((?<body>[^;]+?)\\)(?: WITH \\((?<options>.*?)\\))?;$" sql of
+    case regexMatches "^CREATE TABLE (?<schema>[^ .]+)\\.(?<table>[^ .]+) \\((?<body>[^;]+?)\\)(?: +WITH \\((?<options>.*?)\\))?;$" sql of
         (Just schema) :: (Just table) :: (Just columns) :: _ :: [] ->
             commaSplit columns
                 |> List.map String.trim
@@ -133,7 +191,7 @@ parseCreateTable sql =
             Err [ "Can't parse table: '" ++ sql ++ "'" ]
 
 
-parseCreateTableColumn : RawSql -> Result ParseError Column
+parseCreateTableColumn : RawSql -> Result ParseError ParsedColumn
 parseCreateTableColumn sql =
     case regexMatches "^(?<name>[^ ]+) (?<type>.*?)(?: DEFAULT (?<default>.*?))?(?<nullable> NOT NULL)?$" sql of
         (Just name) :: (Just kind) :: default :: nullable :: [] ->
@@ -145,7 +203,7 @@ parseCreateTableColumn sql =
 
 parseAlterTable : RawSql -> Result (List ParseError) TableUpdate
 parseAlterTable sql =
-    case regexMatches "^ALTER TABLE (?:ONLY )?(?<schema>[^ .]+)\\.(?<table>[^ .]+) (?<command>.*);$" sql of
+    case regexMatches "^ALTER TABLE (?:ONLY )?(?<schema>[^ .]+)\\.(?<table>[^ .]+) +(?<command>.*);$" sql of
         (Just schema) :: (Just table) :: (Just command) :: [] ->
             if String.startsWith "ADD CONSTRAINT" command then
                 parseAlterTableAddConstraint command |> Result.map (AddTableConstraint schema table)
@@ -165,16 +223,16 @@ parseAlterTableAddConstraint command =
     case regexMatches "^ADD CONSTRAINT (?<name>[^ .]+) (?<constraint>.*)$" command of
         (Just name) :: (Just constraint) :: [] ->
             if String.startsWith "PRIMARY KEY" constraint then
-                parseAlterTableAddConstraintPrimaryKey constraint |> Result.map (PrimaryKey name)
+                parseAlterTableAddConstraintPrimaryKey constraint |> Result.map (ParsedPrimaryKey name)
 
             else if String.startsWith "FOREIGN KEY" constraint then
-                parseAlterTableAddConstraintForeignKey constraint |> Result.map (ForeignKey name)
+                parseAlterTableAddConstraintForeignKey constraint |> Result.map (ParsedForeignKey name)
 
             else if String.startsWith "UNIQUE" constraint then
-                parseAlterTableAddConstraintUnique constraint |> Result.map (Unique name)
+                parseAlterTableAddConstraintUnique constraint |> Result.map (ParsedUnique name)
 
             else if String.startsWith "CHECK" constraint then
-                parseAlterTableAddConstraintCheck constraint |> Result.map (Check name)
+                parseAlterTableAddConstraintCheck constraint |> Result.map (ParsedCheck name)
 
             else
                 Err [ "Constraint not handled in: '" ++ constraint ++ "'" ]
@@ -195,7 +253,7 @@ parseAlterTableAddConstraintPrimaryKey constraint =
 
 parseAlterTableAddConstraintForeignKey : RawSql -> Result (List ParseError) ForeignKeyInner
 parseAlterTableAddConstraintForeignKey constraint =
-    case regexMatches "^FOREIGN KEY \\((?<column>[^)]+)\\) REFERENCES (?<schema_b>[^ .]+)\\.(?<table_b>[^ .]+) ?\\((?<column_b>[^)]+)\\)$" constraint of
+    case regexMatches "^FOREIGN KEY \\((?<column>[^)]+)\\) REFERENCES (?<schema_b>[^ .]+)\\.(?<table_b>[^ .]+) ?\\((?<column_b>[^)]+)\\)(?: NOT VALID)?$" constraint of
         (Just column) :: (Just schemaDest) :: (Just tableDest) :: (Just columnDest) :: [] ->
             Ok { column = column, schemaDest = schemaDest, tableDest = tableDest, columnDest = columnDest }
 

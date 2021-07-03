@@ -1,11 +1,11 @@
-module SqlParser.SchemaParser exposing (Error, Line, Statement, Tables, buildRawSql, buildStatements, parseLines, parseSchema)
+module SqlParser.SchemaParser exposing (Line, SchemaError, SqlCheck, SqlColumn, SqlForeignKey, SqlPrimaryKey, SqlSchema, SqlTable, SqlTableId, SqlUnique, Statement, buildRawSql, buildStatements, parseLines, parseSchema, updateColumn, updateTable)
 
 import AssocList as Dict exposing (Dict)
 import Libs.Std exposing (listFind)
-import SqlParser.SqlParser as SqlParser exposing (ColumnName, ColumnType, ColumnUpdate(..), ColumnValue, Command(..), Comment, ConstraintName, Predicate, RawSql, SchemaName, TableConstraint(..), TableName, TableUpdate(..), parseCommand)
+import SqlParser.SqlParser exposing (ColumnName, ColumnType, ColumnUpdate(..), ColumnValue, Command(..), Comment, ConstraintName, ParsedColumn, ParsedTable, Predicate, RawSql, SchemaName, TableConstraint(..), TableName, TableUpdate(..), parseCommand)
 
 
-type alias Error =
+type alias SchemaError =
     String
 
 
@@ -17,45 +17,45 @@ type alias Statement =
     { first : Line, others : List Line }
 
 
-type alias Tables =
-    Dict TableId Table
+type alias SqlSchema =
+    Dict SqlTableId SqlTable
 
 
-type alias TableId =
+type alias SqlTableId =
     String
 
 
-type alias Table =
-    { schema : SchemaName, table : TableName, columns : List Column, primaryKey : Maybe PrimaryKey, uniques : List Unique, checks : List Check, comment : Maybe Comment }
+type alias SqlTable =
+    { schema : SchemaName, table : TableName, columns : List SqlColumn, primaryKey : Maybe SqlPrimaryKey, uniques : List SqlUnique, checks : List SqlCheck, comment : Maybe Comment }
 
 
-type alias Column =
-    { name : ColumnName, kind : ColumnType, nullable : Bool, default : Maybe ColumnValue, foreignKey : Maybe ForeignKey, comment : Maybe Comment }
+type alias SqlColumn =
+    { name : ColumnName, kind : ColumnType, nullable : Bool, default : Maybe ColumnValue, foreignKey : Maybe SqlForeignKey, comment : Maybe Comment }
 
 
-type alias PrimaryKey =
+type alias SqlPrimaryKey =
     { name : ConstraintName, columns : List ColumnName }
 
 
-type alias ForeignKey =
+type alias SqlForeignKey =
     { name : ConstraintName, schema : SchemaName, table : TableName, column : ColumnName }
 
 
-type alias Unique =
+type alias SqlUnique =
     { name : ConstraintName, columns : List ColumnName }
 
 
-type alias Check =
+type alias SqlCheck =
     { name : ConstraintName, predicate : Predicate }
 
 
-parseSchema : String -> String -> Result (List Error) Tables
+parseSchema : String -> String -> Result (List SchemaError) SqlSchema
 parseSchema fileName fileContent =
     parseLines fileName fileContent
         |> buildStatements
         |> List.foldl
             (\statement ( errs, schema ) ->
-                case statement |> buildRawSql |> parseCommand |> Result.andThen (evolve schema) of
+                case statement |> buildRawSql |> parseCommand |> Result.andThen (\command -> schema |> evolve command) of
                     Ok newSchema ->
                         ( errs, newSchema )
 
@@ -72,12 +72,12 @@ parseSchema fileName fileContent =
            )
 
 
-evolve : Tables -> Command -> Result (List Error) Tables
-evolve tables command =
+evolve : Command -> SqlSchema -> Result (List SchemaError) SqlSchema
+evolve command tables =
     case command of
         CreateTable table ->
             let
-                id : TableId
+                id : SqlTableId
                 id =
                     buildId table.schema table.table
             in
@@ -86,16 +86,16 @@ evolve tables command =
                 |> Maybe.map (\_ -> Err [ "Table " ++ id ++ " already exists" ])
                 |> Maybe.withDefault (Ok (tables |> Dict.insert id (buildTable table)))
 
-        AlterTable (AddTableConstraint schema table (SqlParser.PrimaryKey constraint pk)) ->
+        AlterTable (AddTableConstraint schema table (ParsedPrimaryKey constraint pk)) ->
             updateTable (buildId schema table) (\t -> Ok { t | primaryKey = Just { name = constraint, columns = pk } }) tables
 
-        AlterTable (AddTableConstraint schema table (SqlParser.ForeignKey constraint fk)) ->
+        AlterTable (AddTableConstraint schema table (ParsedForeignKey constraint fk)) ->
             updateColumn (buildId schema table) fk.column (\c -> Ok { c | foreignKey = Just { name = constraint, schema = fk.schemaDest, table = fk.tableDest, column = fk.columnDest } }) tables
 
-        AlterTable (AddTableConstraint schema table (SqlParser.Unique constraint unique)) ->
+        AlterTable (AddTableConstraint schema table (ParsedUnique constraint unique)) ->
             updateTable (buildId schema table) (\t -> Ok { t | uniques = t.uniques ++ [ { name = constraint, columns = unique } ] }) tables
 
-        AlterTable (AddTableConstraint schema table (SqlParser.Check constraint check)) ->
+        AlterTable (AddTableConstraint schema table (ParsedCheck constraint check)) ->
             updateTable (buildId schema table) (\t -> Ok { t | checks = t.checks ++ [ { name = constraint, predicate = check } ] }) tables
 
         AlterTable (AlterColumn schema table (ColumnDefault column default)) ->
@@ -110,8 +110,11 @@ evolve tables command =
         ColumnComment comment ->
             updateColumn (buildId comment.schema comment.table) comment.column (\column -> Ok { column | comment = Just comment.comment }) tables
 
+        Ignored _ ->
+            Ok tables
 
-updateTable : TableId -> (Table -> Result (List Error) Table) -> Tables -> Result (List Error) Tables
+
+updateTable : SqlTableId -> (SqlTable -> Result (List SchemaError) SqlTable) -> SqlSchema -> Result (List SchemaError) SqlSchema
 updateTable id transform tables =
     tables
         |> Dict.get id
@@ -119,7 +122,7 @@ updateTable id transform tables =
         |> Maybe.withDefault (Err [ "Table " ++ id ++ " does not exist" ])
 
 
-updateColumn : TableId -> ColumnName -> (Column -> Result (List Error) Column) -> Tables -> Result (List Error) Tables
+updateColumn : SqlTableId -> ColumnName -> (SqlColumn -> Result (List SchemaError) SqlColumn) -> SqlSchema -> Result (List SchemaError) SqlSchema
 updateColumn id name transform tables =
     updateTable id
         (\table ->
@@ -131,7 +134,7 @@ updateColumn id name transform tables =
         tables
 
 
-updateTableColumn : ColumnName -> (Column -> Column) -> Table -> Table
+updateTableColumn : ColumnName -> (SqlColumn -> SqlColumn) -> SqlTable -> SqlTable
 updateTableColumn column transform table =
     { table
         | columns =
@@ -147,17 +150,17 @@ updateTableColumn column transform table =
     }
 
 
-buildTable : SqlParser.Table -> Table
+buildTable : ParsedTable -> SqlTable
 buildTable table =
     { schema = table.schema, table = table.table, columns = table.columns |> List.map buildColumn, primaryKey = Nothing, uniques = [], checks = [], comment = Nothing }
 
 
-buildColumn : SqlParser.Column -> Column
+buildColumn : ParsedColumn -> SqlColumn
 buildColumn column =
     { name = column.name, kind = column.kind, nullable = column.nullable, default = column.default, foreignKey = Nothing, comment = Nothing }
 
 
-buildId : SchemaName -> TableName -> TableId
+buildId : SchemaName -> TableName -> SqlTableId
 buildId schema table =
     schema ++ "." ++ table
 
@@ -172,15 +175,21 @@ buildStatements lines =
     lines
         |> List.filter (\line -> not (String.isEmpty (String.trim line.text) || String.startsWith "--" line.text))
         |> List.foldr
-            (\line ( currentStatementLines, statements ) ->
-                if line.text |> String.endsWith ";" then
-                    ( line :: [], addStatement currentStatementLines statements )
+            (\line ( currentStatementLines, statements, nestedBlock ) ->
+                if (line.text |> String.endsWith ";") && nestedBlock == 0 then
+                    ( line :: [], addStatement currentStatementLines statements, nestedBlock )
+
+                else if String.trim line.text == "BEGIN" then
+                    ( line :: currentStatementLines, statements, nestedBlock + 1 )
+
+                else if String.trim line.text == "END" then
+                    ( line :: currentStatementLines, statements, nestedBlock - 1 )
 
                 else
-                    ( line :: currentStatementLines, statements )
+                    ( line :: currentStatementLines, statements, nestedBlock )
             )
-            ( [], [] )
-        |> (\( cur, res ) -> addStatement cur res)
+            ( [], [], 0 )
+        |> (\( cur, res, _ ) -> addStatement cur res)
 
 
 addStatement : List Line -> List Statement -> List Statement

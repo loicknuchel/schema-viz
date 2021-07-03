@@ -55,7 +55,7 @@ viewMenu newLayout schema =
                             )
                     )
                 , div []
-                    [ hiddenInputSingle "file-loader" [ ".sql,.json,.txt" ] FileSelected
+                    [ hiddenInputSingle "file-loader" [ ".sql,.json" ] FileSelected
                     , label [ for "file-loader", class "btn btn-outline-primary" ] [ text "Click to load a file" ]
                     ]
                 , div

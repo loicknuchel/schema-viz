@@ -10,7 +10,7 @@ suite =
     describe "SqlParser"
         [ describe "parseCommand"
             [ test "parse create table" (\_ -> parseCommand "CREATE TABLE aaa.bbb (ccc int);" |> Expect.equal (Ok (CreateTable { schema = "aaa", table = "bbb", columns = [ { name = "ccc", kind = "int", nullable = True, default = Nothing } ] })))
-            , test "parse alter table" (\_ -> parseCommand "ALTER TABLE ONLY public.t2 ADD CONSTRAINT t2_id_pkey PRIMARY KEY (id);" |> Expect.equal (Ok (AlterTable (AddTableConstraint "public" "t2" (PrimaryKey "t2_id_pkey" [ "id" ])))))
+            , test "parse alter table" (\_ -> parseCommand "ALTER TABLE ONLY public.t2 ADD CONSTRAINT t2_id_pkey PRIMARY KEY (id);" |> Expect.equal (Ok (AlterTable (AddTableConstraint "public" "t2" (ParsedPrimaryKey "t2_id_pkey" [ "id" ])))))
             , test "parse table comment" (\_ -> parseCommand "COMMENT ON TABLE public.table1 IS 'A comment';" |> Expect.equal (Ok (TableComment { schema = "public", table = "table1", comment = "A comment" })))
             , test "parse column comment" (\_ -> parseCommand "COMMENT ON COLUMN public.table1.col IS 'A comment';" |> Expect.equal (Ok (ColumnComment { schema = "public", table = "table1", column = "col", comment = "A comment" })))
             ]
@@ -32,6 +32,12 @@ suite =
                                 }
                             )
                 )
+            , test "with options"
+                (\_ ->
+                    parseCreateTable "CREATE TABLE p.table (id bigint NOT NULL)    WITH (autovacuum_analyze_threshold='100000');"
+                        |> Expect.equal
+                            (Ok { schema = "p", table = "table", columns = [ { name = "id", kind = "bigint", nullable = False, default = Nothing } ] })
+                )
             , test "bad" (\_ -> parseCreateTable "bad" |> Expect.equal (Err [ "Can't parse table: 'bad'" ]))
             ]
         , describe "parseCreateTableColumn"
@@ -43,10 +49,11 @@ suite =
             , test "bad" (\_ -> parseCreateTableColumn "bad" |> Expect.equal (Err "Can't parse column: 'bad'"))
             ]
         , describe "parseAlterTable"
-            [ test "primary key" (\_ -> parseAlterTable "ALTER TABLE ONLY public.t2 ADD CONSTRAINT t2_id_pkey PRIMARY KEY (id);" |> Expect.equal (Ok (AddTableConstraint "public" "t2" (PrimaryKey "t2_id_pkey" [ "id" ]))))
-            , test "foreign key" (\_ -> parseAlterTable "ALTER TABLE ONLY p.t2 ADD CONSTRAINT t2_t1_id_fk FOREIGN KEY (t1_id) REFERENCES p.t1 (id);" |> Expect.equal (Ok (AddTableConstraint "p" "t2" (ForeignKey "t2_t1_id_fk" { column = "t1_id", schemaDest = "p", tableDest = "t1", columnDest = "id" }))))
-            , test "unique" (\_ -> parseAlterTable "ALTER TABLE ONLY p.t1 ADD CONSTRAINT name_unique UNIQUE (first_name, last_name);" |> Expect.equal (Ok (AddTableConstraint "p" "t1" (Unique "name_unique" [ "first_name", "last_name" ]))))
-            , test "check" (\_ -> parseAlterTable "ALTER TABLE p.t1 ADD CONSTRAINT t1_kind_not_null CHECK ((kind IS NOT NULL)) NOT VALID;" |> Expect.equal (Ok (AddTableConstraint "p" "t1" (Check "t1_kind_not_null" "((kind IS NOT NULL)) NOT VALID"))))
+            [ test "primary key" (\_ -> parseAlterTable "ALTER TABLE ONLY public.t2 ADD CONSTRAINT t2_id_pkey PRIMARY KEY (id);" |> Expect.equal (Ok (AddTableConstraint "public" "t2" (ParsedPrimaryKey "t2_id_pkey" [ "id" ]))))
+            , test "foreign key" (\_ -> parseAlterTable "ALTER TABLE ONLY p.t2 ADD CONSTRAINT t2_t1_id_fk FOREIGN KEY (t1_id) REFERENCES p.t1 (id);" |> Expect.equal (Ok (AddTableConstraint "p" "t2" (ParsedForeignKey "t2_t1_id_fk" { column = "t1_id", schemaDest = "p", tableDest = "t1", columnDest = "id" }))))
+            , test "foreign key not valid" (\_ -> parseAlterTable "ALTER TABLE ONLY p.t2 ADD CONSTRAINT t2_t1_id_fk FOREIGN KEY (t1_id) REFERENCES p.t1 (id) NOT VALID;" |> Expect.equal (Ok (AddTableConstraint "p" "t2" (ParsedForeignKey "t2_t1_id_fk" { column = "t1_id", schemaDest = "p", tableDest = "t1", columnDest = "id" }))))
+            , test "unique" (\_ -> parseAlterTable "ALTER TABLE ONLY p.t1 ADD CONSTRAINT name_unique UNIQUE (first_name, last_name);" |> Expect.equal (Ok (AddTableConstraint "p" "t1" (ParsedUnique "name_unique" [ "first_name", "last_name" ]))))
+            , test "check" (\_ -> parseAlterTable "ALTER TABLE p.t1 ADD CONSTRAINT t1_kind_not_null CHECK ((kind IS NOT NULL)) NOT VALID;" |> Expect.equal (Ok (AddTableConstraint "p" "t1" (ParsedCheck "t1_kind_not_null" "((kind IS NOT NULL)) NOT VALID"))))
             , test "column default" (\_ -> parseAlterTable "ALTER TABLE ONLY public.table1 ALTER COLUMN id SET DEFAULT 1;" |> Expect.equal (Ok (AlterColumn "public" "table1" (ColumnDefault "id" "1"))))
             , test "column statistics" (\_ -> parseAlterTable "ALTER TABLE ONLY public.table1 ALTER COLUMN table1_id SET STATISTICS 5000;" |> Expect.equal (Ok (AlterColumn "public" "table1" (ColumnStatistics "table1_id" 5000))))
             , test "bad" (\_ -> parseAlterTable "bad" |> Expect.equal (Err [ "Can't parse alter table: 'bad'" ]))

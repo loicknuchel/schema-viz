@@ -8,12 +8,12 @@ import Draggable
 import FontAwesome.Styles as Icon
 import Html exposing (text)
 import Libs.Std exposing (cond, set, setSchema, setState)
-import Mappers.SchemaMapper exposing (buildSchema)
+import Mappers.SchemaMapper exposing (buildSchemaFromJson)
 import Models exposing (Flags, Model, Msg(..), Status(..))
 import Models.Schema exposing (TableStatus(..))
 import Models.Utils exposing (Position, Size)
 import Ports exposing (activateTooltipsAndPopovers, fileRead, observeSize, readFile, sizesReceiver)
-import Update exposing (dragConfig, dragItem, hideAllTables, hideColumn, hideTable, loadLayout, showAllTables, showColumn, showTable, toLayout, updateSizes, visitTable, zoomCanvas)
+import Update exposing (dragConfig, dragItem, hideAllTables, hideColumn, hideTable, loadLayout, showAllTables, showColumn, showTable, toLayout, updateSchema, updateSizes, visitTable, zoomCanvas)
 import View exposing (viewApp)
 import Views.Helpers exposing (formatHttpError)
 
@@ -50,7 +50,7 @@ update msg model =
     case msg of
         -- each case should be one line or call a function in Update file
         GotData (Ok tables) ->
-            ( { model | state = model.state |> set (\state -> { state | status = Success }), schema = buildSchema tables }, Cmd.none )
+            ( { model | state = model.state |> set (\state -> { state | status = Success }), schema = buildSchemaFromJson tables }, Cmd.none )
 
         GotData (Err e) ->
             ( { model | state = model.state |> set (\state -> { state | status = Failure (formatHttpError e) }) }, Cmd.none )
@@ -129,8 +129,7 @@ update msg model =
             ( model, readFile file )
 
         FileRead ( file, content ) ->
-            -- TODO parse content
-            ( model, Debug.log ("FileRead: " ++ Debug.toString file ++ " / " ++ Debug.toString content) Cmd.none )
+            ( updateSchema file content model, Cmd.none )
 
 
 view : Model -> Browser.Document Msg

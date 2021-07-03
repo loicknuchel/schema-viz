@@ -1,20 +1,47 @@
-module Update exposing (dragConfig, dragItem, hideAllTables, hideColumn, hideTable, loadLayout, showAllTables, showColumn, showTable, toLayout, updateSizes, visitTable, zoomCanvas)
+module Update exposing (dragConfig, dragItem, hideAllTables, hideColumn, hideTable, loadLayout, showAllTables, showColumn, showTable, toLayout, updateSchema, updateSizes, visitTable, zoomCanvas)
 
 import AssocList as Dict exposing (Dict)
 import Commands.InitializeTable exposing (initializeTable)
 import Conf exposing (conf)
 import Draggable
 import Draggable.Events exposing (onDragBy, onDragEnd, onDragStart)
+import FileValue exposing (File)
+import Json.Decode as Decode
+import JsonFormats.SchemaDecoder exposing (schemaDecoder)
 import Libs.Std exposing (WheelEvent, dictFromList, listFind, maybeFilter, set, setState)
+import Mappers.SchemaMapper exposing (buildSchemaFromJson, buildSchemaFromSql)
 import Models exposing (Canvas, DragId, Model, Msg(..), SizeChange, Status(..))
 import Models.Schema exposing (Column, ColumnName, ColumnProps, Layout, Schema, Table, TableId, TableProps, TableStatus(..))
 import Models.Utils exposing (Area, Position, ZoomLevel)
 import Ports exposing (activateTooltipsAndPopovers, observeTableSize, observeTablesSize)
+import SqlParser.SchemaParser exposing (parseSchema)
 import Views.Helpers exposing (formatTableId, parseTableId)
 
 
 
 -- utility methods to get the update case down to one line
+
+
+updateSchema : File -> String -> Model -> Model
+updateSchema file content model =
+    if file.mime == "application/sql" then
+        case parseSchema file.name content |> Result.map buildSchemaFromSql of
+            Ok schema ->
+                { model | schema = schema }
+
+            Err _ ->
+                model
+
+    else if file.mime == "application/json" then
+        case Decode.decodeString schemaDecoder content |> Result.map buildSchemaFromJson of
+            Ok schema ->
+                { model | schema = schema }
+
+            Err _ ->
+                model
+
+    else
+        model
 
 
 hideTable : TableId -> Schema -> Schema

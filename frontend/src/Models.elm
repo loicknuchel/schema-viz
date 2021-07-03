@@ -3,7 +3,7 @@ module Models exposing (Canvas, DragId, Error, Flags, Model, Msg(..), SizeChange
 import Draggable
 import FileValue exposing (File)
 import Http
-import JsonFormats.SchemaDecoder exposing (JsonTable)
+import JsonFormats.SchemaDecoder exposing (JsonSchema)
 import Libs.Std exposing (WheelEvent)
 import Models.Schema exposing (ColumnRef, Schema, TableId, TableStatus(..))
 import Models.Utils exposing (Position, Size, ZoomLevel)
@@ -36,7 +36,7 @@ type Status
 
 
 type Msg
-    = GotData (Result Http.Error (List ( JsonTable, TableId )))
+    = GotData (Result Http.Error JsonSchema)
     | ChangedSearch String
     | HideTable TableId
     | ShowTable TableId

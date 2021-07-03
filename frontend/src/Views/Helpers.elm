@@ -60,12 +60,12 @@ parseTableId id =
             TableId (SchemaName schema) (TableName table)
 
         _ ->
-            TableId (SchemaName conf.defaultSchema) (TableName id)
+            TableId (SchemaName conf.default.schema) (TableName id)
 
 
 formatTableName : TableName -> SchemaName -> String
 formatTableName (TableName table) (SchemaName schema) =
-    if schema == conf.defaultSchema then
+    if schema == conf.default.schema then
         table
 
     else

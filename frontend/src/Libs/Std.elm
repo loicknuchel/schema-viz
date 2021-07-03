@@ -4,7 +4,7 @@ import AssocList as Dict exposing (Dict)
 import Bitwise
 import Html exposing (Attribute, Html, b, code, div, text)
 import Html.Attributes exposing (attribute)
-import Html.Events
+import Html.Events exposing (stopPropagationOn)
 import Json.Decode as Decode exposing (Decoder)
 import Random
 
@@ -201,6 +201,11 @@ genSequence generators =
 genChoose : ( a, List a ) -> Random.Generator a
 genChoose ( item, list ) =
     Random.int 0 (list |> List.length) |> Random.map (\num -> list |> List.drop num |> List.head |> Maybe.withDefault item)
+
+
+stopClick : msg -> Attribute msg
+stopClick m =
+    stopPropagationOn "click" (Decode.succeed ( m, True ))
 
 
 type alias FileEvent =

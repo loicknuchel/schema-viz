@@ -13,7 +13,7 @@ import Models exposing (Flags, Model, Msg(..), Status(..))
 import Models.Schema exposing (TableStatus(..))
 import Models.Utils exposing (Position, Size)
 import Ports exposing (activateTooltipsAndPopovers, fileRead, observeSize, readFile, sizesReceiver)
-import Update exposing (dragConfig, dragItem, hideAllTables, hideColumn, hideTable, loadLayout, showAllTables, showColumn, showTable, toLayout, updateSchema, updateSizes, visitTable, zoomCanvas)
+import Update exposing (dragConfig, dragItem, hideAllTables, hideColumn, hideTable, loadLayout, showAllTables, showColumn, showTable, toLayout, updateSchema, updateSizes, visitTable, visitTables, zoomCanvas)
 import View exposing (viewApp)
 import Views.Helpers exposing (formatHttpError)
 
@@ -57,6 +57,9 @@ update msg model =
 
         ChangedSearch search ->
             ( { model | state = model.state |> set (\state -> { state | search = search }) }, Cmd.none )
+
+        SelectTable id ->
+            ( { model | schema = model.schema |> visitTables (\table -> table |> setState (\state -> { state | selected = cond (table.id == id) (\_ -> not state.selected) (\_ -> False) })) }, Cmd.none )
 
         HideTable id ->
             ( { model | schema = model.schema |> hideTable id }, Cmd.none )
@@ -130,6 +133,9 @@ update msg model =
 
         FileRead ( file, content ) ->
             ( updateSchema file content model, Cmd.none )
+
+        Noop ->
+            ( model, Cmd.none )
 
 
 view : Model -> Browser.Document Msg

@@ -7,7 +7,7 @@ import FontAwesome.Solid as Icon
 import Html exposing (Attribute, Html, a, b, button, div, li, span, text, ul)
 import Html.Attributes exposing (class, classList, href, id, style, title, type_)
 import Html.Events exposing (onClick, onDoubleClick)
-import Libs.Std exposing (divIf, listAddIf, listAppendOn, maybeFilter, plural)
+import Libs.Std exposing (divIf, listAddIf, listAppendOn, maybeFilter, plural, stopClick)
 import Models exposing (Msg(..))
 import Models.Schema exposing (Column, ColumnComment(..), ColumnName, ColumnRef, ForeignKey, Index, IndexName(..), PrimaryKey, Relation, Table, TableComment(..), TableStatus(..), Unique, UniqueName(..))
 import Models.Utils exposing (ZoomLevel)
@@ -32,7 +32,7 @@ viewTable zoom incomingTableRelations table =
     div
         (listAddIf (table.state.status == Initializing)
             (style "visibility" "hidden")
-            [ class "erd-table", id (formatTableId table.id), placeAt table.state.position ]
+            [ class "erd-table", class table.state.color, classList [ ( "selected", table.state.selected ) ], id (formatTableId table.id), placeAt table.state.position ]
             ++ sizeAttrs table.state.size
             ++ dragAttrs (formatTableId table.id)
         )
@@ -58,11 +58,11 @@ viewTable zoom incomingTableRelations table =
 
 viewHeader : ZoomLevel -> Table -> Html Msg
 viewHeader zoom table =
-    div [ class "header", borderTopColor table.state.color, style "display" "flex", style "align-items" "center" ]
+    div [ class "header", style "display" "flex", style "align-items" "center", onClick (SelectTable table.id) ]
         [ div [ style "flex-grow" "1" ] (listAppendOn table.comment (\(TableComment comment) -> viewComment comment) [ span (tableNameSize zoom) [ text (formatTableName table.table table.schema) ] ])
         , bsDropdown (formatTableId table.id ++ "-settings-dropdown")
             []
-            (\attrs -> div ([ style "font-size" "0.9rem", style "opacity" "0.25", style "width" "30px", style "margin-left" "-10px", style "margin-right" "-20px" ] ++ attrs) [ viewIcon Icon.ellipsisV ])
+            (\attrs -> div ([ style "font-size" "0.9rem", style "opacity" "0.25", style "width" "30px", style "margin-left" "-10px", style "margin-right" "-20px", stopClick Noop ] ++ attrs) [ viewIcon Icon.ellipsisV ])
             (\attrs -> ul attrs [ li [] [ a [ class "dropdown-item", href "#", onClick (HideTable table.id) ] [ text "Hide table" ] ] ])
         ]
 
@@ -160,11 +160,6 @@ viewComment comment =
 
 
 -- view helpers
-
-
-borderTopColor : String -> Attribute msg
-borderTopColor color =
-    style "border-top-color" color
 
 
 tableNameSize : ZoomLevel -> List (Attribute msg)

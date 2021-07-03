@@ -38,6 +38,7 @@ type Status
 type Msg
     = GotData (Result Http.Error JsonSchema)
     | ChangedSearch String
+    | SelectTable TableId
     | HideTable TableId
     | ShowTable TableId
     | InitializedTable TableId Size Position
@@ -61,6 +62,7 @@ type Msg
     | FileDragLeave
     | FileDropped File (List File)
     | FileRead ( File, String )
+    | Noop
 
 
 type alias DragId =

@@ -3,6 +3,7 @@ module Views.Relations exposing (viewRelation)
 import Libs.Std exposing (listAddIf)
 import Models exposing (Msg)
 import Models.Schema exposing (Column, ForeignKeyName(..), Relation, Table, TableAndColumn, TableStatus(..))
+import Models.Utils exposing (Color)
 import Svg exposing (Svg, line, svg, text)
 import Svg.Attributes exposing (class, height, strokeDasharray, style, width, x1, x2, y1, y2)
 import Views.Helpers exposing (formatTableId, withColumnName)
@@ -14,28 +15,28 @@ import Views.Helpers exposing (formatTableId, withColumnName)
 
 viewRelation : Relation -> Svg Msg
 viewRelation { key, src, ref } =
-    case ( src.table.state.status == Shown, ref.table.state.status == Shown, formatText key src ref ) of
-        ( False, False, name ) ->
+    case ( ( src.table.state.status == Shown, ref.table.state.status == Shown ), ( formatText key src ref, getColor src ref ) ) of
+        ( ( False, False ), ( name, _ ) ) ->
             svg [ class "erd-relation" ] [ text name ]
 
-        ( True, False, name ) ->
+        ( ( True, False ), ( name, color ) ) ->
             case { x = src.table.state.position.left + src.table.state.size.width, y = positionY src } of
                 srcPos ->
-                    drawRelation srcPos { x = srcPos.x + 20, y = srcPos.y } src.column.nullable name
+                    drawRelation srcPos { x = srcPos.x + 20, y = srcPos.y } src.column.nullable color name
 
-        ( False, True, name ) ->
+        ( ( False, True ), ( name, color ) ) ->
             case { x = ref.table.state.position.left, y = positionY ref } of
                 refPos ->
-                    drawRelation { x = refPos.x - 20, y = refPos.y } refPos src.column.nullable name
+                    drawRelation { x = refPos.x - 20, y = refPos.y } refPos src.column.nullable color name
 
-        ( True, True, name ) ->
+        ( ( True, True ), ( name, color ) ) ->
             case ( positionX src.table ref.table, ( positionY src, positionY ref ) ) of
                 ( ( srcX, refX ), ( srcY, refY ) ) ->
-                    drawRelation { x = srcX, y = srcY } { x = refX, y = refY } src.column.nullable name
+                    drawRelation { x = srcX, y = srcY } { x = refX, y = refY } src.column.nullable color name
 
 
-drawRelation : Point -> Point -> Bool -> String -> Svg Msg
-drawRelation src ref optional name =
+drawRelation : Point -> Point -> Bool -> Maybe Color -> String -> Svg Msg
+drawRelation src ref optional color name =
     let
         padding : Float
         padding =
@@ -51,13 +52,13 @@ drawRelation src ref optional name =
         , height (String.fromFloat (abs (src.y - ref.y) + (padding * 2)))
         , style ("position: absolute; left: " ++ String.fromFloat origin.x ++ "px; top: " ++ String.fromFloat origin.y ++ "px;")
         ]
-        [ viewLine (minus src origin) (minus ref origin) optional
+        [ viewLine (minus src origin) (minus ref origin) optional color
         , text name
         ]
 
 
-viewLine : Point -> Point -> Bool -> Svg Msg
-viewLine p1 p2 optional =
+viewLine : Point -> Point -> Bool -> Maybe Color -> Svg Msg
+viewLine p1 p2 optional color =
     line
         (listAddIf optional
             (strokeDasharray "4")
@@ -65,7 +66,11 @@ viewLine p1 p2 optional =
             , y1 (String.fromFloat p1.y)
             , x2 (String.fromFloat p2.x)
             , y2 (String.fromFloat p2.y)
-            , style "stroke: #A0AEC0; stroke-width: 1.5"
+            , style
+                (color
+                    |> Maybe.map (\c -> "stroke: var(--tw-" ++ c ++ "); stroke-width: 3;")
+                    |> Maybe.withDefault "stroke: #A0AEC0; stroke-width: 2;"
+                )
             ]
         )
         []
@@ -77,6 +82,18 @@ viewLine p1 p2 optional =
 
 type alias Point =
     { x : Float, y : Float }
+
+
+getColor : TableAndColumn -> TableAndColumn -> Maybe Color
+getColor src ref =
+    if src.table.state.status == Shown && src.table.state.selected then
+        Just src.table.state.color
+
+    else if ref.table.state.status == Shown && ref.table.state.selected then
+        Just ref.table.state.color
+
+    else
+        Nothing
 
 
 positionX : Table -> Table -> ( Float, Float )

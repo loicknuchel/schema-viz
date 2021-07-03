@@ -1,10 +1,10 @@
 module Mappers.SchemaMapper exposing (buildSchemaFromJson, buildSchemaFromSql)
 
 import AssocList as Dict exposing (Dict)
-import Conf exposing (colorList, conf)
+import Conf exposing (conf)
 import JsonFormats.SchemaDecoder exposing (JsonColumn, JsonForeignKey, JsonIndex, JsonPrimaryKey, JsonSchema, JsonTable, JsonUnique)
 import Libs.Std exposing (dictFromList, listGet, listZipWith, stringHashCode, stringWordSplit)
-import Models.Schema exposing (Column, ColumnComment(..), ColumnIndex(..), ColumnName(..), ColumnType(..), ForeignKey, ForeignKeyName(..), Index, IndexName(..), PrimaryKey, PrimaryKeyName(..), RelationRef, Schema, SchemaName(..), Table, TableComment(..), TableId(..), TableName(..), TableStatus(..), Unique, UniqueName(..))
+import Models.Schema exposing (Column, ColumnComment(..), ColumnIndex(..), ColumnName(..), ColumnState, ColumnType(..), ForeignKey, ForeignKeyName(..), Index, IndexName(..), PrimaryKey, PrimaryKeyName(..), RelationRef, Schema, SchemaName(..), Table, TableComment(..), TableId(..), TableName(..), TableState, TableStatus(..), Unique, UniqueName(..))
 import Models.Utils exposing (Color, Position, Size)
 import SqlParser.SchemaParser exposing (SqlColumn, SqlForeignKey, SqlPrimaryKey, SqlSchema, SqlTable, SqlUnique)
 
@@ -26,11 +26,11 @@ buildSchemaType tables =
 
 buildJsonTables : JsonSchema -> Dict TableId Table
 buildJsonTables schema =
-    schema.tables |> listZipWith tableIdFromJsonTable |> List.map (buildJsonTable (Size 0 0) (Position 0 0)) |> dictFromList .id
+    schema.tables |> listZipWith tableIdFromJsonTable |> List.map buildJsonTable |> dictFromList .id
 
 
-buildJsonTable : Size -> Position -> ( JsonTable, TableId ) -> Table
-buildJsonTable size position ( table, id ) =
+buildJsonTable : ( JsonTable, TableId ) -> Table
+buildJsonTable ( table, id ) =
     { id = id
     , schema = table.schema |> SchemaName
     , table = table.table |> TableName
@@ -39,7 +39,7 @@ buildJsonTable size position ( table, id ) =
     , uniques = table.uniques |> List.map buildJsonUnique
     , indexes = table.indexes |> List.map buildJsonIndex
     , comment = table.comment |> Maybe.map TableComment
-    , state = { status = Uninitialized, color = buildColor id, size = size, position = position }
+    , state = initTableState id
     }
 
 
@@ -51,7 +51,7 @@ buildJsonColumn index column =
     , nullable = column.nullable
     , foreignKey = column.reference |> Maybe.map buildJsonForeignKey
     , comment = column.comment |> Maybe.map ColumnComment
-    , state = { order = Just index }
+    , state = initColumnState index
     }
 
 
@@ -99,11 +99,11 @@ tableIdFromJsonForeignKey fk =
 
 buildSqlTables : SqlSchema -> Dict TableId Table
 buildSqlTables schema =
-    schema |> Dict.values |> List.map (buildSqlTable (Size 0 0) (Position 0 0)) |> dictFromList .id
+    schema |> Dict.values |> List.map buildSqlTable |> dictFromList .id
 
 
-buildSqlTable : Size -> Position -> SqlTable -> Table
-buildSqlTable size position table =
+buildSqlTable : SqlTable -> Table
+buildSqlTable table =
     { id = tableIdFromSqlTable table
     , schema = table.schema |> SchemaName
     , table = table.table |> TableName
@@ -112,7 +112,7 @@ buildSqlTable size position table =
     , uniques = table.uniques |> List.map buildSqlUnique
     , indexes = []
     , comment = table.comment |> Maybe.map TableComment
-    , state = { status = Uninitialized, color = buildColor (tableIdFromSqlTable table), size = size, position = position }
+    , state = initTableState (tableIdFromSqlTable table)
     }
 
 
@@ -124,7 +124,7 @@ buildSqlColumn index column =
     , nullable = column.nullable
     , foreignKey = column.foreignKey |> Maybe.map buildSqlForeignKey
     , comment = column.comment |> Maybe.map ColumnComment
-    , state = { order = Just index }
+    , state = initColumnState index
     }
 
 
@@ -162,14 +162,24 @@ tableIdFromSqlForeignKey fk =
     TableId (SchemaName fk.schema) (TableName fk.table)
 
 
-buildColor : TableId -> Color
-buildColor (TableId _ (TableName table)) =
+initTableState : TableId -> TableState
+initTableState id =
+    { status = Uninitialized, color = computeColor id, size = Size 0 0, position = Position 0 0, selected = False }
+
+
+initColumnState : Int -> ColumnState
+initColumnState index =
+    { order = Just index }
+
+
+computeColor : TableId -> Color
+computeColor (TableId _ (TableName table)) =
     stringWordSplit table
         |> List.head
         |> Maybe.map stringHashCode
-        |> Maybe.map (modBy (List.length colorList))
-        |> Maybe.andThen (\index -> colorList |> listGet index)
-        |> Maybe.withDefault conf.colors.grey
+        |> Maybe.map (modBy (List.length conf.colors))
+        |> Maybe.andThen (\index -> conf.colors |> listGet index)
+        |> Maybe.withDefault conf.default.color
 
 
 

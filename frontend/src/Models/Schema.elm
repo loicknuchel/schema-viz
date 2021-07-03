@@ -49,7 +49,7 @@ type alias Table =
 
 
 type alias TableState =
-    { status : TableStatus, size : Size, position : Position, color : Color }
+    { status : TableStatus, size : Size, position : Position, color : Color, selected : Bool }
 
 
 type TableStatus

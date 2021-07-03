@@ -1,4 +1,4 @@
-module Update exposing (dragConfig, dragItem, hideAllTables, hideColumn, hideTable, loadLayout, showAllTables, showColumn, showTable, toLayout, updateSchema, updateSizes, visitTable, zoomCanvas)
+module Update exposing (dragConfig, dragItem, hideAllTables, hideColumn, hideTable, loadLayout, showAllTables, showColumn, showTable, toLayout, updateSchema, updateSizes, visitTable, visitTables, zoomCanvas)
 
 import AssocList as Dict exposing (Dict)
 import Commands.InitializeTable exposing (initializeTable)
@@ -60,7 +60,7 @@ showTable model id =
             ( model, Cmd.none )
 
         Just Hidden ->
-            ( { model | schema = model.schema |> visitTable id (setState (\state -> { state | status = Shown })) }, Cmd.batch [ observeTableSize id, activateTooltipsAndPopovers () ] )
+            ( { model | schema = model.schema |> visitTable id (setState (\state -> { state | status = Shown, selected = False })) }, Cmd.batch [ observeTableSize id, activateTooltipsAndPopovers () ] )
 
         Just Shown ->
             ( model, Cmd.none )
@@ -153,7 +153,7 @@ showTableByState table =
             ( Nothing, table )
 
         Hidden ->
-            ( Just table.id, table |> setState (\state -> { state | status = Shown }) )
+            ( Just table.id, table |> setState (\state -> { state | status = Shown, selected = False }) )
 
         Shown ->
             ( Nothing, table )
@@ -221,7 +221,7 @@ showTableWithLayout maybeProps table =
             ( Nothing, table |> setState (\state -> { state | status = Uninitialized }) )
 
         ( Hidden, Just props ) ->
-            ( Just table.id, table |> setState (\state -> { state | status = Shown }) |> setTableLayout props )
+            ( Just table.id, table |> setState (\state -> { state | status = Shown, selected = False }) |> setTableLayout props )
 
         ( Hidden, Nothing ) ->
             ( Nothing, table )

@@ -1,12 +1,12 @@
-module Models exposing (Canvas, DragId, Error, Flags, Model, Msg(..), SizeChange, State, Status(..))
+module Models exposing (Canvas, DragId, Error, Flags, Model, Msg(..), Search, SizeChange, State, Status(..))
 
 import Draggable
 import FileValue exposing (File)
 import Http
 import JsonFormats.SchemaDecoder exposing (JsonSchema)
 import Libs.Std exposing (WheelEvent)
-import Models.Schema exposing (ColumnRef, Schema, TableId, TableStatus(..))
-import Models.Utils exposing (Position, Size, ZoomLevel)
+import Models.Schema exposing (ColumnRef, LayoutName, Schema, TableId, TableStatus(..))
+import Models.Utils exposing (FileContent, HtmlId, Position, Size, ZoomLevel)
 
 
 
@@ -22,7 +22,7 @@ type alias Model =
 
 
 type alias State =
-    { status : Status, search : String, newLayout : Maybe String, dragId : Maybe DragId, drag : Draggable.State DragId }
+    { status : Status, search : Search, newLayout : Maybe LayoutName, currentLayout : Maybe LayoutName, dragId : Maybe DragId, drag : Draggable.State DragId }
 
 
 type alias Canvas =
@@ -37,7 +37,7 @@ type Status
 
 type Msg
     = GotData (Result Http.Error JsonSchema)
-    | ChangedSearch String
+    | ChangedSearch Search
     | SelectTable TableId
     | HideTable TableId
     | ShowTable TableId
@@ -52,17 +52,21 @@ type Msg
     | StartDragging DragId
     | StopDragging
     | OnDragBy Draggable.Delta
-    | NewLayout String
-    | CreateLayout
-    | LoadLayout String
-    | UpdateLayout String
-    | DeleteLayout String
+    | NewLayout LayoutName
+    | CreateLayout LayoutName
+    | LoadLayout LayoutName
+    | UpdateLayout LayoutName
+    | DeleteLayout LayoutName
     | FileSelected File
     | FileDragOver File (List File)
     | FileDragLeave
     | FileDropped File (List File)
-    | FileRead ( File, String )
+    | FileRead ( File, FileContent )
     | Noop
+
+
+type alias Search =
+    String
 
 
 type alias DragId =
@@ -74,7 +78,7 @@ type alias ZoomDelta =
 
 
 type alias SizeChange =
-    { id : String, size : Size }
+    { id : HtmlId, size : Size }
 
 
 type alias Error =

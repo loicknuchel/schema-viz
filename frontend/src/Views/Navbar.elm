@@ -7,14 +7,15 @@ import Html exposing (Html, a, b, button, div, form, h5, img, input, label, li, 
 import Html.Attributes exposing (alt, autocomplete, autofocus, class, disabled, for, height, href, id, placeholder, src, style, tabindex, title, type_, value)
 import Html.Events exposing (onClick, onInput)
 import Libs.Std exposing (bText, codeText)
-import Models exposing (Msg(..))
-import Models.Schema exposing (Column, ColumnName(..), Layout, Table, TableName(..), TableStatus(..))
-import Views.Bootstrap exposing (BsColor(..), Toggle(..), ariaHidden, ariaLabel, ariaLabelledBy, bsButton, bsDismiss, bsDropdown, bsToggle, bsToggleCollapse, bsToggleDropdown, bsToggleModal, bsToggleOffcanvas)
+import Models exposing (Msg(..), Search)
+import Models.Schema exposing (Column, ColumnName(..), Layout, LayoutName, Table, TableName(..), TableStatus(..))
+import Models.Utils exposing (Text)
+import Views.Bootstrap exposing (BsColor(..), Toggle(..), ariaExpanded, ariaHidden, ariaLabel, ariaLabelledBy, bsButton, bsDismiss, bsToggle, bsToggleCollapse, bsToggleDropdown, bsToggleModal, bsToggleOffcanvas)
 import Views.Helpers exposing (extractColumnName, formatTableId)
 
 
-viewNavbar : String -> List Layout -> Maybe String -> List Table -> Html Msg
-viewNavbar search layouts newLayout tables =
+viewNavbar : Search -> Maybe LayoutName -> Maybe LayoutName -> List Layout -> List Table -> Html Msg
+viewNavbar search newLayout currentLayout layouts tables =
     div []
         [ nav [ class "navbar navbar-expand-md navbar-light bg-white shadow-sm", id "navbar" ]
             [ div [ class "container-fluid" ]
@@ -33,45 +34,55 @@ viewNavbar search layouts newLayout tables =
                     , ul [ class "navbar-nav me-auto" ]
                         [ li [ class "nav-item" ] [ a ([ href "#", class "nav-link" ] ++ bsToggleModal "help-modal") [ text "?" ] ]
                         ]
-                    , viewLayoutButton layouts
+                    , viewLayoutButton currentLayout layouts
                     ]
                 ]
             ]
-        , viewCreateLayoutModal newLayout
+        , viewCreateLayoutModal (newLayout |> Maybe.withDefault "")
         , viewHelpModal
         ]
 
 
-viewLayoutButton : List Layout -> Html Msg
-viewLayoutButton layouts =
+viewLayoutButton : Maybe LayoutName -> List Layout -> Html Msg
+viewLayoutButton currentLayout layouts =
     if List.isEmpty layouts then
         bsButton Primary ([ title "Save your current layout to reload it later" ] ++ bsToggleModal "new-layout-modal") [ text "Save layout" ]
 
     else
-        bsDropdown "layout-dropdown"
-            []
-            (\attrs -> bsButton Primary ([ class "btn btn-outline-primary dropdown-toggle" ] ++ attrs) [ text "Layouts" ])
-            (\attrs ->
-                ul ([ class "dropdown-menu-end" ] ++ attrs)
-                    ([ li [] [ a ([ class "dropdown-item", href "#" ] ++ bsToggleModal "new-layout-modal") [ viewIcon Icon.plus, text " Create new layout" ] ] ]
-                        ++ (layouts
-                                |> List.map
-                                    (\l ->
-                                        li [ class "dropdown-item" ]
-                                            [ span [ title "Load layout", bsToggle Tooltip, onClick (LoadLayout l.name) ] [ viewIcon Icon.upload ]
-                                            , text " "
-                                            , span [ title "Update layout with current one", bsToggle Tooltip, onClick (UpdateLayout l.name) ] [ viewIcon Icon.edit ]
-                                            , text " "
-                                            , span [ title "Delete layout", bsToggle Tooltip, onClick (DeleteLayout l.name) ] [ viewIcon Icon.trashAlt ]
-                                            , text (" " ++ l.name ++ " (" ++ String.fromInt (Dict.size l.tables) ++ " tables)")
-                                            ]
-                                    )
-                           )
+        div [ class "btn-group" ]
+            ((currentLayout
+                |> Maybe.map
+                    (\layout ->
+                        [ bsButton Primary [ onClick (UpdateLayout layout) ] [ text ("Update '" ++ layout ++ "'") ]
+                        , bsButton Primary [ class "dropdown-toggle dropdown-toggle-split", bsToggle Dropdown, ariaExpanded False ] [ span [ class "visually-hidden" ] [ text "Toggle Dropdown" ] ]
+                        ]
                     )
+                |> Maybe.withDefault [ bsButton Primary [ class "dropdown-toggle", bsToggle Dropdown, ariaExpanded False ] [ text "Layouts" ] ]
+             )
+                ++ [ ul [ class "dropdown-menu dropdown-menu-end" ]
+                        ([ li [] [ a ([ class "dropdown-item", href "#" ] ++ bsToggleModal "new-layout-modal") [ viewIcon Icon.plus, text " Create new layout" ] ] ]
+                            ++ (layouts
+                                    |> List.map
+                                        (\l ->
+                                            li []
+                                                [ a [ class "dropdown-item", href "#" ]
+                                                    [ span [ title "Load layout", bsToggle Tooltip, onClick (LoadLayout l.name) ] [ viewIcon Icon.upload ]
+                                                    , text " "
+                                                    , span [ title "Update layout with current one", bsToggle Tooltip, onClick (UpdateLayout l.name) ] [ viewIcon Icon.edit ]
+                                                    , text " "
+                                                    , span [ title "Delete layout", bsToggle Tooltip, onClick (DeleteLayout l.name) ] [ viewIcon Icon.trashAlt ]
+                                                    , text " "
+                                                    , span [ onClick (LoadLayout l.name) ] [ text (l.name ++ " (" ++ String.fromInt (Dict.size l.tables) ++ " tables)") ]
+                                                    ]
+                                                ]
+                                        )
+                               )
+                        )
+                   ]
             )
 
 
-viewCreateLayoutModal : Maybe String -> Html Msg
+viewCreateLayoutModal : LayoutName -> Html Msg
 viewCreateLayoutModal newLayout =
     div [ class "modal fade", id "new-layout-modal", tabindex -1, ariaLabelledBy "new-layout-modal-label", ariaHidden True ]
         [ div [ class "modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable" ]
@@ -83,12 +94,12 @@ viewCreateLayoutModal newLayout =
                 , div [ class "modal-body" ]
                     [ div [ class "row g-3 align-items-center" ]
                         [ div [ class "col-auto" ] [ label [ class "col-form-label", for "new-layout-name" ] [ text "Layout name" ] ]
-                        , div [ class "col-auto" ] [ input [ type_ "text", class "form-control", id "new-layout-name", value (newLayout |> Maybe.withDefault ""), onInput NewLayout, autofocus True ] [] ]
+                        , div [ class "col-auto" ] [ input [ type_ "text", class "form-control", id "new-layout-name", value newLayout, onInput NewLayout, autofocus True ] [] ]
                         ]
                     ]
                 , div [ class "modal-footer" ]
                     [ button [ type_ "button", class "btn btn-secondary", bsDismiss Modal ] [ text "Cancel" ]
-                    , button [ type_ "button", class "btn btn-primary", bsDismiss Modal, disabled (newLayout == Nothing), onClick CreateLayout ] [ text "Save layout" ]
+                    , button [ type_ "button", class "btn btn-primary", bsDismiss Modal, disabled (newLayout == ""), onClick (CreateLayout newLayout) ] [ text "Save layout" ]
                     ]
                 ]
             ]
@@ -125,12 +136,12 @@ type alias Suggestion =
     { priority : Float, content : List (Html Msg), msg : Msg }
 
 
-buildSuggestions : String -> List Table -> List Suggestion
+buildSuggestions : Search -> List Table -> List Suggestion
 buildSuggestions search tables =
     tables |> List.concatMap (asSuggestions search) |> List.sortBy .priority |> List.take 30
 
 
-asSuggestions : String -> Table -> List Suggestion
+asSuggestions : Search -> Table -> List Suggestion
 asSuggestions search table =
     { priority = 0 - matchStrength search table
     , content = viewIcon Icon.angleRight :: text " " :: highlightMatch search (formatTableId table.id)
@@ -139,7 +150,7 @@ asSuggestions search table =
         :: (table.columns |> Dict.values |> List.filterMap (columnSuggestion search table))
 
 
-columnSuggestion : String -> Table -> Column -> Maybe Suggestion
+columnSuggestion : Search -> Table -> Column -> Maybe Suggestion
 columnSuggestion search table column =
     case column.column of
         ColumnName name ->
@@ -154,12 +165,12 @@ columnSuggestion search table column =
                 Nothing
 
 
-highlightMatch : String -> String -> List (Html msg)
+highlightMatch : Search -> Text -> List (Html msg)
 highlightMatch search value =
     value |> String.split search |> List.map text |> List.foldr (\i acc -> b [] [ text search ] :: i :: acc) [] |> List.drop 1
 
 
-matchStrength : String -> Table -> Float
+matchStrength : Search -> Table -> Float
 matchStrength search table =
     case table.table of
         TableName name ->
@@ -172,7 +183,7 @@ matchStrength search table =
                 + shortNameBonus name
 
 
-exactMatch : String -> String -> Float
+exactMatch : Search -> Text -> Float
 exactMatch search text =
     if text == search then
         3
@@ -181,7 +192,7 @@ exactMatch search text =
         0
 
 
-matchAtBeginning : String -> String -> Float
+matchAtBeginning : Search -> Text -> Float
 matchAtBeginning search text =
     if not (search == "") && String.startsWith search text then
         2
@@ -190,7 +201,7 @@ matchAtBeginning search text =
         0
 
 
-matchNotAtBeginning : String -> String -> Float
+matchNotAtBeginning : Search -> Text -> Float
 matchNotAtBeginning search text =
     if not (search == "") && String.contains search text && not (String.startsWith search text) then
         1
@@ -199,10 +210,10 @@ matchNotAtBeginning search text =
         0
 
 
-columnMatchingBonus : String -> Table -> Float
+columnMatchingBonus : Search -> Table -> Float
 columnMatchingBonus search table =
     let
-        columnNames : List String
+        columnNames : List Text
         columnNames =
             Dict.values table.columns |> List.map (\c -> extractColumnName c.column)
     in
@@ -223,7 +234,7 @@ columnMatchingBonus search table =
         0
 
 
-shortNameBonus : String -> Float
+shortNameBonus : Text -> Float
 shortNameBonus name =
     if String.length name == 0 then
         0

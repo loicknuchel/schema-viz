@@ -1,13 +1,13 @@
 module Conf exposing (conf)
 
-import Models.Utils exposing (Color, ZoomLevel)
+import Models.Utils exposing (Color, HtmlId, ZoomLevel)
 
 
 conf :
     { zoom : { min : ZoomLevel, max : ZoomLevel, speed : Float }
     , colors : List Color
     , default : { schema : String, color : Color }
-    , ids : { erd : String }
+    , ids : { erd : HtmlId }
     , loading : { showTablesThreshold : Int }
     }
 conf =

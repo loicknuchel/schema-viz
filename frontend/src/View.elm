@@ -7,7 +7,7 @@ import Html.Attributes exposing (class, id, style)
 import Libs.Std exposing (listAppendOn, listFilterMap, onWheel)
 import Models exposing (Canvas, Model, Msg(..))
 import Models.Schema exposing (ColumnRef, Relation, RelationRef, Schema, Table, TableAndColumn, TableStatus(..))
-import Models.Utils exposing (Position, ZoomLevel)
+import Models.Utils exposing (Position, Text, ZoomLevel)
 import Views.Helpers exposing (dragAttrs, sizeAttrs)
 import Views.Menu exposing (viewMenu)
 import Views.Navbar exposing (viewNavbar)
@@ -19,12 +19,12 @@ import Views.Tables exposing (viewTable)
 -- view entry point, can include any module from Views, Models or Libs
 
 
-viewApp : Model -> Maybe String -> Html Msg
+viewApp : Model -> Maybe Text -> Html Msg
 viewApp model loading =
     div [ class "app" ]
         (listAppendOn loading
             (\msg -> div [ class "loading" ] [ text msg ])
-            [ viewNavbar model.state.search model.schema.layouts model.state.newLayout (Dict.values model.schema.tables)
+            [ viewNavbar model.state.search model.state.newLayout model.state.currentLayout model.schema.layouts (Dict.values model.schema.tables)
             , viewMenu model.schema
             , viewErd model.canvas model.schema
             ]

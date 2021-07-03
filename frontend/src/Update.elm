@@ -1,4 +1,4 @@
-module Update exposing (dragConfig, dragItem, hideAllTables, hideColumn, hideTable, loadLayout, showAllTables, showColumn, showTable, toLayout, updateSchema, updateSizes, visitTable, visitTables, zoomCanvas)
+module Update exposing (createLayout, deleteLayout, dragConfig, dragItem, hideAllTables, hideColumn, hideTable, loadLayout, showAllTables, showColumn, showTable, updateLayout, updateSchema, updateSizes, visitTable, visitTables, zoomCanvas)
 
 import AssocList as Dict exposing (Dict)
 import Commands.InitializeTable exposing (initializeTable)
@@ -8,11 +8,11 @@ import Draggable.Events exposing (onDragBy, onDragEnd, onDragStart)
 import FileValue exposing (File)
 import Json.Decode as Decode
 import JsonFormats.SchemaDecoder exposing (schemaDecoder)
-import Libs.Std exposing (WheelEvent, dictFromList, listFind, maybeFilter, set, setState)
+import Libs.Std exposing (WheelEvent, cond, dictFromList, listFind, maybeFilter, set, setSchema, setState)
 import Mappers.SchemaMapper exposing (buildSchemaFromJson, buildSchemaFromSql)
 import Models exposing (Canvas, DragId, Model, Msg(..), SizeChange, Status(..))
-import Models.Schema exposing (Column, ColumnName, ColumnProps, Layout, Schema, Table, TableId, TableProps, TableStatus(..))
-import Models.Utils exposing (Area, Position, ZoomLevel)
+import Models.Schema exposing (Column, ColumnName, ColumnProps, Layout, LayoutName, Schema, Table, TableId, TableProps, TableStatus(..))
+import Models.Utils exposing (Area, FileContent, Position, ZoomLevel)
 import Ports exposing (activateTooltipsAndPopovers, observeTableSize, observeTablesSize)
 import SqlParser.SchemaParser exposing (parseSchema)
 import Views.Helpers exposing (formatTableId, parseTableId)
@@ -22,7 +22,7 @@ import Views.Helpers exposing (formatTableId, parseTableId)
 -- utility methods to get the update case down to one line
 
 
-updateSchema : File -> String -> Model -> Model
+updateSchema : File -> FileContent -> Model -> Model
 updateSchema file content model =
     if file.mime == "application/sql" then
         case parseSchema file.name content |> Result.map buildSchemaFromSql of
@@ -159,7 +159,7 @@ showTableByState table =
             ( Nothing, table )
 
 
-toLayout : String -> Model -> Layout
+toLayout : LayoutName -> Model -> Layout
 toLayout name model =
     { name = name
     , canvas = { zoom = model.canvas.zoom, position = model.canvas.position }
@@ -182,10 +182,17 @@ columnToLayout column =
     Maybe.map (\order -> ( column.column, { position = order } )) column.state.order
 
 
-loadLayout : String -> Model -> ( Model, Cmd Msg )
-loadLayout layoutName model =
+createLayout : LayoutName -> Model -> Model
+createLayout name model =
+    model
+        |> setState (\s -> { s | newLayout = Nothing, currentLayout = Just name })
+        |> setSchema (\s -> { s | layouts = (model |> toLayout name) :: s.layouts })
+
+
+loadLayout : LayoutName -> Model -> ( Model, Cmd Msg )
+loadLayout name model =
     model.schema.layouts
-        |> listFind (\layout -> layout.name == layoutName)
+        |> listFind (\layout -> layout.name == name)
         |> Maybe.map
             (\layout ->
                 let
@@ -195,14 +202,35 @@ loadLayout layoutName model =
                             |> List.map (\table -> showTableWithLayout (layout.tables |> Dict.get table.id) table)
                             |> List.unzip
                 in
-                ( { model
-                    | canvas = { size = model.canvas.size, zoom = layout.canvas.zoom, position = layout.canvas.position }
-                    , schema = model.schema |> setTables tables
-                  }
+                ( model
+                    |> set (\m -> { m | canvas = { size = model.canvas.size, zoom = layout.canvas.zoom, position = layout.canvas.position } })
+                    |> setSchema (setTables tables)
+                    |> setState (\s -> { s | currentLayout = Just name })
                 , Cmd.batch [ observeTablesSize (cmds |> List.filterMap identity), activateTooltipsAndPopovers () ]
                 )
             )
         |> Maybe.withDefault ( model, Cmd.none )
+
+
+updateLayout : LayoutName -> Model -> Model
+updateLayout name model =
+    model
+        |> setSchema (\s -> { s | layouts = s.layouts |> List.map (\l -> cond (l.name == name) (\_ -> model |> toLayout name) (\_ -> l)) })
+        |> setState (\s -> { s | currentLayout = Just name })
+
+
+deleteLayout : LayoutName -> Model -> Model
+deleteLayout name model =
+    model
+        |> setSchema (\s -> { s | layouts = s.layouts |> List.filter (\l -> not (l.name == name)) })
+        |> setState
+            (\s ->
+                if s.currentLayout == Just name then
+                    { s | currentLayout = Nothing }
+
+                else
+                    s
+            )
 
 
 showTableWithLayout : Maybe TableProps -> Table -> ( Maybe TableId, Table )

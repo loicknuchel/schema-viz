@@ -5,6 +5,7 @@ import Json.Decode as Decode
 import Json.Encode as Encode
 import Models exposing (SizeChange)
 import Models.Schema exposing (TableId)
+import Models.Utils exposing (FileContent, HtmlId)
 import Time
 import Views.Helpers exposing (formatTableId)
 
@@ -12,13 +13,13 @@ import Views.Helpers exposing (formatTableId)
 port activateTooltipsAndPopovers : () -> Cmd msg
 
 
-port observeSizes : List String -> Cmd msg
+port observeSizes : List HtmlId -> Cmd msg
 
 
 port sizesReceiver : (List SizeChange -> msg) -> Sub msg
 
 
-observeSize : String -> Cmd msg
+observeSize : HtmlId -> Cmd msg
 observeSize id =
     observeSizes [ id ]
 
@@ -36,7 +37,7 @@ observeTablesSize ids =
 port readTextFile : Decode.Value -> Cmd msg
 
 
-port textFileRead : (( Decode.Value, String ) -> msg) -> Sub msg
+port textFileRead : (( Decode.Value, FileContent ) -> msg) -> Sub msg
 
 
 readFile : File -> Cmd msg
@@ -44,7 +45,7 @@ readFile file =
     readTextFile (FileValue.encode file)
 
 
-fileRead : (( File, String ) -> msg) -> Sub msg
+fileRead : (( File, FileContent ) -> msg) -> Sub msg
 fileRead callback =
     textFileRead
         (\( value, content ) ->

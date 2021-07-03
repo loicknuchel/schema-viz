@@ -1,8 +1,9 @@
-module Views.Bootstrap exposing (BsColor(..), Toggle(..), ariaHidden, ariaLabel, ariaLabelledBy, bsBackdrop, bsButton, bsButtonGroup, bsDismiss, bsDropdown, bsScroll, bsToggle, bsToggleCollapse, bsToggleDropdown, bsToggleModal, bsToggleOffcanvas)
+module Views.Bootstrap exposing (BsColor(..), Toggle(..), ariaExpanded, ariaHidden, ariaLabel, ariaLabelledBy, bsBackdrop, bsButton, bsButtonGroup, bsDismiss, bsDropdown, bsScroll, bsToggle, bsToggleCollapse, bsToggleDropdown, bsToggleModal, bsToggleOffcanvas)
 
 import Html exposing (Attribute, Html, div)
 import Html.Attributes exposing (attribute, class, id, type_)
 import Libs.Std exposing (role)
+import Models.Utils exposing (HtmlId, Text)
 
 
 type BsColor
@@ -53,9 +54,9 @@ bsDismiss kind =
     attribute "data-bs-dismiss" (toggleName kind)
 
 
-bsTarget : String -> Attribute msg
-bsTarget id =
-    attribute "data-bs-target" ("#" ++ id)
+bsTarget : HtmlId -> Attribute msg
+bsTarget targetId =
+    attribute "data-bs-target" ("#" ++ targetId)
 
 
 bsScroll : Bool -> Attribute msg
@@ -98,42 +99,42 @@ ariaHidden value =
             attribute "aria-hidden" "false"
 
 
-ariaControls : String -> Attribute msg
-ariaControls id =
-    attribute "aria-controls" id
+ariaControls : HtmlId -> Attribute msg
+ariaControls targetId =
+    attribute "aria-controls" targetId
 
 
-ariaLabel : String -> Attribute msg
+ariaLabel : Text -> Attribute msg
 ariaLabel text =
     attribute "aria-label" text
 
 
-ariaLabelledBy : String -> Attribute msg
+ariaLabelledBy : HtmlId -> Attribute msg
 ariaLabelledBy targetId =
     attribute "aria-labelledby" targetId
 
 
-bsToggleDropdown : String -> List (Attribute msg)
+bsToggleDropdown : HtmlId -> List (Attribute msg)
 bsToggleDropdown eltId =
     [ bsToggle Dropdown, id eltId, ariaExpanded False ]
 
 
-bsToggleModal : String -> List (Attribute msg)
+bsToggleModal : HtmlId -> List (Attribute msg)
 bsToggleModal targetId =
     [ bsToggle Modal, bsTarget targetId ]
 
 
-bsToggleCollapse : String -> List (Attribute msg)
+bsToggleCollapse : HtmlId -> List (Attribute msg)
 bsToggleCollapse targetId =
     [ bsToggle Collapse, bsTarget targetId, ariaControls targetId, ariaExpanded False ]
 
 
-bsToggleOffcanvas : String -> List (Attribute msg)
+bsToggleOffcanvas : HtmlId -> List (Attribute msg)
 bsToggleOffcanvas targetId =
     [ bsToggle Offcanvas, bsTarget targetId, ariaControls targetId ]
 
 
-bsDropdown : String -> List (Attribute msg) -> (List (Attribute msg) -> Html msg) -> (List (Attribute msg) -> Html msg) -> Html msg
+bsDropdown : HtmlId -> List (Attribute msg) -> (List (Attribute msg) -> Html msg) -> (List (Attribute msg) -> Html msg) -> Html msg
 bsDropdown dropdownId contentAttrs toggleElement dropdownContent =
     -- TODO find a nice way to give the "dropdown-menu-end" option
     div [ class "dropdown" ]
@@ -148,7 +149,7 @@ bsButton color attrs children =
     Html.button ([ type_ "button", class "btn", class ("btn-outline-" ++ colorToString color) ] ++ attrs) children
 
 
-bsButtonGroup : String -> List (Html msg) -> Html msg
+bsButtonGroup : Text -> List (Html msg) -> Html msg
 bsButtonGroup label buttons =
     div [ class "btn-group", role "group", ariaLabel label ] buttons
 

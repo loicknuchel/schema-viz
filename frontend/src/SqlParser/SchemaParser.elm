@@ -2,6 +2,7 @@ module SqlParser.SchemaParser exposing (Line, SchemaError, SqlCheck, SqlColumn, 
 
 import AssocList as Dict exposing (Dict)
 import Libs.Std exposing (listFind)
+import Models.Utils exposing (FileContent, FileName)
 import SqlParser.SqlParser exposing (ColumnName, ColumnType, ColumnUpdate(..), ColumnValue, Command(..), Comment, ConstraintName, ParsedColumn, ParsedTable, Predicate, RawSql, SchemaName, TableConstraint(..), TableName, TableUpdate(..), parseCommand)
 
 
@@ -49,7 +50,7 @@ type alias SqlCheck =
     { name : ConstraintName, predicate : Predicate }
 
 
-parseSchema : String -> String -> Result (List SchemaError) SqlSchema
+parseSchema : FileName -> FileContent -> Result (List SchemaError) SqlSchema
 parseSchema fileName fileContent =
     parseLines fileName fileContent
         |> buildStatements
@@ -202,7 +203,7 @@ addStatement lines statements =
             { first = head, others = tail } :: statements
 
 
-parseLines : String -> String -> List Line
+parseLines : FileName -> FileContent -> List Line
 parseLines fileName fileContent =
     fileContent
         |> String.split "\n"

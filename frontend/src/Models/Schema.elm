@@ -1,4 +1,4 @@
-module Models.Schema exposing (CanvasProps, Column, ColumnComment(..), ColumnIndex(..), ColumnName(..), ColumnProps, ColumnRef, ColumnState, ColumnType(..), ForeignKey, ForeignKeyName(..), Index, IndexName(..), Layout, PrimaryKey, PrimaryKeyName(..), Relation, RelationRef, RelationState, Schema, SchemaName(..), Table, TableAndColumn, TableComment(..), TableId(..), TableName(..), TableProps, TableState, TableStatus(..), Unique, UniqueName(..))
+module Models.Schema exposing (CanvasProps, Column, ColumnComment(..), ColumnIndex(..), ColumnName(..), ColumnProps, ColumnRef, ColumnState, ColumnType(..), ForeignKey, ForeignKeyName(..), Index, IndexName(..), Layout, LayoutName, PrimaryKey, PrimaryKeyName(..), Relation, RelationRef, RelationState, Schema, SchemaName(..), Table, TableAndColumn, TableComment(..), TableId(..), TableName(..), TableProps, TableState, TableStatus(..), Unique, UniqueName(..))
 
 import AssocList exposing (Dict)
 import Models.Utils exposing (Color, Position, Size, ZoomLevel)
@@ -91,7 +91,11 @@ type alias ForeignKey =
 
 
 type alias Layout =
-    { name : String, canvas : CanvasProps, tables : Dict TableId TableProps }
+    { name : LayoutName, canvas : CanvasProps, tables : Dict TableId TableProps }
+
+
+type alias LayoutName =
+    String
 
 
 type alias CanvasProps =

@@ -3,59 +3,118 @@ module Views.Navbar exposing (viewNavbar)
 import AssocList as Dict
 import FontAwesome.Icon exposing (viewIcon)
 import FontAwesome.Solid as Icon
-import Html exposing (Html, a, b, button, div, form, h5, img, input, li, nav, span, text, ul)
-import Html.Attributes exposing (alt, autocomplete, class, height, href, id, placeholder, src, style, tabindex, type_, value)
+import Html exposing (Html, a, b, button, div, form, h5, img, input, label, li, nav, span, text, ul)
+import Html.Attributes exposing (alt, autocomplete, autofocus, class, disabled, for, height, href, id, placeholder, src, style, tabindex, title, type_, value)
 import Html.Events exposing (onClick, onInput)
 import Libs.Std exposing (bText, codeText)
 import Models exposing (Msg(..))
-import Models.Schema exposing (Column, ColumnName(..), Table, TableName(..), TableStatus(..))
-import Views.Bootstrap exposing (Toggle(..), ariaHidden, ariaLabel, ariaLabelledBy, bsDismiss, bsToggleCollapse, bsToggleDropdown, bsToggleModal, bsToggleOffcanvas)
+import Models.Schema exposing (Column, ColumnName(..), Layout, Table, TableName(..), TableStatus(..))
+import Views.Bootstrap exposing (BsColor(..), Toggle(..), ariaHidden, ariaLabel, ariaLabelledBy, bsButton, bsDismiss, bsDropdown, bsToggle, bsToggleCollapse, bsToggleDropdown, bsToggleModal, bsToggleOffcanvas)
 import Views.Helpers exposing (extractColumnName, formatTableId)
 
 
-viewNavbar : String -> List Table -> Html Msg
-viewNavbar search tables =
+viewNavbar : String -> List Layout -> Maybe String -> List Table -> Html Msg
+viewNavbar search layouts newLayout tables =
     div []
         [ nav [ class "navbar navbar-expand-md navbar-light bg-white shadow-sm", id "navbar" ]
             [ div [ class "container-fluid" ]
-                [ a [ href "#", class "navbar-brand" ] [ img [ src "assets/logo.png", alt "logo", height 24, class "d-inline-block align-text-top" ] [], text " Schema Viz" ]
+                [ a ([ href "#", class "navbar-brand" ] ++ bsToggleOffcanvas "menu") [ img [ src "assets/logo.png", alt "logo", height 24, class "d-inline-block align-text-top" ] [], text " Schema Viz" ]
                 , button ([ type_ "button", class "navbar-toggler", ariaLabel "Toggle navigation" ] ++ bsToggleCollapse "navbar-content")
                     [ span [ class "navbar-toggler-icon" ] []
                     ]
                 , div [ class "collapse navbar-collapse", id "navbar-content" ]
-                    [ ul [ class "navbar-nav me-auto" ]
-                        [ li [ class "nav-item" ] [ a ([ href "#", class "nav-link" ] ++ bsToggleOffcanvas "menu") [ text "Toggle menu" ] ]
-                        , li [ class "nav-item" ] [ a ([ href "#", class "nav-link" ] ++ bsToggleModal "help-modal") [ text "?" ] ]
-                        ]
-                    , form [ class "d-flex" ]
+                    [ form [ class "d-flex" ]
                         [ div [ class "dropdown" ]
                             [ input ([ type_ "search", class "form-control", value search, placeholder "Search", ariaLabel "Search", autocomplete False, onInput ChangedSearch ] ++ bsToggleDropdown "search") []
-                            , ul [ class "dropdown-menu dropdown-menu-end" ]
+                            , ul [ class "dropdown-menu" ]
                                 (buildSuggestions search tables |> List.map (\s -> li [] [ a [ class "dropdown-item", style "cursor" "pointer", onClick s.msg ] s.content ]))
                             ]
                         ]
+                    , ul [ class "navbar-nav me-auto" ]
+                        [ li [ class "nav-item" ] [ a ([ href "#", class "nav-link" ] ++ bsToggleModal "help-modal") [ text "?" ] ]
+                        ]
+                    , viewLayoutButton layouts
                     ]
                 ]
             ]
-        , div [ class "modal fade", id "help-modal", tabindex -1, ariaLabelledBy "help-modal-label", ariaHidden True ]
-            [ div [ class "modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable" ]
-                [ div [ class "modal-content" ]
-                    [ div [ class "modal-header" ]
-                        [ h5 [ class "modal-title", id "help-modal-label" ] [ text "Schema Viz cheatsheet" ]
-                        , button [ type_ "button", class "btn-close", bsDismiss Modal, ariaLabel "Close" ] []
+        , viewCreateLayoutModal newLayout
+        , viewHelpModal
+        ]
+
+
+viewLayoutButton : List Layout -> Html Msg
+viewLayoutButton layouts =
+    if List.isEmpty layouts then
+        bsButton Primary ([ title "Save your current layout to reload it later" ] ++ bsToggleModal "new-layout-modal") [ text "Save layout" ]
+
+    else
+        bsDropdown "layout-dropdown"
+            []
+            (\attrs -> bsButton Primary ([ class "btn btn-outline-primary dropdown-toggle" ] ++ attrs) [ text "Layouts" ])
+            (\attrs ->
+                ul ([ class "dropdown-menu-end" ] ++ attrs)
+                    ([ li [] [ a ([ class "dropdown-item", href "#" ] ++ bsToggleModal "new-layout-modal") [ viewIcon Icon.plus, text " Create new layout" ] ] ]
+                        ++ (layouts
+                                |> List.map
+                                    (\l ->
+                                        li [ class "dropdown-item" ]
+                                            [ span [ title "Load layout", bsToggle Tooltip, onClick (LoadLayout l.name) ] [ viewIcon Icon.upload ]
+                                            , text " "
+                                            , span [ title "Update layout with current one", bsToggle Tooltip, onClick (UpdateLayout l.name) ] [ viewIcon Icon.edit ]
+                                            , text " "
+                                            , span [ title "Delete layout", bsToggle Tooltip, onClick (DeleteLayout l.name) ] [ viewIcon Icon.trashAlt ]
+                                            , text (" " ++ l.name ++ " (" ++ String.fromInt (Dict.size l.tables) ++ " tables)")
+                                            ]
+                                    )
+                           )
+                    )
+            )
+
+
+viewCreateLayoutModal : Maybe String -> Html Msg
+viewCreateLayoutModal newLayout =
+    div [ class "modal fade", id "new-layout-modal", tabindex -1, ariaLabelledBy "new-layout-modal-label", ariaHidden True ]
+        [ div [ class "modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable" ]
+            [ div [ class "modal-content" ]
+                [ div [ class "modal-header" ]
+                    [ h5 [ class "modal-title", id "new-layout-modal-label" ] [ text "Save layout" ]
+                    , button [ type_ "button", class "btn-close", bsDismiss Modal, ariaLabel "Close" ] []
+                    ]
+                , div [ class "modal-body" ]
+                    [ div [ class "row g-3 align-items-center" ]
+                        [ div [ class "col-auto" ] [ label [ class "col-form-label", for "new-layout-name" ] [ text "Layout name" ] ]
+                        , div [ class "col-auto" ] [ input [ type_ "text", class "form-control", id "new-layout-name", value (newLayout |> Maybe.withDefault ""), onInput NewLayout, autofocus True ] [] ]
                         ]
-                    , div [ class "modal-body" ]
-                        [ ul []
-                            [ li [] [ text "In ", bText "search", text ", you can look for tables and columns, then click on one to show it" ]
-                            , li [] [ text "Not connected relations on the left are ", bText "incoming foreign keys", text ". Click on the column icon to see tables referencing it and then show them" ]
-                            , li [] [ text "Not connected relations on the right are ", bText "column foreign keys", text ". Click on the column icon to show referenced table" ]
-                            , li [] [ text "You can ", bText "hide/show a column", text " with a ", codeText "double click", text " on it" ]
-                            , li [] [ text "You can ", bText "zoom in/out", text " using scrolling action, ", bText "move tables", text " around by dragging them or even ", bText "move everything", text " by dragging the background" ]
-                            ]
+                    ]
+                , div [ class "modal-footer" ]
+                    [ button [ type_ "button", class "btn btn-secondary", bsDismiss Modal ] [ text "Cancel" ]
+                    , button [ type_ "button", class "btn btn-primary", bsDismiss Modal, disabled (newLayout == Nothing), onClick CreateLayout ] [ text "Save layout" ]
+                    ]
+                ]
+            ]
+        ]
+
+
+viewHelpModal : Html Msg
+viewHelpModal =
+    div [ class "modal fade", id "help-modal", tabindex -1, ariaLabelledBy "help-modal-label", ariaHidden True ]
+        [ div [ class "modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable" ]
+            [ div [ class "modal-content" ]
+                [ div [ class "modal-header" ]
+                    [ h5 [ class "modal-title", id "help-modal-label" ] [ text "Schema Viz cheatsheet" ]
+                    , button [ type_ "button", class "btn-close", bsDismiss Modal, ariaLabel "Close" ] []
+                    ]
+                , div [ class "modal-body" ]
+                    [ ul []
+                        [ li [] [ text "In ", bText "search", text ", you can look for tables and columns, then click on one to show it" ]
+                        , li [] [ text "Not connected relations on the left are ", bText "incoming foreign keys", text ". Click on the column icon to see tables referencing it and then show them" ]
+                        , li [] [ text "Not connected relations on the right are ", bText "column foreign keys", text ". Click on the column icon to show referenced table" ]
+                        , li [] [ text "You can ", bText "hide/show a column", text " with a ", codeText "double click", text " on it" ]
+                        , li [] [ text "You can ", bText "zoom in/out", text " using scrolling action, ", bText "move tables", text " around by dragging them or even ", bText "move everything", text " by dragging the background" ]
                         ]
-                    , div [ class "modal-footer" ]
-                        [ button [ type_ "button", class "btn btn-primary", bsDismiss Modal ] [ text "Thanks!" ]
-                        ]
+                    ]
+                , div [ class "modal-footer" ]
+                    [ button [ type_ "button", class "btn btn-primary", bsDismiss Modal ] [ text "Thanks!" ]
                     ]
                 ]
             ]

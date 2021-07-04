@@ -16,6 +16,8 @@
     --tw-indigo: #6366F1;
     --tw-purple: #8B5CF6;
     --tw-pink: #EC4899;
+
+    --tw-gray-100: #F3F4F6;
 }
 
 body {
@@ -198,6 +200,28 @@ body {
     z-index: var(--relation-z-index);
 }
 
+.drop-zone {
+    border: 2px dashed var(--tw-blue);
+    border-radius: 1em;
+    background: var(--tw-gray-100);
+    min-height: 150px;
+    padding: 54px;
+    display: block;
+    cursor: pointer;
+    text-align: center;
+}
+
+.drop-zone .title {
+    display: block;
+    font-weight: 400;
+    margin: 0;
+    line-height: 38px;
+    color: var(--tw-gray);
+}
+
+.drop-zone .warning {
+    display: block;
+}
 
 /* Styles for Bootstrap */
 

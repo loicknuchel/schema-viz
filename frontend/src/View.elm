@@ -27,7 +27,7 @@ viewApp model =
         ++ viewNavbar model.state.search model.state.currentLayout model.schema.layouts (Dict.values model.schema.tables)
         ++ viewMenu model.schema
         ++ [ viewErd model.canvas model.schema ]
-        ++ viewModals model.schema (model.state.newLayout |> Maybe.withDefault "")
+        ++ viewModals model.switch model.schema (model.state.newLayout |> Maybe.withDefault "")
         ++ [ viewToasts ]
 
 

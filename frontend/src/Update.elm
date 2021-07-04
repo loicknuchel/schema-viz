@@ -11,7 +11,7 @@ import Json.Decode as Decode
 import JsonFormats.SchemaDecoder exposing (JsonSchema, schemaDecoder)
 import Libs.Std exposing (WheelEvent, cond, dictFromList, listFind, maybeFilter, resultFold, send, set, setSchema, setState)
 import Mappers.SchemaMapper exposing (buildSchemaFromJson, buildSchemaFromSql, emptySchema)
-import Models exposing (Canvas, DragId, Errors, Model, Msg(..), SizeChange)
+import Models exposing (Canvas, DragId, Errors, Model, Msg(..), SizeChange, initSwitch)
 import Models.Schema exposing (Column, ColumnName, ColumnProps, Layout, LayoutName, Schema, Table, TableId, TableProps, TableStatus(..))
 import Models.Utils exposing (Area, FileContent, Position, ZoomLevel)
 import Ports exposing (activateTooltipsAndPopovers, click, hideModal, observeTableSize, observeTablesSize, toastError, toastInfo)
@@ -39,7 +39,7 @@ loadSchema name ( errs, schema ) model =
         ( model, Cmd.batch (errs |> List.map toastError) )
 
     else
-        ( { model | schema = schema }
+        ( { model | switch = initSwitch, schema = schema }
         , Cmd.batch
             ((errs |> List.map toastError)
                 ++ [ toastInfo ("<b>" ++ name ++ "</b> loaded.<br>Use the search bar to explore it")

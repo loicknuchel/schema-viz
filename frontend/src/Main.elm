@@ -1,14 +1,12 @@
 module Main exposing (main)
 
-import AssocList as Dict
 import Browser
 import Commands.FetchData exposing (loadData)
 import Conf exposing (conf)
 import Draggable
 import Libs.Std exposing (cond, set, setState)
-import Models exposing (Flags, Model, Msg(..))
+import Models exposing (Flags, Model, Msg(..), initModel)
 import Models.Schema exposing (TableStatus(..))
-import Models.Utils exposing (Position, Size)
 import Ports exposing (activateTooltipsAndPopovers, fileRead, hideOffcanvas, observeSize, readFile, showModal, sizesReceiver)
 import Update exposing (createLayout, deleteLayout, dragConfig, dragItem, hideAllTables, hideColumn, hideTable, loadLayout, showAllTables, showColumn, showTable, updateLayout, updateSizes, useSampleSchema, useSchema, visitTable, visitTables, zoomCanvas)
 import View exposing (viewApp)
@@ -30,10 +28,7 @@ main =
 
 init : Flags -> ( Model, Cmd Msg )
 init _ =
-    ( { state = { search = "", newLayout = Nothing, currentLayout = Nothing, dragId = Nothing, drag = Draggable.init }
-      , canvas = { size = Size 0 0, zoom = 1, position = Position 0 0 }
-      , schema = { tables = Dict.empty, relations = [], layouts = [] }
-      }
+    ( initModel
     , Cmd.batch
         [ observeSize conf.ids.erd
         , showModal conf.ids.schemaSwitchModal
@@ -48,21 +43,17 @@ update msg model =
         ChangeSchema ->
             ( model, Cmd.batch [ showModal conf.ids.schemaSwitchModal, hideOffcanvas conf.ids.menu ] )
 
-        FileSelected file ->
-            -- TODO: add loading animation
-            ( model, readFile file )
-
         FileDragOver _ _ ->
-            -- TODO: add drop zone hover + warn if multiple files
             ( model, Cmd.none )
 
         FileDragLeave ->
-            -- TODO: remove drop zone hover
             ( model, Cmd.none )
 
         FileDropped file _ ->
-            -- TODO display error on multiple files, add loading animation
-            ( model, readFile file )
+            ( { model | switch = model.switch |> set (\s -> { s | loading = True }) }, readFile file )
+
+        FileSelected file ->
+            ( { model | switch = model.switch |> set (\s -> { s | loading = True }) }, readFile file )
 
         FileRead ( file, content ) ->
             useSchema file content model

@@ -1,12 +1,13 @@
-module Models exposing (Canvas, DragId, Error, Errors, Flags, Model, Msg(..), Search, SizeChange, State)
+module Models exposing (Canvas, DragId, Error, Errors, Flags, Model, Msg(..), Search, SizeChange, State, Switch, initModel, initSwitch)
 
 import Draggable
 import FileValue exposing (File)
 import Http
 import JsonFormats.SchemaDecoder exposing (JsonSchema)
 import Libs.Std exposing (WheelEvent)
+import Mappers.SchemaMapper exposing (emptySchema)
 import Models.Schema exposing (ColumnRef, LayoutName, Schema, TableId, TableStatus(..))
-import Models.Utils exposing (FileContent, HtmlId, Position, Size, ZoomLevel)
+import Models.Utils exposing (FileContent, HtmlId, Position, Size, Text, ZoomLevel)
 
 
 
@@ -18,23 +19,47 @@ type alias Flags =
 
 
 type alias Model =
-    { state : State, canvas : Canvas, schema : Schema }
+    { switch : Switch, state : State, canvas : Canvas, schema : Schema }
+
+
+initModel : Model
+initModel =
+    { switch = initSwitch, state = initState, canvas = initCanvas, schema = emptySchema }
+
+
+type alias Switch =
+    { loading : Bool }
+
+
+initSwitch : Switch
+initSwitch =
+    { loading = False }
 
 
 type alias State =
     { search : Search, newLayout : Maybe LayoutName, currentLayout : Maybe LayoutName, dragId : Maybe DragId, drag : Draggable.State DragId }
 
 
+initState : State
+initState =
+    { search = "", newLayout = Nothing, currentLayout = Nothing, dragId = Nothing, drag = Draggable.init }
+
+
 type alias Canvas =
     { size : Size, zoom : ZoomLevel, position : Position }
 
 
+initCanvas : Canvas
+initCanvas =
+    { size = Size 0 0, zoom = 1, position = Position 0 0 }
+
+
 type Msg
     = ChangeSchema
-    | FileSelected File
     | FileDragOver File (List File)
     | FileDragLeave
     | FileDropped File (List File)
+    | FileSelected File
     | FileRead ( File, FileContent )
     | LoadSampleData
     | GotSampleData (Result Http.Error JsonSchema)

@@ -3,44 +3,56 @@ module Views.Modals exposing (viewModals)
 import AssocList as Dict
 import Conf exposing (conf)
 import FileValue exposing (hiddenInputSingle)
-import Html exposing (Html, a, button, div, h5, input, label, li, p, text, ul)
-import Html.Attributes exposing (autofocus, class, disabled, for, href, id, tabindex, target, type_, value)
+import Html exposing (Html, a, button, div, h5, input, label, li, p, span, text, ul)
+import Html.Attributes exposing (autofocus, class, disabled, for, href, id, style, tabindex, target, type_, value)
 import Html.Events exposing (onClick, onInput)
-import Libs.Std exposing (bText, codeText, cond)
-import Models exposing (Msg(..))
+import Libs.Std exposing (bText, codeText, cond, role)
+import Models exposing (Msg(..), Switch)
 import Models.Schema exposing (LayoutName, Schema)
 import Models.Utils exposing (HtmlId, Text)
-import Views.Bootstrap exposing (BsColor(..), Toggle(..), ariaHidden, ariaLabel, ariaLabelledBy, bsButton, bsDismiss)
+import Views.Bootstrap exposing (BsColor(..), Toggle(..), ariaExpanded, ariaHidden, ariaLabel, ariaLabelledBy, bsDismiss, bsToggle)
 
 
-viewModals : Schema -> LayoutName -> List (Html Msg)
-viewModals schema newLayout =
-    [ viewSchemaSwitchModal schema
+viewModals : Switch -> Schema -> LayoutName -> List (Html Msg)
+viewModals switch schema newLayout =
+    [ viewSchemaSwitchModal switch schema
     , viewCreateLayoutModal newLayout
     , viewHelpModal
     ]
 
 
-viewSchemaSwitchModal : Schema -> Html Msg
-viewSchemaSwitchModal schema =
+viewSchemaSwitchModal : Switch -> Schema -> Html Msg
+viewSchemaSwitchModal switch schema =
     modal conf.ids.schemaSwitchModal
         (cond (Dict.isEmpty schema.tables) (\_ -> "Welcome to Schema Viz") (\_ -> "Load a new schema"))
-        [ div []
-            [ hiddenInputSingle "file-loader" [ ".sql,.json" ] FileSelected
-            , label [ for "file-loader", class "btn btn-outline-primary" ] [ text "Click to load a file" ]
-            ]
-        , div
-            (FileValue.onDrop
-                { onOver = FileDragOver
-                , onLeave = Just { id = "file-drop", msg = FileDragLeave }
-                , onDrop = FileDropped
-                }
+        [ hiddenInputSingle "file-loader" [ ".sql,.json" ] FileSelected
+        , label
+            ([ for "file-loader", class "drop-zone" ]
+                ++ FileValue.onDrop
+                    { onOver = FileDragOver
+                    , onLeave = Just { id = "file-drop", msg = FileDragLeave }
+                    , onDrop = FileDropped
+                    }
             )
-            [ text "Or drop a file here" ]
-        , bsButton Primary [ onClick LoadSampleData ] [ text "Or try our sample schema" ]
+            [ if switch.loading then
+                span [ class "spinner-grow text-secondary", role "status" ] [ span [ class "visually-hidden" ] [ text "Loading..." ] ]
+
+              else
+                span [ class "title h5" ] [ text "Drop your schema here or click to browse" ]
+            ]
+        , div [ style "text-align" "center", style "margin" "2em 2em 1em 2em" ]
+            [ text "Or just try out with "
+            , div [ class "dropdown dropup", style "display" "inline-block" ]
+                [ a [ id "schema-samples", href "#", bsToggle Dropdown, ariaExpanded False ] [ text "an example" ]
+                , ul [ class "dropdown-menu", ariaLabelledBy "schema-samples" ]
+                    [ li [] [ a [ class "dropdown-item", href "#", onClick LoadSampleData ] [ text "Basic sample" ] ]
+                    ]
+                ]
+            ]
         ]
         [ p [ class "fw-lighter fst-italic text-muted" ]
-            [ text "Schema Viz is an "
+            [ bText "Schema Viz"
+            , text " is an "
             , a [ href "https://github.com/loicknuchel/schema-viz", target "_blank" ] [ text "open source tool" ]
             , text " done by "
             , a [ href "https://twitter.com/sbouaked", target "_blank" ] [ text "@sbouaked" ]

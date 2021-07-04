@@ -1,4 +1,4 @@
-port module Ports exposing (activateTooltipsAndPopovers, fileRead, hideModal, hideOffcanvas, observeSize, observeTableSize, observeTablesSize, readFile, showModal, sizesReceiver, toastError, toastInfo)
+port module Ports exposing (activateTooltipsAndPopovers, click, fileRead, hideModal, hideOffcanvas, observeSize, observeTableSize, observeTablesSize, readFile, showModal, sizesReceiver, toastError, toastInfo)
 
 import FileValue exposing (File)
 import Json.Decode as Decode
@@ -41,6 +41,9 @@ port hideModal : HtmlId -> Cmd msg
 
 
 port hideOffcanvas : HtmlId -> Cmd msg
+
+
+port click : HtmlId -> Cmd msg
 
 
 type alias Toast =

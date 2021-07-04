@@ -9,12 +9,12 @@ import FileValue exposing (File)
 import Http
 import Json.Decode as Decode
 import JsonFormats.SchemaDecoder exposing (JsonSchema, schemaDecoder)
-import Libs.Std exposing (WheelEvent, cond, dictFromList, listFind, maybeFilter, resultBimap, resultFold, set, setSchema, setState)
+import Libs.Std exposing (WheelEvent, cond, dictFromList, listFind, maybeFilter, resultBimap, resultFold, send, set, setSchema, setState)
 import Mappers.SchemaMapper exposing (buildSchemaFromJson, buildSchemaFromSql)
 import Models exposing (Canvas, DragId, Errors, Model, Msg(..), SizeChange)
 import Models.Schema exposing (Column, ColumnName, ColumnProps, Layout, LayoutName, Schema, Table, TableId, TableProps, TableStatus(..))
 import Models.Utils exposing (Area, FileContent, Position, ZoomLevel)
-import Ports exposing (activateTooltipsAndPopovers, hideModal, observeTableSize, observeTablesSize, toastError, toastInfo)
+import Ports exposing (activateTooltipsAndPopovers, click, hideModal, observeTableSize, observeTablesSize, toastError, toastInfo)
 import SqlParser.SchemaParser exposing (parseSchema)
 import Views.Helpers exposing (formatHttpError, formatTableId, parseTableId)
 
@@ -41,9 +41,16 @@ loadSchema name schemaRes model =
             (\schema ->
                 ( { model | schema = schema }
                 , Cmd.batch
-                    [ hideModal conf.ids.schemaSwitchModal
-                    , toastInfo ("<b>" ++ name ++ "</b> loaded.<br>Use the search bar to explore it")
-                    ]
+                    ([ hideModal conf.ids.schemaSwitchModal
+                     , toastInfo ("<b>" ++ name ++ "</b> loaded.<br>Use the search bar to explore it")
+                     ]
+                        ++ (if Dict.size schema.tables < 10 then
+                                [ send ShowAllTables ]
+
+                            else
+                                [ click conf.ids.searchInput ]
+                           )
+                    )
                 )
             )
 

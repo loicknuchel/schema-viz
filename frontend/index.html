@@ -31,6 +31,7 @@
             app.ports.showModal && app.ports.showModal.subscribe(id => bootstrap.Modal.getOrCreateInstance(document.getElementById(id)).show())
             app.ports.hideModal && app.ports.hideModal.subscribe(id => bootstrap.Modal.getOrCreateInstance(document.getElementById(id)).hide())
             app.ports.hideOffcanvas && app.ports.hideOffcanvas.subscribe(id => bootstrap.Offcanvas.getOrCreateInstance(document.getElementById(id)).hide())
+            app.ports.click && app.ports.click.subscribe(id => document.getElementById(id).click())
 
             let toastCpt = 0
             const toastContainer = document.getElementById('toast-container')

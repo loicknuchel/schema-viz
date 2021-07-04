@@ -7,6 +7,7 @@ import Html.Attributes exposing (attribute)
 import Html.Events exposing (stopPropagationOn)
 import Json.Decode as Decode exposing (Decoder)
 import Random
+import Task
 
 
 
@@ -211,6 +212,11 @@ plural count none one many =
 
     else
         String.fromInt count ++ many
+
+
+send : msg -> Cmd msg
+send msg =
+    Task.succeed msg |> Task.perform identity
 
 
 genSequence : List (Random.Generator a) -> Random.Generator (List a)

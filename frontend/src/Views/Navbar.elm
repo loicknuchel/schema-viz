@@ -40,14 +40,14 @@ viewSearchBar search tables =
     if List.isEmpty tables then
         form [ class "d-flex" ]
             [ div []
-                [ input [ type_ "search", class "form-control", value search, placeholder "Search", ariaLabel "Search", autocomplete False, onInput ChangedSearch ] []
+                [ input [ type_ "search", class "form-control", value search, placeholder "Search", ariaLabel "Search", autocomplete False, onInput ChangedSearch, id conf.ids.searchInput ] []
                 ]
             ]
 
     else
         form [ class "d-flex" ]
             [ div [ class "dropdown" ]
-                [ input ([ type_ "search", class "form-control", value search, placeholder "Search", ariaLabel "Search", autocomplete False, onInput ChangedSearch ] ++ bsToggleDropdown "search") []
+                [ input ([ type_ "search", class "form-control", value search, placeholder "Search", ariaLabel "Search", autocomplete False, onInput ChangedSearch ] ++ bsToggleDropdown conf.ids.searchInput) []
                 , ul [ class "dropdown-menu" ]
                     (tables
                         |> buildSuggestions search

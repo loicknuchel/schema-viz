@@ -1,6 +1,8 @@
 :root {
     --navbar-height: 56px;
+    --modal-backdrop-z-index: 1040;
     --offcanvas-z-index: 1050;
+    --modal-z-index: 1060;
     --table-z-index: 10;
     --relation-z-index: 9;
     --loading-z-index: 10000; /* should be on top of everything */
@@ -202,4 +204,8 @@ body {
 .dropdown-menu {
     max-height: 1000px;
     overflow-y: auto;
+}
+
+#toast-container {
+    z-index: calc(var(--modal-z-index) + 1);
 }

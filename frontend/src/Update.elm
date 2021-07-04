@@ -1,4 +1,4 @@
-module Update exposing (createLayout, deleteLayout, dragConfig, dragItem, hideAllTables, hideColumn, hideTable, loadLayout, showAllTables, showColumn, showTable, updateLayout, updateSchema, updateSizes, visitTable, visitTables, zoomCanvas)
+module Update exposing (createLayout, deleteLayout, dragConfig, dragItem, hideAllTables, hideColumn, hideTable, loadLayout, showAllTables, showColumn, showTable, updateLayout, updateSizes, useSampleSchema, useSchema, visitTable, visitTables, zoomCanvas)
 
 import AssocList as Dict exposing (Dict)
 import Commands.InitializeTable exposing (initializeTable)
@@ -6,42 +6,60 @@ import Conf exposing (conf)
 import Draggable
 import Draggable.Events exposing (onDragBy, onDragEnd, onDragStart)
 import FileValue exposing (File)
+import Http
 import Json.Decode as Decode
-import JsonFormats.SchemaDecoder exposing (schemaDecoder)
-import Libs.Std exposing (WheelEvent, cond, dictFromList, listFind, maybeFilter, set, setSchema, setState)
+import JsonFormats.SchemaDecoder exposing (JsonSchema, schemaDecoder)
+import Libs.Std exposing (WheelEvent, cond, dictFromList, listFind, maybeFilter, resultBimap, resultFold, set, setSchema, setState)
 import Mappers.SchemaMapper exposing (buildSchemaFromJson, buildSchemaFromSql)
-import Models exposing (Canvas, DragId, Model, Msg(..), SizeChange)
+import Models exposing (Canvas, DragId, Errors, Model, Msg(..), SizeChange)
 import Models.Schema exposing (Column, ColumnName, ColumnProps, Layout, LayoutName, Schema, Table, TableId, TableProps, TableStatus(..))
 import Models.Utils exposing (Area, FileContent, Position, ZoomLevel)
-import Ports exposing (activateTooltipsAndPopovers, observeTableSize, observeTablesSize, toastError, toastInfo)
+import Ports exposing (activateTooltipsAndPopovers, hideModal, observeTableSize, observeTablesSize, toastError, toastInfo)
 import SqlParser.SchemaParser exposing (parseSchema)
-import Views.Helpers exposing (formatTableId, parseTableId)
+import Views.Helpers exposing (formatHttpError, formatTableId, parseTableId)
 
 
 
 -- utility methods to get the update case down to one line
 
 
-updateSchema : File -> FileContent -> Model -> Model
-updateSchema file content model =
-    if file.mime == "application/sql" then
-        case parseSchema file.name content |> Result.map buildSchemaFromSql of
-            Ok schema ->
-                { model | schema = schema }
+useSchema : File -> FileContent -> Model -> ( Model, Cmd Msg )
+useSchema file content model =
+    loadSchema file.name (buildSchema file content) model
 
-            Err _ ->
-                model
+
+useSampleSchema : String -> Result Http.Error JsonSchema -> Model -> ( Model, Cmd Msg )
+useSampleSchema name response model =
+    loadSchema name (response |> resultBimap (\err -> [ "Can't load schema: " ++ formatHttpError err ]) buildSchemaFromJson) model
+
+
+loadSchema : String -> Result Errors Schema -> Model -> ( Model, Cmd Msg )
+loadSchema name schemaRes model =
+    schemaRes
+        |> resultFold
+            (\errs -> ( model, Cmd.batch (errs |> List.map toastError) ))
+            (\schema ->
+                ( { model | schema = schema }
+                , Cmd.batch
+                    [ hideModal conf.ids.schemaSwitchModal
+                    , toastInfo ("<b>" ++ name ++ "</b> loaded.<br>Use the search bar to explore it")
+                    ]
+                )
+            )
+
+
+buildSchema : File -> FileContent -> Result Errors Schema
+buildSchema file content =
+    if file.mime == "application/sql" then
+        parseSchema file.name content |> Result.map buildSchemaFromSql
 
     else if file.mime == "application/json" then
-        case Decode.decodeString schemaDecoder content |> Result.map buildSchemaFromJson of
-            Ok schema ->
-                { model | schema = schema }
-
-            Err _ ->
-                model
+        Decode.decodeString schemaDecoder content
+            |> Result.map buildSchemaFromJson
+            |> Result.mapError (\e -> [ "⚠️ Error in <b>" ++ file.name ++ "</b> ⚠️<br>" ++ (Decode.errorToString e |> String.replace "\n" "<br>") ])
 
     else
-        model
+        Err [ "Invalid file (" ++ file.name ++ "), expected .sql or .json one" ]
 
 
 hideTable : TableId -> Schema -> Schema

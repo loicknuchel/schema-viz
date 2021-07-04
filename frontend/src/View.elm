@@ -48,7 +48,7 @@ viewErd canvas schema =
 
 viewToasts : Html Msg
 viewToasts =
-    div [ id "toast-container" ] []
+    div [ id "toast-container", class "toast-container position-fixed bottom-0 end-0 p-3" ] []
 
 
 

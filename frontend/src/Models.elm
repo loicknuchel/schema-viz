@@ -1,4 +1,4 @@
-module Models exposing (Canvas, DragId, Flags, Model, Msg(..), Search, SizeChange, State)
+module Models exposing (Canvas, DragId, Error, Errors, Flags, Model, Msg(..), Search, SizeChange, State)
 
 import Draggable
 import FileValue exposing (File)
@@ -37,7 +37,7 @@ type Msg
     | FileDropped File (List File)
     | FileRead ( File, FileContent )
     | LoadSampleData
-    | GotData (Result Http.Error JsonSchema)
+    | GotSampleData (Result Http.Error JsonSchema)
     | ChangedSearch Search
     | SelectTable TableId
     | HideTable TableId
@@ -59,6 +59,14 @@ type Msg
     | UpdateLayout LayoutName
     | DeleteLayout LayoutName
     | Noop
+
+
+type alias Error =
+    String
+
+
+type alias Errors =
+    List Error
 
 
 type alias Search =

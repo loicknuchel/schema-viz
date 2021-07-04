@@ -6,14 +6,12 @@ import Commands.FetchData exposing (loadData)
 import Conf exposing (conf)
 import Draggable
 import Libs.Std exposing (cond, set, setState)
-import Mappers.SchemaMapper exposing (buildSchemaFromJson)
 import Models exposing (Flags, Model, Msg(..))
 import Models.Schema exposing (TableStatus(..))
 import Models.Utils exposing (Position, Size)
-import Ports exposing (activateTooltipsAndPopovers, fileRead, hideModal, hideOffcanvas, observeSize, readFile, showModal, sizesReceiver, toastError, toastInfo)
-import Update exposing (createLayout, deleteLayout, dragConfig, dragItem, hideAllTables, hideColumn, hideTable, loadLayout, showAllTables, showColumn, showTable, updateLayout, updateSchema, updateSizes, visitTable, visitTables, zoomCanvas)
+import Ports exposing (activateTooltipsAndPopovers, fileRead, hideOffcanvas, observeSize, readFile, showModal, sizesReceiver)
+import Update exposing (createLayout, deleteLayout, dragConfig, dragItem, hideAllTables, hideColumn, hideTable, loadLayout, showAllTables, showColumn, showTable, updateLayout, updateSizes, useSampleSchema, useSchema, visitTable, visitTables, zoomCanvas)
 import View exposing (viewApp)
-import Views.Helpers exposing (formatHttpError)
 
 
 sampleDataUrl : String
@@ -67,16 +65,13 @@ update msg model =
             ( model, readFile file )
 
         FileRead ( file, content ) ->
-            ( updateSchema file content model, Cmd.batch [ hideModal conf.ids.schemaSwitchModal, toastInfo ("<b>" ++ file.name ++ "</b> is loaded.<br>Use the search bar to discover it") ] )
+            useSchema file content model
 
         LoadSampleData ->
             ( model, loadData sampleDataUrl )
 
-        GotData (Ok tables) ->
-            ( { model | schema = buildSchemaFromJson tables }, Cmd.batch [ hideModal conf.ids.schemaSwitchModal, toastInfo "<b>Sample schema</b> loaded.<br>Use the search bar to explore it" ] )
-
-        GotData (Err e) ->
-            ( model, toastError ("Can't load schema: " ++ formatHttpError e) )
+        GotSampleData response ->
+            useSampleSchema "Sample schema" response model
 
         ChangedSearch search ->
             ( { model | state = model.state |> set (\state -> { state | search = search }) }, Cmd.none )

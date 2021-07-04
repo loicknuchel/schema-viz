@@ -137,6 +137,26 @@ maybeFold empty transform maybe =
             empty
 
 
+resultFold : (x -> b) -> (a -> b) -> Result x a -> b
+resultFold onError onSuccess result =
+    case result of
+        Ok a ->
+            onSuccess a
+
+        Err x ->
+            onError x
+
+
+resultBimap : (x -> y) -> (a -> b) -> Result x a -> Result y b
+resultBimap onError onSuccess result =
+    case result of
+        Ok a ->
+            Ok (onSuccess a)
+
+        Err x ->
+            Err (onError x)
+
+
 dictFromList : (a -> k) -> List a -> Dict k a
 dictFromList getKey list =
     list |> List.reverse |> List.map (\item -> ( getKey item, item )) |> Dict.fromList

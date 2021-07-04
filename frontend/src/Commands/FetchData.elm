@@ -11,4 +11,4 @@ import Models exposing (Msg(..))
 
 loadData : String -> Cmd Msg
 loadData url =
-    Http.get { url = url, expect = Http.expectJson GotData schemaDecoder }
+    Http.get { url = url, expect = Http.expectJson GotSampleData schemaDecoder }

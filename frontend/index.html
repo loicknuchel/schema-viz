@@ -38,35 +38,31 @@
                 const toastNo = toastCpt += 1
                 const toastId = 'toast-' + toastNo
                 let html =
-                    '<div class="position-fixed bottom-0 end-0 p-3">' +
-                    '  <div class="toast align-items-center" id="' + toastId + '" role="status" aria-live="polite" aria-atomic="true">\n' +
-                    '    <div class="d-flex">\n' +
-                    '      <div class="toast-body">\n' +
-                    '        ' + toast.message + '\n' +
-                    '      </div>\n' +
-                    '      <button type="button" class="btn-close me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>\n' +
+                    '<div class="toast align-items-center" id="' + toastId + '" role="status" aria-live="polite" aria-atomic="true">\n' +
+                    '  <div class="d-flex">\n' +
+                    '    <div class="toast-body">\n' +
+                    '      ' + toast.message + '\n' +
                     '    </div>\n' +
-                    '  </div>' +
+                    '    <button type="button" class="btn-close me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>\n' +
+                    '  </div>\n' +
                     '</div>'
                 if (toast.kind === 'error') {
                     html =
-                        '<div class="position-fixed bottom-0 end-0 p-3">' +
-                        '  <div class="toast align-items-center bg-danger text-white" id="' + toastId + '" role="status" aria-live="polite" aria-atomic="true" data-bs-autohide="false">\n' +
-                        '    <div class="d-flex">\n' +
-                        '      <div class="toast-body">\n' +
-                        '        ' + toast.message + '\n' +
-                        '      </div>\n' +
-                        '      <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>\n' +
+                        '<div class="toast align-items-center bg-danger text-white" id="' + toastId + '" role="status" aria-live="polite" aria-atomic="true" data-bs-autohide="false">\n' +
+                        '  <div class="d-flex">\n' +
+                        '    <div class="toast-body">\n' +
+                        '      ' + toast.message + '\n' +
                         '    </div>\n' +
-                        '  </div>' +
+                        '    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>\n' +
+                        '  </div>\n' +
                         '</div>'
                 }
                 toastContainer.insertAdjacentHTML('beforeend', html);
                 bootstrap.Toast.getOrCreateInstance(document.getElementById(toastId)).show()
             })
             window.addEventListener('hidden.bs.toast', function (e) {
-                const toastParent = document.getElementById(e.target.id).parentNode
-                toastParent.parentNode.removeChild(toastParent)
+                const toast = document.getElementById(e.target.id)
+                toast.parentNode.removeChild(toast)
             })
 
             // autofocus element in modal that require it (not done automatically)

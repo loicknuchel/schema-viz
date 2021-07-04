@@ -108,6 +108,19 @@
                 reader.readAsText(file)
             })
 
+            // local storage ports
+            const schemaPrefix = 'schema-'
+            app.ports.saveSchemaPort && app.ports.saveSchemaPort.subscribe(schema => {
+                localStorage.setItem(schemaPrefix + schema.name, JSON.stringify(schema))
+            })
+            app.ports.loadSchemas && app.ports.loadSchemas.subscribe(() => {
+                const values = Object.keys(localStorage)
+                    .filter(key => key.startsWith(schemaPrefix))
+                    .map(key => [key.replace(schemaPrefix, ''), JSON.parse(localStorage.getItem(key))])
+                app.ports.schemasReceivedPort.send(values)
+            })
+
+
             // because Elm can trigger some commands before the model changes are rendered :(
             function delay(fn) {
                 setTimeout(fn, 100)

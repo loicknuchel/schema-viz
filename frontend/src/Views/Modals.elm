@@ -10,37 +10,51 @@ import Libs.Std exposing (bText, codeText, cond, role)
 import Models exposing (Msg(..), Switch)
 import Models.Schema exposing (LayoutName, Schema)
 import Models.Utils exposing (HtmlId, Text)
-import Views.Bootstrap exposing (Toggle(..), ariaExpanded, ariaHidden, ariaLabel, ariaLabelledBy, bsDismiss, bsToggle)
+import Views.Bootstrap exposing (BsColor(..), Toggle(..), ariaExpanded, ariaHidden, ariaLabel, ariaLabelledBy, bsButton, bsDismiss, bsToggle)
 
 
-viewModals : Switch -> Schema -> LayoutName -> List (Html Msg)
-viewModals switch schema newLayout =
-    [ viewSchemaSwitchModal switch schema
+viewModals : Switch -> Schema -> List Schema -> LayoutName -> List (Html Msg)
+viewModals switch schema storedSchemas newLayout =
+    [ viewSchemaSwitchModal switch schema storedSchemas
     , viewCreateLayoutModal newLayout
     , viewHelpModal
     ]
 
 
-viewSchemaSwitchModal : Switch -> Schema -> Html Msg
-viewSchemaSwitchModal switch schema =
+viewSchemaSwitchModal : Switch -> Schema -> List Schema -> Html Msg
+viewSchemaSwitchModal switch schema storedSchemas =
     modal conf.ids.schemaSwitchModal
         (cond (Dict.isEmpty schema.tables) (\_ -> "Welcome to Schema Viz") (\_ -> "Load a new schema"))
-        [ hiddenInputSingle "file-loader" [ ".sql,.json" ] FileSelected
-        , label
-            ([ for "file-loader", class "drop-zone" ]
-                ++ FileValue.onDrop
-                    { onOver = FileDragOver
-                    , onLeave = Just { id = "file-drop", msg = FileDragLeave }
-                    , onDrop = FileDropped
-                    }
+        [ div [ class "row row-cols-1 row-cols-sm-2 row-cols-lg-3" ]
+            (storedSchemas
+                |> List.map
+                    (\s ->
+                        div [ class "col" ]
+                            [ div [ class "card h-100" ]
+                                [ div [ class "card-body" ] [ h5 [ class "card-title" ] [ text s.name ] ]
+                                , div [ class "card-footer text-end" ] [ bsButton Primary [ onClick (UseSchema s) ] [ text "Use this schema" ] ]
+                                ]
+                            ]
+                    )
             )
-            [ if switch.loading then
-                span [ class "spinner-grow text-secondary", role "status" ] [ span [ class "visually-hidden" ] [ text "Loading..." ] ]
+        , div [ style "margin" "1em 0" ]
+            [ hiddenInputSingle "file-loader" [ ".sql,.json" ] FileSelected
+            , label
+                ([ for "file-loader", class "drop-zone" ]
+                    ++ FileValue.onDrop
+                        { onOver = FileDragOver
+                        , onLeave = Just { id = "file-drop", msg = FileDragLeave }
+                        , onDrop = FileDropped
+                        }
+                )
+                [ if switch.loading then
+                    span [ class "spinner-grow text-secondary", role "status" ] [ span [ class "visually-hidden" ] [ text "Loading..." ] ]
 
-              else
-                span [ class "title h5" ] [ text "Drop your schema here or click to browse" ]
+                  else
+                    span [ class "title h5" ] [ text "Drop your schema here or click to browse" ]
+                ]
             ]
-        , div [ style "text-align" "center", style "margin" "2em 2em 1em 2em" ]
+        , div [ style "text-align" "center" ]
             [ text "Or just try out with "
             , div [ class "dropdown dropup", style "display" "inline-block" ]
                 [ a [ id "schema-samples", href "#", bsToggle Dropdown, ariaExpanded False ] [ text "an example" ]

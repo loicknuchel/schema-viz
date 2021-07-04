@@ -1,0 +1,129 @@
+module JsonFormats.SchemaFormatTest exposing (..)
+
+import AssocList as Dict
+import Expect exposing (Expectation)
+import Json.Decode as Decode
+import Json.Encode as Encode
+import JsonFormats.SchemaFormat exposing (..)
+import Libs.Std exposing (dictFromList)
+import Models.Schema exposing (CanvasProps, Column, ColumnIndex(..), ColumnName(..), ColumnProps, ColumnState, ColumnType(..), ForeignKey, ForeignKeyName(..), Index, IndexName(..), Layout, PrimaryKey, PrimaryKeyName(..), Schema, SchemaName(..), Table, TableId(..), TableName(..), TableProps, TableState, TableStatus(..), Unique, UniqueName(..))
+import Models.Utils exposing (Position, Size)
+import Test exposing (Test, describe, test)
+
+
+size : Size
+size =
+    { width = 42.3, height = 5 }
+
+
+position : Position
+position =
+    { left = 12.1, top = 23.4 }
+
+
+columnProps : ColumnProps
+columnProps =
+    { position = 2 }
+
+
+tableProps : TableProps
+tableProps =
+    { position = position, color = "green", columns = Dict.fromList [ ( ColumnName "id", columnProps ) ] }
+
+
+canvasProps : CanvasProps
+canvasProps =
+    { zoom = 0.5, position = position }
+
+
+tableId : TableId
+tableId =
+    TableId (SchemaName "public") (TableName "users")
+
+
+layout : Layout
+layout =
+    { name = "layout", canvas = canvasProps, tables = Dict.fromList [ ( tableId, tableProps ) ] }
+
+
+columnName : ColumnName
+columnName =
+    ColumnName "id"
+
+
+foreignKey : ForeignKey
+foreignKey =
+    { tableId = tableId, schema = SchemaName "public", table = TableName "users", column = columnName, name = ForeignKeyName "users_pk" }
+
+
+index : Index
+index =
+    { columns = [ ColumnName "name" ], definition = "btree (name)", name = IndexName "name_index" }
+
+
+unique : Unique
+unique =
+    { columns = [ ColumnName "email" ], name = UniqueName "email_unique" }
+
+
+primaryKey : PrimaryKey
+primaryKey =
+    { columns = [ ColumnName "id" ], name = PrimaryKeyName "id_pk" }
+
+
+columnState : ColumnState
+columnState =
+    { order = Just 1 }
+
+
+column : Column
+column =
+    { index = ColumnIndex 1, column = columnName, kind = ColumnType "int", nullable = False, foreignKey = Nothing, comment = Nothing, state = columnState }
+
+
+tableStatus : TableStatus
+tableStatus =
+    Shown
+
+
+tableState : TableState
+tableState =
+    { status = Uninitialized, size = size, position = position, color = "red", selected = False }
+
+
+table : Table
+table =
+    { id = tableId, schema = SchemaName "public", table = TableName "users", columns = dictFromList .column [ column ], primaryKey = Nothing, uniques = [], indexes = [], comment = Nothing, state = tableState }
+
+
+schema : Schema
+schema =
+    { name = "a schema", layouts = [ layout ], tables = dictFromList .id [ table ], relations = [] }
+
+
+suite : Test
+suite =
+    describe "SchemaFormatTest"
+        [ test "decode/encode Schema" (\_ -> schema |> expectRoundTrip encodeSchema decodeSchema)
+        , test "decode/encode Table" (\_ -> table |> expectRoundTrip encodeTable decodeTable)
+        , test "decode/encode TableState" (\_ -> tableState |> expectRoundTrip encodeTableState decodeTableState)
+        , test "decode/encode TableStatus" (\_ -> tableStatus |> expectRoundTrip encodeTableStatus decodeTableStatus)
+        , test "decode/encode Column" (\_ -> column |> expectRoundTrip encodeColumn decodeColumn)
+        , test "decode/encode ColumnState" (\_ -> columnState |> expectRoundTrip encodeColumnState decodeColumnState)
+        , test "decode/encode PrimaryKey" (\_ -> primaryKey |> expectRoundTrip encodePrimaryKey decodePrimaryKey)
+        , test "decode/encode Unique" (\_ -> unique |> expectRoundTrip encodeUnique decodeUnique)
+        , test "decode/encode Index" (\_ -> index |> expectRoundTrip encodeIndex decodeIndex)
+        , test "decode/encode ForeignKey" (\_ -> foreignKey |> expectRoundTrip encodeForeignKey decodeForeignKey)
+        , test "decode/encode ColumnName" (\_ -> columnName |> expectRoundTrip encodeColumnName decodeColumnName)
+        , test "decode/encode Layout" (\_ -> layout |> expectRoundTrip encodeLayout decodeLayout)
+        , test "decode/encode CanvasProps" (\_ -> canvasProps |> expectRoundTrip encodeCanvasProps decodeCanvasProps)
+        , test "decode/encode TableProps" (\_ -> tableProps |> expectRoundTrip encodeTableProps decodeTableProps)
+        , test "decode/encode ColumnProps" (\_ -> columnProps |> expectRoundTrip encodeColumnProps decodeColumnProps)
+        , test "decode/encode Position" (\_ -> position |> expectRoundTrip encodePosition decodePosition)
+        , test "decode/encode Size" (\_ -> size |> expectRoundTrip encodeSize decodeSize)
+        ]
+
+
+expectRoundTrip : (a -> Encode.Value) -> Decode.Decoder a -> a -> Expectation
+expectRoundTrip encode decoder a =
+    a |> encode |> Encode.encode 0 |> Decode.decodeString decoder |> Expect.equal (Ok a)

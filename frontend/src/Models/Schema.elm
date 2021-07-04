@@ -9,9 +9,10 @@ import Models.Utils exposing (Color, Position, Size, ZoomLevel)
 
 
 type alias Schema =
-    { tables : Dict TableId Table
-    , relations : List RelationRef
+    { name : String
     , layouts : List Layout
+    , tables : Dict TableId Table
+    , relations : List RelationRef
     }
 
 

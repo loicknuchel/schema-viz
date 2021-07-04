@@ -3,6 +3,7 @@ module Models exposing (Canvas, DragId, Error, Errors, Flags, Model, Msg(..), Se
 import Draggable
 import FileValue exposing (File)
 import Http
+import Json.Decode as Decode
 import Libs.Std exposing (WheelEvent)
 import Mappers.SchemaMapper exposing (emptySchema)
 import Models.Schema exposing (ColumnRef, LayoutName, Schema, TableId, TableStatus(..))
@@ -18,12 +19,12 @@ type alias Flags =
 
 
 type alias Model =
-    { switch : Switch, state : State, canvas : Canvas, schema : Schema }
+    { switch : Switch, state : State, canvas : Canvas, schema : Schema, storedSchemas : List Schema }
 
 
 initModel : Model
 initModel =
-    { switch = initSwitch, state = initState, canvas = initCanvas, schema = emptySchema }
+    { switch = initSwitch, state = initState, canvas = initCanvas, schema = emptySchema, storedSchemas = [] }
 
 
 type alias Switch =
@@ -62,6 +63,8 @@ type Msg
     | FileRead ( File, FileContent )
     | LoadSampleData String
     | GotSampleData String String (Result Http.Error Text)
+    | SchemasReceived ( List ( String, Decode.Error ), List Schema )
+    | UseSchema Schema
     | ChangedSearch Search
     | SelectTable TableId
     | HideTable TableId

@@ -1,10 +1,11 @@
-module Views.Helpers exposing (dragAttrs, extractColumnIndex, extractColumnName, extractColumnType, formatColumnRef, formatHttpError, formatTableId, formatTableName, parseTableId, placeAt, sizeAttrs, withColumnName, withNullableInfo)
+module Views.Helpers exposing (decodeErrorToHtml, dragAttrs, extractColumnIndex, extractColumnName, extractColumnType, formatColumnRef, formatHttpError, formatTableId, formatTableName, parseTableId, placeAt, sizeAttrs, withColumnName, withNullableInfo)
 
 import Conf exposing (conf)
 import Draggable
 import Html exposing (Attribute)
 import Html.Attributes exposing (height, style, width)
 import Http exposing (Error(..))
+import Json.Decode as Decode
 import Models exposing (DragId, Msg(..))
 import Models.Schema exposing (ColumnIndex(..), ColumnName(..), ColumnRef, ColumnType(..), SchemaName(..), TableId(..), TableName(..))
 import Models.Utils exposing (Position, Size)
@@ -89,6 +90,11 @@ withNullableInfo nullable text =
 
     else
         text
+
+
+decodeErrorToHtml : Decode.Error -> String
+decodeErrorToHtml error =
+    "<pre>" ++ Decode.errorToString error ++ "</pre>"
 
 
 formatHttpError : Http.Error -> String

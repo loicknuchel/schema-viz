@@ -1,37 +1,37 @@
-module Mappers.SchemaMapper exposing (buildSchemaFromJson, buildSchemaFromSql, emptySchema)
+module Mappers.SchemaMapper exposing (buildSchema, buildSchemaFromJson, buildSchemaFromSql, emptySchema)
 
-import AssocList as Dict exposing (Dict)
+import AssocList as Dict
 import Conf exposing (conf)
-import JsonFormats.SchemaDecoder exposing (JsonColumn, JsonForeignKey, JsonIndex, JsonPrimaryKey, JsonSchema, JsonTable, JsonUnique)
+import JsonFormats.JsonSchemaDecoder exposing (JsonColumn, JsonForeignKey, JsonIndex, JsonPrimaryKey, JsonSchema, JsonTable, JsonUnique)
 import Libs.Std exposing (dictFromList, listGet, listZipWith, stringHashCode, stringWordSplit)
-import Models.Schema exposing (Column, ColumnComment(..), ColumnIndex(..), ColumnName(..), ColumnState, ColumnType(..), ForeignKey, ForeignKeyName(..), Index, IndexName(..), PrimaryKey, PrimaryKeyName(..), RelationRef, Schema, SchemaName(..), Table, TableComment(..), TableId(..), TableName(..), TableState, TableStatus(..), Unique, UniqueName(..))
+import Models.Schema exposing (Column, ColumnComment(..), ColumnIndex(..), ColumnName(..), ColumnState, ColumnType(..), ForeignKey, ForeignKeyName(..), Index, IndexName(..), Layout, PrimaryKey, PrimaryKeyName(..), RelationRef, Schema, SchemaName(..), Table, TableComment(..), TableId(..), TableName(..), TableState, TableStatus(..), Unique, UniqueName(..))
 import Models.Utils exposing (Color, Position, Size)
 import SqlParser.SchemaParser exposing (SqlColumn, SqlForeignKey, SqlPrimaryKey, SqlSchema, SqlTable, SqlUnique)
 
 
-buildSchemaFromJson : JsonSchema -> Schema
-buildSchemaFromJson schema =
-    buildSchema (buildJsonTables schema)
+buildSchemaFromJson : String -> JsonSchema -> Schema
+buildSchemaFromJson name schema =
+    buildJsonTables schema |> buildSchema name []
 
 
-buildSchemaFromSql : SqlSchema -> Schema
-buildSchemaFromSql schema =
-    buildSchema (buildSqlTables schema)
+buildSchemaFromSql : String -> SqlSchema -> Schema
+buildSchemaFromSql name schema =
+    buildSqlTables schema |> buildSchema name []
 
 
 emptySchema : Schema
 emptySchema =
-    buildSchema Dict.empty
+    buildSchema "No name" [] []
 
 
-buildSchema : Dict TableId Table -> Schema
-buildSchema tables =
-    { tables = tables, relations = buildRelations tables, layouts = [] }
+buildSchema : String -> List Layout -> List Table -> Schema
+buildSchema name layouts tables =
+    { name = name, tables = tables |> dictFromList .id, relations = buildRelations tables, layouts = layouts }
 
 
-buildJsonTables : JsonSchema -> Dict TableId Table
+buildJsonTables : JsonSchema -> List Table
 buildJsonTables schema =
-    schema.tables |> listZipWith tableIdFromJsonTable |> List.map buildJsonTable |> dictFromList .id
+    schema.tables |> listZipWith tableIdFromJsonTable |> List.map buildJsonTable
 
 
 buildJsonTable : ( JsonTable, TableId ) -> Table
@@ -102,9 +102,9 @@ tableIdFromJsonForeignKey fk =
     TableId (SchemaName fk.schema) (TableName fk.table)
 
 
-buildSqlTables : SqlSchema -> Dict TableId Table
+buildSqlTables : SqlSchema -> List Table
 buildSqlTables schema =
-    schema |> Dict.values |> List.map buildSqlTable |> dictFromList .id
+    schema |> Dict.values |> List.map buildSqlTable
 
 
 buildSqlTable : SqlTable -> Table
@@ -191,9 +191,9 @@ computeColor (TableId _ (TableName table)) =
 -- build relations
 
 
-buildRelations : Dict TableId Table -> List RelationRef
+buildRelations : List Table -> List RelationRef
 buildRelations tables =
-    tables |> Dict.values |> List.foldr (\table res -> buildTableRelations table ++ res) []
+    tables |> List.foldr (\table res -> buildTableRelations table ++ res) []
 
 
 buildTableRelations : Table -> List RelationRef

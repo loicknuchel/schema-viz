@@ -98,24 +98,27 @@ listGet index list =
 
 listResultSeq : List (Result e a) -> Result (List e) (List a)
 listResultSeq list =
-    case
-        List.foldr
-            (\r ( errs, res ) ->
-                case r of
-                    Ok a ->
-                        ( errs, a :: res )
-
-                    Err e ->
-                        ( e :: errs, res )
-            )
-            ( [], [] )
-            list
-    of
+    case listResultCollect list of
         ( [], res ) ->
             Ok res
 
         ( errs, _ ) ->
             Err errs
+
+
+listResultCollect : List (Result e a) -> ( List e, List a )
+listResultCollect list =
+    List.foldr
+        (\r ( errs, res ) ->
+            case r of
+                Ok a ->
+                    ( errs, a :: res )
+
+                Err e ->
+                    ( e :: errs, res )
+        )
+        ( [], [] )
+        list
 
 
 maybeFilter : (a -> Bool) -> Maybe a -> Maybe a

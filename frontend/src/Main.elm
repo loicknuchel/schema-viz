@@ -7,9 +7,10 @@ import Draggable
 import Libs.Std exposing (cond, set, setState)
 import Models exposing (Flags, Model, Msg(..), initModel)
 import Models.Schema exposing (TableStatus(..))
-import Ports exposing (activateTooltipsAndPopovers, fileRead, hideOffcanvas, observeSize, readFile, showModal, sizesReceiver)
-import Update exposing (createLayout, deleteLayout, dragConfig, dragItem, hideAllTables, hideColumn, hideTable, loadLayout, showAllTables, showColumn, showTable, updateLayout, updateSizes, useSampleSchema, useSchema, visitTable, visitTables, zoomCanvas)
+import Ports exposing (activateTooltipsAndPopovers, fileRead, hideOffcanvas, loadSchemas, observeSize, readFile, schemasReceived, showModal, sizesReceiver, toastError)
+import Update exposing (createLayout, createSampleSchema, createSchema, deleteLayout, dragConfig, dragItem, hideAllTables, hideColumn, hideTable, loadLayout, showAllTables, showColumn, showTable, updateLayout, updateSizes, useSchema, visitTable, visitTables, zoomCanvas)
 import View exposing (viewApp)
+import Views.Helpers exposing (decodeErrorToHtml)
 
 
 
@@ -26,6 +27,7 @@ init _ =
     ( initModel
     , Cmd.batch
         [ observeSize conf.ids.erd
+        , loadSchemas ()
         , showModal conf.ids.schemaSwitchModal
         ]
     )
@@ -51,13 +53,19 @@ update msg model =
             ( { model | switch = model.switch |> set (\s -> { s | loading = True }) }, readFile file )
 
         FileRead ( file, content ) ->
-            useSchema file content model
+            createSchema file content model
 
         LoadSampleData sampleName ->
             ( model, loadSample sampleName )
 
         GotSampleData name path response ->
-            useSampleSchema name path response model
+            createSampleSchema name path response model
+
+        SchemasReceived ( errors, schemas ) ->
+            ( { model | storedSchemas = schemas }, Cmd.batch (errors |> List.map (\( name, err ) -> toastError ("Unable to read schema <b>" ++ name ++ "</b>:<br>" ++ decodeErrorToHtml err))) )
+
+        UseSchema schema ->
+            useSchema schema model
 
         ChangedSearch search ->
             ( { model | state = model.state |> set (\state -> { state | search = search }) }, Cmd.none )
@@ -108,16 +116,16 @@ update msg model =
             ( model |> setState (\s -> { s | newLayout = cond (String.length name == 0) (\_ -> Nothing) (\_ -> Just name) }), Cmd.none )
 
         CreateLayout name ->
-            ( createLayout name model, activateTooltipsAndPopovers () )
+            createLayout name model
 
         LoadLayout name ->
             loadLayout name model
 
         UpdateLayout name ->
-            ( updateLayout name model, Cmd.none )
+            updateLayout name model
 
         DeleteLayout name ->
-            ( deleteLayout name model, Cmd.none )
+            deleteLayout name model
 
         Noop ->
             ( model, Cmd.none )
@@ -133,5 +141,6 @@ subscriptions model =
     Sub.batch
         [ Draggable.subscriptions DragMsg model.state.drag
         , sizesReceiver SizesChanged
+        , schemasReceived SchemasReceived
         , fileRead FileRead
         ]

@@ -1,10 +1,12 @@
-port module Ports exposing (activateTooltipsAndPopovers, click, fileRead, hideModal, hideOffcanvas, observeSize, observeTableSize, observeTablesSize, readFile, showModal, sizesReceiver, toastError, toastInfo)
+port module Ports exposing (activateTooltipsAndPopovers, click, fileRead, hideModal, hideOffcanvas, loadSchemas, observeSize, observeTableSize, observeTablesSize, readFile, saveSchema, schemasReceived, showModal, sizesReceiver, toastError, toastInfo)
 
 import FileValue exposing (File)
 import Json.Decode as Decode
 import Json.Encode as Encode
+import JsonFormats.SchemaFormat exposing (decodeSchema, encodeSchema)
+import Libs.Std exposing (listResultCollect)
 import Models exposing (SizeChange)
-import Models.Schema exposing (TableId)
+import Models.Schema exposing (Schema, TableId)
 import Models.Utils exposing (FileContent, HtmlId, Text)
 import Time
 import Views.Helpers exposing (formatTableId)
@@ -85,3 +87,33 @@ fileRead callback =
                 , content
                 )
         )
+
+
+port loadSchemas : () -> Cmd msg
+
+
+port schemasReceivedPort : (List ( String, Decode.Value ) -> msg) -> Sub msg
+
+
+schemasReceived : (( List ( String, Decode.Error ), List Schema ) -> msg) -> Sub msg
+schemasReceived callback =
+    schemasReceivedPort
+        (\list ->
+            list
+                |> List.map
+                    (\( k, v ) ->
+                        v
+                            |> Decode.decodeValue decodeSchema
+                            |> Result.mapError (\e -> ( k, e ))
+                    )
+                |> listResultCollect
+                |> callback
+        )
+
+
+port saveSchemaPort : Encode.Value -> Cmd msg
+
+
+saveSchema : Schema -> Cmd msg
+saveSchema schema =
+    saveSchemaPort (encodeSchema schema)

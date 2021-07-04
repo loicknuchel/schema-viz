@@ -1,4 +1,4 @@
-module Update exposing (createLayout, deleteLayout, dragConfig, dragItem, hideAllTables, hideColumn, hideTable, loadLayout, showAllTables, showColumn, showTable, updateLayout, updateSizes, useSampleSchema, useSchema, visitTable, visitTables, zoomCanvas)
+module Update exposing (createLayout, createSampleSchema, createSchema, deleteLayout, dragConfig, dragItem, hideAllTables, hideColumn, hideTable, loadLayout, showAllTables, showColumn, showTable, updateLayout, updateSizes, useSchema, visitTable, visitTables, zoomCanvas)
 
 import AssocList as Dict exposing (Dict)
 import Commands.InitializeTable exposing (initializeTable)
@@ -8,35 +8,40 @@ import Draggable.Events exposing (onDragBy, onDragEnd, onDragStart)
 import FileValue exposing (File)
 import Http
 import Json.Decode as Decode
-import JsonFormats.SchemaDecoder exposing (schemaDecoder)
+import JsonFormats.JsonSchemaDecoder exposing (schemaDecoder)
 import Libs.Std exposing (WheelEvent, cond, dictFromList, listFind, maybeFilter, resultFold, send, set, setSchema, setState)
 import Mappers.SchemaMapper exposing (buildSchemaFromJson, buildSchemaFromSql, emptySchema)
 import Models exposing (Canvas, DragId, Errors, Model, Msg(..), SizeChange, initSwitch)
 import Models.Schema exposing (Column, ColumnName, ColumnProps, Layout, LayoutName, Schema, Table, TableId, TableProps, TableStatus(..))
 import Models.Utils exposing (Area, FileContent, Position, ZoomLevel)
-import Ports exposing (activateTooltipsAndPopovers, click, hideModal, observeTableSize, observeTablesSize, toastError, toastInfo)
+import Ports exposing (activateTooltipsAndPopovers, click, hideModal, observeTableSize, observeTablesSize, saveSchema, toastError, toastInfo)
 import SqlParser.SchemaParser exposing (parseSchema)
-import Views.Helpers exposing (formatHttpError, formatTableId, parseTableId)
+import Views.Helpers exposing (decodeErrorToHtml, formatHttpError, formatTableId, parseTableId)
 
 
 
 -- utility methods to get the update case down to one line
 
 
-useSchema : File -> FileContent -> Model -> ( Model, Cmd Msg )
-useSchema file content model =
-    buildSchema file.name content |> loadSchema file.name model
+useSchema : Schema -> Model -> ( Model, Cmd Msg )
+useSchema schema model =
+    loadSchema model ( [], schema )
 
 
-useSampleSchema : String -> String -> Result Http.Error String -> Model -> ( Model, Cmd Msg )
-useSampleSchema name path response model =
+createSchema : File -> FileContent -> Model -> ( Model, Cmd Msg )
+createSchema file content model =
+    buildSchema file.name file.name content |> loadSchema model
+
+
+createSampleSchema : String -> String -> Result Http.Error String -> Model -> ( Model, Cmd Msg )
+createSampleSchema name path response model =
     response
-        |> resultFold (\err -> ( [ "Can't load '" ++ name ++ "': " ++ formatHttpError err ], emptySchema )) (buildSchema path)
-        |> loadSchema name model
+        |> resultFold (\err -> ( [ "Can't load '" ++ name ++ "': " ++ formatHttpError err ], emptySchema )) (buildSchema name path)
+        |> loadSchema model
 
 
-loadSchema : String -> Model -> ( Errors, Schema ) -> ( Model, Cmd Msg )
-loadSchema name model ( errs, schema ) =
+loadSchema : Model -> ( Errors, Schema ) -> ( Model, Cmd Msg )
+loadSchema model ( errs, schema ) =
     if Dict.isEmpty schema.tables then
         ( { model | switch = initSwitch }, Cmd.batch (errs |> List.map toastError) )
 
@@ -44,8 +49,9 @@ loadSchema name model ( errs, schema ) =
         ( { model | switch = initSwitch, schema = schema }
         , Cmd.batch
             ((errs |> List.map toastError)
-                ++ [ toastInfo ("<b>" ++ name ++ "</b> loaded.<br>Use the search bar to explore it")
+                ++ [ toastInfo ("<b>" ++ schema.name ++ "</b> loaded.<br>Use the search bar to explore it")
                    , hideModal conf.ids.schemaSwitchModal
+                   , saveSchema schema
                    ]
                 ++ (if Dict.size schema.tables < 10 then
                         [ send ShowAllTables ]
@@ -57,16 +63,16 @@ loadSchema name model ( errs, schema ) =
         )
 
 
-buildSchema : String -> FileContent -> ( Errors, Schema )
-buildSchema path content =
+buildSchema : String -> String -> FileContent -> ( Errors, Schema )
+buildSchema name path content =
     if path |> String.endsWith ".sql" then
-        parseSchema path content |> Tuple.mapSecond buildSchemaFromSql
+        parseSchema path content |> Tuple.mapSecond (buildSchemaFromSql name)
 
     else if path |> String.endsWith ".json" then
         Decode.decodeString schemaDecoder content
             |> resultFold
-                (\e -> ( [ "⚠️ Error in <b>" ++ path ++ "</b> ⚠️<br>" ++ (Decode.errorToString e |> String.replace "\n" "<br>") ], emptySchema ))
-                (\schema -> ( [], buildSchemaFromJson schema ))
+                (\e -> ( [ "⚠️ Error in <b>" ++ path ++ "</b> ⚠️<br>" ++ decodeErrorToHtml e ], emptySchema ))
+                (\schema -> ( [], buildSchemaFromJson name schema ))
 
     else
         ( [ "Invalid file (" ++ path ++ "), expected .sql or .json one" ], emptySchema )
@@ -210,11 +216,16 @@ columnToLayout column =
     Maybe.map (\order -> ( column.column, { position = order } )) column.state.order
 
 
-createLayout : LayoutName -> Model -> Model
+createLayout : LayoutName -> Model -> ( Model, Cmd Msg )
 createLayout name model =
-    model
-        |> setState (\s -> { s | newLayout = Nothing, currentLayout = Just name })
-        |> setSchema (\s -> { s | layouts = (model |> toLayout name) :: s.layouts })
+    let
+        newModel : Model
+        newModel =
+            model
+                |> setState (\s -> { s | newLayout = Nothing, currentLayout = Just name })
+                |> setSchema (\s -> { s | layouts = (model |> toLayout name) :: s.layouts })
+    in
+    ( newModel, Cmd.batch [ saveSchema newModel.schema, activateTooltipsAndPopovers () ] )
 
 
 loadLayout : LayoutName -> Model -> ( Model, Cmd Msg )
@@ -240,25 +251,35 @@ loadLayout name model =
         |> Maybe.withDefault ( model, Cmd.none )
 
 
-updateLayout : LayoutName -> Model -> Model
+updateLayout : LayoutName -> Model -> ( Model, Cmd Msg )
 updateLayout name model =
-    model
-        |> setSchema (\s -> { s | layouts = s.layouts |> List.map (\l -> cond (l.name == name) (\_ -> model |> toLayout name) (\_ -> l)) })
-        |> setState (\s -> { s | currentLayout = Just name })
+    let
+        newModel : Model
+        newModel =
+            model
+                |> setSchema (\s -> { s | layouts = s.layouts |> List.map (\l -> cond (l.name == name) (\_ -> model |> toLayout name) (\_ -> l)) })
+                |> setState (\s -> { s | currentLayout = Just name })
+    in
+    ( newModel, saveSchema newModel.schema )
 
 
-deleteLayout : LayoutName -> Model -> Model
+deleteLayout : LayoutName -> Model -> ( Model, Cmd Msg )
 deleteLayout name model =
-    model
-        |> setSchema (\s -> { s | layouts = s.layouts |> List.filter (\l -> not (l.name == name)) })
-        |> setState
-            (\s ->
-                if s.currentLayout == Just name then
-                    { s | currentLayout = Nothing }
+    let
+        newModel : Model
+        newModel =
+            model
+                |> setSchema (\s -> { s | layouts = s.layouts |> List.filter (\l -> not (l.name == name)) })
+                |> setState
+                    (\s ->
+                        if s.currentLayout == Just name then
+                            { s | currentLayout = Nothing }
 
-                else
-                    s
-            )
+                        else
+                            s
+                    )
+    in
+    ( newModel, saveSchema newModel.schema )
 
 
 showTableWithLayout : Maybe TableProps -> Table -> ( Maybe TableId, Table )

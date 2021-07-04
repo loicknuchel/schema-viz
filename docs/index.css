@@ -1,6 +1,8 @@
 :root {
     --navbar-height: 56px;
+    --modal-backdrop-z-index: 1040;
     --offcanvas-z-index: 1050;
+    --modal-z-index: 1060;
     --table-z-index: 10;
     --relation-z-index: 9;
     --loading-z-index: 10000; /* should be on top of everything */
@@ -14,6 +16,8 @@
     --tw-indigo: #6366F1;
     --tw-purple: #8B5CF6;
     --tw-pink: #EC4899;
+
+    --tw-gray-100: #F3F4F6;
 }
 
 body {
@@ -196,10 +200,42 @@ body {
     z-index: var(--relation-z-index);
 }
 
+.drop-zone {
+    border: 2px dashed var(--tw-blue);
+    border-radius: 1em;
+    background: var(--tw-gray-100);
+    min-height: 150px;
+    padding: 54px;
+    display: block;
+    cursor: pointer;
+    text-align: center;
+}
+
+.drop-zone .title {
+    display: block;
+    font-weight: 400;
+    margin: 0;
+    line-height: 38px;
+    color: var(--tw-gray);
+}
+
+.drop-zone .warning {
+    display: block;
+}
 
 /* Styles for Bootstrap */
 
 .dropdown-menu {
     max-height: 1000px;
     overflow-y: auto;
+}
+
+#toast-container {
+    z-index: calc(var(--modal-z-index) + 1);
+}
+
+.toast {
+    overflow: auto;
+    max-width: calc(100% - 20px);
+    max-height: calc(100vh - 32px);
 }

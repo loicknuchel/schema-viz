@@ -23,14 +23,16 @@
             app.ports.activateTooltipsAndPopovers.subscribe(() => {
                 // a ugly hack to avoid race conditions
                 // elements are rendered and selected in the same time, so sometimes, it's called before rendering and cause errors :(
-                setTimeout(function () {
+                delay(() => {
                     document.querySelectorAll('[data-bs-toggle="tooltip"]').forEach(e => bootstrap.Tooltip.getOrCreateInstance(e))
                     document.querySelectorAll('[data-bs-toggle="popover"]').forEach(e => bootstrap.Popover.getOrCreateInstance(e))
-                }, 100)
+                })
             })
             app.ports.showModal && app.ports.showModal.subscribe(id => bootstrap.Modal.getOrCreateInstance(document.getElementById(id)).show())
             app.ports.hideModal && app.ports.hideModal.subscribe(id => bootstrap.Modal.getOrCreateInstance(document.getElementById(id)).hide())
             app.ports.hideOffcanvas && app.ports.hideOffcanvas.subscribe(id => bootstrap.Offcanvas.getOrCreateInstance(document.getElementById(id)).hide())
+            app.ports.click && app.ports.click.subscribe(id => delay(() => document.getElementById(id).click()))
+
 
             let toastCpt = 0
             const toastContainer = document.getElementById('toast-container')
@@ -38,35 +40,31 @@
                 const toastNo = toastCpt += 1
                 const toastId = 'toast-' + toastNo
                 let html =
-                    '<div class="position-fixed bottom-0 end-0 p-3">' +
-                    '  <div class="toast align-items-center" id="' + toastId + '" role="status" aria-live="polite" aria-atomic="true">\n' +
-                    '    <div class="d-flex">\n' +
-                    '      <div class="toast-body">\n' +
-                    '        ' + toast.message + '\n' +
-                    '      </div>\n' +
-                    '      <button type="button" class="btn-close me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>\n' +
+                    '<div class="toast align-items-center" id="' + toastId + '" role="status" aria-live="polite" aria-atomic="true">\n' +
+                    '  <div class="d-flex">\n' +
+                    '    <div class="toast-body">\n' +
+                    '      ' + toast.message + '\n' +
                     '    </div>\n' +
-                    '  </div>' +
+                    '    <button type="button" class="btn-close me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>\n' +
+                    '  </div>\n' +
                     '</div>'
                 if (toast.kind === 'error') {
                     html =
-                        '<div class="position-fixed bottom-0 end-0 p-3">' +
-                        '  <div class="toast align-items-center bg-danger text-white" id="' + toastId + '" role="status" aria-live="polite" aria-atomic="true" data-bs-autohide="false">\n' +
-                        '    <div class="d-flex">\n' +
-                        '      <div class="toast-body">\n' +
-                        '        ' + toast.message + '\n' +
-                        '      </div>\n' +
-                        '      <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>\n' +
+                        '<div class="toast align-items-center bg-danger text-white" id="' + toastId + '" role="status" aria-live="polite" aria-atomic="true" data-bs-autohide="false">\n' +
+                        '  <div class="d-flex">\n' +
+                        '    <div class="toast-body">\n' +
+                        '      ' + toast.message + '\n' +
                         '    </div>\n' +
-                        '  </div>' +
+                        '    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>\n' +
+                        '  </div>\n' +
                         '</div>'
                 }
                 toastContainer.insertAdjacentHTML('beforeend', html);
                 bootstrap.Toast.getOrCreateInstance(document.getElementById(toastId)).show()
             })
             window.addEventListener('hidden.bs.toast', function (e) {
-                const toastParent = document.getElementById(e.target.id).parentNode
-                toastParent.parentNode.removeChild(toastParent)
+                const toast = document.getElementById(e.target.id)
+                toast.parentNode.removeChild(toast)
             })
 
             // autofocus element in modal that require it (not done automatically)
@@ -86,11 +84,7 @@
             })
 
             // resize ports
-            app.ports.observeSizes.subscribe(ids => {
-                setTimeout(function () {
-                    ids.forEach(id => resizeObserver.observe(document.getElementById(id)))
-                }, 100)
-            })
+            app.ports.observeSizes.subscribe(ids => delay(() => ids.forEach(id => resizeObserver.observe(document.getElementById(id)))))
             const resizeObserver = new ResizeObserver(entries => {
                 const sizes = entries.map(entry => ({
                     id: entry.target.id,
@@ -113,6 +107,24 @@
                 reader.onload = (() => (e) => app.ports.textFileRead.send([file, e.target.result]))()
                 reader.readAsText(file)
             })
+
+            // local storage ports
+            const schemaPrefix = 'schema-'
+            app.ports.saveSchemaPort && app.ports.saveSchemaPort.subscribe(schema => {
+                localStorage.setItem(schemaPrefix + schema.name, JSON.stringify(schema))
+            })
+            app.ports.loadSchemas && app.ports.loadSchemas.subscribe(() => {
+                const values = Object.keys(localStorage)
+                    .filter(key => key.startsWith(schemaPrefix))
+                    .map(key => [key.replace(schemaPrefix, ''), JSON.parse(localStorage.getItem(key))])
+                app.ports.schemasReceivedPort.send(values)
+            })
+
+
+            // because Elm can trigger some commands before the model changes are rendered :(
+            function delay(fn) {
+                setTimeout(fn, 100)
+            }
         }
     </script>
 </head>

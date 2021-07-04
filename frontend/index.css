@@ -209,3 +209,11 @@ body {
 #toast-container {
     z-index: calc(var(--modal-z-index) + 1);
 }
+
+.toast {
+    overflow: auto;
+}
+
+.toast-body {
+    max-width: calc(100% - 20px);
+}

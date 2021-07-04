@@ -1,4 +1,4 @@
-module Mappers.SchemaMapper exposing (buildSchemaFromJson, buildSchemaFromSql)
+module Mappers.SchemaMapper exposing (buildSchemaFromJson, buildSchemaFromSql, emptySchema)
 
 import AssocList as Dict exposing (Dict)
 import Conf exposing (conf)
@@ -11,16 +11,21 @@ import SqlParser.SchemaParser exposing (SqlColumn, SqlForeignKey, SqlPrimaryKey,
 
 buildSchemaFromJson : JsonSchema -> Schema
 buildSchemaFromJson schema =
-    buildSchemaType (buildJsonTables schema)
+    buildSchema (buildJsonTables schema)
 
 
 buildSchemaFromSql : SqlSchema -> Schema
 buildSchemaFromSql schema =
-    buildSchemaType (buildSqlTables schema)
+    buildSchema (buildSqlTables schema)
 
 
-buildSchemaType : Dict TableId Table -> Schema
-buildSchemaType tables =
+emptySchema : Schema
+emptySchema =
+    buildSchema Dict.empty
+
+
+buildSchema : Dict TableId Table -> Schema
+buildSchema tables =
     { tables = tables, relations = buildRelations tables, layouts = [] }
 
 

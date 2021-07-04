@@ -50,7 +50,7 @@ type alias SqlCheck =
     { name : ConstraintName, predicate : Predicate }
 
 
-parseSchema : FileName -> FileContent -> Result (List SchemaError) SqlSchema
+parseSchema : FileName -> FileContent -> ( List SchemaError, SqlSchema )
 parseSchema fileName fileContent =
     parseLines fileName fileContent
         |> buildStatements
@@ -64,13 +64,6 @@ parseSchema fileName fileContent =
                         ( errs ++ e, schema )
             )
             ( [], Dict.empty )
-        |> (\( errs, schema ) ->
-                if List.isEmpty errs then
-                    Ok schema
-
-                else
-                    Err errs
-           )
 
 
 evolve : Command -> SqlSchema -> Result (List SchemaError) SqlSchema

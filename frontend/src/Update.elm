@@ -9,8 +9,8 @@ import FileValue exposing (File)
 import Http
 import Json.Decode as Decode
 import JsonFormats.SchemaDecoder exposing (JsonSchema, schemaDecoder)
-import Libs.Std exposing (WheelEvent, cond, dictFromList, listFind, maybeFilter, resultBimap, resultFold, send, set, setSchema, setState)
-import Mappers.SchemaMapper exposing (buildSchemaFromJson, buildSchemaFromSql)
+import Libs.Std exposing (WheelEvent, cond, dictFromList, listFind, maybeFilter, resultFold, send, set, setSchema, setState)
+import Mappers.SchemaMapper exposing (buildSchemaFromJson, buildSchemaFromSql, emptySchema)
 import Models exposing (Canvas, DragId, Errors, Model, Msg(..), SizeChange)
 import Models.Schema exposing (Column, ColumnName, ColumnProps, Layout, LayoutName, Schema, Table, TableId, TableProps, TableStatus(..))
 import Models.Utils exposing (Area, FileContent, Position, ZoomLevel)
@@ -30,43 +30,46 @@ useSchema file content model =
 
 useSampleSchema : String -> Result Http.Error JsonSchema -> Model -> ( Model, Cmd Msg )
 useSampleSchema name response model =
-    loadSchema name (response |> resultBimap (\err -> [ "Can't load schema: " ++ formatHttpError err ]) buildSchemaFromJson) model
+    loadSchema name (response |> resultFold (\err -> ( [ "Can't load schema: " ++ formatHttpError err ], emptySchema )) (\s -> ( [], buildSchemaFromJson s ))) model
 
 
-loadSchema : String -> Result Errors Schema -> Model -> ( Model, Cmd Msg )
-loadSchema name schemaRes model =
-    schemaRes
-        |> resultFold
-            (\errs -> ( model, Cmd.batch (errs |> List.map toastError) ))
-            (\schema ->
-                ( { model | schema = schema }
-                , Cmd.batch
-                    ([ hideModal conf.ids.schemaSwitchModal
-                     , toastInfo ("<b>" ++ name ++ "</b> loaded.<br>Use the search bar to explore it")
-                     ]
-                        ++ (if Dict.size schema.tables < 10 then
-                                [ send ShowAllTables ]
-
-                            else
-                                [ click conf.ids.searchInput ]
-                           )
-                    )
-                )
-            )
-
-
-buildSchema : File -> FileContent -> Result Errors Schema
-buildSchema file content =
-    if file.mime == "application/sql" then
-        parseSchema file.name content |> Result.map buildSchemaFromSql
-
-    else if file.mime == "application/json" then
-        Decode.decodeString schemaDecoder content
-            |> Result.map buildSchemaFromJson
-            |> Result.mapError (\e -> [ "⚠️ Error in <b>" ++ file.name ++ "</b> ⚠️<br>" ++ (Decode.errorToString e |> String.replace "\n" "<br>") ])
+loadSchema : String -> ( Errors, Schema ) -> Model -> ( Model, Cmd Msg )
+loadSchema name ( errs, schema ) model =
+    if Dict.isEmpty schema.tables then
+        ( model, Cmd.batch (errs |> List.map toastError) )
 
     else
-        Err [ "Invalid file (" ++ file.name ++ "), expected .sql or .json one" ]
+        ( { model | schema = schema }
+        , Cmd.batch
+            ((errs |> List.map toastError)
+                ++ [ toastInfo ("<b>" ++ name ++ "</b> loaded.<br>Use the search bar to explore it")
+                   , hideModal conf.ids.schemaSwitchModal
+                   ]
+                ++ (if Dict.size schema.tables < 10 then
+                        [ send ShowAllTables ]
+
+                    else
+                        [ click conf.ids.searchInput ]
+                   )
+            )
+        )
+
+
+buildSchema : File -> FileContent -> ( Errors, Schema )
+buildSchema file content =
+    if file.mime == "application/sql" then
+        parseSchema file.name content |> Tuple.mapSecond buildSchemaFromSql
+
+    else if file.mime == "application/json" then
+        case Decode.decodeString schemaDecoder content of
+            Ok schema ->
+                ( [], buildSchemaFromJson schema )
+
+            Err e ->
+                ( [ "⚠️ Error in <b>" ++ file.name ++ "</b> ⚠️<br>" ++ (Decode.errorToString e |> String.replace "\n" "<br>") ], emptySchema )
+
+    else
+        ( [ "Invalid file (" ++ file.name ++ "), expected .sql or .json one" ], emptySchema )
 
 
 hideTable : TableId -> Schema -> Schema

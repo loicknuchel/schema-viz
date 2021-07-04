@@ -8,7 +8,7 @@ import Draggable.Events exposing (onDragBy, onDragEnd, onDragStart)
 import FileValue exposing (File)
 import Http
 import Json.Decode as Decode
-import JsonFormats.SchemaDecoder exposing (JsonSchema, schemaDecoder)
+import JsonFormats.SchemaDecoder exposing (schemaDecoder)
 import Libs.Std exposing (WheelEvent, cond, dictFromList, listFind, maybeFilter, resultFold, send, set, setSchema, setState)
 import Mappers.SchemaMapper exposing (buildSchemaFromJson, buildSchemaFromSql, emptySchema)
 import Models exposing (Canvas, DragId, Errors, Model, Msg(..), SizeChange, initSwitch)
@@ -25,18 +25,20 @@ import Views.Helpers exposing (formatHttpError, formatTableId, parseTableId)
 
 useSchema : File -> FileContent -> Model -> ( Model, Cmd Msg )
 useSchema file content model =
-    loadSchema file.name (buildSchema file content) model
+    buildSchema file.name content |> loadSchema file.name model
 
 
-useSampleSchema : String -> Result Http.Error JsonSchema -> Model -> ( Model, Cmd Msg )
-useSampleSchema name response model =
-    loadSchema name (response |> resultFold (\err -> ( [ "Can't load schema: " ++ formatHttpError err ], emptySchema )) (\s -> ( [], buildSchemaFromJson s ))) model
+useSampleSchema : String -> String -> Result Http.Error String -> Model -> ( Model, Cmd Msg )
+useSampleSchema name path response model =
+    response
+        |> resultFold (\err -> ( [ "Can't load '" ++ name ++ "': " ++ formatHttpError err ], emptySchema )) (buildSchema path)
+        |> loadSchema name model
 
 
-loadSchema : String -> ( Errors, Schema ) -> Model -> ( Model, Cmd Msg )
-loadSchema name ( errs, schema ) model =
+loadSchema : String -> Model -> ( Errors, Schema ) -> ( Model, Cmd Msg )
+loadSchema name model ( errs, schema ) =
     if Dict.isEmpty schema.tables then
-        ( model, Cmd.batch (errs |> List.map toastError) )
+        ( { model | switch = initSwitch }, Cmd.batch (errs |> List.map toastError) )
 
     else
         ( { model | switch = initSwitch, schema = schema }
@@ -55,21 +57,19 @@ loadSchema name ( errs, schema ) model =
         )
 
 
-buildSchema : File -> FileContent -> ( Errors, Schema )
-buildSchema file content =
-    if file.mime == "application/sql" then
-        parseSchema file.name content |> Tuple.mapSecond buildSchemaFromSql
+buildSchema : String -> FileContent -> ( Errors, Schema )
+buildSchema path content =
+    if path |> String.endsWith ".sql" then
+        parseSchema path content |> Tuple.mapSecond buildSchemaFromSql
 
-    else if file.mime == "application/json" then
-        case Decode.decodeString schemaDecoder content of
-            Ok schema ->
-                ( [], buildSchemaFromJson schema )
-
-            Err e ->
-                ( [ "⚠️ Error in <b>" ++ file.name ++ "</b> ⚠️<br>" ++ (Decode.errorToString e |> String.replace "\n" "<br>") ], emptySchema )
+    else if path |> String.endsWith ".json" then
+        Decode.decodeString schemaDecoder content
+            |> resultFold
+                (\e -> ( [ "⚠️ Error in <b>" ++ path ++ "</b> ⚠️<br>" ++ (Decode.errorToString e |> String.replace "\n" "<br>") ], emptySchema ))
+                (\schema -> ( [], buildSchemaFromJson schema ))
 
     else
-        ( [ "Invalid file (" ++ file.name ++ "), expected .sql or .json one" ], emptySchema )
+        ( [ "Invalid file (" ++ path ++ "), expected .sql or .json one" ], emptySchema )
 
 
 hideTable : TableId -> Schema -> Schema

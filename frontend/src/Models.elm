@@ -3,7 +3,6 @@ module Models exposing (Canvas, DragId, Error, Errors, Flags, Model, Msg(..), Se
 import Draggable
 import FileValue exposing (File)
 import Http
-import JsonFormats.SchemaDecoder exposing (JsonSchema)
 import Libs.Std exposing (WheelEvent)
 import Mappers.SchemaMapper exposing (emptySchema)
 import Models.Schema exposing (ColumnRef, LayoutName, Schema, TableId, TableStatus(..))
@@ -61,8 +60,8 @@ type Msg
     | FileDropped File (List File)
     | FileSelected File
     | FileRead ( File, FileContent )
-    | LoadSampleData
-    | GotSampleData (Result Http.Error JsonSchema)
+    | LoadSampleData String
+    | GotSampleData String String (Result Http.Error Text)
     | ChangedSearch Search
     | SelectTable TableId
     | HideTable TableId

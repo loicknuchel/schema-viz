@@ -1,5 +1,6 @@
-module Conf exposing (conf)
+module Conf exposing (conf, schemaSamples)
 
+import AssocList as Dict exposing (Dict)
 import Models.Utils exposing (Color, HtmlId, ZoomLevel)
 
 
@@ -31,3 +32,12 @@ conf =
         }
     , loading = { showTablesThreshold = 20 }
     }
+
+
+schemaSamples : Dict String String
+schemaSamples =
+    Dict.fromList
+        (List.reverse
+            [ ( "Basic example", "/tests/resources/schema.json" )
+            ]
+        )

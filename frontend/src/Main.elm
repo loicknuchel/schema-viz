@@ -1,7 +1,7 @@
 module Main exposing (main)
 
 import Browser
-import Commands.FetchData exposing (loadData)
+import Commands.FetchSample exposing (loadSample)
 import Conf exposing (conf)
 import Draggable
 import Libs.Std exposing (cond, set, setState)
@@ -10,11 +10,6 @@ import Models.Schema exposing (TableStatus(..))
 import Ports exposing (activateTooltipsAndPopovers, fileRead, hideOffcanvas, observeSize, readFile, showModal, sizesReceiver)
 import Update exposing (createLayout, deleteLayout, dragConfig, dragItem, hideAllTables, hideColumn, hideTable, loadLayout, showAllTables, showColumn, showTable, updateLayout, updateSizes, useSampleSchema, useSchema, visitTable, visitTables, zoomCanvas)
 import View exposing (viewApp)
-
-
-sampleDataUrl : String
-sampleDataUrl =
-    "/tests/resources/schema.json"
 
 
 
@@ -58,11 +53,11 @@ update msg model =
         FileRead ( file, content ) ->
             useSchema file content model
 
-        LoadSampleData ->
-            ( model, loadData sampleDataUrl )
+        LoadSampleData sampleName ->
+            ( model, loadSample sampleName )
 
-        GotSampleData response ->
-            useSampleSchema "Sample schema" response model
+        GotSampleData name path response ->
+            useSampleSchema name path response model
 
         ChangedSearch search ->
             ( { model | state = model.state |> set (\state -> { state | search = search }) }, Cmd.none )

@@ -1,7 +1,7 @@
 module Views.Modals exposing (viewModals)
 
 import AssocList as Dict
-import Conf exposing (conf)
+import Conf exposing (conf, schemaSamples)
 import FileValue exposing (hiddenInputSingle)
 import Html exposing (Html, a, button, div, h5, input, label, li, p, span, text, ul)
 import Html.Attributes exposing (autofocus, class, disabled, for, href, id, style, tabindex, target, type_, value)
@@ -10,7 +10,7 @@ import Libs.Std exposing (bText, codeText, cond, role)
 import Models exposing (Msg(..), Switch)
 import Models.Schema exposing (LayoutName, Schema)
 import Models.Utils exposing (HtmlId, Text)
-import Views.Bootstrap exposing (BsColor(..), Toggle(..), ariaExpanded, ariaHidden, ariaLabel, ariaLabelledBy, bsDismiss, bsToggle)
+import Views.Bootstrap exposing (Toggle(..), ariaExpanded, ariaHidden, ariaLabel, ariaLabelledBy, bsDismiss, bsToggle)
 
 
 viewModals : Switch -> Schema -> LayoutName -> List (Html Msg)
@@ -45,8 +45,7 @@ viewSchemaSwitchModal switch schema =
             , div [ class "dropdown dropup", style "display" "inline-block" ]
                 [ a [ id "schema-samples", href "#", bsToggle Dropdown, ariaExpanded False ] [ text "an example" ]
                 , ul [ class "dropdown-menu", ariaLabelledBy "schema-samples" ]
-                    [ li [] [ a [ class "dropdown-item", href "#", onClick LoadSampleData ] [ text "Basic sample" ] ]
-                    ]
+                    (schemaSamples |> Dict.keys |> List.map (\name -> li [] [ a [ class "dropdown-item", href "#", onClick (LoadSampleData name) ] [ text name ] ]))
                 ]
             ]
         ]

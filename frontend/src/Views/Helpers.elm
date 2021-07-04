@@ -109,8 +109,11 @@ formatHttpError error =
         BadStatus 400 ->
             "verify your information and try again"
 
-        BadStatus _ ->
-            "unknown error"
+        BadStatus 404 ->
+            "file does not exist"
+
+        BadStatus status ->
+            "network error (" ++ String.fromInt status ++ ")"
 
         BadBody errorMessage ->
             errorMessage

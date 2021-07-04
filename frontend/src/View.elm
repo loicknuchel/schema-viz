@@ -2,18 +2,16 @@ module View exposing (viewApp)
 
 import AssocList as Dict
 import Conf exposing (conf)
-import FileValue exposing (hiddenInputSingle)
 import FontAwesome.Styles as Icon
-import Html exposing (Attribute, Html, button, div, h5, label, text)
-import Html.Attributes exposing (class, for, id, style, tabindex, type_)
-import Html.Events exposing (onClick)
-import Libs.Std exposing (cond, listFilterMap, onWheel)
+import Html exposing (Attribute, Html, div)
+import Html.Attributes exposing (class, id, style)
+import Libs.Std exposing (listFilterMap, onWheel)
 import Models exposing (Canvas, Model, Msg(..))
 import Models.Schema exposing (ColumnRef, Relation, RelationRef, Schema, Table, TableAndColumn, TableStatus(..))
 import Models.Utils exposing (Position, ZoomLevel)
-import Views.Bootstrap exposing (BsColor(..), Toggle(..), ariaHidden, ariaLabel, ariaLabelledBy, bsButton, bsDismiss)
 import Views.Helpers exposing (dragAttrs, sizeAttrs)
 import Views.Menu exposing (viewMenu)
+import Views.Modals exposing (viewModals)
 import Views.Navbar exposing (viewNavbar)
 import Views.Relations exposing (viewRelation)
 import Views.Tables exposing (viewTable)
@@ -26,12 +24,11 @@ import Views.Tables exposing (viewTable)
 viewApp : Model -> List (Html Msg)
 viewApp model =
     [ Icon.css ]
-        ++ viewNavbar model.state.search model.state.newLayout model.state.currentLayout model.schema.layouts (Dict.values model.schema.tables)
+        ++ viewNavbar model.state.search model.state.currentLayout model.schema.layouts (Dict.values model.schema.tables)
         ++ viewMenu model.schema
-        ++ [ viewErd model.canvas model.schema
-           , viewSchemaSwitchModal model.schema
-           , viewToasts
-           ]
+        ++ [ viewErd model.canvas model.schema ]
+        ++ viewModals model.schema (model.state.newLayout |> Maybe.withDefault "")
+        ++ [ viewToasts ]
 
 
 viewErd : Canvas -> Schema -> Html Msg
@@ -41,42 +38,11 @@ viewErd canvas schema =
         relations =
             schema.relations |> List.filterMap (buildRelation schema)
     in
-    div ([ class "erd", id conf.ids.erd, onWheel Zoom ] ++ sizeAttrs canvas.size ++ dragAttrs conf.ids.erd)
+    div ([ id conf.ids.erd, class "erd", onWheel Zoom ] ++ sizeAttrs canvas.size ++ dragAttrs conf.ids.erd)
         [ div [ class "canvas", placeAndZoom canvas.zoom canvas.position ]
             ((schema.tables |> Dict.values |> listFilterMap shouldDrawTable (\t -> viewTable canvas.zoom (incomingTableRelations relations t) t))
                 ++ (relations |> listFilterMap shouldDrawRelation viewRelation)
             )
-        ]
-
-
-viewSchemaSwitchModal : Schema -> Html Msg
-viewSchemaSwitchModal schema =
-    div [ class "modal fade", id conf.ids.schemaSwitchModal, tabindex -1, ariaLabelledBy (conf.ids.schemaSwitchModal ++ "-label"), ariaHidden True ]
-        [ div [ class "modal-dialog modal-lg modal-dialog-centered" ]
-            [ div [ class "modal-content" ]
-                [ div [ class "modal-header" ]
-                    [ h5 [ class "modal-title", id (conf.ids.schemaSwitchModal ++ "-label") ]
-                        [ text (cond (Dict.isEmpty schema.tables) (\_ -> "Welcome to Schema Viz") (\_ -> "Load a new schema"))
-                        ]
-                    , button [ type_ "button", class "btn-close", bsDismiss Modal, ariaLabel "Close" ] []
-                    ]
-                , div [ class "modal-body" ]
-                    [ div []
-                        [ hiddenInputSingle "file-loader" [ ".sql,.json" ] FileSelected
-                        , label [ for "file-loader", class "btn btn-outline-primary" ] [ text "Click to load a file" ]
-                        ]
-                    , div
-                        (FileValue.onDrop
-                            { onOver = FileDragOver
-                            , onLeave = Just { id = "file-drop", msg = FileDragLeave }
-                            , onDrop = FileDropped
-                            }
-                        )
-                        [ text "Or drop a file here" ]
-                    , bsButton Primary [ onClick LoadSampleData ] [ text "Or try our sample schema" ]
-                    ]
-                ]
-            ]
         ]
 
 

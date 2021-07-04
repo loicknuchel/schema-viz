@@ -4,20 +4,20 @@ import AssocList as Dict
 import Conf exposing (conf)
 import FontAwesome.Icon exposing (viewIcon)
 import FontAwesome.Solid as Icon
-import Html exposing (Html, a, b, button, div, form, h5, img, input, label, li, nav, span, text, ul)
-import Html.Attributes exposing (alt, autocomplete, autofocus, class, disabled, for, height, href, id, placeholder, src, style, tabindex, title, type_, value)
+import Html exposing (Html, a, b, button, div, form, img, input, li, nav, span, text, ul)
+import Html.Attributes exposing (alt, autocomplete, class, height, href, id, placeholder, src, style, title, type_, value)
 import Html.Events exposing (onClick, onInput)
-import Libs.Std exposing (bText, codeText, cond)
+import Libs.Std exposing (cond)
 import Models exposing (Msg(..), Search)
 import Models.Schema exposing (Column, ColumnName(..), Layout, LayoutName, Table, TableName(..), TableStatus(..))
 import Models.Utils exposing (Text)
-import Views.Bootstrap exposing (BsColor(..), Toggle(..), ariaExpanded, ariaHidden, ariaLabel, ariaLabelledBy, bsButton, bsDismiss, bsToggle, bsToggleCollapse, bsToggleDropdown, bsToggleModal, bsToggleOffcanvas)
+import Views.Bootstrap exposing (BsColor(..), Toggle(..), ariaExpanded, ariaLabel, bsButton, bsToggle, bsToggleCollapse, bsToggleDropdown, bsToggleModal, bsToggleOffcanvas)
 import Views.Helpers exposing (extractColumnName, formatTableId)
 
 
-viewNavbar : Search -> Maybe LayoutName -> Maybe LayoutName -> List Layout -> List Table -> List (Html Msg)
-viewNavbar search newLayout currentLayout layouts tables =
-    [ nav [ class "navbar navbar-expand-md navbar-light bg-white shadow-sm", id "navbar" ]
+viewNavbar : Search -> Maybe LayoutName -> List Layout -> List Table -> List (Html Msg)
+viewNavbar search currentLayout layouts tables =
+    [ nav [ id "navbar", class "navbar navbar-expand-md navbar-light bg-white shadow-sm" ]
         [ div [ class "container-fluid" ]
             [ a ([ href "#", class "navbar-brand" ] ++ bsToggleOffcanvas conf.ids.menu) [ img [ src "assets/logo.png", alt "logo", height 24, class "d-inline-block align-text-top" ] [], text " Schema Viz" ]
             , button ([ type_ "button", class "navbar-toggler", ariaLabel "Toggle navigation" ] ++ bsToggleCollapse "navbar-content")
@@ -32,8 +32,6 @@ viewNavbar search newLayout currentLayout layouts tables =
                 ]
             ]
         ]
-    , viewCreateLayoutModal (newLayout |> Maybe.withDefault "")
-    , viewHelpModal
     ]
 
 
@@ -96,56 +94,6 @@ viewLayoutButton currentLayout layouts =
                         )
                    ]
             )
-
-
-viewCreateLayoutModal : LayoutName -> Html Msg
-viewCreateLayoutModal newLayout =
-    div [ class "modal fade", id conf.ids.newLayoutModal, tabindex -1, ariaLabelledBy (conf.ids.newLayoutModal ++ "-label"), ariaHidden True ]
-        [ div [ class "modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable" ]
-            [ div [ class "modal-content" ]
-                [ div [ class "modal-header" ]
-                    [ h5 [ class "modal-title", id (conf.ids.newLayoutModal ++ "-label") ] [ text "Save layout" ]
-                    , button [ type_ "button", class "btn-close", bsDismiss Modal, ariaLabel "Close" ] []
-                    ]
-                , div [ class "modal-body" ]
-                    [ div [ class "row g-3 align-items-center" ]
-                        [ div [ class "col-auto" ] [ label [ class "col-form-label", for "new-layout-name" ] [ text "Layout name" ] ]
-                        , div [ class "col-auto" ] [ input [ type_ "text", class "form-control", id "new-layout-name", value newLayout, onInput NewLayout, autofocus True ] [] ]
-                        ]
-                    ]
-                , div [ class "modal-footer" ]
-                    [ button [ type_ "button", class "btn btn-secondary", bsDismiss Modal ] [ text "Cancel" ]
-                    , button [ type_ "button", class "btn btn-primary", bsDismiss Modal, disabled (newLayout == ""), onClick (CreateLayout newLayout) ] [ text "Save layout" ]
-                    ]
-                ]
-            ]
-        ]
-
-
-viewHelpModal : Html Msg
-viewHelpModal =
-    div [ class "modal fade", id conf.ids.helpModal, tabindex -1, ariaLabelledBy (conf.ids.helpModal ++ "-label"), ariaHidden True ]
-        [ div [ class "modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable" ]
-            [ div [ class "modal-content" ]
-                [ div [ class "modal-header" ]
-                    [ h5 [ class "modal-title", id (conf.ids.helpModal ++ "-label") ] [ text "Schema Viz cheatsheet" ]
-                    , button [ type_ "button", class "btn-close", bsDismiss Modal, ariaLabel "Close" ] []
-                    ]
-                , div [ class "modal-body" ]
-                    [ ul []
-                        [ li [] [ text "In ", bText "search", text ", you can look for tables and columns, then click on one to show it" ]
-                        , li [] [ text "Not connected relations on the left are ", bText "incoming foreign keys", text ". Click on the column icon to see tables referencing it and then show them" ]
-                        , li [] [ text "Not connected relations on the right are ", bText "column foreign keys", text ". Click on the column icon to show referenced table" ]
-                        , li [] [ text "You can ", bText "hide/show a column", text " with a ", codeText "double click", text " on it" ]
-                        , li [] [ text "You can ", bText "zoom in/out", text " using scrolling action, ", bText "move tables", text " around by dragging them or even ", bText "move everything", text " by dragging the background" ]
-                        ]
-                    ]
-                , div [ class "modal-footer" ]
-                    [ button [ type_ "button", class "btn btn-primary", bsDismiss Modal ] [ text "Thanks!" ]
-                    ]
-                ]
-            ]
-        ]
 
 
 type alias Suggestion =

@@ -121,6 +121,16 @@ listResultCollect list =
         list
 
 
+maybeResultSeq : Maybe (Result x a) -> Result x (Maybe a)
+maybeResultSeq maybe =
+    case maybe of
+        Just r ->
+            r |> Result.map (\a -> Just a)
+
+        Nothing ->
+            Ok Nothing
+
+
 maybeFilter : (a -> Bool) -> Maybe a -> Maybe a
 maybeFilter predicate maybe =
     maybe |> Maybe.andThen (\a -> cond (predicate a) (\_ -> maybe) (\_ -> Nothing))

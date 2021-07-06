@@ -1,6 +1,6 @@
 module JsonFormats.JsonSchemaDecoder exposing (JsonColumn, JsonForeignKey, JsonIndex, JsonPrimaryKey, JsonSchema, JsonTable, JsonUnique, schemaDecoder)
 
-import Json.Decode exposing (Decoder, bool, field, list, map, map2, map3, map4, map5, map7, maybe, string)
+import Json.Decode exposing (Decoder, bool, field, list, map, map2, map3, map4, map6, map7, maybe, string)
 
 
 
@@ -18,8 +18,8 @@ type alias JsonTable =
     , table : String
     , columns : List JsonColumn
     , primaryKey : Maybe JsonPrimaryKey
-    , uniques : List JsonUnique
     , indexes : List JsonIndex
+    , uniques : List JsonUnique
     , comment : Maybe String
     }
 
@@ -28,6 +28,7 @@ type alias JsonColumn =
     { column : String
     , kind : String
     , nullable : Bool
+    , default : Maybe String
     , reference : Maybe JsonForeignKey
     , comment : Maybe String
     }
@@ -37,12 +38,12 @@ type alias JsonPrimaryKey =
     { columns : List String, name : String }
 
 
-type alias JsonUnique =
-    { columns : List String, name : String }
-
-
 type alias JsonIndex =
-    { columns : List String, definition : String, name : String }
+    { name : String, columns : List String, definition : String }
+
+
+type alias JsonUnique =
+    { name : String, columns : List String, definition : String }
 
 
 type alias JsonForeignKey =
@@ -62,17 +63,18 @@ tableDecoder =
         (field "table" string)
         (field "columns" (list columnDecoder))
         (maybe (field "primary_key" primaryKeyDecoder))
-        (field "uniques" (list uniqueIndexDecoder))
         (field "indexes" (list indexDecoder))
+        (field "uniques" (list uniqueIndexDecoder))
         (maybe (field "comment" string))
 
 
 columnDecoder : Decoder JsonColumn
 columnDecoder =
-    map5 JsonColumn
+    map6 JsonColumn
         (field "column" string)
         (field "type" string)
         (field "nullable" bool)
+        (maybe (field "default" string))
         (maybe (field "reference" foreignKeyDecoder))
         (maybe (field "comment" string))
 
@@ -86,17 +88,18 @@ primaryKeyDecoder =
 
 uniqueIndexDecoder : Decoder JsonUnique
 uniqueIndexDecoder =
-    map2 JsonUnique
-        (field "columns" (list string))
+    map3 JsonUnique
         (field "name" string)
+        (field "columns" (list string))
+        (field "definition" string)
 
 
 indexDecoder : Decoder JsonIndex
 indexDecoder =
     map3 JsonIndex
+        (field "name" string)
         (field "columns" (list string))
         (field "definition" string)
-        (field "name" string)
 
 
 foreignKeyDecoder : Decoder JsonForeignKey

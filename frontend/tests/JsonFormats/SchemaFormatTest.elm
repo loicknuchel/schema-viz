@@ -6,7 +6,7 @@ import Json.Decode as Decode
 import Json.Encode as Encode
 import JsonFormats.SchemaFormat exposing (..)
 import Libs.Std exposing (dictFromList)
-import Models.Schema exposing (CanvasProps, Column, ColumnIndex(..), ColumnName(..), ColumnProps, ColumnState, ColumnType(..), ForeignKey, ForeignKeyName(..), Index, IndexName(..), Layout, PrimaryKey, PrimaryKeyName(..), Schema, SchemaName(..), Table, TableId(..), TableName(..), TableProps, TableState, TableStatus(..), Unique, UniqueName(..))
+import Models.Schema exposing (CanvasProps, Column, ColumnIndex(..), ColumnName(..), ColumnProps, ColumnState, ColumnType(..), ColumnValue(..), ForeignKey, ForeignKeyName(..), Index, IndexName(..), Layout, PrimaryKey, PrimaryKeyName(..), Schema, SchemaName(..), Table, TableId(..), TableName(..), TableProps, TableState, TableStatus(..), Unique, UniqueName(..))
 import Models.Utils exposing (Position, Size)
 import Test exposing (Test, describe, test)
 
@@ -58,12 +58,12 @@ foreignKey =
 
 index : Index
 index =
-    { columns = [ ColumnName "name" ], definition = "btree (name)", name = IndexName "name_index" }
+    { name = IndexName "name_index", columns = [ ColumnName "name" ], definition = "btree (name)" }
 
 
 unique : Unique
 unique =
-    { columns = [ ColumnName "email" ], name = UniqueName "email_unique" }
+    { name = UniqueName "email_unique", columns = [ ColumnName "email" ], definition = "(email)" }
 
 
 primaryKey : PrimaryKey
@@ -78,7 +78,7 @@ columnState =
 
 column : Column
 column =
-    { index = ColumnIndex 1, column = columnName, kind = ColumnType "int", nullable = False, foreignKey = Nothing, comment = Nothing, state = columnState }
+    { index = ColumnIndex 1, column = columnName, kind = ColumnType "int", nullable = False, default = Just (ColumnValue "1"), foreignKey = Nothing, comment = Nothing, state = columnState }
 
 
 tableStatus : TableStatus

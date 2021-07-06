@@ -83,6 +83,7 @@ users =
         , { name = "name", kind = "character varying(255)", nullable = True, default = Nothing, foreignKey = Nothing, comment = Nothing }
         ]
     , primaryKey = Nothing
+    , indexes = []
     , uniques = []
     , checks = []
     , comment = Nothing
@@ -98,6 +99,7 @@ usersWithComment =
         , { name = "name", kind = "character varying(255)", nullable = True, default = Nothing, foreignKey = Nothing, comment = Nothing }
         ]
     , primaryKey = Nothing
+    , indexes = []
     , uniques = []
     , checks = []
     , comment = Just "A comment ; 'tricky' one"
@@ -113,6 +115,7 @@ usersWithIdComment =
         , { name = "name", kind = "character varying(255)", nullable = True, default = Nothing, foreignKey = Nothing, comment = Nothing }
         ]
     , primaryKey = Nothing
+    , indexes = []
     , uniques = []
     , checks = []
     , comment = Nothing

@@ -1,4 +1,4 @@
-module Models.Schema exposing (CanvasProps, Column, ColumnComment(..), ColumnIndex(..), ColumnName(..), ColumnProps, ColumnRef, ColumnState, ColumnType(..), ForeignKey, ForeignKeyName(..), Index, IndexName(..), Layout, LayoutName, PrimaryKey, PrimaryKeyName(..), Relation, RelationRef, RelationState, Schema, SchemaName(..), Table, TableAndColumn, TableComment(..), TableId(..), TableName(..), TableProps, TableState, TableStatus(..), Unique, UniqueName(..))
+module Models.Schema exposing (CanvasProps, Column, ColumnComment(..), ColumnIndex(..), ColumnName(..), ColumnProps, ColumnRef, ColumnState, ColumnType(..), ColumnValue(..), ForeignKey, ForeignKeyName(..), Index, IndexName(..), Layout, LayoutName, PrimaryKey, PrimaryKeyName(..), Relation, RelationRef, RelationState, Schema, SchemaName(..), Table, TableAndColumn, TableComment(..), TableId(..), TableName(..), TableProps, TableState, TableStatus(..), Unique, UniqueName(..))
 
 import AssocList exposing (Dict)
 import Models.Utils exposing (Color, Position, Size, ZoomLevel)
@@ -65,6 +65,7 @@ type alias Column =
     , column : ColumnName
     , kind : ColumnType
     , nullable : Bool
+    , default : Maybe ColumnValue
     , foreignKey : Maybe ForeignKey
     , comment : Maybe ColumnComment
     , state : ColumnState
@@ -79,12 +80,12 @@ type alias PrimaryKey =
     { columns : List ColumnName, name : PrimaryKeyName }
 
 
-type alias Unique =
-    { columns : List ColumnName, name : UniqueName }
-
-
 type alias Index =
-    { columns : List ColumnName, definition : String, name : IndexName }
+    { name : IndexName, columns : List ColumnName, definition : String }
+
+
+type alias Unique =
+    { name : UniqueName, columns : List ColumnName, definition : String }
 
 
 type alias ForeignKey =
@@ -141,6 +142,10 @@ type ColumnName
 
 type ColumnType
     = ColumnType String
+
+
+type ColumnValue
+    = ColumnValue String
 
 
 type PrimaryKeyName

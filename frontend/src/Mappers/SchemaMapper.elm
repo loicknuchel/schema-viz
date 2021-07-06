@@ -4,9 +4,9 @@ import AssocList as Dict
 import Conf exposing (conf)
 import JsonFormats.JsonSchemaDecoder exposing (JsonColumn, JsonForeignKey, JsonIndex, JsonPrimaryKey, JsonSchema, JsonTable, JsonUnique)
 import Libs.Std exposing (dictFromList, listGet, listZipWith, stringHashCode, stringWordSplit)
-import Models.Schema exposing (Column, ColumnComment(..), ColumnIndex(..), ColumnName(..), ColumnState, ColumnType(..), ForeignKey, ForeignKeyName(..), Index, IndexName(..), Layout, PrimaryKey, PrimaryKeyName(..), RelationRef, Schema, SchemaName(..), Table, TableComment(..), TableId(..), TableName(..), TableState, TableStatus(..), Unique, UniqueName(..))
+import Models.Schema exposing (Column, ColumnComment(..), ColumnIndex(..), ColumnName(..), ColumnState, ColumnType(..), ColumnValue(..), ForeignKey, ForeignKeyName(..), Index, IndexName(..), Layout, PrimaryKey, PrimaryKeyName(..), RelationRef, Schema, SchemaName(..), Table, TableComment(..), TableId(..), TableName(..), TableState, TableStatus(..), Unique, UniqueName(..))
 import Models.Utils exposing (Color, Position, Size)
-import SqlParser.SchemaParser exposing (SqlColumn, SqlForeignKey, SqlPrimaryKey, SqlSchema, SqlTable, SqlUnique)
+import SqlParser.SchemaParser exposing (SqlColumn, SqlForeignKey, SqlIndex, SqlPrimaryKey, SqlSchema, SqlTable, SqlUnique)
 
 
 buildSchemaFromJson : String -> JsonSchema -> Schema
@@ -54,6 +54,7 @@ buildJsonColumn index column =
     , column = column.column |> ColumnName
     , kind = column.kind |> ColumnType
     , nullable = column.nullable
+    , default = column.default |> Maybe.map ColumnValue
     , foreignKey = column.reference |> Maybe.map buildJsonForeignKey
     , comment = column.comment |> Maybe.map ColumnComment
     , state = initColumnState index
@@ -67,18 +68,19 @@ buildJsonPrimaryKey pk =
     }
 
 
-buildJsonUnique : JsonUnique -> Unique
-buildJsonUnique unique =
-    { columns = unique.columns |> List.map ColumnName
-    , name = unique.name |> UniqueName
+buildJsonIndex : JsonIndex -> Index
+buildJsonIndex index =
+    { name = index.name |> IndexName
+    , columns = index.columns |> List.map ColumnName
+    , definition = index.definition
     }
 
 
-buildJsonIndex : JsonIndex -> Index
-buildJsonIndex index =
-    { columns = index.columns |> List.map ColumnName
-    , definition = index.definition
-    , name = index.name |> IndexName
+buildJsonUnique : JsonUnique -> Unique
+buildJsonUnique unique =
+    { name = unique.name |> UniqueName
+    , columns = unique.columns |> List.map ColumnName
+    , definition = unique.definition
     }
 
 
@@ -114,8 +116,8 @@ buildSqlTable table =
     , table = table.table |> TableName
     , columns = table.columns |> List.indexedMap buildSqlColumn |> dictFromList .column
     , primaryKey = table.primaryKey |> Maybe.map buildSqlPrimaryKey
+    , indexes = table.indexes |> List.map buildSqlIndex
     , uniques = table.uniques |> List.map buildSqlUnique
-    , indexes = []
     , comment = table.comment |> Maybe.map TableComment
     , state = initTableState (tableIdFromSqlTable table)
     }
@@ -127,6 +129,7 @@ buildSqlColumn index column =
     , column = column.name |> ColumnName
     , kind = column.kind |> ColumnType
     , nullable = column.nullable
+    , default = column.default |> Maybe.map ColumnValue
     , foreignKey = column.foreignKey |> Maybe.map buildSqlForeignKey
     , comment = column.comment |> Maybe.map ColumnComment
     , state = initColumnState index
@@ -150,10 +153,19 @@ buildSqlForeignKey fk =
     }
 
 
+buildSqlIndex : SqlIndex -> Index
+buildSqlIndex index =
+    { name = index.name |> IndexName
+    , columns = index.columns |> List.map ColumnName
+    , definition = index.definition
+    }
+
+
 buildSqlUnique : SqlUnique -> Unique
 buildSqlUnique unique =
-    { columns = unique.columns |> List.map ColumnName
-    , name = unique.name |> UniqueName
+    { name = unique.name |> UniqueName
+    , columns = unique.columns |> List.map ColumnName
+    , definition = unique.definition
     }
 
 

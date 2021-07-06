@@ -6,7 +6,7 @@ import Json.Decode as Decode
 import Json.Encode as Encode
 import Libs.Std exposing (dictFromList)
 import Mappers.SchemaMapper exposing (buildSchema)
-import Models.Schema exposing (CanvasProps, Column, ColumnComment(..), ColumnIndex(..), ColumnName(..), ColumnProps, ColumnState, ColumnType(..), ForeignKey, ForeignKeyName(..), Index, IndexName(..), Layout, PrimaryKey, PrimaryKeyName(..), Schema, SchemaName(..), Table, TableComment(..), TableId(..), TableName(..), TableProps, TableState, TableStatus(..), Unique, UniqueName(..))
+import Models.Schema exposing (CanvasProps, Column, ColumnComment(..), ColumnIndex(..), ColumnName(..), ColumnProps, ColumnState, ColumnType(..), ColumnValue(..), ForeignKey, ForeignKeyName(..), Index, IndexName(..), Layout, PrimaryKey, PrimaryKeyName(..), Schema, SchemaName(..), Table, TableComment(..), TableId(..), TableName(..), TableProps, TableState, TableStatus(..), Unique, UniqueName(..))
 import Models.Utils exposing (Position, Size)
 import Views.Helpers exposing (formatTableId, parseTableId)
 
@@ -125,6 +125,7 @@ encodeColumn value =
         , ( "column", value.column |> encodeColumnName )
         , ( "kind", value.kind |> (\(ColumnType v) -> v) |> Encode.string )
         , ( "nullable", value.nullable |> Encode.bool )
+        , ( "default", value.default |> encodeMaybe (\(ColumnValue v) -> Encode.string v) )
         , ( "foreignKey", value.foreignKey |> encodeMaybe encodeForeignKey )
         , ( "comment", value.comment |> encodeMaybe (\(ColumnComment v) -> Encode.string v) )
         , ( "state", value.state |> encodeColumnState )
@@ -133,11 +134,12 @@ encodeColumn value =
 
 decodeColumn : Decode.Decoder Column
 decodeColumn =
-    Decode.map7 Column
+    Decode.map8 Column
         (Decode.field "index" Decode.int |> Decode.map ColumnIndex)
         (Decode.field "column" decodeColumnName)
         (Decode.field "kind" Decode.string |> Decode.map ColumnType)
         (Decode.field "nullable" Decode.bool)
+        (Decode.field "default" (Decode.maybe (Decode.string |> Decode.map ColumnValue)))
         (Decode.field "foreignKey" (Decode.maybe decodeForeignKey))
         (Decode.field "comment" (Decode.maybe (Decode.string |> Decode.map ColumnComment)))
         (Decode.field "state" decodeColumnState)
@@ -171,36 +173,38 @@ decodePrimaryKey =
         (Decode.field "name" Decode.string |> Decode.map PrimaryKeyName)
 
 
-encodeUnique : Unique -> Encode.Value
-encodeUnique value =
-    Encode.object
-        [ ( "columns", value.columns |> Encode.list encodeColumnName )
-        , ( "name", value.name |> (\(UniqueName v) -> v) |> Encode.string )
-        ]
-
-
-decodeUnique : Decode.Decoder Unique
-decodeUnique =
-    Decode.map2 Unique
-        (Decode.field "columns" (Decode.list decodeColumnName))
-        (Decode.field "name" Decode.string |> Decode.map UniqueName)
-
-
 encodeIndex : Index -> Encode.Value
 encodeIndex value =
     Encode.object
-        [ ( "columns", value.columns |> Encode.list encodeColumnName )
+        [ ( "name", value.name |> (\(IndexName v) -> v) |> Encode.string )
+        , ( "columns", value.columns |> Encode.list encodeColumnName )
         , ( "definition", value.definition |> Encode.string )
-        , ( "name", value.name |> (\(IndexName v) -> v) |> Encode.string )
         ]
 
 
 decodeIndex : Decode.Decoder Index
 decodeIndex =
     Decode.map3 Index
+        (Decode.field "name" Decode.string |> Decode.map IndexName)
         (Decode.field "columns" (Decode.list decodeColumnName))
         (Decode.field "definition" Decode.string)
-        (Decode.field "name" Decode.string |> Decode.map IndexName)
+
+
+encodeUnique : Unique -> Encode.Value
+encodeUnique value =
+    Encode.object
+        [ ( "name", value.name |> (\(UniqueName v) -> v) |> Encode.string )
+        , ( "columns", value.columns |> Encode.list encodeColumnName )
+        , ( "definition", value.definition |> Encode.string )
+        ]
+
+
+decodeUnique : Decode.Decoder Unique
+decodeUnique =
+    Decode.map3 Unique
+        (Decode.field "name" Decode.string |> Decode.map UniqueName)
+        (Decode.field "columns" (Decode.list decodeColumnName))
+        (Decode.field "definition" Decode.string)
 
 
 encodeForeignKey : ForeignKey -> Encode.Value

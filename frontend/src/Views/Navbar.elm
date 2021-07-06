@@ -209,7 +209,11 @@ shortNameBonus name =
 
 manyColumnBonus : Table -> Float
 manyColumnBonus table =
-    -1 / toFloat (Dict.size table.columns)
+    if Dict.size table.columns == 0 then
+        -0.3
+
+    else
+        -1 / toFloat (Dict.size table.columns)
 
 
 tableShownMalus : Table -> Float

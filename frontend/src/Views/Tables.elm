@@ -9,7 +9,7 @@ import Html.Attributes exposing (class, classList, href, id, style, title, type_
 import Html.Events exposing (onClick, onDoubleClick)
 import Libs.Std exposing (divIf, listAddIf, listAppendOn, maybeFilter, plural, stopClick)
 import Models exposing (Msg(..))
-import Models.Schema exposing (Column, ColumnComment(..), ColumnName, ColumnRef, ForeignKey, Index, IndexName(..), PrimaryKey, Relation, Table, TableComment(..), TableStatus(..), Unique, UniqueName(..))
+import Models.Schema exposing (Column, ColumnComment(..), ColumnName, ColumnRef, ColumnValue(..), ForeignKey, Index, IndexName(..), PrimaryKey, Relation, Table, TableComment(..), TableStatus(..), Unique, UniqueName(..))
 import Models.Utils exposing (ZoomLevel)
 import Views.Bootstrap exposing (Toggle(..), bsDropdown, bsToggle, bsToggleCollapse)
 import Views.Helpers exposing (dragAttrs, extractColumnIndex, extractColumnName, extractColumnType, formatColumnRef, formatTableId, formatTableName, placeAt, sizeAttrs, withColumnName, withNullableInfo)
@@ -150,7 +150,9 @@ viewColumnName pk column =
 
 viewColumnType : Column -> Html msg
 viewColumnType column =
-    div [ class "type" ] [ text (formatColumnType column) ]
+    column.default
+        |> Maybe.map (\(ColumnValue d) -> div [ class "type", title ("default value: " ++ d), bsToggle Tooltip, style "text-decoration" "underline" ] [ text (formatColumnType column) ])
+        |> Maybe.withDefault (div [ class "type" ] [ text (formatColumnType column) ])
 
 
 viewComment : String -> Html msg

@@ -39,10 +39,11 @@
       },
       "uniques": [
         {
+          "name": "user_email_uniq",
           "columns": [
             "email"
           ],
-          "name": "user_email_uniq"
+          "definition": "(email)"
         }
       ],
       "indexes": [
@@ -107,16 +108,18 @@
       },
       "uniques": [
         {
+          "name": "roles_slug_uniq",
           "columns": [
             "slug"
           ],
-          "name": "roles_slug_uniq"
+          "definition": "(slug)"
         },
         {
+          "name": "roles_name_uniq",
           "columns": [
             "name"
           ],
-          "name": "roles_name_uniq"
+          "definition": "(name)"
         }
       ],
       "indexes": [
@@ -151,10 +154,11 @@
       ],
       "uniques": [
         {
+          "name": "credentials_login_uniq",
           "columns": [
             "login"
           ],
-          "name": "credentials_login_uniq"
+          "definition": "(login)"
         }
       ],
       "indexes": [

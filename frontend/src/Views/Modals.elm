@@ -24,8 +24,9 @@ viewModals switch schema storedSchemas newLayout =
 viewSchemaSwitchModal : Switch -> Schema -> List Schema -> Html Msg
 viewSchemaSwitchModal switch schema storedSchemas =
     modal conf.ids.schemaSwitchModal
-        (cond (Dict.isEmpty schema.tables) (\_ -> "Welcome to Schema Viz") (\_ -> "Load a new schema"))
-        [ div [ class "row row-cols-1 row-cols-sm-2 row-cols-lg-3" ]
+        (cond (Dict.isEmpty schema.tables) (\_ -> "Schema Viz, easily browse your SQL schema!") (\_ -> "Load a new schema"))
+        [ div [ style "text-align" "center" ] [ bText "⚠️ This app is currently built", text ", you can use it but stored data may break ⚠️" ]
+        , div [ class "row row-cols-1 row-cols-sm-2 row-cols-lg-3", style "margin-top" "1em" ]
             (storedSchemas
                 |> List.map
                     (\s ->
@@ -37,7 +38,7 @@ viewSchemaSwitchModal switch schema storedSchemas =
                             ]
                     )
             )
-        , div [ style "margin" "1em 0" ]
+        , div [ style "margin-top" "1em" ]
             [ hiddenInputSingle "file-loader" [ ".sql,.json" ] FileSelected
             , label
                 ([ for "file-loader", class "drop-zone" ]
@@ -54,7 +55,7 @@ viewSchemaSwitchModal switch schema storedSchemas =
                     span [ class "title h5" ] [ text "Drop your schema here or click to browse" ]
                 ]
             ]
-        , div [ style "text-align" "center" ]
+        , div [ style "text-align" "center", style "margin-top" "1em" ]
             [ text "Or just try out with "
             , div [ class "dropdown dropup", style "display" "inline-block" ]
                 [ a [ id "schema-samples", href "#", bsToggle Dropdown, ariaExpanded False ] [ text "an example" ]

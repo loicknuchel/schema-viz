@@ -27,8 +27,8 @@ init _ =
     ( initModel
     , Cmd.batch
         [ observeSize conf.ids.erd
-        , loadSchemas ()
         , showModal conf.ids.schemaSwitchModal
+        , loadSchemas ()
         ]
     )
 
@@ -38,7 +38,7 @@ update msg model =
     case msg of
         -- each case should be one line or call a function in Update file
         ChangeSchema ->
-            ( model, Cmd.batch [ showModal conf.ids.schemaSwitchModal, hideOffcanvas conf.ids.menu ] )
+            ( model, Cmd.batch [ showModal conf.ids.schemaSwitchModal, loadSchemas (), hideOffcanvas conf.ids.menu ] )
 
         FileDragOver _ _ ->
             ( model, Cmd.none )

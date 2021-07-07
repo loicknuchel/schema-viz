@@ -1,18 +1,20 @@
-module SqlParser.Parsers.View exposing (..)
+module SqlParser.Parsers.View exposing (ParsedView, parseView)
 
+import SqlParser.Parsers.Select exposing (SelectInfo, parseSelect)
 import SqlParser.Utils.Helpers exposing (regexMatches)
-import SqlParser.Utils.Types exposing (ParseError, RawSql, SchemaName, TableName)
+import SqlParser.Utils.Types exposing (ParseError, RawSql, SqlSchemaName, SqlTableName)
 
 
 type alias ParsedView =
-    { schema : Maybe SchemaName, table : TableName, definition : String }
+    { schema : Maybe SqlSchemaName, table : SqlTableName, select : SelectInfo, materialized : Bool, extra : Maybe String }
 
 
 parseView : RawSql -> Result (List ParseError) ParsedView
 parseView sql =
-    case sql |> regexMatches "^CREATE (?:MATERIALIZED )?VIEW[ \t]+(?:(?<schema>[^ .]+)\\.)?(?<table>[^ ]+)[ \t]+AS[ \t]+(?<definition>.+);$" of
-        schema :: (Just table) :: (Just definition) :: [] ->
-            Ok { schema = schema, table = table, definition = definition }
+    case sql |> regexMatches "^CREATE (MATERIALIZED )?VIEW[ \t]+(?:(?<schema>[^ .]+)\\.)?(?<table>[^ ]+)[ \t]+AS[ \t]+(?<select>.+?)(?:[ \t]+(?<extra>WITH (?:NO )?DATA))?;$" of
+        materialized :: schema :: (Just table) :: (Just select) :: extra :: [] ->
+            parseSelect select
+                |> Result.map (\parsedSelect -> { schema = schema, table = table, select = parsedSelect, materialized = not (materialized == Nothing), extra = extra })
 
         _ ->
             Err [ "Can't parse create view: '" ++ sql ++ "'" ]

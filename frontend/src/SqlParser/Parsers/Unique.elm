@@ -1,11 +1,11 @@
 module SqlParser.Parsers.Unique exposing (ParsedUnique, parseCreateUniqueIndex)
 
 import SqlParser.Utils.Helpers exposing (parseIndexDefinition, regexMatches)
-import SqlParser.Utils.Types exposing (ColumnName, ConstraintName, ParseError, RawSql, TableRef)
+import SqlParser.Utils.Types exposing (ConstraintName, ParseError, RawSql, SqlColumnName, SqlTableRef)
 
 
 type alias ParsedUnique =
-    { name : ConstraintName, table : TableRef, columns : List ColumnName, definition : String }
+    { name : ConstraintName, table : SqlTableRef, columns : List SqlColumnName, definition : String }
 
 
 parseCreateUniqueIndex : RawSql -> Result (List ParseError) ParsedUnique

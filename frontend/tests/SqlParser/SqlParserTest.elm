@@ -1,7 +1,7 @@
 module SqlParser.SqlParserTest exposing (..)
 
 import Expect
-import SqlParser.SqlParser exposing (ColumnUpdate(..), Command(..), TableConstraint(..), TableUpdate(..), commaSplit, parseAlterTable, parseColumnComment, parseCommand, parseCreateTable, parseCreateTableColumn, parseTableComment)
+import SqlParser.SqlParser exposing (ColumnUpdate(..), Command(..), TableConstraint(..), TableUpdate(..), parseAlterTable, parseColumnComment, parseCommand, parseCreateTable, parseCreateTableColumn, parseTableComment)
 import Test exposing (Test, describe, test)
 
 
@@ -121,9 +121,5 @@ suite =
             , test "with quotes" (\_ -> parseColumnComment "COMMENT ON COLUMN public.table1.col IS 'A ''good'' comment';" |> Expect.equal (Ok { schema = Just "public", table = "table1", column = "col", comment = "A 'good' comment" }))
             , test "with semicolon" (\_ -> parseColumnComment "COMMENT ON COLUMN public.table1.col IS 'A ; comment';" |> Expect.equal (Ok { schema = Just "public", table = "table1", column = "col", comment = "A ; comment" }))
             , test "bad" (\_ -> parseColumnComment "bad" |> Expect.equal (Err [ "Can't parse column comment: 'bad'" ]))
-            ]
-        , describe "commaSplit"
-            [ test "split on comma" (\_ -> commaSplit "aaa,bbb,ccc" |> Expect.equal [ "aaa", "bbb", "ccc" ])
-            , test "ignore comma inside parenthesis" (\_ -> commaSplit "aaa,bbb(1,2),ccc" |> Expect.equal [ "aaa", "bbb(1,2)", "ccc" ])
             ]
         ]

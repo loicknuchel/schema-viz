@@ -1,11 +1,11 @@
-module SqlParser.SqlParser exposing (CheckInner, ColumnType, ColumnUpdate(..), ColumnValue, Command(..), Comment, CommentOnColumn, CommentOnTable, ForeignKeyInner, ForeignKeyRef, ParsedColumn, ParsedTable, Predicate, PrimaryKeyInner, TableConstraint(..), TableUpdate(..), UniqueInner, User, commaSplit, parseAlterTable, parseColumnComment, parseCommand, parseCreateTable, parseCreateTableColumn, parseTableComment)
+module SqlParser.SqlParser exposing (CheckInner, ColumnType, ColumnUpdate(..), ColumnValue, Command(..), Comment, CommentOnColumn, CommentOnTable, ForeignKeyInner, ForeignKeyRef, ParsedColumn, ParsedTable, Predicate, PrimaryKeyInner, TableConstraint(..), TableUpdate(..), UniqueInner, User, parseAlterTable, parseColumnComment, parseCommand, parseCreateTable, parseCreateTableColumn, parseTableComment)
 
 import Libs.Std exposing (listResultSeq)
 import SqlParser.Parsers.Index exposing (ParsedIndex, parseCreateIndex)
 import SqlParser.Parsers.Unique exposing (ParsedUnique, parseCreateUniqueIndex)
 import SqlParser.Parsers.View exposing (ParsedView, parseView)
-import SqlParser.Utils.Helpers exposing (parseIndexDefinition, regexMatches)
-import SqlParser.Utils.Types exposing (ColumnName, ConstraintName, ParseError, RawSql, SchemaName, TableName)
+import SqlParser.Utils.Helpers exposing (commaSplit, noEnclosingQuotes, parseIndexDefinition, regexMatches)
+import SqlParser.Utils.Types exposing (ConstraintName, ParseError, RawSql, SqlColumnName, SqlSchemaName, SqlTableName)
 
 
 type Command
@@ -32,17 +32,17 @@ type alias User =
 
 
 type alias ParsedTable =
-    { schema : Maybe SchemaName, table : TableName, columns : List ParsedColumn }
+    { schema : Maybe SqlSchemaName, table : SqlTableName, columns : List ParsedColumn }
 
 
 type alias ParsedColumn =
-    { name : ColumnName, kind : ColumnType, nullable : Bool, default : Maybe ColumnValue, primaryKey : Maybe ConstraintName, foreignKey : Maybe ( ConstraintName, ForeignKeyRef ) }
+    { name : SqlColumnName, kind : ColumnType, nullable : Bool, default : Maybe ColumnValue, primaryKey : Maybe ConstraintName, foreignKey : Maybe ( ConstraintName, ForeignKeyRef ) }
 
 
 type TableUpdate
-    = AddTableConstraint (Maybe SchemaName) TableName TableConstraint
-    | AlterColumn (Maybe SchemaName) TableName ColumnUpdate
-    | AddTableOwner (Maybe SchemaName) TableName User
+    = AddTableConstraint (Maybe SqlSchemaName) SqlTableName TableConstraint
+    | AlterColumn (Maybe SqlSchemaName) SqlTableName ColumnUpdate
+    | AddTableOwner (Maybe SqlSchemaName) SqlTableName User
 
 
 type TableConstraint
@@ -53,19 +53,19 @@ type TableConstraint
 
 
 type alias PrimaryKeyInner =
-    List ColumnName
+    List SqlColumnName
 
 
 type alias ForeignKeyRef =
-    { schema : Maybe SchemaName, table : TableName, column : Maybe ColumnName }
+    { schema : Maybe SqlSchemaName, table : SqlTableName, column : Maybe SqlColumnName }
 
 
 type alias ForeignKeyInner =
-    { column : ColumnName, ref : ForeignKeyRef }
+    { column : SqlColumnName, ref : ForeignKeyRef }
 
 
 type alias UniqueInner =
-    { columns : List ColumnName, definition : String }
+    { columns : List SqlColumnName, definition : String }
 
 
 type alias Predicate =
@@ -77,8 +77,8 @@ type alias CheckInner =
 
 
 type ColumnUpdate
-    = ColumnDefault ColumnName ColumnValue
-    | ColumnStatistics ColumnName Int
+    = ColumnDefault SqlColumnName ColumnValue
+    | ColumnStatistics SqlColumnName Int
 
 
 type alias Comment =
@@ -86,11 +86,11 @@ type alias Comment =
 
 
 type alias CommentOnTable =
-    { schema : Maybe SchemaName, table : TableName, comment : Comment }
+    { schema : Maybe SqlSchemaName, table : SqlTableName, comment : Comment }
 
 
 type alias CommentOnColumn =
-    { schema : Maybe SchemaName, table : TableName, column : ColumnName, comment : Comment }
+    { schema : Maybe SqlSchemaName, table : SqlTableName, column : SqlColumnName, comment : Comment }
 
 
 parseCommand : RawSql -> Result (List ParseError) Command
@@ -186,7 +186,7 @@ parseCreateTable sql =
         schema :: (Just table) :: (Just columns) :: _ :: [] ->
             commaSplit columns
                 |> List.map String.trim
-                -- TODO parse constraint
+                -- TODO parse constraint: ex in accounts table
                 |> List.filter (\c -> not (c |> String.toUpper |> String.startsWith "CONSTRAINT"))
                 |> List.map parseCreateTableColumn
                 |> listResultSeq
@@ -390,34 +390,3 @@ parseColumnComment sql =
 
         _ ->
             Err [ "Can't parse column comment: '" ++ sql ++ "'" ]
-
-
-commaSplit : String -> List String
-commaSplit text =
-    String.foldr
-        (\char ( res, cur, open ) ->
-            if char == ',' && open == 0 then
-                ( (cur |> String.fromList) :: res, [], open )
-
-            else if char == '(' then
-                ( res, char :: cur, open + 1 )
-
-            else if char == ')' then
-                ( res, char :: cur, open - 1 )
-
-            else
-                ( res, char :: cur, open )
-        )
-        ( [], [], 0 )
-        text
-        |> (\( res, end, _ ) -> (end |> String.fromList) :: res)
-
-
-noEnclosingQuotes : String -> String
-noEnclosingQuotes text =
-    case regexMatches "\"(.*)\"" text of
-        (Just res) :: [] ->
-            res
-
-        _ ->
-            text

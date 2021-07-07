@@ -121,6 +121,16 @@ listResultCollect list =
         list
 
 
+maybeOrElse : Maybe a -> Maybe a -> Maybe a
+maybeOrElse other item =
+    case ( item, other ) of
+        ( Just a1, _ ) ->
+            Just a1
+
+        ( Nothing, res ) ->
+            res
+
+
 maybeResultSeq : Maybe (Result x a) -> Result x (Maybe a)
 maybeResultSeq maybe =
     case maybe of
@@ -149,6 +159,16 @@ maybeFold empty transform maybe =
 
         Nothing ->
             empty
+
+
+maybeToList : Maybe a -> List a
+maybeToList maybe =
+    case maybe of
+        Just a ->
+            [ a ]
+
+        Nothing ->
+            []
 
 
 resultFold : (x -> b) -> (a -> b) -> Result x a -> b

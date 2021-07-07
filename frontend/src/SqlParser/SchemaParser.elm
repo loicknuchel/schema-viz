@@ -4,9 +4,10 @@ import AssocList as Dict exposing (Dict)
 import Conf exposing (conf)
 import Libs.Std exposing (listFind, listResultSeq, maybeResultSeq)
 import Models.Utils exposing (FileContent, FileName)
+import SqlParser.Parsers.Select exposing (SelectColumn(..))
 import SqlParser.Parsers.View exposing (ParsedView)
 import SqlParser.SqlParser exposing (ColumnType, ColumnUpdate(..), ColumnValue, Command(..), Comment, ParsedColumn, ParsedTable, Predicate, TableConstraint(..), TableUpdate(..), parseCommand)
-import SqlParser.Utils.Types exposing (ColumnName, ConstraintName, RawSql, SchemaName, TableName)
+import SqlParser.Utils.Types exposing (ConstraintName, RawSql, SqlColumnName, SqlSchemaName, SqlTableName)
 
 
 type alias SchemaError =
@@ -30,27 +31,27 @@ type alias SqlTableId =
 
 
 type alias SqlTable =
-    { schema : SchemaName, table : TableName, columns : List SqlColumn, primaryKey : Maybe SqlPrimaryKey, indexes : List SqlIndex, uniques : List SqlUnique, checks : List SqlCheck, comment : Maybe Comment }
+    { schema : SqlSchemaName, table : SqlTableName, columns : List SqlColumn, primaryKey : Maybe SqlPrimaryKey, indexes : List SqlIndex, uniques : List SqlUnique, checks : List SqlCheck, comment : Maybe Comment }
 
 
 type alias SqlColumn =
-    { name : ColumnName, kind : ColumnType, nullable : Bool, default : Maybe ColumnValue, foreignKey : Maybe SqlForeignKey, comment : Maybe Comment }
+    { name : SqlColumnName, kind : ColumnType, nullable : Bool, default : Maybe ColumnValue, foreignKey : Maybe SqlForeignKey, comment : Maybe Comment }
 
 
 type alias SqlPrimaryKey =
-    { name : ConstraintName, columns : List ColumnName }
+    { name : ConstraintName, columns : List SqlColumnName }
 
 
 type alias SqlForeignKey =
-    { name : ConstraintName, schema : SchemaName, table : TableName, column : ColumnName }
+    { name : ConstraintName, schema : SqlSchemaName, table : SqlTableName, column : SqlColumnName }
 
 
 type alias SqlIndex =
-    { name : ConstraintName, columns : List ColumnName, definition : String }
+    { name : ConstraintName, columns : List SqlColumnName, definition : String }
 
 
 type alias SqlUnique =
-    { name : ConstraintName, columns : List ColumnName, definition : String }
+    { name : ConstraintName, columns : List SqlColumnName, definition : String }
 
 
 type alias SqlCheck =
@@ -91,7 +92,7 @@ evolve command tables =
             let
                 id : SqlTableId
                 id =
-                    Debug.log "view" (buildId view.schema view.table)
+                    buildId view.schema view.table
             in
             tables
                 |> Dict.get id
@@ -143,7 +144,7 @@ updateTable id transform tables =
         |> Maybe.withDefault (Err [ "Table " ++ id ++ " does not exist" ])
 
 
-updateColumn : SqlTableId -> ColumnName -> (SqlColumn -> Result (List SchemaError) SqlColumn) -> SqlSchema -> Result (List SchemaError) SqlSchema
+updateColumn : SqlTableId -> SqlColumnName -> (SqlColumn -> Result (List SchemaError) SqlColumn) -> SqlSchema -> Result (List SchemaError) SqlSchema
 updateColumn id name transform tables =
     updateTable id
         (\table ->
@@ -155,7 +156,7 @@ updateColumn id name transform tables =
         tables
 
 
-updateTableColumn : ColumnName -> (SqlColumn -> SqlColumn) -> SqlTable -> SqlTable
+updateTableColumn : SqlColumnName -> (SqlColumn -> SqlColumn) -> SqlTable -> SqlTable
 updateTableColumn column transform table =
     { table
         | columns =
@@ -207,12 +208,21 @@ buildColumn tables column =
             )
 
 
-buildView : ParsedView -> SqlTable
-buildView view =
-    { schema = view.schema |> withDefaultSchema, table = view.table, columns = [], primaryKey = Nothing, indexes = [], uniques = [], checks = [], comment = Nothing }
+buildFk : SqlSchema -> ConstraintName -> Maybe SqlSchemaName -> SqlTableName -> Maybe SqlColumnName -> Result SchemaError SqlForeignKey
+buildFk tables constraint schema table column =
+    column
+        |> withPkColumn tables schema table
+        |> Result.map
+            (\col ->
+                { name = constraint
+                , schema = schema |> withDefaultSchema
+                , table = table
+                , column = col
+                }
+            )
 
 
-withPkColumn : SqlSchema -> Maybe SchemaName -> TableName -> Maybe ColumnName -> Result SchemaError ColumnName
+withPkColumn : SqlSchema -> Maybe SqlSchemaName -> SqlTableName -> Maybe SqlColumnName -> Result SchemaError SqlColumnName
 withPkColumn tables schema table name =
     case name of
         Just n ->
@@ -239,26 +249,47 @@ withPkColumn tables schema table name =
                 |> Maybe.withDefault (Err ("Table " ++ buildId schema table ++ " does not exist (yet)"))
 
 
-buildFk : SqlSchema -> ConstraintName -> Maybe SchemaName -> TableName -> Maybe ColumnName -> Result SchemaError SqlForeignKey
-buildFk tables constraint schema table column =
-    column
-        |> withPkColumn tables schema table
-        |> Result.map
-            (\col ->
-                { name = constraint
-                , schema = schema |> withDefaultSchema
-                , table = table
-                , column = col
-                }
-            )
+buildView : ParsedView -> SqlTable
+buildView view =
+    { schema = view.schema |> withDefaultSchema
+    , table = view.table
+    , columns = view.select.columns |> List.map buildViewColumn
+    , primaryKey = Nothing
+    , indexes = []
+    , uniques = []
+    , checks = []
+    , comment = Nothing
+    }
 
 
-buildId : Maybe SchemaName -> TableName -> SqlTableId
+buildViewColumn : SelectColumn -> SqlColumn
+buildViewColumn column =
+    case column of
+        BasicColumn c ->
+            { name = c.alias |> Maybe.withDefault c.column
+            , kind = "unknown"
+            , nullable = False
+            , default = Nothing
+            , foreignKey = Nothing
+            , comment = Nothing
+            }
+
+        ComplexColumn c ->
+            { name = c.alias
+            , kind = "unknown"
+            , nullable = False
+            , default = Nothing
+            , foreignKey = Nothing
+            , comment = Nothing
+            }
+
+
+buildId : Maybe SqlSchemaName -> SqlTableName -> SqlTableId
 buildId schema table =
     withDefaultSchema schema ++ "." ++ table
 
 
-withDefaultSchema : Maybe SchemaName -> SchemaName
+withDefaultSchema : Maybe SqlSchemaName -> SqlSchemaName
 withDefaultSchema schema =
     schema |> Maybe.withDefault conf.default.schema
 

@@ -1,4 +1,4 @@
-module SqlParser.Utils.Types exposing (ColumnName, ConstraintName, ParseError, RawSql, SchemaName, TableName, TableRef)
+module SqlParser.Utils.Types exposing (ConstraintName, ParseError, RawSql, SqlColumnName, SqlSchemaName, SqlTableName, SqlTableRef)
 
 
 type alias RawSql =
@@ -13,17 +13,17 @@ type alias ConstraintName =
     String
 
 
-type alias SchemaName =
+type alias SqlSchemaName =
     String
 
 
-type alias TableName =
+type alias SqlTableName =
     String
 
 
-type alias ColumnName =
+type alias SqlColumnName =
     String
 
 
-type alias TableRef =
-    { schema : Maybe SchemaName, table : TableName }
+type alias SqlTableRef =
+    { schema : Maybe SqlSchemaName, table : SqlTableName }

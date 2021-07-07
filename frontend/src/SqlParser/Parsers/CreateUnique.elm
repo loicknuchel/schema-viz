@@ -1,4 +1,4 @@
-module SqlParser.Parsers.Unique exposing (ParsedUnique, parseCreateUniqueIndex)
+module SqlParser.Parsers.CreateUnique exposing (ParsedUnique, parseCreateUniqueIndex)
 
 import SqlParser.Utils.Helpers exposing (parseIndexDefinition, regexMatches)
 import SqlParser.Utils.Types exposing (ConstraintName, ParseError, RawSql, SqlColumnName, SqlTableRef)

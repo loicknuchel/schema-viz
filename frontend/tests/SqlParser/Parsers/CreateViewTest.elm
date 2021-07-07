@@ -1,8 +1,8 @@
-module SqlParser.Parsers.ViewTest exposing (..)
+module SqlParser.Parsers.CreateViewTest exposing (..)
 
 import Expect
+import SqlParser.Parsers.CreateView exposing (parseView)
 import SqlParser.Parsers.Select exposing (SelectColumn(..), SelectInfo, SelectTable(..))
-import SqlParser.Parsers.View exposing (parseView)
 import Test exposing (Test, describe, test)
 
 
@@ -33,7 +33,7 @@ select =
 
 suite : Test
 suite =
-    describe "View"
+    describe "CreateView"
         [ describe "parseView"
             [ test "basic" (\_ -> parseView view |> Expect.equal (Ok { schema = Just "public", table = "autocomplete", select = select, materialized = True, extra = Just "WITH NO DATA" }))
             ]

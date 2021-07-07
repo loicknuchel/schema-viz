@@ -1,13 +1,13 @@
-module SqlParser.Parsers.UniqueTest exposing (..)
+module SqlParser.Parsers.CreateUniqueTest exposing (..)
 
 import Expect
-import SqlParser.Parsers.Unique exposing (parseCreateUniqueIndex)
+import SqlParser.Parsers.CreateUnique exposing (parseCreateUniqueIndex)
 import Test exposing (Test, describe, test)
 
 
 suite : Test
 suite =
-    describe "Unique"
+    describe "CreateUnique"
         [ describe "parseCreateUniqueIndex"
             [ test "basic" (\_ -> parseCreateUniqueIndex "CREATE UNIQUE INDEX unique_email on p.users(email);" |> Expect.equal (Ok { name = "unique_email", table = { schema = Just "p", table = "users" }, columns = [ "email" ], definition = "(email)" }))
             , test "lowercase, no schema, multiple columns, many spaces" (\_ -> parseCreateUniqueIndex "create unique index  unique_kind  on  users  (kind_type, kind_id);" |> Expect.equal (Ok { name = "unique_kind", table = { schema = Nothing, table = "users" }, columns = [ "kind_type", "kind_id" ], definition = "(kind_type, kind_id)" }))

@@ -1,4 +1,4 @@
-module SqlParser.Parsers.Index exposing (ParsedIndex, parseCreateIndex)
+module SqlParser.Parsers.CreateIndex exposing (ParsedIndex, parseCreateIndex)
 
 import SqlParser.Utils.Helpers exposing (parseIndexDefinition, regexMatches)
 import SqlParser.Utils.Types exposing (ConstraintName, ParseError, RawSql, SqlColumnName, SqlTableRef)

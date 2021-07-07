@@ -1,4 +1,4 @@
-module SqlParser.Parsers.View exposing (ParsedView, parseView)
+module SqlParser.Parsers.CreateView exposing (ParsedView, parseView)
 
 import SqlParser.Parsers.Select exposing (SelectInfo, parseSelect)
 import SqlParser.Utils.Helpers exposing (regexMatches)

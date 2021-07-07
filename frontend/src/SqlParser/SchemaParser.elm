@@ -4,10 +4,13 @@ import AssocList as Dict exposing (Dict)
 import Conf exposing (conf)
 import Libs.Std exposing (listFind, listResultSeq, maybeResultSeq)
 import Models.Utils exposing (FileContent, FileName)
+import SqlParser.Parsers.AlterTable exposing (ColumnUpdate(..), Predicate, TableConstraint(..), TableUpdate(..))
+import SqlParser.Parsers.Comment exposing (Comment)
+import SqlParser.Parsers.CreateTable exposing (ParsedColumn, ParsedTable)
+import SqlParser.Parsers.CreateView exposing (ParsedView)
 import SqlParser.Parsers.Select exposing (SelectColumn(..))
-import SqlParser.Parsers.View exposing (ParsedView)
-import SqlParser.SqlParser exposing (ColumnType, ColumnUpdate(..), ColumnValue, Command(..), Comment, ParsedColumn, ParsedTable, Predicate, TableConstraint(..), TableUpdate(..), parseCommand)
-import SqlParser.Utils.Types exposing (ConstraintName, RawSql, SqlColumnName, SqlSchemaName, SqlTableName)
+import SqlParser.SqlParser exposing (Command(..), parseCommand)
+import SqlParser.Utils.Types exposing (ConstraintName, RawSql, SqlColumnName, SqlColumnType, SqlColumnValue, SqlSchemaName, SqlTableName)
 
 
 type alias SchemaError =
@@ -35,7 +38,7 @@ type alias SqlTable =
 
 
 type alias SqlColumn =
-    { name : SqlColumnName, kind : ColumnType, nullable : Bool, default : Maybe ColumnValue, foreignKey : Maybe SqlForeignKey, comment : Maybe Comment }
+    { name : SqlColumnName, kind : SqlColumnType, nullable : Bool, default : Maybe SqlColumnValue, foreignKey : Maybe SqlForeignKey, comment : Maybe Comment }
 
 
 type alias SqlPrimaryKey =

@@ -1,13 +1,13 @@
-module Models exposing (Canvas, DragId, Error, Errors, Flags, Model, Msg(..), Search, SizeChange, State, Switch, initModel, initSwitch)
+module Models exposing (Canvas, DragId, Error, Errors, Flags, Model, Msg(..), Search, State, Switch, initModel, initSwitch)
 
 import Draggable
 import FileValue exposing (File)
 import Http
-import Json.Decode as Decode
 import Libs.Std exposing (WheelEvent)
 import Mappers.SchemaMapper exposing (emptySchema)
 import Models.Schema exposing (ColumnRef, LayoutName, Schema, TableId, TableStatus(..))
-import Models.Utils exposing (FileContent, HtmlId, Position, Size, Text, ZoomLevel)
+import Models.Utils exposing (Position, Size, Text, ZoomLevel)
+import Ports exposing (JsMsg)
 
 
 
@@ -60,17 +60,14 @@ type Msg
     | FileDragLeave
     | FileDropped File (List File)
     | FileSelected File
-    | FileRead ( File, FileContent )
     | LoadSampleData String
     | GotSampleData String String (Result Http.Error Text)
-    | SchemasReceived ( List ( String, Decode.Error ), List Schema )
     | UseSchema Schema
     | ChangedSearch Search
     | SelectTable TableId
     | HideTable TableId
     | ShowTable TableId
     | InitializedTable TableId Size Position
-    | SizesChanged (List SizeChange)
     | HideAllTables
     | ShowAllTables
     | HideColumn ColumnRef
@@ -85,6 +82,7 @@ type Msg
     | LoadLayout LayoutName
     | UpdateLayout LayoutName
     | DeleteLayout LayoutName
+    | JsMessage JsMsg
     | Noop
 
 
@@ -102,11 +100,3 @@ type alias Search =
 
 type alias DragId =
     String
-
-
-type alias ZoomDelta =
-    Float
-
-
-type alias SizeChange =
-    { id : HtmlId, size : Size }

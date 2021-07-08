@@ -9,10 +9,10 @@ import Html.Attributes exposing (class, classList, href, id, style, title, type_
 import Html.Events exposing (onClick, onDoubleClick)
 import Libs.Std exposing (divIf, listAddIf, listAppendOn, maybeFilter, plural, stopClick)
 import Models exposing (Msg(..))
-import Models.Schema exposing (Column, ColumnComment(..), ColumnName, ColumnRef, ColumnValue(..), ForeignKey, Index, IndexName(..), PrimaryKey, Relation, Table, TableComment(..), TableStatus(..), Unique, UniqueName(..))
+import Models.Schema exposing (Column, ColumnComment(..), ColumnName, ColumnRef, ColumnValue(..), ForeignKey, Index, IndexName(..), PrimaryKey, Relation, Table, TableComment(..), TableStatus(..), Unique, UniqueName(..), formatTableId, formatTableName)
 import Models.Utils exposing (ZoomLevel)
 import Views.Bootstrap exposing (Toggle(..), bsDropdown, bsToggle, bsToggleCollapse)
-import Views.Helpers exposing (dragAttrs, extractColumnIndex, extractColumnName, extractColumnType, formatColumnRef, formatTableId, formatTableName, placeAt, sizeAttrs, withColumnName, withNullableInfo)
+import Views.Helpers exposing (dragAttrs, extractColumnIndex, extractColumnName, extractColumnType, formatColumnRef, placeAt, sizeAttrs, withColumnName, withNullableInfo)
 
 
 

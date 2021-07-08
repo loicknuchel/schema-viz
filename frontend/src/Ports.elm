@@ -1,24 +1,72 @@
-port module Ports exposing (activateTooltipsAndPopovers, click, fileRead, hideModal, hideOffcanvas, loadSchemas, observeSize, observeTableSize, observeTablesSize, readFile, saveSchema, schemasReceived, showModal, sizesReceiver, toastError, toastInfo)
+port module Ports exposing (JsMsg(..), activateTooltipsAndPopovers, click, hideModal, hideOffcanvas, loadSchemas, observeSize, observeTableSize, observeTablesSize, onJsMessage, readFile, saveSchema, showModal, toastError, toastInfo)
 
 import FileValue exposing (File)
-import Json.Decode as Decode
+import Json.Decode as Decode exposing (Decoder, Value)
 import Json.Encode as Encode
-import JsonFormats.SchemaFormat exposing (decodeSchema, encodeSchema)
-import Libs.Std exposing (listResultCollect)
-import Models exposing (SizeChange)
-import Models.Schema exposing (Schema, TableId)
-import Models.Utils exposing (FileContent, HtmlId, Text)
-import Time
-import Views.Helpers exposing (formatTableId)
+import JsonFormats.SchemaFormat exposing (decodeSchema, decodeSize, encodeSchema)
+import Libs.Std exposing (decodeTuple, listResultCollect)
+import Models.Schema exposing (Schema, TableId, formatTableId)
+import Models.Utils exposing (FileContent, HtmlId, SizeChange, Text)
 
 
-port activateTooltipsAndPopovers : () -> Cmd msg
+click : HtmlId -> Cmd msg
+click id =
+    messageToJs (Click id)
 
 
-port observeSizes : List HtmlId -> Cmd msg
+showModal : HtmlId -> Cmd msg
+showModal id =
+    messageToJs (ShowModal id)
 
 
-port sizesReceiver : (List SizeChange -> msg) -> Sub msg
+hideModal : HtmlId -> Cmd msg
+hideModal id =
+    messageToJs (HideModal id)
+
+
+hideOffcanvas : HtmlId -> Cmd msg
+hideOffcanvas id =
+    messageToJs (HideOffcanvas id)
+
+
+activateTooltipsAndPopovers : Cmd msg
+activateTooltipsAndPopovers =
+    messageToJs ActivateTooltipsAndPopovers
+
+
+toastInfo : Text -> Cmd msg
+toastInfo message =
+    showToast { kind = "info", message = message }
+
+
+toastError : Text -> Cmd msg
+toastError message =
+    showToast { kind = "error", message = message }
+
+
+showToast : Toast -> Cmd msg
+showToast toast =
+    messageToJs (ShowToast toast)
+
+
+loadSchemas : Cmd msg
+loadSchemas =
+    messageToJs LoadSchemas
+
+
+saveSchema : Schema -> Cmd msg
+saveSchema schema =
+    messageToJs (SaveSchema schema)
+
+
+readFile : File -> Cmd msg
+readFile file =
+    messageToJs (ReadFile file)
+
+
+observeSizes : List HtmlId -> Cmd msg
+observeSizes ids =
+    messageToJs (ObserveSizes ids)
 
 
 observeSize : HtmlId -> Cmd msg
@@ -36,84 +84,132 @@ observeTablesSize ids =
     observeSizes (List.map formatTableId ids)
 
 
-port showModal : HtmlId -> Cmd msg
-
-
-port hideModal : HtmlId -> Cmd msg
-
-
-port hideOffcanvas : HtmlId -> Cmd msg
-
-
-port click : HtmlId -> Cmd msg
+type ElmMsg
+    = Click HtmlId
+    | ShowModal HtmlId
+    | HideModal HtmlId
+    | HideOffcanvas HtmlId
+    | ActivateTooltipsAndPopovers
+    | ShowToast Toast
+    | LoadSchemas
+    | SaveSchema Schema
+    | ReadFile File
+    | ObserveSizes (List HtmlId)
 
 
 type alias Toast =
     { kind : String, message : Text }
 
 
-port showToast : Toast -> Cmd msg
+type JsMsg
+    = SchemasLoaded ( List ( String, Decode.Error ), List Schema )
+    | FileRead File FileContent
+    | SizesChanged (List SizeChange)
+    | Error Decode.Error
 
 
-toastInfo : Text -> Cmd msg
-toastInfo message =
-    showToast { kind = "info", message = message }
+messageToJs : ElmMsg -> Cmd msg
+messageToJs message =
+    elmToJs (elmEncoder message)
 
 
-toastError : Text -> Cmd msg
-toastError message =
-    showToast { kind = "error", message = message }
+onJsMessage : (JsMsg -> msg) -> Sub msg
+onJsMessage callback =
+    jsToElm
+        (\value ->
+            case Decode.decodeValue jsDecoder value of
+                Ok message ->
+                    callback message
 
-
-port readTextFile : Decode.Value -> Cmd msg
-
-
-port textFileRead : (( Decode.Value, FileContent ) -> msg) -> Sub msg
-
-
-readFile : File -> Cmd msg
-readFile file =
-    readTextFile (FileValue.encode file)
-
-
-fileRead : (( File, FileContent ) -> msg) -> Sub msg
-fileRead callback =
-    textFileRead
-        (\( value, content ) ->
-            callback
-                ( value
-                    |> Decode.decodeValue FileValue.decoder
-                    |> Result.withDefault { value = Encode.null, name = "", mime = "", size = 0, lastModified = Time.millisToPosix 0 }
-                , content
-                )
+                Err error ->
+                    callback (Error error)
         )
 
 
-port loadSchemas : () -> Cmd msg
+elmEncoder : ElmMsg -> Value
+elmEncoder elm =
+    case elm of
+        Click id ->
+            Encode.object [ ( "kind", "Click" |> Encode.string ), ( "id", id |> Encode.string ) ]
+
+        ShowModal id ->
+            Encode.object [ ( "kind", "ShowModal" |> Encode.string ), ( "id", id |> Encode.string ) ]
+
+        HideModal id ->
+            Encode.object [ ( "kind", "HideModal" |> Encode.string ), ( "id", id |> Encode.string ) ]
+
+        HideOffcanvas id ->
+            Encode.object [ ( "kind", "HideOffcanvas" |> Encode.string ), ( "id", id |> Encode.string ) ]
+
+        ActivateTooltipsAndPopovers ->
+            Encode.object [ ( "kind", "ActivateTooltipsAndPopovers" |> Encode.string ) ]
+
+        ShowToast toast ->
+            Encode.object [ ( "kind", "ShowToast" |> Encode.string ), ( "toast", toast |> toastEncoder ) ]
+
+        LoadSchemas ->
+            Encode.object [ ( "kind", "LoadSchemas" |> Encode.string ) ]
+
+        SaveSchema schema ->
+            Encode.object [ ( "kind", "SaveSchema" |> Encode.string ), ( "schema", schema |> encodeSchema ) ]
+
+        ReadFile file ->
+            Encode.object [ ( "kind", "ReadFile" |> Encode.string ), ( "file", file |> FileValue.encode ) ]
+
+        ObserveSizes ids ->
+            Encode.object [ ( "kind", "ObserveSizes" |> Encode.string ), ( "ids", ids |> Encode.list Encode.string ) ]
 
 
-port schemasReceivedPort : (List ( String, Decode.Value ) -> msg) -> Sub msg
+toastEncoder : Toast -> Value
+toastEncoder toast =
+    Encode.object [ ( "kind", toast.kind |> Encode.string ), ( "message", toast.message |> Encode.string ) ]
 
 
-schemasReceived : (( List ( String, Decode.Error ), List Schema ) -> msg) -> Sub msg
-schemasReceived callback =
-    schemasReceivedPort
-        (\list ->
-            list
-                |> List.map
-                    (\( k, v ) ->
-                        v
-                            |> Decode.decodeValue decodeSchema
-                            |> Result.mapError (\e -> ( k, e ))
-                    )
-                |> listResultCollect
-                |> callback
-        )
+jsDecoder : Decoder JsMsg
+jsDecoder =
+    Decode.field "kind" Decode.string
+        |> Decode.andThen
+            (\kind ->
+                case kind of
+                    "SchemasLoaded" ->
+                        Decode.field "schemas" schemasDecoder |> Decode.map SchemasLoaded
+
+                    "FileRead" ->
+                        Decode.map2 FileRead
+                            (Decode.field "file" FileValue.decoder)
+                            (Decode.field "content" Decode.string)
+
+                    "SizesChanged" ->
+                        Decode.field "sizes"
+                            (Decode.map2 (\id size -> { id = id, size = size })
+                                (Decode.field "id" Decode.string)
+                                (Decode.field "size" decodeSize)
+                                |> Decode.list
+                            )
+                            |> Decode.map SizesChanged
+
+                    other ->
+                        Decode.fail ("Not supported kind of JsMsg '" ++ other ++ "'")
+            )
 
 
-port saveSchemaPort : Encode.Value -> Cmd msg
+schemasDecoder : Decoder ( List ( String, Decode.Error ), List Schema )
+schemasDecoder =
+    Decode.list (decodeTuple Decode.string Decode.value)
+        |> Decode.map
+            (\list ->
+                list
+                    |> List.map
+                        (\( k, v ) ->
+                            v
+                                |> Decode.decodeValue decodeSchema
+                                |> Result.mapError (\e -> ( k, e ))
+                        )
+                    |> listResultCollect
+            )
 
 
-saveSchema : Schema -> Cmd msg
-saveSchema schema =
-    saveSchemaPort (encodeSchema schema)
+port elmToJs : Value -> Cmd msg
+
+
+port jsToElm : (Value -> msg) -> Sub msg

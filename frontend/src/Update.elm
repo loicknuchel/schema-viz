@@ -11,12 +11,12 @@ import Json.Decode as Decode
 import JsonFormats.JsonSchemaDecoder exposing (schemaDecoder)
 import Libs.Std exposing (WheelEvent, cond, dictFromList, listFind, maybeFilter, resultFold, send, set, setSchema, setState)
 import Mappers.SchemaMapper exposing (buildSchemaFromJson, buildSchemaFromSql, emptySchema)
-import Models exposing (Canvas, DragId, Errors, Model, Msg(..), SizeChange, initSwitch)
-import Models.Schema exposing (Column, ColumnName, ColumnProps, Layout, LayoutName, Schema, Table, TableId, TableProps, TableStatus(..))
-import Models.Utils exposing (Area, FileContent, Position, ZoomLevel)
+import Models exposing (Canvas, DragId, Errors, Model, Msg(..), initSwitch)
+import Models.Schema exposing (Column, ColumnName, ColumnProps, Layout, LayoutName, Schema, Table, TableId, TableProps, TableStatus(..), formatTableId, parseTableId)
+import Models.Utils exposing (Area, FileContent, Position, SizeChange, ZoomLevel)
 import Ports exposing (activateTooltipsAndPopovers, click, hideModal, observeTableSize, observeTablesSize, saveSchema, toastError, toastInfo)
 import SqlParser.SchemaParser exposing (parseSchema)
-import Views.Helpers exposing (decodeErrorToHtml, formatHttpError, formatTableId, parseTableId)
+import Views.Helpers exposing (decodeErrorToHtml, formatHttpError)
 
 
 
@@ -88,13 +88,13 @@ showTable model id =
     case getTable id model.schema |> Maybe.map (\t -> t.state.status) of
         Just Uninitialized ->
             -- race condition problem when observe is performed before table is shown :(
-            ( { model | schema = model.schema |> visitTable id (setState (\state -> { state | status = Initializing })) }, Cmd.batch [ observeTableSize id, activateTooltipsAndPopovers () ] )
+            ( { model | schema = model.schema |> visitTable id (setState (\state -> { state | status = Initializing })) }, Cmd.batch [ observeTableSize id, activateTooltipsAndPopovers ] )
 
         Just Initializing ->
             ( model, Cmd.none )
 
         Just Hidden ->
-            ( { model | schema = model.schema |> visitTable id (setState (\state -> { state | status = Shown, selected = False })) }, Cmd.batch [ observeTableSize id, activateTooltipsAndPopovers () ] )
+            ( { model | schema = model.schema |> visitTable id (setState (\state -> { state | status = Shown, selected = False })) }, Cmd.batch [ observeTableSize id, activateTooltipsAndPopovers ] )
 
         Just Shown ->
             ( model, toastInfo ("Table <b>" ++ formatTableId id ++ "</b> is already shown") )
@@ -173,7 +173,7 @@ showAllTables model =
                 |> List.unzip
     in
     ( { model | schema = model.schema |> setTables tables }
-    , Cmd.batch [ observeTablesSize (cmds |> List.filterMap identity), activateTooltipsAndPopovers () ]
+    , Cmd.batch [ observeTablesSize (cmds |> List.filterMap identity), activateTooltipsAndPopovers ]
     )
 
 
@@ -225,7 +225,7 @@ createLayout name model =
                 |> setState (\s -> { s | newLayout = Nothing, currentLayout = Just name })
                 |> setSchema (\s -> { s | layouts = (model |> toLayout name) :: s.layouts })
     in
-    ( newModel, Cmd.batch [ saveSchema newModel.schema, activateTooltipsAndPopovers () ] )
+    ( newModel, Cmd.batch [ saveSchema newModel.schema, activateTooltipsAndPopovers ] )
 
 
 loadLayout : LayoutName -> Model -> ( Model, Cmd Msg )
@@ -245,7 +245,7 @@ loadLayout name model =
                     |> set (\m -> { m | canvas = { size = model.canvas.size, zoom = layout.canvas.zoom, position = layout.canvas.position } })
                     |> setSchema (setTables tables)
                     |> setState (\s -> { s | currentLayout = Just name })
-                , Cmd.batch [ observeTablesSize (cmds |> List.filterMap identity), activateTooltipsAndPopovers () ]
+                , Cmd.batch [ observeTablesSize (cmds |> List.filterMap identity), activateTooltipsAndPopovers ]
                 )
             )
         |> Maybe.withDefault ( model, Cmd.none )

@@ -6,9 +6,8 @@ import Json.Decode as Decode
 import Json.Encode as Encode
 import Libs.Std exposing (dictFromList)
 import Mappers.SchemaMapper exposing (buildSchema)
-import Models.Schema exposing (CanvasProps, Column, ColumnComment(..), ColumnIndex(..), ColumnName(..), ColumnProps, ColumnState, ColumnType(..), ColumnValue(..), ForeignKey, ForeignKeyName(..), Index, IndexName(..), Layout, PrimaryKey, PrimaryKeyName(..), Schema, SchemaName(..), Table, TableComment(..), TableId(..), TableName(..), TableProps, TableState, TableStatus(..), Unique, UniqueName(..))
+import Models.Schema exposing (CanvasProps, Column, ColumnComment(..), ColumnIndex(..), ColumnName(..), ColumnProps, ColumnState, ColumnType(..), ColumnValue(..), ForeignKey, ForeignKeyName(..), Index, IndexName(..), Layout, PrimaryKey, PrimaryKeyName(..), Schema, SchemaName(..), Table, TableComment(..), TableId(..), TableName(..), TableProps, TableState, TableStatus(..), Unique, UniqueName(..), formatTableId, parseTableId)
 import Models.Utils exposing (Position, Size)
-import Views.Helpers exposing (formatTableId, parseTableId)
 
 
 encodeSchema : Schema -> Encode.Value

@@ -1,6 +1,7 @@
-module Models.Schema exposing (CanvasProps, Column, ColumnComment(..), ColumnIndex(..), ColumnName(..), ColumnProps, ColumnRef, ColumnState, ColumnType(..), ColumnValue(..), ForeignKey, ForeignKeyName(..), Index, IndexName(..), Layout, LayoutName, PrimaryKey, PrimaryKeyName(..), Relation, RelationRef, RelationState, Schema, SchemaName(..), Table, TableAndColumn, TableComment(..), TableId(..), TableName(..), TableProps, TableState, TableStatus(..), Unique, UniqueName(..))
+module Models.Schema exposing (CanvasProps, Column, ColumnComment(..), ColumnIndex(..), ColumnName(..), ColumnProps, ColumnRef, ColumnState, ColumnType(..), ColumnValue(..), ForeignKey, ForeignKeyName(..), Index, IndexName(..), Layout, LayoutName, PrimaryKey, PrimaryKeyName(..), Relation, RelationRef, RelationState, Schema, SchemaName(..), Table, TableAndColumn, TableComment(..), TableId(..), TableName(..), TableProps, TableState, TableStatus(..), Unique, UniqueName(..), formatTableId, formatTableName, parseTableId)
 
 import AssocList exposing (Dict)
+import Conf exposing (conf)
 import Models.Utils exposing (Color, Position, Size, ZoomLevel)
 
 
@@ -162,3 +163,27 @@ type IndexName
 
 type ForeignKeyName
     = ForeignKeyName String
+
+
+formatTableId : TableId -> String
+formatTableId (TableId schema table) =
+    formatTableName table schema
+
+
+formatTableName : TableName -> SchemaName -> String
+formatTableName (TableName table) (SchemaName schema) =
+    if schema == conf.default.schema then
+        table
+
+    else
+        schema ++ "." ++ table
+
+
+parseTableId : String -> TableId
+parseTableId id =
+    case String.split "." id of
+        schema :: table :: [] ->
+            TableId (SchemaName schema) (TableName table)
+
+        _ ->
+            TableId (SchemaName conf.default.schema) (TableName id)

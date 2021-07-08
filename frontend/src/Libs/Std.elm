@@ -267,6 +267,13 @@ stopClick m =
     stopPropagationOn "click" (Decode.succeed ( m, True ))
 
 
+decodeTuple : Decoder a -> Decoder b -> Decoder ( a, b )
+decodeTuple aDecoder bDecoder =
+    Decode.map2 Tuple.pair
+        (Decode.index 0 aDecoder)
+        (Decode.index 1 bDecoder)
+
+
 type alias FileEvent =
     { inputId : String, file : List FileInfo }
 

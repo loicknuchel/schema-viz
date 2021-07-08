@@ -9,10 +9,10 @@ import Html.Attributes exposing (alt, autocomplete, class, height, href, id, pla
 import Html.Events exposing (onClick, onInput)
 import Libs.Std exposing (cond)
 import Models exposing (Msg(..), Search)
-import Models.Schema exposing (Column, ColumnName(..), Layout, LayoutName, Table, TableName(..), TableStatus(..))
+import Models.Schema exposing (Column, ColumnName(..), Layout, LayoutName, Table, TableName(..), TableStatus(..), formatTableId)
 import Models.Utils exposing (Text)
 import Views.Bootstrap exposing (BsColor(..), Toggle(..), ariaExpanded, ariaLabel, bsButton, bsToggle, bsToggleCollapse, bsToggleDropdown, bsToggleModal, bsToggleOffcanvas)
-import Views.Helpers exposing (extractColumnName, formatTableId)
+import Views.Helpers exposing (extractColumnName)
 
 
 viewNavbar : Search -> Maybe LayoutName -> List Layout -> List Table -> List (Html Msg)

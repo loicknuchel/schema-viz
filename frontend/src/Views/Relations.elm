@@ -2,11 +2,11 @@ module Views.Relations exposing (viewRelation)
 
 import Libs.Std exposing (listAddIf)
 import Models exposing (Msg)
-import Models.Schema exposing (Column, ForeignKeyName(..), Relation, Table, TableAndColumn, TableStatus(..))
+import Models.Schema exposing (Column, ForeignKeyName(..), Relation, Table, TableAndColumn, TableStatus(..), formatTableId)
 import Models.Utils exposing (Color)
 import Svg exposing (Svg, line, svg, text)
 import Svg.Attributes exposing (class, height, strokeDasharray, style, width, x1, x2, y1, y2)
-import Views.Helpers exposing (formatTableId, withColumnName)
+import Views.Helpers exposing (withColumnName)
 
 
 

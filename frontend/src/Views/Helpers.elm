@@ -1,13 +1,12 @@
-module Views.Helpers exposing (decodeErrorToHtml, dragAttrs, extractColumnIndex, extractColumnName, extractColumnType, formatColumnRef, formatHttpError, formatTableId, formatTableName, parseTableId, placeAt, sizeAttrs, withColumnName, withNullableInfo)
+module Views.Helpers exposing (decodeErrorToHtml, dragAttrs, extractColumnIndex, extractColumnName, extractColumnType, formatColumnRef, formatHttpError, placeAt, sizeAttrs, withColumnName, withNullableInfo)
 
-import Conf exposing (conf)
 import Draggable
 import Html exposing (Attribute)
 import Html.Attributes exposing (height, style, width)
 import Http exposing (Error(..))
 import Json.Decode as Decode
 import Models exposing (DragId, Msg(..))
-import Models.Schema exposing (ColumnIndex(..), ColumnName(..), ColumnRef, ColumnType(..), SchemaName(..), TableId(..), TableName(..))
+import Models.Schema exposing (ColumnIndex(..), ColumnName(..), ColumnRef, ColumnType(..), formatTableId)
 import Models.Utils exposing (Position, Size)
 
 
@@ -47,30 +46,6 @@ extractColumnName (ColumnName name) =
 extractColumnType : ColumnType -> String
 extractColumnType (ColumnType kind) =
     kind
-
-
-formatTableId : TableId -> String
-formatTableId (TableId schema table) =
-    formatTableName table schema
-
-
-parseTableId : String -> TableId
-parseTableId id =
-    case String.split "." id of
-        schema :: table :: [] ->
-            TableId (SchemaName schema) (TableName table)
-
-        _ ->
-            TableId (SchemaName conf.default.schema) (TableName id)
-
-
-formatTableName : TableName -> SchemaName -> String
-formatTableName (TableName table) (SchemaName schema) =
-    if schema == conf.default.schema then
-        table
-
-    else
-        schema ++ "." ++ table
 
 
 withColumnName : ColumnName -> String -> String

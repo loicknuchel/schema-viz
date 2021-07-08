@@ -7,7 +7,7 @@ import Draggable
 import Libs.Std exposing (cond, set, setState)
 import Models exposing (Flags, Model, Msg(..), initModel)
 import Models.Schema exposing (TableStatus(..))
-import Ports exposing (activateTooltipsAndPopovers, fileRead, hideOffcanvas, loadSchemas, observeSize, readFile, schemasReceived, showModal, sizesReceiver, toastError)
+import Ports exposing (JsMsg(..), activateTooltipsAndPopovers, hideOffcanvas, loadSchemas, observeSize, onJsMessage, readFile, showModal, toastError)
 import Update exposing (createLayout, createSampleSchema, createSchema, deleteLayout, dragConfig, dragItem, hideAllTables, hideColumn, hideTable, loadLayout, showAllTables, showColumn, showTable, updateLayout, updateSizes, useSchema, visitTable, visitTables, zoomCanvas)
 import View exposing (viewApp)
 import Views.Helpers exposing (decodeErrorToHtml)
@@ -28,7 +28,7 @@ init _ =
     , Cmd.batch
         [ observeSize conf.ids.erd
         , showModal conf.ids.schemaSwitchModal
-        , loadSchemas ()
+        , loadSchemas
         ]
     )
 
@@ -38,7 +38,7 @@ update msg model =
     case msg of
         -- each case should be one line or call a function in Update file
         ChangeSchema ->
-            ( model, Cmd.batch [ showModal conf.ids.schemaSwitchModal, loadSchemas (), hideOffcanvas conf.ids.menu ] )
+            ( model, Cmd.batch [ showModal conf.ids.schemaSwitchModal, loadSchemas, hideOffcanvas conf.ids.menu ] )
 
         FileDragOver _ _ ->
             ( model, Cmd.none )
@@ -52,17 +52,11 @@ update msg model =
         FileSelected file ->
             ( { model | switch = model.switch |> set (\s -> { s | loading = True }) }, readFile file )
 
-        FileRead ( file, content ) ->
-            createSchema file content model
-
         LoadSampleData sampleName ->
             ( model, loadSample sampleName )
 
         GotSampleData name path response ->
             createSampleSchema name path response model
-
-        SchemasReceived ( errors, schemas ) ->
-            ( { model | storedSchemas = schemas }, Cmd.batch (errors |> List.map (\( name, err ) -> toastError ("Unable to read schema <b>" ++ name ++ "</b>:<br>" ++ decodeErrorToHtml err))) )
 
         UseSchema schema ->
             useSchema schema model
@@ -82,9 +76,6 @@ update msg model =
         InitializedTable id size position ->
             ( { model | schema = model.schema |> visitTable id (setState (\state -> { state | status = Shown, size = size, position = position })) }, Cmd.none )
 
-        SizesChanged sizes ->
-            updateSizes sizes model
-
         HideAllTables ->
             ( { model | schema = hideAllTables model.schema }, Cmd.none )
 
@@ -92,10 +83,10 @@ update msg model =
             showAllTables model
 
         HideColumn ref ->
-            ( { model | schema = model.schema |> visitTable ref.table (\table -> { table | columns = table.columns |> hideColumn ref.column }) }, activateTooltipsAndPopovers () )
+            ( { model | schema = model.schema |> visitTable ref.table (\table -> { table | columns = table.columns |> hideColumn ref.column }) }, activateTooltipsAndPopovers )
 
         ShowColumn ref index ->
-            ( { model | schema = model.schema |> visitTable ref.table (\table -> { table | columns = table.columns |> showColumn ref.column index }) }, activateTooltipsAndPopovers () )
+            ( { model | schema = model.schema |> visitTable ref.table (\table -> { table | columns = table.columns |> showColumn ref.column index }) }, activateTooltipsAndPopovers )
 
         Zoom zoom ->
             ( { model | canvas = zoomCanvas zoom model.canvas }, Cmd.none )
@@ -127,6 +118,18 @@ update msg model =
         DeleteLayout name ->
             deleteLayout name model
 
+        JsMessage (SchemasLoaded ( errors, schemas )) ->
+            ( { model | storedSchemas = schemas }, Cmd.batch (errors |> List.map (\( name, err ) -> toastError ("Unable to read schema <b>" ++ name ++ "</b>:<br>" ++ decodeErrorToHtml err))) )
+
+        JsMessage (FileRead file content) ->
+            createSchema file content model
+
+        JsMessage (SizesChanged sizes) ->
+            updateSizes sizes model
+
+        JsMessage (Error err) ->
+            ( model, toastError ("Unable to decode JavaScript message:<br>" ++ decodeErrorToHtml err) )
+
         Noop ->
             ( model, Cmd.none )
 
@@ -140,7 +143,5 @@ subscriptions : Model -> Sub Msg
 subscriptions model =
     Sub.batch
         [ Draggable.subscriptions DragMsg model.state.drag
-        , sizesReceiver SizesChanged
-        , schemasReceived SchemasReceived
-        , fileRead FileRead
+        , onJsMessage JsMessage
         ]

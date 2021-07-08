@@ -1,4 +1,4 @@
-module Models.Utils exposing (Area, Color, FileContent, FileName, HtmlId, Position, Size, Text, ZoomLevel)
+module Models.Utils exposing (Area, Color, FileContent, FileName, HtmlId, Position, Size, SizeChange, Text, ZoomLevel)
 
 -- generic types to use everywhere, should not include any project value, only libs if really needed
 
@@ -9,6 +9,10 @@ type alias ZoomLevel =
 
 type alias Size =
     { width : Float, height : Float }
+
+
+type alias SizeChange =
+    { id : HtmlId, size : Size }
 
 
 type alias Position =

@@ -30,26 +30,9 @@ For me, this tool is the missing piece between a classic ERD tool and a Data cat
 
 ## Installation
 
-This tool is under construction and may drastically change in the process (no final packaging has been decided for now).
+Schema Viz is a Single Page Application built with Elm that parse your SQL schema and allows you to explore it.
 
-Currently, it has two parts:
-
-- a parser, built in Ruby to parse a schema file and write it to JSON
-- a front app, built in Elm to visualize the schema
-
-### Ruby parser
-
-First, you need to install Ruby & Bundler in your machine, then run `bundle install` to get the dependencies.
-
-- launch the program: `exe/schema-viz generate --structure ./test/resources/schema.sql --output frontend/tests/resources/schema.json`
-- launch the tests: `rake test`
-- launch a Ruby console: `bin/console`
-
-Ruby folders are `lib/schema-viz` for sources & `test` for tests.
-
-### Elm viz
-
-First, you need to install Elm & NPM on your machine, then move to `frontend` folder and run `npm install` to get the dependencies.
+First, you need to install Elm & NPM on your machine and run `npm install` to get the dependencies.
 
 - launch dev env: `elm-live src/Main.elm --open --start-page=index.html -- --output=index.js`
 - launch the tests: `npx elm-test`
@@ -58,7 +41,18 @@ First, you need to install Elm & NPM on your machine, then move to `frontend` fo
 
 Elm folders are `src` for sources & `tests` for tests.
 
-(I know, this is not very good, this will improve with the maturity of the tool ^^)
+### (legacy) Ruby parser
+
+This tool started as a Ruby parser for the SQL schema, you can still find it under `legacy/ruby` folder.
+
+To run it you need to install Ruby & Bundler in your machine, then run `bundle install` to get the dependencies.
+
+- launch the
+  program: `exe/schema-viz generate --structure ./test/resources/schema.sql --output ../../tests/resources/schema.json`
+- launch the tests: `rake test`
+- launch a Ruby console: `bin/console`
+
+Ruby folders are `lib/schema-viz` for sources & `test` for tests.
 
 ## License
 

@@ -19,24 +19,53 @@
                 flags: null
             })
 
-            // bootstrap ports
-            app.ports.activateTooltipsAndPopovers.subscribe(() => {
-                // a ugly hack to avoid race conditions
-                // elements are rendered and selected in the same time, so sometimes, it's called before rendering and cause errors :(
-                delay(() => {
-                    document.querySelectorAll('[data-bs-toggle="tooltip"]').forEach(e => bootstrap.Tooltip.getOrCreateInstance(e))
-                    document.querySelectorAll('[data-bs-toggle="popover"]').forEach(e => bootstrap.Popover.getOrCreateInstance(e))
-                })
-            })
-            app.ports.showModal && app.ports.showModal.subscribe(id => bootstrap.Modal.getOrCreateInstance(document.getElementById(id)).show())
-            app.ports.hideModal && app.ports.hideModal.subscribe(id => bootstrap.Modal.getOrCreateInstance(document.getElementById(id)).hide())
-            app.ports.hideOffcanvas && app.ports.hideOffcanvas.subscribe(id => bootstrap.Offcanvas.getOrCreateInstance(document.getElementById(id)).hide())
-            app.ports.click && app.ports.click.subscribe(id => delay(() => document.getElementById(id).click()))
 
+            /* Elm ports */
+
+            function sendToElm(msg) {
+                // console.log('js message', msg)
+                app.ports.jsToElm.send(msg)
+            }
+            app.ports.elmToJs.subscribe(msg => {
+                // setTimeout: a ugly hack to wait for Elm to render the model changes before running the commands :(
+                setTimeout(function () {
+                    // console.log('elm message', msg)
+                    switch (msg.kind) {
+                        case "Click":         click(msg.id); break;
+                        case "ShowModal":     showModal(msg.id); break;
+                        case "HideModal":     hideModal(msg.id); break;
+                        case "HideOffcanvas": hideOffcanvas(msg.id); break;
+                        case "ActivateTooltipsAndPopovers": activateTooltipsAndPopovers(); break;
+                        case "ShowToast":     showToast(msg.toast); break;
+                        case "LoadSchemas":   loadSchemas(); break;
+                        case "SaveSchema":    saveSchema(msg.schema); break;
+                        case "ReadFile":      readFile(msg.file); break;
+                        case "ObserveSizes":  observeSizes(msg.ids); break;
+                        default: console.error('Unsupported Elm message', msg); break;
+                    }
+                }, 100)
+            })
+
+            function click(id) {
+                document.getElementById(id).click()
+            }
+            function showModal(id) {
+                bootstrap.Modal.getOrCreateInstance(document.getElementById(id)).show()
+            }
+            function hideModal(id) {
+                bootstrap.Modal.getOrCreateInstance(document.getElementById(id)).hide()
+            }
+            function hideOffcanvas(id) {
+                bootstrap.Offcanvas.getOrCreateInstance(document.getElementById(id)).hide()
+            }
+            function activateTooltipsAndPopovers() {
+                document.querySelectorAll('[data-bs-toggle="tooltip"]').forEach(e => bootstrap.Tooltip.getOrCreateInstance(e))
+                document.querySelectorAll('[data-bs-toggle="popover"]').forEach(e => bootstrap.Popover.getOrCreateInstance(e))
+            }
 
             let toastCpt = 0
             const toastContainer = document.getElementById('toast-container')
-            app.ports.showToast.subscribe(toast => {
+            function showToast(toast) {
                 const toastNo = toastCpt += 1
                 const toastId = 'toast-' + toastNo
                 let html =
@@ -61,18 +90,42 @@
                 }
                 toastContainer.insertAdjacentHTML('beforeend', html);
                 bootstrap.Toast.getOrCreateInstance(document.getElementById(toastId)).show()
-            })
-            window.addEventListener('hidden.bs.toast', function (e) {
-                const toast = document.getElementById(e.target.id)
-                toast.parentNode.removeChild(toast)
-            })
+            }
 
-            // autofocus element in modal that require it (not done automatically)
-            // cd https://getbootstrap.com/docs/5.0/components/modal/: "Due to how HTML5 defines its semantics, the autofocus HTML attribute has no effect in Bootstrap modals."
-            window.addEventListener('shown.bs.modal', function (e) {
-                const input = e.target.querySelector('[autofocus]')
-                input && input.focus()
+            const schemaPrefix = 'schema-'
+            function loadSchemas() {
+                const values = Object.keys(localStorage)
+                    .filter(key => key.startsWith(schemaPrefix))
+                    .map(key => [key.replace(schemaPrefix, ''), JSON.parse(localStorage.getItem(key))])
+                sendToElm({kind: "SchemasLoaded", schemas: values})
+            }
+            function saveSchema(schema) {
+                localStorage.setItem(schemaPrefix + schema.name, JSON.stringify(schema))
+            }
+
+            function readFile(file) {
+                const reader = new FileReader()
+                reader.onload = e => sendToElm({kind: "FileRead", file: file, content: e.target.result})
+                reader.readAsText(file)
+            }
+
+            const resizeObserver = new ResizeObserver(entries => {
+                const sizes = entries.map(entry => ({
+                    id: entry.target.id,
+                    size: {
+                        width: entry.contentRect.width,
+                        height: entry.contentRect.height
+                    }
+                }))
+                sendToElm({kind: "SizesChanged", sizes: sizes})
             })
+            function observeSizes(ids) {
+                ids.forEach(id => resizeObserver.observe(document.getElementById(id)))
+            }
+
+
+            /* Bootstrap helpers */
+
             // hide tooltip on click (avoid orphan tooltips when element is removed)
             // cf https://getbootstrap.com/docs/5.0/components/tooltips/: "Tooltips must be hidden before their corresponding elements have been removed from the DOM."
             let currentTooltip = null
@@ -82,44 +135,16 @@
             window.addEventListener('click', function () {
                 currentTooltip && bootstrap.Tooltip.getOrCreateInstance(currentTooltip).hide()
             })
-
-            // resize ports
-            app.ports.observeSizes.subscribe(ids => delay(() => ids.forEach(id => resizeObserver.observe(document.getElementById(id)))))
-            const resizeObserver = new ResizeObserver(entries => {
-                const sizes = entries.map(entry => ({
-                    id: entry.target.id,
-                    size: {
-                        width: entry.contentRect.width,
-                        height: entry.contentRect.height
-                    }
-                }))
-                app.ports.sizesReceiver.send(sizes)
+            // autofocus element in modal that require it (not done automatically)
+            // cd https://getbootstrap.com/docs/5.0/components/modal/: "Due to how HTML5 defines its semantics, the autofocus HTML attribute has no effect in Bootstrap modals."
+            window.addEventListener('shown.bs.modal', function (e) {
+                const input = e.target.querySelector('[autofocus]')
+                input && input.focus()
             })
-
-            // read text file ports
-            app.ports.readTextFile.subscribe(file => {
-                const reader = new FileReader()
-                reader.onload = (() => (e) => app.ports.textFileRead.send([file, e.target.result]))()
-                reader.readAsText(file)
+            window.addEventListener('hidden.bs.toast', function (e) {
+                const toast = document.getElementById(e.target.id)
+                toast.parentNode.removeChild(toast)
             })
-
-            // local storage ports
-            const schemaPrefix = 'schema-'
-            app.ports.saveSchemaPort && app.ports.saveSchemaPort.subscribe(schema => {
-                localStorage.setItem(schemaPrefix + schema.name, JSON.stringify(schema))
-            })
-            app.ports.loadSchemas && app.ports.loadSchemas.subscribe(() => {
-                const values = Object.keys(localStorage)
-                    .filter(key => key.startsWith(schemaPrefix))
-                    .map(key => [key.replace(schemaPrefix, ''), JSON.parse(localStorage.getItem(key))])
-                app.ports.schemasReceivedPort.send(values)
-            })
-
-
-            // because Elm can trigger some commands before the model changes are rendered :(
-            function delay(fn) {
-                setTimeout(fn, 100)
-            }
         }
     </script>
 </head>

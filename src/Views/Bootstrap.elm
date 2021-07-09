@@ -1,7 +1,7 @@
-module Views.Bootstrap exposing (BsColor(..), Toggle(..), ariaExpanded, ariaHidden, ariaLabel, ariaLabelledBy, bsBackdrop, bsButton, bsButtonGroup, bsDismiss, bsDropdown, bsScroll, bsToggle, bsToggleCollapse, bsToggleDropdown, bsToggleModal, bsToggleOffcanvas)
+module Views.Bootstrap exposing (BsColor(..), Toggle(..), ariaExpanded, ariaHidden, ariaLabel, ariaLabelledBy, bsBackdrop, bsButton, bsButtonGroup, bsDismiss, bsDropdown, bsScroll, bsToggle, bsToggleCollapse, bsToggleCollapseLink, bsToggleDropdown, bsToggleModal, bsToggleOffcanvas)
 
 import Html exposing (Attribute, Html, div)
-import Html.Attributes exposing (attribute, class, id, type_)
+import Html.Attributes exposing (attribute, class, href, id, type_)
 import Libs.Std exposing (role)
 import Models.Utils exposing (HtmlId, Text)
 
@@ -127,6 +127,11 @@ bsToggleModal targetId =
 bsToggleCollapse : HtmlId -> List (Attribute msg)
 bsToggleCollapse targetId =
     [ bsToggle Collapse, bsTarget targetId, ariaControls targetId, ariaExpanded False ]
+
+
+bsToggleCollapseLink : HtmlId -> List (Attribute msg)
+bsToggleCollapseLink targetId =
+    [ bsToggle Collapse, href ("#" ++ targetId), role "button", ariaControls targetId, ariaExpanded False ]
 
 
 bsToggleOffcanvas : HtmlId -> List (Attribute msg)

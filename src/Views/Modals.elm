@@ -3,14 +3,16 @@ module Views.Modals exposing (viewModals)
 import AssocList as Dict
 import Conf exposing (conf, schemaSamples)
 import FileValue exposing (hiddenInputSingle)
+import FontAwesome.Icon exposing (viewIcon)
+import FontAwesome.Solid as Icon
 import Html exposing (Html, a, button, div, h5, input, label, li, p, span, text, ul)
 import Html.Attributes exposing (autofocus, class, disabled, for, href, id, style, tabindex, target, type_, value)
 import Html.Events exposing (onClick, onInput)
-import Libs.Std exposing (bText, codeText, cond, role)
+import Libs.Std exposing (bText, codeText, cond, divIf, role)
 import Models exposing (Msg(..), Switch)
 import Models.Schema exposing (LayoutName, Schema)
 import Models.Utils exposing (HtmlId, Text)
-import Views.Bootstrap exposing (BsColor(..), Toggle(..), ariaExpanded, ariaHidden, ariaLabel, ariaLabelledBy, bsButton, bsDismiss, bsToggle)
+import Views.Bootstrap exposing (BsColor(..), Toggle(..), ariaExpanded, ariaHidden, ariaLabel, ariaLabelledBy, bsButton, bsDismiss, bsToggle, bsToggleCollapseLink)
 
 
 viewModals : Switch -> Schema -> List Schema -> LayoutName -> List (Html Msg)
@@ -26,7 +28,8 @@ viewSchemaSwitchModal switch schema storedSchemas =
     modal conf.ids.schemaSwitchModal
         (cond (Dict.isEmpty schema.tables) (\_ -> "Schema Viz, easily browse your SQL schema!") (\_ -> "Load a new schema"))
         [ div [ style "text-align" "center" ] [ bText "⚠️ This app is currently built", text ", you can use it but stored data may break ⚠️" ]
-        , div [ class "row row-cols-1 row-cols-sm-2 row-cols-lg-3", style "margin-top" "1em" ]
+        , divIf (List.length storedSchemas > 0)
+            [ class "row row-cols-1 row-cols-sm-2 row-cols-lg-3", style "margin-top" "1em" ]
             (storedSchemas
                 |> List.map
                     (\s ->
@@ -57,10 +60,34 @@ viewSchemaSwitchModal switch schema storedSchemas =
             ]
         , div [ style "text-align" "center", style "margin-top" "1em" ]
             [ text "Or just try out with "
-            , div [ class "dropdown dropup", style "display" "inline-block" ]
+            , div [ class "dropdown", style "display" "inline-block" ]
                 [ a [ id "schema-samples", href "#", bsToggle Dropdown, ariaExpanded False ] [ text "an example" ]
                 , ul [ class "dropdown-menu", ariaLabelledBy "schema-samples" ]
                     (schemaSamples |> Dict.keys |> List.map (\name -> li [] [ a [ class "dropdown-item", href "#", onClick (LoadSampleData name) ] [ text name ] ]))
+                ]
+            ]
+        , div [ style "margin-top" "1em" ]
+            [ div [] [ a ([ class "text-muted" ] ++ bsToggleCollapseLink "get-schema-instructions") [ viewIcon Icon.angleRight, text " How to get my db schema ?" ] ]
+            , div [ class "collapse", id "get-schema-instructions" ]
+                [ div [ class "card card-body" ]
+                    [ p [ class "card-text" ]
+                        [ text "An "
+                        , bText "SQL schema"
+                        , text " is a SQL file with all the needed instructions to create your database, so it contains your database structure. Here are some ways to get it:"
+                        , ul []
+                            [ li [] [ bText "Export it", text " from your database: connect to your database using your favorite client and follow the instructions to extract the schema (ex: ", a [ href "https://stackoverflow.com/a/54504510/15051232" ] [ text "DBeaver" ], text ")" ]
+                            , li [] [ bText "Find it", text " in your project: some frameworks like Rails store the schema in your project, so you may have it (ex: with Rails it's ", codeText "db/structure.sql", text " if you use the SQL version)" ]
+                            ]
+                        , text "If you have no idea on what I'm talking about just before, ask to the developers working on the project or your database administrator 😇"
+                        ]
+                    ]
+                ]
+            , div [] [ a ([ class "text-muted" ] ++ bsToggleCollapseLink "data-privacy") [ viewIcon Icon.angleRight, text " What about data privacy ?" ] ]
+            , div [ class "collapse", id "data-privacy" ]
+                [ div [ class "card card-body" ]
+                    [ p [ class "card-text" ] [ text "Your application schema may be a sensitive information, but no worries with Schema Viz, everything stay on your machine. In fact, there is even no server at all!" ]
+                    , p [ class "card-text" ] [ text "Your schema is read and ", bText "parsed in your browser", text ", and then saved with the layouts in your browser ", bText "local storage", text ". Nothing fancy ^^" ]
+                    ]
                 ]
             ]
         ]
@@ -108,7 +135,7 @@ viewHelpModal =
 modal : HtmlId -> Text -> List (Html Msg) -> List (Html Msg) -> Html Msg
 modal modalId title body footer =
     div [ id modalId, class "modal fade", tabindex -1, ariaLabelledBy (modalId ++ "-label"), ariaHidden True ]
-        [ div [ class "modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable" ]
+        [ div [ class "modal-dialog modal-lg modal-dialog-scrollable" ]
             [ div [ class "modal-content" ]
                 [ div [ class "modal-header" ]
                     [ h5 [ class "modal-title", id (modalId ++ "-label") ] [ text title ]

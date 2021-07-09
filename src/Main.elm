@@ -5,7 +5,7 @@ import Commands.FetchSample exposing (loadSample)
 import Conf exposing (conf)
 import Draggable
 import Libs.Std exposing (cond, set, setState)
-import Models exposing (Flags, Model, Msg(..), initModel)
+import Models exposing (Flags, Model, Msg(..), initConfirm, initModel)
 import Models.Schema exposing (TableStatus(..))
 import Ports exposing (JsMsg(..), activateTooltipsAndPopovers, dropSchema, hideOffcanvas, loadSchemas, observeSize, onJsMessage, readFile, showModal, toastError)
 import Update exposing (createLayout, createSampleSchema, createSchema, deleteLayout, dragConfig, dragItem, hideAllTables, hideColumn, hideTable, loadLayout, showAllTables, showColumn, showTable, updateLayout, updateSizes, useSchema, visitTable, visitTables, zoomCanvas)
@@ -120,6 +120,16 @@ update msg model =
 
         DeleteLayout name ->
             deleteLayout name model
+
+        OpenConfirm confirm ->
+            ( { model | confirm = confirm }, showModal conf.ids.confirm )
+
+        OnConfirm answer cmd ->
+            if answer then
+                ( { model | confirm = initConfirm }, cmd )
+
+            else
+                ( { model | confirm = initConfirm }, Cmd.none )
 
         JsMessage (SchemasLoaded ( errors, schemas )) ->
             ( { model | storedSchemas = schemas }, Cmd.batch (errors |> List.map (\( name, err ) -> toastError ("Unable to read schema <b>" ++ name ++ "</b>:<br>" ++ decodeErrorToHtml err))) )

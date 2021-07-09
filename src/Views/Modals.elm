@@ -1,26 +1,19 @@
-module Views.Modals exposing (viewModals)
+module Views.Modals exposing (viewConfirm, viewCreateLayoutModal, viewHelpModal, viewSchemaSwitchModal)
 
 import AssocList as Dict
 import Conf exposing (conf, schemaSamples)
 import FileValue exposing (hiddenInputSingle)
 import FontAwesome.Icon exposing (viewIcon)
 import FontAwesome.Solid as Icon
-import Html exposing (Html, a, button, div, h5, input, label, li, p, span, text, ul)
+import Html exposing (Html, a, button, div, h5, input, label, li, p, small, span, text, ul)
 import Html.Attributes exposing (autofocus, class, disabled, for, href, id, style, tabindex, target, title, type_, value)
 import Html.Events exposing (onClick, onInput)
-import Libs.Std exposing (bText, codeText, cond, divIf, role)
-import Models exposing (Msg(..), Switch)
+import Libs.Std exposing (bText, codeText, cond, divIf, plural, role)
+import Models exposing (Confirm, Msg(..), Switch)
 import Models.Schema exposing (LayoutName, Schema)
 import Models.Utils exposing (HtmlId, Text)
-import Views.Bootstrap exposing (BsColor(..), Toggle(..), ariaExpanded, ariaHidden, ariaLabel, ariaLabelledBy, bsButton, bsDismiss, bsToggle, bsToggleCollapseLink)
-
-
-viewModals : Switch -> Schema -> List Schema -> LayoutName -> List (Html Msg)
-viewModals switch schema storedSchemas newLayout =
-    [ viewSchemaSwitchModal switch schema storedSchemas
-    , viewCreateLayoutModal newLayout
-    , viewHelpModal
-    ]
+import Views.Bootstrap exposing (BsColor(..), Toggle(..), ariaExpanded, ariaHidden, ariaLabel, ariaLabelledBy, bsBackdrop, bsButton, bsDismiss, bsKeyboard, bsToggle, bsToggleCollapseLink)
+import Views.Helpers exposing (onClickConfirm)
 
 
 viewSchemaSwitchModal : Switch -> Schema -> List Schema -> Html Msg
@@ -35,9 +28,12 @@ viewSchemaSwitchModal switch schema storedSchemas =
                     (\s ->
                         div [ class "col", style "margin-top" "1em" ]
                             [ div [ class "card h-100" ]
-                                [ div [ class "card-body" ] [ h5 [ class "card-title" ] [ text s.name ] ]
+                                [ div [ class "card-body" ]
+                                    [ h5 [ class "card-title" ] [ text s.name ]
+                                    , p [ class "card-text" ] [ small [ class "text-muted" ] [ text (plural (List.length s.layouts) "No saved layout" "1 saved layout" " saved layouts") ] ]
+                                    ]
                                 , div [ class "card-footer d-flex" ]
-                                    [ a [ class "btn-text link-secondary me-auto", href "#", title "Delete this schema", bsToggle Tooltip, onClick (DeleteSchema s) ] [ viewIcon Icon.trash ]
+                                    [ a [ class "btn-text link-secondary me-auto", href "#", title "Delete this schema", bsToggle Tooltip, onClickConfirm ("You you really want to delete " ++ s.name ++ " schema ?") (DeleteSchema s) ] [ viewIcon Icon.trash ]
                                     , bsButton Primary [ onClick (UseSchema s) ] [ text "Use this schema" ]
                                     ]
                                 ]
@@ -133,6 +129,25 @@ viewHelpModal =
             ]
         ]
         [ button [ type_ "button", class "btn btn-primary", bsDismiss Modal ] [ text "Thanks!" ] ]
+
+
+viewConfirm : Confirm -> Html Msg
+viewConfirm confirm =
+    div [ id conf.ids.confirm, class "modal fade", tabindex -1, bsBackdrop "static", bsKeyboard False, ariaLabelledBy (conf.ids.confirm ++ "-label"), ariaHidden True ]
+        [ div [ class "modal-dialog modal-dialog-centered" ]
+            [ div [ class "modal-content" ]
+                [ div [ class "modal-header" ]
+                    [ h5 [ class "modal-title", id (conf.ids.confirm ++ "-label") ] [ text "Confirm" ]
+                    , button [ type_ "button", class "btn-close", bsDismiss Modal, ariaLabel "Close", onClick (OnConfirm False confirm.cmd) ] []
+                    ]
+                , div [ class "modal-body" ] [ confirm.content ]
+                , div [ class "modal-footer" ]
+                    [ button [ class "btn btn-secondary", bsDismiss Modal, onClick (OnConfirm False confirm.cmd) ] [ text "Cancel" ]
+                    , button [ class "btn btn-primary", bsDismiss Modal, onClick (OnConfirm True confirm.cmd) ] [ text "Ok" ]
+                    ]
+                ]
+            ]
+        ]
 
 
 modal : HtmlId -> Text -> List (Html Msg) -> List (Html Msg) -> Html Msg

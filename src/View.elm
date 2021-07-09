@@ -11,7 +11,7 @@ import Models.Schema exposing (ColumnRef, Relation, RelationRef, Schema, Table, 
 import Models.Utils exposing (Position, ZoomLevel)
 import Views.Helpers exposing (dragAttrs, sizeAttrs)
 import Views.Menu exposing (viewMenu)
-import Views.Modals exposing (viewModals)
+import Views.Modals exposing (viewConfirm, viewCreateLayoutModal, viewHelpModal, viewSchemaSwitchModal)
 import Views.Navbar exposing (viewNavbar)
 import Views.Relations exposing (viewRelation)
 import Views.Tables exposing (viewTable)
@@ -27,8 +27,12 @@ viewApp model =
         ++ viewNavbar model.state.search model.state.currentLayout model.schema.layouts (Dict.values model.schema.tables)
         ++ viewMenu model.schema
         ++ [ viewErd model.canvas model.schema ]
-        ++ viewModals model.switch model.schema model.storedSchemas (model.state.newLayout |> Maybe.withDefault "")
-        ++ [ viewToasts ]
+        ++ [ viewSchemaSwitchModal model.switch model.schema model.storedSchemas
+           , viewCreateLayoutModal (model.state.newLayout |> Maybe.withDefault "")
+           , viewHelpModal
+           , viewConfirm model.confirm
+           , viewToasts
+           ]
 
 
 viewErd : Canvas -> Schema -> Html Msg

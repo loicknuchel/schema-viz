@@ -16,7 +16,7 @@ import Views.Bootstrap exposing (BsColor(..), Toggle(..), ariaLabel, ariaLabelle
 
 viewMenu : Schema -> List (Html Msg)
 viewMenu schema =
-    [ div [ id conf.ids.menu, class "offcanvas offcanvas-start", bsScroll True, bsBackdrop False, ariaLabelledBy (conf.ids.menu ++ "-label"), tabindex -1 ]
+    [ div [ id conf.ids.menu, class "offcanvas offcanvas-start", bsScroll True, bsBackdrop "false", ariaLabelledBy (conf.ids.menu ++ "-label"), tabindex -1 ]
         [ div [ class "offcanvas-header" ]
             [ h5 [ class "offcanvas-title", id (conf.ids.menu ++ "-label") ] [ text "Menu" ]
             , button [ type_ "button", class "btn-close text-reset", bsDismiss Offcanvas, ariaLabel "Close" ] []

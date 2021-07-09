@@ -15,6 +15,7 @@ conf :
         , schemaSwitchModal : HtmlId
         , newLayoutModal : HtmlId
         , helpModal : HtmlId
+        , confirm : HtmlId
         }
     , loading : { showTablesThreshold : Int }
     }
@@ -29,6 +30,7 @@ conf =
         , schemaSwitchModal = "schema-switch-modal"
         , newLayoutModal = "new-layout-modal"
         , helpModal = "help-modal"
+        , confirm = "confirm-modal"
         }
     , loading = { showTablesThreshold = 20 }
     }

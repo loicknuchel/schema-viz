@@ -240,6 +240,16 @@ uniqueId takenIds id =
         id
 
 
+boolToString : Bool -> String
+boolToString bool =
+    case bool of
+        True ->
+            "true"
+
+        False ->
+            "false"
+
+
 regexMatches : String -> String -> List (Maybe String)
 regexMatches regex text =
     Regex.fromStringWith { caseInsensitive = True, multiline = False } regex
@@ -278,6 +288,11 @@ plural count none one many =
 send : msg -> Cmd msg
 send msg =
     Task.succeed msg |> Task.perform identity
+
+
+andThen : msg -> msg -> Cmd msg
+andThen msg2 msg1 =
+    Task.succeed msg1 |> Task.andThen (\_ -> Task.succeed msg2) |> Task.perform identity
 
 
 genSequence : List (Random.Generator a) -> Random.Generator (List a)

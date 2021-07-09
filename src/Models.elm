@@ -1,9 +1,10 @@
-module Models exposing (Canvas, DragId, Error, Errors, Flags, Model, Msg(..), Search, State, Switch, initModel, initSwitch)
+module Models exposing (Canvas, Confirm, DragId, Error, Errors, Flags, Model, Msg(..), Search, State, Switch, initConfirm, initModel, initSwitch)
 
 import Draggable
 import FileValue exposing (File)
+import Html exposing (Html, text)
 import Http
-import Libs.Std exposing (WheelEvent)
+import Libs.Std exposing (WheelEvent, send)
 import Mappers.SchemaMapper exposing (emptySchema)
 import Models.Schema exposing (ColumnRef, LayoutName, Schema, TableId, TableStatus(..))
 import Models.Utils exposing (Position, Size, Text, ZoomLevel)
@@ -19,12 +20,12 @@ type alias Flags =
 
 
 type alias Model =
-    { switch : Switch, state : State, canvas : Canvas, schema : Schema, storedSchemas : List Schema }
+    { switch : Switch, state : State, canvas : Canvas, schema : Schema, storedSchemas : List Schema, confirm : Confirm }
 
 
 initModel : Model
 initModel =
-    { switch = initSwitch, state = initState, canvas = initCanvas, schema = emptySchema, storedSchemas = [] }
+    { switch = initSwitch, state = initState, canvas = initCanvas, schema = emptySchema, storedSchemas = [], confirm = initConfirm }
 
 
 type alias Switch =
@@ -52,6 +53,15 @@ type alias Canvas =
 initCanvas : Canvas
 initCanvas =
     { size = Size 0 0, zoom = 1, position = Position 0 0 }
+
+
+type alias Confirm =
+    { content : Html Msg, cmd : Cmd Msg }
+
+
+initConfirm : Confirm
+initConfirm =
+    { content = text "No text", cmd = send Noop }
 
 
 type Msg
@@ -83,6 +93,8 @@ type Msg
     | LoadLayout LayoutName
     | UpdateLayout LayoutName
     | DeleteLayout LayoutName
+    | OpenConfirm Confirm
+    | OnConfirm Bool (Cmd Msg)
     | JsMessage JsMsg
     | Noop
 

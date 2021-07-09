@@ -1,8 +1,8 @@
-module Views.Bootstrap exposing (BsColor(..), Toggle(..), ariaExpanded, ariaHidden, ariaLabel, ariaLabelledBy, bsBackdrop, bsButton, bsButtonGroup, bsDismiss, bsDropdown, bsScroll, bsToggle, bsToggleCollapse, bsToggleCollapseLink, bsToggleDropdown, bsToggleModal, bsToggleOffcanvas)
+module Views.Bootstrap exposing (BsColor(..), Toggle(..), ariaExpanded, ariaHidden, ariaLabel, ariaLabelledBy, bsBackdrop, bsButton, bsButtonGroup, bsDismiss, bsDropdown, bsKeyboard, bsScroll, bsToggle, bsToggleCollapse, bsToggleCollapseLink, bsToggleDropdown, bsToggleModal, bsToggleOffcanvas)
 
 import Html exposing (Attribute, Html, div)
 import Html.Attributes exposing (attribute, class, href, id, type_)
-import Libs.Std exposing (role)
+import Libs.Std exposing (boolToString, role)
 import Models.Utils exposing (HtmlId, Text)
 
 
@@ -61,42 +61,27 @@ bsTarget targetId =
 
 bsScroll : Bool -> Attribute msg
 bsScroll value =
-    case value of
-        True ->
-            attribute "data-bs-scroll" "true"
-
-        False ->
-            attribute "data-bs-scroll" "false"
+    attribute "data-bs-scroll" (boolToString value)
 
 
-bsBackdrop : Bool -> Attribute msg
+bsBackdrop : String -> Attribute msg
 bsBackdrop value =
-    case value of
-        True ->
-            attribute "data-bs-backdrop" "true"
+    attribute "data-bs-backdrop" value
 
-        False ->
-            attribute "data-bs-backdrop" "false"
+
+bsKeyboard : Bool -> Attribute msg
+bsKeyboard value =
+    attribute "data-bs-keyboard" (boolToString value)
 
 
 ariaExpanded : Bool -> Attribute msg
 ariaExpanded value =
-    case value of
-        True ->
-            attribute "aria-expanded" "true"
-
-        False ->
-            attribute "aria-expanded" "false"
+    attribute "aria-expanded" (boolToString value)
 
 
 ariaHidden : Bool -> Attribute msg
 ariaHidden value =
-    case value of
-        True ->
-            attribute "aria-hidden" "true"
-
-        False ->
-            attribute "aria-hidden" "false"
+    attribute "aria-hidden" (boolToString value)
 
 
 ariaControls : HtmlId -> Attribute msg

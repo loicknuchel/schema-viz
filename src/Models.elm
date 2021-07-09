@@ -62,6 +62,7 @@ type Msg
     | FileSelected File
     | LoadSampleData String
     | GotSampleData String String (Result Http.Error Text)
+    | DeleteSchema Schema
     | UseSchema Schema
     | ChangedSearch Search
     | SelectTable TableId

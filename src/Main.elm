@@ -7,7 +7,7 @@ import Draggable
 import Libs.Std exposing (cond, set, setState)
 import Models exposing (Flags, Model, Msg(..), initModel)
 import Models.Schema exposing (TableStatus(..))
-import Ports exposing (JsMsg(..), activateTooltipsAndPopovers, hideOffcanvas, loadSchemas, observeSize, onJsMessage, readFile, showModal, toastError)
+import Ports exposing (JsMsg(..), activateTooltipsAndPopovers, dropSchema, hideOffcanvas, loadSchemas, observeSize, onJsMessage, readFile, showModal, toastError)
 import Update exposing (createLayout, createSampleSchema, createSchema, deleteLayout, dragConfig, dragItem, hideAllTables, hideColumn, hideTable, loadLayout, showAllTables, showColumn, showTable, updateLayout, updateSizes, useSchema, visitTable, visitTables, zoomCanvas)
 import View exposing (viewApp)
 import Views.Helpers exposing (decodeErrorToHtml)
@@ -38,7 +38,7 @@ update msg model =
     case msg of
         -- each case should be one line or call a function in Update file
         ChangeSchema ->
-            ( model, Cmd.batch [ showModal conf.ids.schemaSwitchModal, loadSchemas, hideOffcanvas conf.ids.menu ] )
+            ( model, Cmd.batch [ hideOffcanvas conf.ids.menu, showModal conf.ids.schemaSwitchModal, loadSchemas ] )
 
         FileDragOver _ _ ->
             ( model, Cmd.none )
@@ -57,6 +57,9 @@ update msg model =
 
         GotSampleData name path response ->
             createSampleSchema name path response model
+
+        DeleteSchema schema ->
+            ( { model | storedSchemas = model.storedSchemas |> List.filter (\s -> not (s.name == schema.name)) }, dropSchema schema )
 
         UseSchema schema ->
             useSchema schema model

@@ -1,4 +1,4 @@
-port module Ports exposing (JsMsg(..), activateTooltipsAndPopovers, click, hideModal, hideOffcanvas, loadSchemas, observeSize, observeTableSize, observeTablesSize, onJsMessage, readFile, saveSchema, showModal, toastError, toastInfo)
+port module Ports exposing (JsMsg(..), activateTooltipsAndPopovers, click, dropSchema, hideModal, hideOffcanvas, loadSchemas, observeSize, observeTableSize, observeTablesSize, onJsMessage, readFile, saveSchema, showModal, toastError, toastInfo)
 
 import FileValue exposing (File)
 import Json.Decode as Decode exposing (Decoder, Value)
@@ -59,6 +59,11 @@ saveSchema schema =
     messageToJs (SaveSchema schema)
 
 
+dropSchema : Schema -> Cmd msg
+dropSchema schema =
+    messageToJs (DropSchema schema)
+
+
 readFile : File -> Cmd msg
 readFile file =
     messageToJs (ReadFile file)
@@ -93,6 +98,7 @@ type ElmMsg
     | ShowToast Toast
     | LoadSchemas
     | SaveSchema Schema
+    | DropSchema Schema
     | ReadFile File
     | ObserveSizes (List HtmlId)
 
@@ -152,6 +158,9 @@ elmEncoder elm =
 
         SaveSchema schema ->
             Encode.object [ ( "kind", "SaveSchema" |> Encode.string ), ( "schema", schema |> encodeSchema ) ]
+
+        DropSchema schema ->
+            Encode.object [ ( "kind", "DropSchema" |> Encode.string ), ( "schema", schema |> encodeSchema ) ]
 
         ReadFile file ->
             Encode.object [ ( "kind", "ReadFile" |> Encode.string ), ( "file", file |> FileValue.encode ) ]

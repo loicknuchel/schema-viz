@@ -6,7 +6,7 @@ import FileValue exposing (hiddenInputSingle)
 import FontAwesome.Icon exposing (viewIcon)
 import FontAwesome.Solid as Icon
 import Html exposing (Html, a, button, div, h5, input, label, li, p, span, text, ul)
-import Html.Attributes exposing (autofocus, class, disabled, for, href, id, style, tabindex, target, type_, value)
+import Html.Attributes exposing (autofocus, class, disabled, for, href, id, style, tabindex, target, title, type_, value)
 import Html.Events exposing (onClick, onInput)
 import Libs.Std exposing (bText, codeText, cond, divIf, role)
 import Models exposing (Msg(..), Switch)
@@ -36,7 +36,10 @@ viewSchemaSwitchModal switch schema storedSchemas =
                         div [ class "col" ]
                             [ div [ class "card h-100" ]
                                 [ div [ class "card-body" ] [ h5 [ class "card-title" ] [ text s.name ] ]
-                                , div [ class "card-footer text-end" ] [ bsButton Primary [ onClick (UseSchema s) ] [ text "Use this schema" ] ]
+                                , div [ class "card-footer d-flex" ]
+                                    [ a [ class "btn-text link-secondary me-auto", href "#", title "Delete this schema", bsToggle Tooltip, onClick (DeleteSchema s) ] [ viewIcon Icon.trash ]
+                                    , bsButton Primary [ onClick (UseSchema s) ] [ text "Use this schema" ]
+                                    ]
                                 ]
                             ]
                     )

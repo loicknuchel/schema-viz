@@ -3,30 +3,30 @@ module Mappers.SchemaMapper exposing (buildSchema, buildSchemaFromJson, buildSch
 import AssocList as Dict
 import Conf exposing (conf)
 import JsonFormats.JsonSchemaDecoder exposing (JsonColumn, JsonForeignKey, JsonIndex, JsonPrimaryKey, JsonSchema, JsonTable, JsonUnique)
-import Libs.Std exposing (dictFromList, listGet, listZipWith, stringHashCode, stringWordSplit)
+import Libs.Std exposing (dictFromList, listGet, listZipWith, stringHashCode, stringWordSplit, uniqueId)
 import Models.Schema exposing (Column, ColumnComment(..), ColumnIndex(..), ColumnName(..), ColumnState, ColumnType(..), ColumnValue(..), ForeignKey, ForeignKeyName(..), Index, IndexName(..), Layout, PrimaryKey, PrimaryKeyName(..), RelationRef, Schema, SchemaName(..), Table, TableComment(..), TableId(..), TableName(..), TableState, TableStatus(..), Unique, UniqueName(..))
 import Models.Utils exposing (Color, Position, Size)
 import SqlParser.SchemaParser exposing (SqlColumn, SqlForeignKey, SqlIndex, SqlPrimaryKey, SqlSchema, SqlTable, SqlUnique)
 
 
-buildSchemaFromJson : String -> JsonSchema -> Schema
-buildSchemaFromJson name schema =
-    buildJsonTables schema |> buildSchema name []
+buildSchemaFromJson : List String -> String -> JsonSchema -> Schema
+buildSchemaFromJson takenNames name schema =
+    buildJsonTables schema |> buildSchema takenNames name []
 
 
-buildSchemaFromSql : String -> SqlSchema -> Schema
-buildSchemaFromSql name schema =
-    buildSqlTables schema |> buildSchema name []
+buildSchemaFromSql : List String -> String -> SqlSchema -> Schema
+buildSchemaFromSql takenNames name schema =
+    buildSqlTables schema |> buildSchema takenNames name []
 
 
 emptySchema : Schema
 emptySchema =
-    buildSchema "No name" [] []
+    buildSchema [] "No name" [] []
 
 
-buildSchema : String -> List Layout -> List Table -> Schema
-buildSchema name layouts tables =
-    { name = name, tables = tables |> dictFromList .id, relations = buildRelations tables, layouts = layouts }
+buildSchema : List String -> String -> List Layout -> List Table -> Schema
+buildSchema takenNames name layouts tables =
+    { name = uniqueId takenNames name, tables = tables |> dictFromList .id, relations = buildRelations tables, layouts = layouts }
 
 
 buildJsonTables : JsonSchema -> List Table

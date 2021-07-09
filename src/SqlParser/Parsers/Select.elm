@@ -1,7 +1,7 @@
 module SqlParser.Parsers.Select exposing (SelectColumn(..), SelectColumnBasic, SelectColumnComplex, SelectInfo, SelectTable(..), SelectTableBasic, SelectTableComplex, TableAlias, parseSelect, parseSelectColumn, parseSelectTable)
 
-import Libs.Std exposing (listResultSeq, maybeToList)
-import SqlParser.Utils.Helpers exposing (commaSplit, noEnclosingQuotes, regexMatches)
+import Libs.Std exposing (listResultSeq, maybeToList, regexMatches)
+import SqlParser.Utils.Helpers exposing (commaSplit, noEnclosingQuotes)
 import SqlParser.Utils.Types exposing (ParseError, RawSql, SqlColumnName, SqlSchemaName, SqlTableName)
 
 

@@ -1,7 +1,7 @@
 module SqlParser.Parsers.CreateView exposing (ParsedView, parseView)
 
+import Libs.Std exposing (regexMatches)
 import SqlParser.Parsers.Select exposing (SelectInfo, parseSelect)
-import SqlParser.Utils.Helpers exposing (regexMatches)
 import SqlParser.Utils.Types exposing (ParseError, RawSql, SqlSchemaName, SqlTableName)
 
 

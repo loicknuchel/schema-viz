@@ -30,13 +30,13 @@ useSchema schema model =
 
 createSchema : File -> FileContent -> Model -> ( Model, Cmd Msg )
 createSchema file content model =
-    buildSchema file.name file.name content |> loadSchema model
+    buildSchema (model.storedSchemas |> List.map .name) file.name file.name content |> loadSchema model
 
 
 createSampleSchema : String -> String -> Result Http.Error String -> Model -> ( Model, Cmd Msg )
 createSampleSchema name path response model =
     response
-        |> resultFold (\err -> ( [ "Can't load '" ++ name ++ "': " ++ formatHttpError err ], emptySchema )) (buildSchema name path)
+        |> resultFold (\err -> ( [ "Can't load '" ++ name ++ "': " ++ formatHttpError err ], emptySchema )) (buildSchema (model.storedSchemas |> List.map .name) name path)
         |> loadSchema model
 
 
@@ -63,16 +63,16 @@ loadSchema model ( errs, schema ) =
         )
 
 
-buildSchema : String -> String -> FileContent -> ( Errors, Schema )
-buildSchema name path content =
+buildSchema : List String -> String -> String -> FileContent -> ( Errors, Schema )
+buildSchema takenNames name path content =
     if path |> String.endsWith ".sql" then
-        parseSchema path content |> Tuple.mapSecond (buildSchemaFromSql name)
+        parseSchema path content |> Tuple.mapSecond (buildSchemaFromSql takenNames name)
 
     else if path |> String.endsWith ".json" then
         Decode.decodeString schemaDecoder content
             |> resultFold
                 (\e -> ( [ "⚠️ Error in <b>" ++ path ++ "</b> ⚠️<br>" ++ decodeErrorToHtml e ], emptySchema ))
-                (\schema -> ( [], buildSchemaFromJson name schema ))
+                (\schema -> ( [], buildSchemaFromJson takenNames name schema ))
 
     else
         ( [ "Invalid file (" ++ path ++ "), expected .sql or .json one" ], emptySchema )

@@ -1,7 +1,7 @@
 module SqlParser.Parsers.CreateTable exposing (ParsedColumn, ParsedTable, parseCreateTable, parseCreateTableColumn)
 
-import Libs.Std exposing (listResultSeq)
-import SqlParser.Utils.Helpers exposing (commaSplit, noEnclosingQuotes, regexMatches)
+import Libs.Std exposing (listResultSeq, regexMatches)
+import SqlParser.Utils.Helpers exposing (commaSplit, noEnclosingQuotes)
 import SqlParser.Utils.Types exposing (ConstraintName, ForeignKeyRef, ParseError, RawSql, SqlColumnName, SqlColumnType, SqlColumnValue, SqlSchemaName, SqlTableName)
 
 
@@ -15,7 +15,7 @@ type alias ParsedColumn =
 
 parseCreateTable : RawSql -> Result (List ParseError) ParsedTable
 parseCreateTable sql =
-    case regexMatches "^CREATE TABLE[ \t]+(?:(?<schema>[^ .]+)\\.)?(?<table>[^ .]+)[ \t]*\\((?<body>[^;]+?)\\)(?:[ \t]+WITH[ \t]+\\((?<options>.*?)\\))?;$" sql of
+    case sql |> regexMatches "^CREATE TABLE[ \t]+(?:(?<schema>[^ .]+)\\.)?(?<table>[^ .]+)[ \t]*\\((?<body>[^;]+?)\\)(?:[ \t]+WITH[ \t]+\\((?<options>.*?)\\))?;$" of
         schema :: (Just table) :: (Just columns) :: _ :: [] ->
             commaSplit columns
                 |> List.map String.trim
@@ -31,7 +31,7 @@ parseCreateTable sql =
 
 parseCreateTableColumn : RawSql -> Result ParseError ParsedColumn
 parseCreateTableColumn sql =
-    case regexMatches "^(?<name>[^ ]+)[ \t]+(?<type>.*?)(?:[ \t]+DEFAULT[ \t]+(?<default>.*?))?(?<nullable>[ \t]+NOT NULL)?(?:[ \t]+CONSTRAINT[ \t]+(?<constraint>.*))?$" sql of
+    case sql |> regexMatches "^(?<name>[^ ]+)[ \t]+(?<type>.*?)(?:[ \t]+DEFAULT[ \t]+(?<default>.*?))?(?<nullable>[ \t]+NOT NULL)?(?:[ \t]+CONSTRAINT[ \t]+(?<constraint>.*))?$" of
         (Just name) :: (Just kind) :: default :: nullable :: maybeConstraint :: [] ->
             maybeConstraint
                 |> Maybe.map
@@ -54,7 +54,7 @@ parseCreateTableColumn sql =
 
 parseCreateTableColumnPrimaryKey : RawSql -> Result ParseError ConstraintName
 parseCreateTableColumnPrimaryKey constraint =
-    case regexMatches "^(?<constraint>[^ ]+)[ \t]+PRIMARY KEY$" constraint of
+    case constraint |> regexMatches "^(?<constraint>[^ ]+)[ \t]+PRIMARY KEY$" of
         (Just constraintName) :: [] ->
             Ok constraintName
 
@@ -64,7 +64,7 @@ parseCreateTableColumnPrimaryKey constraint =
 
 parseCreateTableColumnForeignKey : RawSql -> Result ParseError ( ConstraintName, ForeignKeyRef )
 parseCreateTableColumnForeignKey constraint =
-    case regexMatches "^(?<constraint>[^ ]+)[ \t]+REFERENCES[ \t]+(?:(?<schema>[^ .]+)\\.)?(?<table>[^ .]+)(?:\\.(?<column>[^ .]+))?$" constraint of
+    case constraint |> regexMatches "^(?<constraint>[^ ]+)[ \t]+REFERENCES[ \t]+(?:(?<schema>[^ .]+)\\.)?(?<table>[^ .]+)(?:\\.(?<column>[^ .]+))?$" of
         (Just constraintName) :: (Just table) :: (Just column) :: Nothing :: [] ->
             Ok ( constraintName, { schema = Nothing, table = table, column = Just column } )
 

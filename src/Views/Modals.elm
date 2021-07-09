@@ -29,11 +29,11 @@ viewSchemaSwitchModal switch schema storedSchemas =
         (cond (Dict.isEmpty schema.tables) (\_ -> "Schema Viz, easily browse your SQL schema!") (\_ -> "Load a new schema"))
         [ div [ style "text-align" "center" ] [ bText "⚠️ This app is currently built", text ", you can use it but stored data may break ⚠️" ]
         , divIf (List.length storedSchemas > 0)
-            [ class "row row-cols-1 row-cols-sm-2 row-cols-lg-3", style "margin-top" "1em" ]
+            [ class "row row-cols-1 row-cols-sm-2 row-cols-lg-3" ]
             (storedSchemas
                 |> List.map
                     (\s ->
-                        div [ class "col" ]
+                        div [ class "col", style "margin-top" "1em" ]
                             [ div [ class "card h-100" ]
                                 [ div [ class "card-body" ] [ h5 [ class "card-title" ] [ text s.name ] ]
                                 , div [ class "card-footer d-flex" ]

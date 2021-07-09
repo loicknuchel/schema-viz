@@ -7,6 +7,7 @@ import Html.Attributes exposing (attribute)
 import Html.Events exposing (stopPropagationOn)
 import Json.Decode as Decode exposing (Decoder)
 import Random
+import Regex
 import Task
 
 
@@ -218,6 +219,33 @@ stringWordSplit input =
 stringHashCode : String -> Int
 stringHashCode input =
     String.foldl updateHash 5381 input
+
+
+uniqueId : List String -> String -> String
+uniqueId takenIds id =
+    if takenIds |> List.any (\taken -> taken == id) then
+        case id |> regexMatches "^(.*?)([0-9]+)?(\\.[a-z]+)?$" of
+            (Just prefix) :: num :: extension :: [] ->
+                uniqueId
+                    takenIds
+                    (prefix
+                        ++ (num |> Maybe.andThen String.toInt |> Maybe.map (\n -> n + 1) |> Maybe.withDefault 2 |> String.fromInt)
+                        ++ (extension |> Maybe.withDefault "")
+                    )
+
+            _ ->
+                id ++ "-err"
+
+    else
+        id
+
+
+regexMatches : String -> String -> List (Maybe String)
+regexMatches regex text =
+    Regex.fromStringWith { caseInsensitive = True, multiline = False } regex
+        |> Maybe.withDefault Regex.never
+        |> (\r -> Regex.find r text)
+        |> List.concatMap .submatches
 
 
 updateHash : Char -> Int -> Int

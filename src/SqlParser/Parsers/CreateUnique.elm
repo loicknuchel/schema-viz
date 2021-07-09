@@ -1,6 +1,7 @@
 module SqlParser.Parsers.CreateUnique exposing (ParsedUnique, parseCreateUniqueIndex)
 
-import SqlParser.Utils.Helpers exposing (parseIndexDefinition, regexMatches)
+import Libs.Std exposing (regexMatches)
+import SqlParser.Utils.Helpers exposing (parseIndexDefinition)
 import SqlParser.Utils.Types exposing (ConstraintName, ParseError, RawSql, SqlColumnName, SqlTableRef)
 
 

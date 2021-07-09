@@ -21,7 +21,7 @@ encodeSchema value =
 
 decodeSchema : Decode.Decoder Schema
 decodeSchema =
-    Decode.map3 buildSchema
+    Decode.map3 (buildSchema [])
         (Decode.field "name" Decode.string)
         (Decode.field "layouts" (Decode.list decodeLayout))
         (Decode.field "tables" (Decode.list decodeTable))

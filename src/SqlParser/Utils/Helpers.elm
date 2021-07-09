@@ -1,6 +1,6 @@
-module SqlParser.Utils.Helpers exposing (commaSplit, noEnclosingQuotes, parseIndexDefinition, regexMatches)
+module SqlParser.Utils.Helpers exposing (commaSplit, noEnclosingQuotes, parseIndexDefinition)
 
-import Regex
+import Libs.Std exposing (regexMatches)
 import SqlParser.Utils.Types exposing (ParseError, SqlColumnName)
 
 
@@ -21,20 +21,12 @@ parseIndexDefinition definition =
 
 noEnclosingQuotes : String -> String
 noEnclosingQuotes text =
-    case regexMatches "\"(.*)\"" text of
+    case text |> regexMatches "\"(.*)\"" of
         (Just res) :: [] ->
             res
 
         _ ->
             text
-
-
-regexMatches : String -> String -> List (Maybe String)
-regexMatches regex text =
-    Regex.fromStringWith { caseInsensitive = True, multiline = False } regex
-        |> Maybe.withDefault Regex.never
-        |> (\r -> Regex.find r text)
-        |> List.concatMap .submatches
 
 
 commaSplit : String -> List String

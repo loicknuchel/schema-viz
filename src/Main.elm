@@ -8,6 +8,8 @@ import Libs.Std exposing (cond, set, setState)
 import Models exposing (Flags, Model, Msg(..), initConfirm, initModel)
 import Models.Schema exposing (TableStatus(..))
 import Ports exposing (JsMsg(..), activateTooltipsAndPopovers, dropSchema, hideOffcanvas, loadSchemas, observeSize, onJsMessage, readFile, showModal, toastError)
+import Task
+import Time
 import Update exposing (createLayout, createSampleSchema, createSchema, deleteLayout, dragConfig, dragItem, hideAllTables, hideColumn, hideTable, loadLayout, showAllTables, showColumn, showTable, updateLayout, updateSizes, useSchema, visitTable, visitTables, zoomCanvas)
 import View exposing (viewApp)
 import Views.Helpers exposing (decodeErrorToHtml)
@@ -29,6 +31,8 @@ init _ =
         [ observeSize conf.ids.erd
         , showModal conf.ids.schemaSwitchModal
         , loadSchemas
+        , getZone
+        , getTime
         ]
     )
 
@@ -37,8 +41,20 @@ update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         -- each case should be one line or call a function in Update file
+        JsMessage (SizesChanged sizes) ->
+            updateSizes sizes model
+
+        TimeChanged time ->
+            ( { model | time = model.time |> set (\t -> { t | now = time }) }, Cmd.none )
+
+        ZoneChanged zone ->
+            ( { model | time = model.time |> set (\t -> { t | zone = zone }) }, Cmd.none )
+
         ChangeSchema ->
             ( model, Cmd.batch [ hideOffcanvas conf.ids.menu, showModal conf.ids.schemaSwitchModal, loadSchemas ] )
+
+        JsMessage (SchemasLoaded ( errors, schemas )) ->
+            ( { model | storedSchemas = schemas }, Cmd.batch (errors |> List.map (\( name, err ) -> toastError ("Unable to read schema <b>" ++ name ++ "</b>:<br>" ++ decodeErrorToHtml err))) )
 
         FileDragOver _ _ ->
             ( model, Cmd.none )
@@ -52,11 +68,14 @@ update msg model =
         FileSelected file ->
             ( { model | switch = model.switch |> set (\s -> { s | loading = True }) }, readFile file )
 
+        JsMessage (FileRead now file content) ->
+            createSchema now file content model
+
         LoadSampleData sampleName ->
             ( model, loadSample sampleName )
 
-        GotSampleData name path response ->
-            createSampleSchema name path response model
+        GotSampleData now name path response ->
+            createSampleSchema now name path response model
 
         DeleteSchema schema ->
             ( { model | storedSchemas = model.storedSchemas |> List.filter (\s -> not (s.name == schema.name)) }, dropSchema schema )
@@ -131,15 +150,6 @@ update msg model =
             else
                 ( { model | confirm = initConfirm }, Cmd.none )
 
-        JsMessage (SchemasLoaded ( errors, schemas )) ->
-            ( { model | storedSchemas = schemas }, Cmd.batch (errors |> List.map (\( name, err ) -> toastError ("Unable to read schema <b>" ++ name ++ "</b>:<br>" ++ decodeErrorToHtml err))) )
-
-        JsMessage (FileRead file content) ->
-            createSchema file content model
-
-        JsMessage (SizesChanged sizes) ->
-            updateSizes sizes model
-
         JsMessage (Error err) ->
             ( model, toastError ("Unable to decode JavaScript message:<br>" ++ decodeErrorToHtml err) )
 
@@ -156,5 +166,20 @@ subscriptions : Model -> Sub Msg
 subscriptions model =
     Sub.batch
         [ Draggable.subscriptions DragMsg model.state.drag
+        , Time.every (10 * 1000) TimeChanged
         , onJsMessage JsMessage
         ]
+
+
+
+-- other
+
+
+getZone : Cmd Msg
+getZone =
+    Task.perform ZoneChanged Time.here
+
+
+getTime : Cmd Msg
+getTime =
+    Task.perform TimeChanged Time.now

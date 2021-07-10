@@ -27,7 +27,7 @@ viewApp model =
         ++ viewNavbar model.state.search model.state.currentLayout model.schema.layouts (Dict.values model.schema.tables)
         ++ viewMenu model.schema
         ++ [ viewErd model.canvas model.schema ]
-        ++ [ viewSchemaSwitchModal model.switch model.schema model.storedSchemas
+        ++ [ viewSchemaSwitchModal model.time model.switch model.schema model.storedSchemas
            , viewCreateLayoutModal (model.state.newLayout |> Maybe.withDefault "")
            , viewHelpModal
            , viewConfirm model.confirm

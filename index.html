@@ -101,7 +101,12 @@
                 sendToElm({kind: "SchemasLoaded", schemas: values})
             }
             function saveSchema(schema) {
-                localStorage.setItem(schemaPrefix + schema.name, JSON.stringify(schema))
+                const key = schemaPrefix + schema.name
+                // setting dates should be done in Elm but can't find how to run a Task before calling a Port
+                const now = Date.now()
+                schema.info.updated = now
+                if (localStorage.getItem(key) == null) { schema.info.created = now }
+                localStorage.setItem(key, JSON.stringify(schema))
             }
             function dropSchema(schema) {
                 localStorage.removeItem(schemaPrefix + schema.name)
@@ -109,7 +114,7 @@
 
             function readFile(file) {
                 const reader = new FileReader()
-                reader.onload = e => sendToElm({kind: "FileRead", file: file, content: e.target.result})
+                reader.onload = e => sendToElm({kind: "FileRead", now: Date.now(), file: file, content: e.target.result})
                 reader.readAsText(file)
             }
 

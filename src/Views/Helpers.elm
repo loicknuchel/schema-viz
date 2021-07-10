@@ -1,15 +1,18 @@
-module Views.Helpers exposing (decodeErrorToHtml, dragAttrs, extractColumnIndex, extractColumnName, extractColumnType, formatColumnRef, formatHttpError, onClickConfirm, placeAt, sizeAttrs, withColumnName, withNullableInfo)
+module Views.Helpers exposing (decodeErrorToHtml, dragAttrs, extractColumnIndex, extractColumnName, extractColumnType, formatColumnRef, formatDate, formatHttpError, humanDatetime, onClickConfirm, placeAt, sizeAttrs, withColumnName, withNullableInfo)
 
 import Draggable
-import Html exposing (Attribute, Html, text)
-import Html.Attributes exposing (height, style, width)
+import Html exposing (Attribute, Html, span, text)
+import Html.Attributes exposing (height, style, title, width)
 import Html.Events exposing (onClick)
 import Http exposing (Error(..))
 import Json.Decode as Decode
+import Libs.DateTime as DateTime
 import Libs.Std exposing (send)
-import Models exposing (DragId, Msg(..))
+import Models exposing (DragId, Msg(..), TimeInfo)
 import Models.Schema exposing (ColumnIndex(..), ColumnName(..), ColumnRef, ColumnType(..), formatTableId)
 import Models.Utils exposing (Position, Size)
+import Time
+import Views.Bootstrap exposing (Toggle(..), bsToggle)
 
 
 
@@ -72,6 +75,16 @@ withNullableInfo nullable text =
 
     else
         text
+
+
+formatDate : TimeInfo -> Time.Posix -> String
+formatDate info date =
+    DateTime.format "dd MMM yyyy" info.zone date
+
+
+humanDatetime : TimeInfo -> Time.Posix -> Html msg
+humanDatetime info date =
+    span [ title (DateTime.format "dd MMM yyyy HH:mm" info.zone date), bsToggle Tooltip ] [ text (DateTime.human info.now date) ]
 
 
 decodeErrorToHtml : Decode.Error -> String

@@ -45,7 +45,7 @@ viewTable zoom incomingTableRelations table =
         , divIf (List.length hiddenColumns > 0)
             [ class "hidden-columns" ]
             [ button ([ class "toggle", type_ "button" ] ++ bsToggleCollapse collapseId)
-                [ text (plural (hiddenColumns |> List.length) "No hidden column" "1 hidden column" " hidden columns")
+                [ text (plural (hiddenColumns |> List.length) "No hidden column" "1 hidden column" "hidden columns")
                 ]
             , div [ class "collapse", id collapseId ]
                 (hiddenColumns

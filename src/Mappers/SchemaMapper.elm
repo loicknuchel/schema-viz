@@ -1,107 +1,27 @@
-module Mappers.SchemaMapper exposing (buildSchema, buildSchemaFromJson, buildSchemaFromSql, emptySchema)
+module Mappers.SchemaMapper exposing (buildSchema, buildSchemaFromSql, emptySchema, initTableState)
 
 import AssocList as Dict
 import Conf exposing (conf)
-import JsonFormats.JsonSchemaDecoder exposing (JsonColumn, JsonForeignKey, JsonIndex, JsonPrimaryKey, JsonSchema, JsonTable, JsonUnique)
-import Libs.Std exposing (dictFromList, listGet, listZipWith, stringHashCode, stringWordSplit, uniqueId)
-import Models.Schema exposing (Column, ColumnComment(..), ColumnIndex(..), ColumnName(..), ColumnState, ColumnType(..), ColumnValue(..), ForeignKey, ForeignKeyName(..), Index, IndexName(..), Layout, PrimaryKey, PrimaryKeyName(..), RelationRef, Schema, SchemaName(..), Table, TableComment(..), TableId(..), TableName(..), TableState, TableStatus(..), Unique, UniqueName(..))
+import Libs.Std exposing (dictFromList, listGet, stringHashCode, stringWordSplit, uniqueId)
+import Models.Schema exposing (Column, ColumnComment(..), ColumnIndex(..), ColumnName(..), ColumnState, ColumnType(..), ColumnValue(..), ForeignKey, ForeignKeyName(..), Index, IndexName(..), Layout, PrimaryKey, PrimaryKeyName(..), RelationRef, Schema, SchemaInfo, SchemaName(..), Table, TableComment(..), TableId(..), TableName(..), TableState, TableStatus(..), Unique, UniqueName(..))
 import Models.Utils exposing (Color, Position, Size)
 import SqlParser.SchemaParser exposing (SqlColumn, SqlForeignKey, SqlIndex, SqlPrimaryKey, SqlSchema, SqlTable, SqlUnique)
+import Time
 
 
-buildSchemaFromJson : List String -> String -> JsonSchema -> Schema
-buildSchemaFromJson takenNames name schema =
-    buildJsonTables schema |> buildSchema takenNames name []
-
-
-buildSchemaFromSql : List String -> String -> SqlSchema -> Schema
-buildSchemaFromSql takenNames name schema =
-    buildSqlTables schema |> buildSchema takenNames name []
+buildSchemaFromSql : List String -> String -> SchemaInfo -> SqlSchema -> Schema
+buildSchemaFromSql takenNames name info schema =
+    buildSqlTables schema |> (\tables -> buildSchema takenNames name info tables [])
 
 
 emptySchema : Schema
 emptySchema =
-    buildSchema [] "No name" [] []
+    buildSchema [] "No name" { created = Time.millisToPosix 0, updated = Time.millisToPosix 0, fileLastModified = Nothing } [] []
 
 
-buildSchema : List String -> String -> List Layout -> List Table -> Schema
-buildSchema takenNames name layouts tables =
-    { name = uniqueId takenNames name, tables = tables |> dictFromList .id, relations = buildRelations tables, layouts = layouts }
-
-
-buildJsonTables : JsonSchema -> List Table
-buildJsonTables schema =
-    schema.tables |> listZipWith tableIdFromJsonTable |> List.map buildJsonTable
-
-
-buildJsonTable : ( JsonTable, TableId ) -> Table
-buildJsonTable ( table, id ) =
-    { id = id
-    , schema = table.schema |> SchemaName
-    , table = table.table |> TableName
-    , columns = table.columns |> List.indexedMap buildJsonColumn |> dictFromList .column
-    , primaryKey = table.primaryKey |> Maybe.map buildJsonPrimaryKey
-    , uniques = table.uniques |> List.map buildJsonUnique
-    , indexes = table.indexes |> List.map buildJsonIndex
-    , comment = table.comment |> Maybe.map TableComment
-    , state = initTableState id
-    }
-
-
-buildJsonColumn : Int -> JsonColumn -> Column
-buildJsonColumn index column =
-    { index = index |> ColumnIndex
-    , column = column.column |> ColumnName
-    , kind = column.kind |> ColumnType
-    , nullable = column.nullable
-    , default = column.default |> Maybe.map ColumnValue
-    , foreignKey = column.reference |> Maybe.map buildJsonForeignKey
-    , comment = column.comment |> Maybe.map ColumnComment
-    , state = initColumnState index
-    }
-
-
-buildJsonPrimaryKey : JsonPrimaryKey -> PrimaryKey
-buildJsonPrimaryKey pk =
-    { columns = pk.columns |> List.map ColumnName
-    , name = pk.name |> PrimaryKeyName
-    }
-
-
-buildJsonIndex : JsonIndex -> Index
-buildJsonIndex index =
-    { name = index.name |> IndexName
-    , columns = index.columns |> List.map ColumnName
-    , definition = index.definition
-    }
-
-
-buildJsonUnique : JsonUnique -> Unique
-buildJsonUnique unique =
-    { name = unique.name |> UniqueName
-    , columns = unique.columns |> List.map ColumnName
-    , definition = unique.definition
-    }
-
-
-buildJsonForeignKey : JsonForeignKey -> ForeignKey
-buildJsonForeignKey fk =
-    { tableId = fk |> tableIdFromJsonForeignKey
-    , schema = fk.schema |> SchemaName
-    , table = fk.table |> TableName
-    , column = fk.column |> ColumnName
-    , name = fk.name |> ForeignKeyName
-    }
-
-
-tableIdFromJsonTable : JsonTable -> TableId
-tableIdFromJsonTable table =
-    TableId (SchemaName table.schema) (TableName table.table)
-
-
-tableIdFromJsonForeignKey : JsonForeignKey -> TableId
-tableIdFromJsonForeignKey fk =
-    TableId (SchemaName fk.schema) (TableName fk.table)
+buildSchema : List String -> String -> SchemaInfo -> List Table -> List Layout -> Schema
+buildSchema takenNames name info tables layouts =
+    { name = uniqueId takenNames name, info = info, tables = tables |> dictFromList .id, relations = buildRelations tables, layouts = layouts }
 
 
 buildSqlTables : SqlSchema -> List Table

@@ -5,32 +5,40 @@ import Conf exposing (conf, schemaSamples)
 import FileValue exposing (hiddenInputSingle)
 import FontAwesome.Icon exposing (viewIcon)
 import FontAwesome.Solid as Icon
-import Html exposing (Html, a, button, div, h5, input, label, li, p, small, span, text, ul)
+import Html exposing (Html, a, br, button, div, h5, input, label, li, p, small, span, text, ul)
 import Html.Attributes exposing (autofocus, class, disabled, for, href, id, style, tabindex, target, title, type_, value)
 import Html.Events exposing (onClick, onInput)
 import Libs.Std exposing (bText, codeText, cond, divIf, plural, role)
-import Models exposing (Confirm, Msg(..), Switch)
+import Models exposing (Confirm, Msg(..), Switch, TimeInfo)
 import Models.Schema exposing (LayoutName, Schema)
 import Models.Utils exposing (HtmlId, Text)
+import Time
 import Views.Bootstrap exposing (BsColor(..), Toggle(..), ariaExpanded, ariaHidden, ariaLabel, ariaLabelledBy, bsBackdrop, bsButton, bsDismiss, bsKeyboard, bsToggle, bsToggleCollapseLink)
-import Views.Helpers exposing (onClickConfirm)
+import Views.Helpers exposing (formatDate, onClickConfirm)
 
 
-viewSchemaSwitchModal : Switch -> Schema -> List Schema -> Html Msg
-viewSchemaSwitchModal switch schema storedSchemas =
+viewSchemaSwitchModal : TimeInfo -> Switch -> Schema -> List Schema -> Html Msg
+viewSchemaSwitchModal time switch schema storedSchemas =
     modal conf.ids.schemaSwitchModal
-        (cond (Dict.isEmpty schema.tables) (\_ -> "Schema Viz, easily browse your SQL schema!") (\_ -> "Load a new schema"))
-        [ div [ style "text-align" "center" ] [ bText "⚠️ This app is currently built", text ", you can use it but stored data may break ⚠️" ]
+        (cond (Dict.isEmpty schema.tables) (\_ -> "Schema Viz, easily explore your SQL schema!") (\_ -> "Load a new schema"))
+        [ div [ style "text-align" "center" ] [ bText "⚠️ This app is currently being built", text ", you can use it but stored data may break sometimes ⚠️" ]
         , divIf (List.length storedSchemas > 0)
             [ class "row row-cols-1 row-cols-sm-2 row-cols-lg-3" ]
             (storedSchemas
+                |> List.sortBy (\s -> negate (Time.posixToMillis s.info.updated))
                 |> List.map
                     (\s ->
                         div [ class "col", style "margin-top" "1em" ]
                             [ div [ class "card h-100" ]
                                 [ div [ class "card-body" ]
                                     [ h5 [ class "card-title" ] [ text s.name ]
-                                    , p [ class "card-text" ] [ small [ class "text-muted" ] [ text (plural (List.length s.layouts) "No saved layout" "1 saved layout" " saved layouts") ] ]
+                                    , p [ class "card-text" ]
+                                        [ small [ class "text-muted" ]
+                                            [ text (plural (List.length s.layouts) "No saved layout" "1 saved layout" "saved layouts")
+                                            , br [] []
+                                            , text ("Version from " ++ formatDate time (s.info.fileLastModified |> Maybe.withDefault s.info.created))
+                                            ]
+                                        ]
                                     ]
                                 , div [ class "card-footer d-flex" ]
                                     [ a [ class "btn-text link-secondary me-auto", href "#", title "Delete this schema", bsToggle Tooltip, onClickConfirm ("You you really want to delete " ++ s.name ++ " schema ?") (DeleteSchema s) ] [ viewIcon Icon.trash ]
@@ -143,7 +151,7 @@ viewConfirm confirm =
                 , div [ class "modal-body" ] [ confirm.content ]
                 , div [ class "modal-footer" ]
                     [ button [ class "btn btn-secondary", bsDismiss Modal, onClick (OnConfirm False confirm.cmd) ] [ text "Cancel" ]
-                    , button [ class "btn btn-primary", bsDismiss Modal, onClick (OnConfirm True confirm.cmd) ] [ text "Ok" ]
+                    , button [ class "btn btn-primary", bsDismiss Modal, onClick (OnConfirm True confirm.cmd), autofocus True ] [ text "Ok" ]
                     ]
                 ]
             ]

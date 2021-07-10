@@ -282,7 +282,7 @@ plural count none one many =
         one
 
     else
-        String.fromInt count ++ many
+        String.fromInt count ++ " " ++ many
 
 
 send : msg -> Cmd msg

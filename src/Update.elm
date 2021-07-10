@@ -8,14 +8,15 @@ import Draggable.Events exposing (onDragBy, onDragEnd, onDragStart)
 import FileValue exposing (File)
 import Http
 import Json.Decode as Decode
-import JsonFormats.JsonSchemaDecoder exposing (schemaDecoder)
+import JsonFormats.SchemaFormat exposing (decodeSchema)
 import Libs.Std exposing (WheelEvent, cond, dictFromList, listFind, maybeFilter, resultFold, send, set, setSchema, setState)
-import Mappers.SchemaMapper exposing (buildSchemaFromJson, buildSchemaFromSql, emptySchema)
+import Mappers.SchemaMapper exposing (buildSchemaFromSql, emptySchema)
 import Models exposing (Canvas, DragId, Errors, Model, Msg(..), initSwitch)
 import Models.Schema exposing (Column, ColumnName, ColumnProps, Layout, LayoutName, Schema, Table, TableId, TableProps, TableStatus(..), formatTableId, parseTableId)
 import Models.Utils exposing (Area, FileContent, Position, SizeChange, ZoomLevel)
 import Ports exposing (activateTooltipsAndPopovers, click, hideModal, observeTableSize, observeTablesSize, saveSchema, toastError, toastInfo)
 import SqlParser.SchemaParser exposing (parseSchema)
+import Time
 import Views.Helpers exposing (decodeErrorToHtml, formatHttpError)
 
 
@@ -28,15 +29,17 @@ useSchema schema model =
     loadSchema model ( [], schema )
 
 
-createSchema : File -> FileContent -> Model -> ( Model, Cmd Msg )
-createSchema file content model =
-    buildSchema (model.storedSchemas |> List.map .name) file.name file.name content |> loadSchema model
+createSchema : Time.Posix -> File -> FileContent -> Model -> ( Model, Cmd Msg )
+createSchema now file content model =
+    buildSchema now (model.storedSchemas |> List.map .name) file.name file.name (Just file.lastModified) content |> loadSchema model
 
 
-createSampleSchema : String -> String -> Result Http.Error String -> Model -> ( Model, Cmd Msg )
-createSampleSchema name path response model =
+createSampleSchema : Time.Posix -> String -> String -> Result Http.Error String -> Model -> ( Model, Cmd Msg )
+createSampleSchema now name path response model =
     response
-        |> resultFold (\err -> ( [ "Can't load '" ++ name ++ "': " ++ formatHttpError err ], emptySchema )) (buildSchema (model.storedSchemas |> List.map .name) name path)
+        |> resultFold
+            (\err -> ( [ "Can't load '" ++ name ++ "': " ++ formatHttpError err ], emptySchema ))
+            (buildSchema now (model.storedSchemas |> List.map .name) name path Nothing)
         |> loadSchema model
 
 
@@ -63,16 +66,16 @@ loadSchema model ( errs, schema ) =
         )
 
 
-buildSchema : List String -> String -> String -> FileContent -> ( Errors, Schema )
-buildSchema takenNames name path content =
+buildSchema : Time.Posix -> List String -> String -> String -> Maybe Time.Posix -> FileContent -> ( Errors, Schema )
+buildSchema now takenNames name path lastModified content =
     if path |> String.endsWith ".sql" then
-        parseSchema path content |> Tuple.mapSecond (buildSchemaFromSql takenNames name)
+        parseSchema path content |> Tuple.mapSecond (buildSchemaFromSql takenNames name { created = now, updated = now, fileLastModified = lastModified })
 
     else if path |> String.endsWith ".json" then
-        Decode.decodeString schemaDecoder content
+        Decode.decodeString (decodeSchema takenNames) content
             |> resultFold
                 (\e -> ( [ "⚠️ Error in <b>" ++ path ++ "</b> ⚠️<br>" ++ decodeErrorToHtml e ], emptySchema ))
-                (\schema -> ( [], buildSchemaFromJson takenNames name schema ))
+                (\schema -> ( [], schema ))
 
     else
         ( [ "Invalid file (" ++ path ++ "), expected .sql or .json one" ], emptySchema )

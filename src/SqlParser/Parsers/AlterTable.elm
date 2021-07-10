@@ -1,4 +1,4 @@
-module SqlParser.Parsers.AlterTable exposing (CheckInner, ColumnUpdate(..), ForeignKeyInner, Predicate, PrimaryKeyInner, TableConstraint(..), TableUpdate(..), UniqueInner, User, parseAlterTable)
+module SqlParser.Parsers.AlterTable exposing (CheckInner, ColumnUpdate(..), ForeignKeyInner, Predicate, PrimaryKeyInner, SqlUser, TableConstraint(..), TableUpdate(..), UniqueInner, parseAlterTable)
 
 import Libs.Std exposing (regexMatches)
 import SqlParser.Utils.Helpers exposing (parseIndexDefinition)
@@ -8,7 +8,7 @@ import SqlParser.Utils.Types exposing (ConstraintName, ForeignKeyRef, ParseError
 type TableUpdate
     = AddTableConstraint (Maybe SqlSchemaName) SqlTableName TableConstraint
     | AlterColumn (Maybe SqlSchemaName) SqlTableName ColumnUpdate
-    | AddTableOwner (Maybe SqlSchemaName) SqlTableName User
+    | AddTableOwner (Maybe SqlSchemaName) SqlTableName SqlUser
 
 
 type TableConstraint
@@ -43,7 +43,7 @@ type ColumnUpdate
     | ColumnStatistics SqlColumnName Int
 
 
-type alias User =
+type alias SqlUser =
     String
 
 
@@ -167,7 +167,7 @@ parseAlterTableAlterColumnStatistics property =
             Err [ "Can't parse statistics: '" ++ property ++ "'" ]
 
 
-parseAlterTableOwnerTo : RawSql -> Result (List ParseError) User
+parseAlterTableOwnerTo : RawSql -> Result (List ParseError) SqlUser
 parseAlterTableOwnerTo command =
     case command |> regexMatches "^OWNER TO[ \t]+(?<user>.+)$" of
         (Just user) :: [] ->

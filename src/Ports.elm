@@ -7,6 +7,7 @@ import JsonFormats.SchemaFormat exposing (decodeSchema, decodeSize, encodeSchema
 import Libs.Std exposing (decodeTuple, listResultCollect)
 import Models.Schema exposing (Schema, TableId, formatTableId)
 import Models.Utils exposing (FileContent, HtmlId, SizeChange, Text)
+import Time
 
 
 click : HtmlId -> Cmd msg
@@ -109,7 +110,7 @@ type alias Toast =
 
 type JsMsg
     = SchemasLoaded ( List ( String, Decode.Error ), List Schema )
-    | FileRead File FileContent
+    | FileRead Time.Posix File FileContent
     | SizesChanged (List SizeChange)
     | Error Decode.Error
 
@@ -184,7 +185,8 @@ jsDecoder =
                         Decode.field "schemas" schemasDecoder |> Decode.map SchemasLoaded
 
                     "FileRead" ->
-                        Decode.map2 FileRead
+                        Decode.map3 FileRead
+                            (Decode.field "now" Decode.int |> Decode.map Time.millisToPosix)
                             (Decode.field "file" FileValue.decoder)
                             (Decode.field "content" Decode.string)
 
@@ -211,7 +213,7 @@ schemasDecoder =
                     |> List.map
                         (\( k, v ) ->
                             v
-                                |> Decode.decodeValue decodeSchema
+                                |> Decode.decodeValue (decodeSchema [])
                                 |> Result.mapError (\e -> ( k, e ))
                         )
                     |> listResultCollect

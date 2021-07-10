@@ -6,9 +6,10 @@ import Json.Decode as Decode
 import Json.Encode as Encode
 import JsonFormats.SchemaFormat exposing (..)
 import Libs.Std exposing (dictFromList)
-import Models.Schema exposing (CanvasProps, Column, ColumnIndex(..), ColumnName(..), ColumnProps, ColumnState, ColumnType(..), ColumnValue(..), ForeignKey, ForeignKeyName(..), Index, IndexName(..), Layout, PrimaryKey, PrimaryKeyName(..), Schema, SchemaName(..), Table, TableId(..), TableName(..), TableProps, TableState, TableStatus(..), Unique, UniqueName(..))
+import Models.Schema exposing (CanvasProps, Column, ColumnIndex(..), ColumnName(..), ColumnProps, ColumnState, ColumnType(..), ColumnValue(..), ForeignKey, ForeignKeyName(..), Index, IndexName(..), Layout, PrimaryKey, PrimaryKeyName(..), Schema, SchemaInfo, SchemaName(..), Table, TableId(..), TableName(..), TableProps, TableState, TableStatus(..), Unique, UniqueName(..))
 import Models.Utils exposing (Position, Size)
 import Test exposing (Test, describe, test)
+import Time
 
 
 size : Size
@@ -96,31 +97,42 @@ table =
     { id = tableId, schema = SchemaName "public", table = TableName "users", columns = dictFromList .column [ column ], primaryKey = Nothing, uniques = [], indexes = [], comment = Nothing, state = tableState }
 
 
+info : SchemaInfo
+info =
+    { created = Time.millisToPosix 1234, updated = Time.millisToPosix 4321, fileLastModified = Nothing }
+
+
 schema : Schema
 schema =
-    { name = "a schema", layouts = [ layout ], tables = dictFromList .id [ table ], relations = [] }
+    { name = "a schema", info = info, layouts = [ layout ], tables = dictFromList .id [ table ], relations = [] }
+
+
+
+-- TODO use fuzzy tests for encode/decode
+-- TODO have a fixed JSON to check retro-compatibility
 
 
 suite : Test
 suite =
     describe "SchemaFormatTest"
-        [ test "decode/encode Schema" (\_ -> schema |> expectRoundTrip encodeSchema decodeSchema)
-        , test "decode/encode Table" (\_ -> table |> expectRoundTrip encodeTable decodeTable)
-        , test "decode/encode TableState" (\_ -> tableState |> expectRoundTrip encodeTableState decodeTableState)
-        , test "decode/encode TableStatus" (\_ -> tableStatus |> expectRoundTrip encodeTableStatus decodeTableStatus)
-        , test "decode/encode Column" (\_ -> column |> expectRoundTrip encodeColumn decodeColumn)
-        , test "decode/encode ColumnState" (\_ -> columnState |> expectRoundTrip encodeColumnState decodeColumnState)
-        , test "decode/encode PrimaryKey" (\_ -> primaryKey |> expectRoundTrip encodePrimaryKey decodePrimaryKey)
-        , test "decode/encode Unique" (\_ -> unique |> expectRoundTrip encodeUnique decodeUnique)
-        , test "decode/encode Index" (\_ -> index |> expectRoundTrip encodeIndex decodeIndex)
-        , test "decode/encode ForeignKey" (\_ -> foreignKey |> expectRoundTrip encodeForeignKey decodeForeignKey)
-        , test "decode/encode ColumnName" (\_ -> columnName |> expectRoundTrip encodeColumnName decodeColumnName)
-        , test "decode/encode Layout" (\_ -> layout |> expectRoundTrip encodeLayout decodeLayout)
-        , test "decode/encode CanvasProps" (\_ -> canvasProps |> expectRoundTrip encodeCanvasProps decodeCanvasProps)
-        , test "decode/encode TableProps" (\_ -> tableProps |> expectRoundTrip encodeTableProps decodeTableProps)
-        , test "decode/encode ColumnProps" (\_ -> columnProps |> expectRoundTrip encodeColumnProps decodeColumnProps)
-        , test "decode/encode Position" (\_ -> position |> expectRoundTrip encodePosition decodePosition)
-        , test "decode/encode Size" (\_ -> size |> expectRoundTrip encodeSize decodeSize)
+        [ test "encode/decode Schema" (\_ -> schema |> expectRoundTrip encodeSchema (decodeSchema []))
+        , test "encode/decode SchemaInfo" (\_ -> info |> expectRoundTrip encodeInfo decodeInfo)
+        , test "encode/decode Table" (\_ -> table |> expectRoundTrip encodeTable decodeTable)
+        , test "encode/decode TableState" (\_ -> tableState |> expectRoundTrip (encodeTableState tableState) (decodeTableState tableState))
+        , test "encode/decode TableStatus" (\_ -> tableStatus |> expectRoundTrip encodeTableStatus decodeTableStatus)
+        , test "encode/decode Column" (\_ -> column |> expectRoundTrip encodeColumn decodeColumn)
+        , test "encode/decode ColumnState" (\_ -> columnState |> expectRoundTrip encodeColumnState decodeColumnState)
+        , test "encode/decode PrimaryKey" (\_ -> primaryKey |> expectRoundTrip encodePrimaryKey decodePrimaryKey)
+        , test "encode/decode Unique" (\_ -> unique |> expectRoundTrip encodeUnique decodeUnique)
+        , test "encode/decode Index" (\_ -> index |> expectRoundTrip encodeIndex decodeIndex)
+        , test "encode/decode ForeignKey" (\_ -> foreignKey |> expectRoundTrip encodeForeignKey decodeForeignKey)
+        , test "encode/decode ColumnName" (\_ -> columnName |> expectRoundTrip encodeColumnName decodeColumnName)
+        , test "encode/decode Layout" (\_ -> layout |> expectRoundTrip encodeLayout decodeLayout)
+        , test "encode/decode CanvasProps" (\_ -> canvasProps |> expectRoundTrip encodeCanvasProps decodeCanvasProps)
+        , test "encode/decode TableProps" (\_ -> tableProps |> expectRoundTrip encodeTableProps decodeTableProps)
+        , test "encode/decode ColumnProps" (\_ -> columnProps |> expectRoundTrip encodeColumnProps decodeColumnProps)
+        , test "encode/decode Position" (\_ -> position |> expectRoundTrip encodePosition decodePosition)
+        , test "encode/decode Size" (\_ -> size |> expectRoundTrip encodeSize decodeSize)
         ]
 
 

@@ -1,8 +1,9 @@
-module Models.Schema exposing (CanvasProps, Column, ColumnComment(..), ColumnIndex(..), ColumnName(..), ColumnProps, ColumnRef, ColumnState, ColumnType(..), ColumnValue(..), ForeignKey, ForeignKeyName(..), Index, IndexName(..), Layout, LayoutName, PrimaryKey, PrimaryKeyName(..), Relation, RelationRef, RelationState, Schema, SchemaName(..), Table, TableAndColumn, TableComment(..), TableId(..), TableName(..), TableProps, TableState, TableStatus(..), Unique, UniqueName(..), formatTableId, formatTableName, parseTableId)
+module Models.Schema exposing (CanvasProps, Column, ColumnComment(..), ColumnIndex(..), ColumnName(..), ColumnProps, ColumnRef, ColumnState, ColumnType(..), ColumnValue(..), ForeignKey, ForeignKeyName(..), Index, IndexName(..), Layout, LayoutName, PrimaryKey, PrimaryKeyName(..), Relation, RelationRef, RelationState, Schema, SchemaInfo, SchemaName(..), Table, TableAndColumn, TableComment(..), TableId(..), TableName(..), TableProps, TableState, TableStatus(..), Unique, UniqueName(..), formatTableId, formatTableName, parseTableId)
 
 import AssocList exposing (Dict)
 import Conf exposing (conf)
 import Models.Utils exposing (Color, Position, Size, ZoomLevel)
+import Time
 
 
 
@@ -11,9 +12,17 @@ import Models.Utils exposing (Color, Position, Size, ZoomLevel)
 
 type alias Schema =
     { name : String
+    , info : SchemaInfo
     , layouts : List Layout
     , tables : Dict TableId Table
     , relations : List RelationRef
+    }
+
+
+type alias SchemaInfo =
+    { created : Time.Posix
+    , updated : Time.Posix
+    , fileLastModified : Maybe Time.Posix
     }
 
 

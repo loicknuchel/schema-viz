@@ -1,37 +1,62 @@
 {
+  "name": "Basic example",
+  "info": {
+    "created": 0,
+    "updated": 0
+  },
   "tables": [
     {
       "schema": "public",
       "table": "users",
       "columns": [
         {
+          "index": 0,
           "column": "id",
           "type": "int",
           "nullable": false,
-          "comment": "The user id which is automatically defined based on subscription order. Should never change!"
+          "comment": "The user id which is automatically defined based on subscription order. Should never change!",
+          "state": {
+            "order": 0
+          }
         },
         {
+          "index": 1,
           "column": "first_name",
           "type": "varchar(255)",
-          "nullable": false
+          "nullable": false,
+          "state": {
+            "order": 1
+          }
         },
         {
+          "index": 2,
           "column": "last_name",
           "type": "varchar(255)",
-          "nullable": false
+          "nullable": false,
+          "state": {
+            "order": 2
+          }
         },
         {
+          "index": 3,
           "column": "email",
           "type": "varchar(255)",
-          "nullable": true
+          "nullable": true,
+          "state": {
+            "order": 3
+          }
         },
         {
+          "index": 4,
           "column": "external_id",
           "type": "uuid",
-          "nullable": true
+          "nullable": true,
+          "state": {
+            "order": 4
+          }
         }
       ],
-      "primary_key": {
+      "primaryKey": {
         "columns": [
           "id"
         ],
@@ -70,37 +95,61 @@
       "table": "roles",
       "columns": [
         {
+          "index": 0,
           "column": "id",
           "type": "int",
-          "nullable": false
+          "nullable": false,
+          "state": {
+            "order": 0
+          }
         },
         {
+          "index": 1,
           "column": "slug",
           "type": "varchar(255)",
-          "nullable": false
+          "nullable": false,
+          "state": {
+            "order": 1
+          }
         },
         {
+          "index": 2,
           "column": "name",
           "type": "varchar(255)",
-          "nullable": false
+          "nullable": false,
+          "state": {
+            "order": 2
+          }
         },
         {
+          "index": 3,
           "column": "description",
           "type": "text",
-          "nullable": true
+          "nullable": true,
+          "state": {
+            "order": 3
+          }
         },
         {
+          "index": 4,
           "column": "created_at",
           "type": "timestamp",
-          "nullable": false
+          "nullable": false,
+          "state": {
+            "order": 4
+          }
         },
         {
+          "index": 5,
           "column": "updated_at",
           "type": "timestamp",
-          "nullable": false
+          "nullable": false,
+          "state": {
+            "order": 5
+          }
         }
       ],
-      "primary_key": {
+      "primaryKey": {
         "columns": [
           "id"
         ],
@@ -122,34 +171,44 @@
           "definition": "(name)"
         }
       ],
-      "indexes": [
-
-      ]
+      "indexes": []
     },
     {
       "schema": "public",
       "table": "credentials",
       "columns": [
         {
+          "index": 0,
           "column": "user_id",
           "type": "int",
           "nullable": false,
-          "reference": {
+          "foreignKey": {
             "schema": "public",
             "table": "users",
             "column": "id",
             "name": "credentials_user_id_fk"
+          },
+          "state": {
+            "order": 0
           }
         },
         {
+          "index": 1,
           "column": "login",
           "type": "varchar(255)",
-          "nullable": false
+          "nullable": false,
+          "state": {
+            "order": 1
+          }
         },
         {
+          "index": 2,
           "column": "password",
           "type": "varchar(255)",
-          "nullable": false
+          "nullable": false,
+          "state": {
+            "order": 2
+          }
         }
       ],
       "uniques": [
@@ -161,64 +220,79 @@
           "definition": "(login)"
         }
       ],
-      "indexes": [
-
-      ]
+      "indexes": []
     },
     {
       "schema": "public",
       "table": "role_user",
       "columns": [
         {
+          "index": 0,
           "column": "id",
           "type": "int",
-          "nullable": false
+          "nullable": false,
+          "state": {
+            "order": 0
+          }
         },
         {
+          "index": 1,
           "column": "role_id",
           "type": "int",
           "nullable": false,
-          "reference": {
+          "foreignKey": {
             "schema": "public",
             "table": "roles",
             "column": "id",
             "name": "role_user_role_id_fk"
+          },
+          "state": {
+            "order": 1
           }
         },
         {
+          "index": 2,
           "column": "user_id",
           "type": "int",
           "nullable": false,
-          "reference": {
+          "foreignKey": {
             "schema": "public",
             "table": "users",
             "column": "id",
             "name": "role_user_user_id_fk"
+          },
+          "state": {
+            "order": 2
           }
         },
         {
+          "index": 3,
           "column": "created_at",
           "type": "timestamp",
-          "nullable": false
+          "nullable": false,
+          "state": {
+            "order": 3
+          }
         },
         {
+          "index": 4,
           "column": "updated_at",
           "type": "timestamp",
-          "nullable": false
+          "nullable": false,
+          "state": {
+            "order": 4
+          }
         }
       ],
-      "primary_key": {
+      "primaryKey": {
         "columns": [
           "id"
         ],
         "name": "role_user_pk"
       },
-      "uniques": [
-
-      ],
-      "indexes": [
-
-      ]
+      "uniques": [],
+      "indexes": []
     }
-  ]
+  ],
+  "layouts": []
 }

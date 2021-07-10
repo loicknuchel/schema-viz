@@ -1,4 +1,4 @@
-module Models exposing (Canvas, Confirm, DragId, Error, Errors, Flags, Model, Msg(..), Search, State, Switch, initConfirm, initModel, initSwitch)
+module Models exposing (Canvas, Confirm, DragId, Error, Errors, Flags, Model, Msg(..), Search, State, Switch, TimeInfo, initConfirm, initModel, initSwitch)
 
 import Draggable
 import FileValue exposing (File)
@@ -9,6 +9,7 @@ import Mappers.SchemaMapper exposing (emptySchema)
 import Models.Schema exposing (ColumnRef, LayoutName, Schema, TableId, TableStatus(..))
 import Models.Utils exposing (Position, Size, Text, ZoomLevel)
 import Ports exposing (JsMsg)
+import Time
 
 
 
@@ -20,12 +21,21 @@ type alias Flags =
 
 
 type alias Model =
-    { switch : Switch, state : State, canvas : Canvas, schema : Schema, storedSchemas : List Schema, confirm : Confirm }
+    { time : TimeInfo, switch : Switch, state : State, canvas : Canvas, schema : Schema, storedSchemas : List Schema, confirm : Confirm }
 
 
 initModel : Model
 initModel =
-    { switch = initSwitch, state = initState, canvas = initCanvas, schema = emptySchema, storedSchemas = [], confirm = initConfirm }
+    { time = initTimeInfo, switch = initSwitch, state = initState, canvas = initCanvas, schema = emptySchema, storedSchemas = [], confirm = initConfirm }
+
+
+type alias TimeInfo =
+    { zone : Time.Zone, now : Time.Posix }
+
+
+initTimeInfo : TimeInfo
+initTimeInfo =
+    { zone = Time.utc, now = Time.millisToPosix 0 }
 
 
 type alias Switch =
@@ -65,13 +75,15 @@ initConfirm =
 
 
 type Msg
-    = ChangeSchema
+    = TimeChanged Time.Posix
+    | ZoneChanged Time.Zone
+    | ChangeSchema
     | FileDragOver File (List File)
     | FileDragLeave
     | FileDropped File (List File)
     | FileSelected File
     | LoadSampleData String
-    | GotSampleData String String (Result Http.Error Text)
+    | GotSampleData Time.Posix String String (Result Http.Error Text)
     | DeleteSchema Schema
     | UseSchema Schema
     | ChangedSearch Search

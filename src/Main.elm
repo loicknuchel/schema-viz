@@ -4,7 +4,8 @@ import Browser
 import Commands.FetchSample exposing (loadSample)
 import Conf exposing (conf)
 import Draggable
-import Libs.Std exposing (cond, set, setState)
+import Libs.Bool as B
+import Libs.Std exposing (set, setState)
 import Models exposing (Flags, Model, Msg(..), initConfirm, initModel)
 import Models.Schema exposing (TableStatus(..))
 import Ports exposing (JsMsg(..), activateTooltipsAndPopovers, dropSchema, hideOffcanvas, loadSchemas, observeSize, onJsMessage, readFile, showModal, toastError)
@@ -87,7 +88,7 @@ update msg model =
             ( { model | state = model.state |> set (\state -> { state | search = search }) }, Cmd.none )
 
         SelectTable id ->
-            ( { model | schema = model.schema |> visitTables (\table -> table |> setState (\state -> { state | selected = cond (table.id == id) (\_ -> not state.selected) (\_ -> False) })) }, Cmd.none )
+            ( { model | schema = model.schema |> visitTables (\table -> table |> setState (\state -> { state | selected = B.cond (table.id == id) (\_ -> not state.selected) (\_ -> False) })) }, Cmd.none )
 
         HideTable id ->
             ( { model | schema = model.schema |> hideTable id }, Cmd.none )
@@ -126,7 +127,7 @@ update msg model =
             dragItem model delta
 
         NewLayout name ->
-            ( model |> setState (\s -> { s | newLayout = cond (String.length name == 0) (\_ -> Nothing) (\_ -> Just name) }), Cmd.none )
+            ( model |> setState (\s -> { s | newLayout = B.cond (String.length name == 0) (\_ -> Nothing) (\_ -> Just name) }), Cmd.none )
 
         CreateLayout name ->
             createLayout name model

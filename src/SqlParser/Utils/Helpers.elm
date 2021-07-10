@@ -1,17 +1,17 @@
 module SqlParser.Utils.Helpers exposing (commaSplit, noEnclosingQuotes, parseIndexDefinition)
 
-import Libs.Std exposing (regexMatches)
+import Libs.Regex as R
 import SqlParser.Utils.Types exposing (ParseError, SqlColumnName)
 
 
 parseIndexDefinition : String -> Result (List ParseError) (List SqlColumnName)
 parseIndexDefinition definition =
-    case definition |> regexMatches "^\\((?<columns>[^)]+)\\)$" of
+    case definition |> R.matches "^\\((?<columns>[^)]+)\\)$" of
         (Just columns) :: [] ->
             Ok (columns |> String.split "," |> List.map String.trim)
 
         _ ->
-            case definition |> regexMatches "^USING[ \t]+[^ ]+[ \t]+\\((?<columns>[^)]+)\\).*$" of
+            case definition |> R.matches "^USING[ \t]+[^ ]+[ \t]+\\((?<columns>[^)]+)\\).*$" of
                 (Just columns) :: [] ->
                     Ok (columns |> String.split "," |> List.map String.trim)
 
@@ -21,7 +21,7 @@ parseIndexDefinition definition =
 
 noEnclosingQuotes : String -> String
 noEnclosingQuotes text =
-    case text |> regexMatches "\"(.*)\"" of
+    case text |> R.matches "\"(.*)\"" of
         (Just res) :: [] ->
             res
 

@@ -2,7 +2,9 @@ module Mappers.SchemaMapper exposing (buildSchema, buildSchemaFromSql, emptySche
 
 import AssocList as Dict
 import Conf exposing (conf)
-import Libs.Std exposing (dictFromList, listGet, stringHashCode, stringWordSplit, uniqueId)
+import Libs.Dict as D
+import Libs.List as L
+import Libs.String as S
 import Models.Schema exposing (Column, ColumnComment(..), ColumnIndex(..), ColumnName(..), ColumnState, ColumnType(..), ColumnValue(..), ForeignKey, ForeignKeyName(..), Index, IndexName(..), Layout, PrimaryKey, PrimaryKeyName(..), RelationRef, Schema, SchemaInfo, SchemaName(..), Table, TableComment(..), TableId(..), TableName(..), TableState, TableStatus(..), Unique, UniqueName(..))
 import Models.Utils exposing (Color, Position, Size)
 import SqlParser.SchemaParser exposing (SqlColumn, SqlForeignKey, SqlIndex, SqlPrimaryKey, SqlSchema, SqlTable, SqlUnique)
@@ -21,7 +23,7 @@ emptySchema =
 
 buildSchema : List String -> String -> SchemaInfo -> List Table -> List Layout -> Schema
 buildSchema takenNames name info tables layouts =
-    { name = uniqueId takenNames name, info = info, tables = tables |> dictFromList .id, relations = buildRelations tables, layouts = layouts }
+    { name = S.uniqueId takenNames name, info = info, tables = tables |> D.fromList .id, relations = buildRelations tables, layouts = layouts }
 
 
 buildSqlTables : SqlSchema -> List Table
@@ -34,7 +36,7 @@ buildSqlTable table =
     { id = tableIdFromSqlTable table
     , schema = table.schema |> SchemaName
     , table = table.table |> TableName
-    , columns = table.columns |> List.indexedMap buildSqlColumn |> dictFromList .column
+    , columns = table.columns |> List.indexedMap buildSqlColumn |> D.fromList .column
     , primaryKey = table.primaryKey |> Maybe.map buildSqlPrimaryKey
     , indexes = table.indexes |> List.map buildSqlIndex
     , uniques = table.uniques |> List.map buildSqlUnique
@@ -111,11 +113,11 @@ initColumnState index =
 
 computeColor : TableId -> Color
 computeColor (TableId _ (TableName table)) =
-    stringWordSplit table
+    S.wordSplit table
         |> List.head
-        |> Maybe.map stringHashCode
+        |> Maybe.map S.hashCode
         |> Maybe.map (modBy (List.length conf.colors))
-        |> Maybe.andThen (\index -> conf.colors |> listGet index)
+        |> Maybe.andThen (\index -> conf.colors |> L.get index)
         |> Maybe.withDefault conf.default.color
 
 

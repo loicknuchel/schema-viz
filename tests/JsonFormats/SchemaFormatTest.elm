@@ -5,7 +5,7 @@ import Expect exposing (Expectation)
 import Json.Decode as Decode
 import Json.Encode as Encode
 import JsonFormats.SchemaFormat exposing (..)
-import Libs.Std exposing (dictFromList)
+import Libs.Dict as D
 import Models.Schema exposing (CanvasProps, Column, ColumnIndex(..), ColumnName(..), ColumnProps, ColumnState, ColumnType(..), ColumnValue(..), ForeignKey, ForeignKeyName(..), Index, IndexName(..), Layout, PrimaryKey, PrimaryKeyName(..), Schema, SchemaInfo, SchemaName(..), Table, TableId(..), TableName(..), TableProps, TableState, TableStatus(..), Unique, UniqueName(..))
 import Models.Utils exposing (Position, Size)
 import Test exposing (Test, describe, test)
@@ -94,7 +94,7 @@ tableState =
 
 table : Table
 table =
-    { id = tableId, schema = SchemaName "public", table = TableName "users", columns = dictFromList .column [ column ], primaryKey = Nothing, uniques = [], indexes = [], comment = Nothing, state = tableState }
+    { id = tableId, schema = SchemaName "public", table = TableName "users", columns = D.fromList .column [ column ], primaryKey = Nothing, uniques = [], indexes = [], comment = Nothing, state = tableState }
 
 
 info : SchemaInfo
@@ -104,7 +104,7 @@ info =
 
 schema : Schema
 schema =
-    { name = "a schema", info = info, layouts = [ layout ], tables = dictFromList .id [ table ], relations = [] }
+    { name = "a schema", info = info, layouts = [ layout ], tables = D.fromList .id [ table ], relations = [] }
 
 
 

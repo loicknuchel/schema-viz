@@ -1,6 +1,6 @@
 module SqlParser.Parsers.CreateIndex exposing (ParsedIndex, parseCreateIndex)
 
-import Libs.Std exposing (regexMatches)
+import Libs.Regex as R
 import SqlParser.Utils.Helpers exposing (parseIndexDefinition)
 import SqlParser.Utils.Types exposing (ConstraintName, ParseError, RawSql, SqlColumnName, SqlTableRef)
 
@@ -11,7 +11,7 @@ type alias ParsedIndex =
 
 parseCreateIndex : RawSql -> Result (List ParseError) ParsedIndex
 parseCreateIndex sql =
-    case sql |> regexMatches "^CREATE INDEX[ \t]+(?<name>[^ ]+)[ \t]+ON[ \t]+(?:(?<schema>[^ .]+)\\.)?(?<table>[^ (]+)[ \t]*(?<definition>.+);$" of
+    case sql |> R.matches "^CREATE INDEX[ \t]+(?<name>[^ ]+)[ \t]+ON[ \t]+(?:(?<schema>[^ .]+)\\.)?(?<table>[^ (]+)[ \t]*(?<definition>.+);$" of
         (Just name) :: schema :: (Just table) :: (Just definition) :: [] ->
             parseIndexDefinition definition
                 |> Result.map (\columns -> { name = name, table = { schema = schema, table = table }, columns = columns, definition = definition })

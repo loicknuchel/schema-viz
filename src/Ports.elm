@@ -4,7 +4,8 @@ import FileValue exposing (File)
 import Json.Decode as Decode exposing (Decoder, Value)
 import Json.Encode as Encode
 import JsonFormats.SchemaFormat exposing (decodeSchema, decodeSize, encodeSchema)
-import Libs.Std exposing (decodeTuple, listResultCollect)
+import Libs.Json.Decode as D
+import Libs.List as L
 import Models.Schema exposing (Schema, TableId, formatTableId)
 import Models.Utils exposing (FileContent, HtmlId, SizeChange, Text)
 import Time
@@ -206,7 +207,7 @@ jsDecoder =
 
 schemasDecoder : Decoder ( List ( String, Decode.Error ), List Schema )
 schemasDecoder =
-    Decode.list (decodeTuple Decode.string Decode.value)
+    Decode.list (D.tuple Decode.string Decode.value)
         |> Decode.map
             (\list ->
                 list
@@ -216,7 +217,7 @@ schemasDecoder =
                                 |> Decode.decodeValue (decodeSchema [])
                                 |> Result.mapError (\e -> ( k, e ))
                         )
-                    |> listResultCollect
+                    |> L.resultCollect
             )
 
 

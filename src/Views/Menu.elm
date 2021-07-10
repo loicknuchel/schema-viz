@@ -5,9 +5,9 @@ import Conf exposing (conf)
 import Html exposing (Html, button, div, h5, text)
 import Html.Attributes exposing (class, id, tabindex, type_)
 import Html.Events exposing (onClick)
+import Libs.Bootstrap exposing (BsColor(..), Toggle(..), ariaLabel, ariaLabelledBy, bsBackdrop, bsButton, bsButtonGroup, bsDismiss, bsScroll)
 import Models exposing (Msg(..))
 import Models.Schema exposing (Schema, TableStatus(..))
-import Views.Bootstrap exposing (BsColor(..), Toggle(..), ariaLabel, ariaLabelledBy, bsBackdrop, bsButton, bsButtonGroup, bsDismiss, bsScroll)
 
 
 

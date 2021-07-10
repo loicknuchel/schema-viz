@@ -4,7 +4,8 @@ import Draggable
 import FileValue exposing (File)
 import Html exposing (Html, text)
 import Http
-import Libs.Std exposing (WheelEvent, send)
+import Libs.Html.Events exposing (WheelEvent)
+import Libs.Task as T
 import Mappers.SchemaMapper exposing (emptySchema)
 import Models.Schema exposing (ColumnRef, LayoutName, Schema, TableId, TableStatus(..))
 import Models.Utils exposing (Position, Size, Text, ZoomLevel)
@@ -71,7 +72,7 @@ type alias Confirm =
 
 initConfirm : Confirm
 initConfirm =
-    { content = text "No text", cmd = send Noop }
+    { content = text "No text", cmd = T.send Noop }
 
 
 type Msg

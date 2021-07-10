@@ -1,8 +1,9 @@
-module Views.Bootstrap exposing (BsColor(..), Toggle(..), ariaExpanded, ariaHidden, ariaLabel, ariaLabelledBy, bsBackdrop, bsButton, bsButtonGroup, bsDismiss, bsDropdown, bsKeyboard, bsScroll, bsToggle, bsToggleCollapse, bsToggleCollapseLink, bsToggleDropdown, bsToggleModal, bsToggleOffcanvas)
+module Libs.Bootstrap exposing (BsColor(..), Toggle(..), ariaExpanded, ariaHidden, ariaLabel, ariaLabelledBy, bsBackdrop, bsButton, bsButtonGroup, bsDismiss, bsDropdown, bsKeyboard, bsModal, bsScroll, bsToggle, bsToggleCollapse, bsToggleCollapseLink, bsToggleDropdown, bsToggleModal, bsToggleOffcanvas)
 
-import Html exposing (Attribute, Html, div)
-import Html.Attributes exposing (attribute, class, href, id, type_)
-import Libs.Std exposing (boolToString, role)
+import Html exposing (Attribute, Html, button, div, h5, text)
+import Html.Attributes exposing (attribute, class, href, id, tabindex, type_)
+import Libs.Bool as B
+import Libs.Html.Attributes exposing (role)
 import Models.Utils exposing (HtmlId, Text)
 
 
@@ -61,7 +62,7 @@ bsTarget targetId =
 
 bsScroll : Bool -> Attribute msg
 bsScroll value =
-    attribute "data-bs-scroll" (boolToString value)
+    attribute "data-bs-scroll" (B.toString value)
 
 
 bsBackdrop : String -> Attribute msg
@@ -71,17 +72,17 @@ bsBackdrop value =
 
 bsKeyboard : Bool -> Attribute msg
 bsKeyboard value =
-    attribute "data-bs-keyboard" (boolToString value)
+    attribute "data-bs-keyboard" (B.toString value)
 
 
 ariaExpanded : Bool -> Attribute msg
 ariaExpanded value =
-    attribute "aria-expanded" (boolToString value)
+    attribute "aria-expanded" (B.toString value)
 
 
 ariaHidden : Bool -> Attribute msg
 ariaHidden value =
-    attribute "aria-hidden" (boolToString value)
+    attribute "aria-hidden" (B.toString value)
 
 
 ariaControls : HtmlId -> Attribute msg
@@ -142,6 +143,22 @@ bsButton color attrs children =
 bsButtonGroup : Text -> List (Html msg) -> Html msg
 bsButtonGroup label buttons =
     div [ class "btn-group", role "group", ariaLabel label ] buttons
+
+
+bsModal : HtmlId -> Text -> List (Html msg) -> List (Html msg) -> Html msg
+bsModal modalId title body footer =
+    div [ id modalId, class "modal fade", tabindex -1, ariaLabelledBy (modalId ++ "-label"), ariaHidden True ]
+        [ div [ class "modal-dialog modal-lg modal-dialog-scrollable" ]
+            [ div [ class "modal-content" ]
+                [ div [ class "modal-header" ]
+                    [ h5 [ class "modal-title", id (modalId ++ "-label") ] [ text title ]
+                    , button [ type_ "button", class "btn-close", bsDismiss Modal, ariaLabel "Close" ] []
+                    ]
+                , div [ class "modal-body" ] body
+                , div [ class "modal-footer" ] footer
+                ]
+            ]
+        ]
 
 
 colorToString : BsColor -> String

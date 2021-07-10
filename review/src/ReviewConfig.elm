@@ -34,18 +34,18 @@ config : List Rule
 config =
     [ NoDebug.Log.rule
     , NoDebug.TodoOrToString.rule
-    , NoExposingEverything.rule |> Rule.ignoreErrorsForFiles [ "src/Libs/Std.elm", "src/Views/Bootstrap.elm" ] |> Rule.ignoreErrorsForDirectories [ "tests/" ]
+    , NoExposingEverything.rule |> Rule.ignoreErrorsForDirectories [ "tests" ]
     , NoMissingSubscriptionsCall.rule
     , NoRecursiveUpdate.rule
     , NoUselessSubscriptions.rule
     , NoMissingTypeAnnotation.rule
     , NoMissingTypeAnnotationInLetIn.rule
     , NoMissingTypeExpose.rule
-    , NoUnused.CustomTypeConstructors.rule [] |> Rule.ignoreErrorsForFiles [ "src/Views/Bootstrap.elm" ]
+    , NoUnused.CustomTypeConstructors.rule [] |> Rule.ignoreErrorsForDirectories [ "src/Libs" ]
     , NoUnused.Dependencies.rule
-    , NoUnused.Exports.rule
-    , NoUnused.Modules.rule
+    , NoUnused.Exports.rule |> Rule.ignoreErrorsForDirectories [ "src/Libs" ]
+    , NoUnused.Modules.rule |> Rule.ignoreErrorsForDirectories [ "src/Libs" ]
     , NoUnused.Parameters.rule
     , NoUnused.Patterns.rule
-    , NoUnused.Variables.rule |> Rule.ignoreErrorsForFiles [ "src/Libs/Std.elm" ]
+    , NoUnused.Variables.rule |> Rule.ignoreErrorsForDirectories [ "src/Libs" ]
     ]

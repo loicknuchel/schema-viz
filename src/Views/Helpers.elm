@@ -6,13 +6,13 @@ import Html.Attributes exposing (height, style, title, width)
 import Html.Events exposing (onClick)
 import Http exposing (Error(..))
 import Json.Decode as Decode
+import Libs.Bootstrap exposing (Toggle(..), bsToggle)
 import Libs.DateTime as DateTime
-import Libs.Std exposing (send)
+import Libs.Task as T
 import Models exposing (DragId, Msg(..), TimeInfo)
 import Models.Schema exposing (ColumnIndex(..), ColumnName(..), ColumnRef, ColumnType(..), formatTableId)
 import Models.Utils exposing (Position, Size)
 import Time
-import Views.Bootstrap exposing (Toggle(..), bsToggle)
 
 
 
@@ -36,7 +36,7 @@ sizeAttrs size =
 
 onClickConfirm : String -> Msg -> Attribute Msg
 onClickConfirm content msg =
-    onClick (OpenConfirm { content = text content, cmd = send msg })
+    onClick (OpenConfirm { content = text content, cmd = T.send msg })
 
 
 

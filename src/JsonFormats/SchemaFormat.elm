@@ -4,7 +4,8 @@ import AssocList as Dict exposing (Dict)
 import Dict as ElmDict
 import Json.Decode as Decode
 import Json.Encode as Encode
-import Libs.Std exposing (dictFromList, maybeFilter)
+import Libs.Dict as D
+import Libs.Maybe as M
 import Mappers.SchemaMapper exposing (buildSchema, initTableState)
 import Models.Schema exposing (CanvasProps, Column, ColumnComment(..), ColumnIndex(..), ColumnName(..), ColumnProps, ColumnState, ColumnType(..), ColumnValue(..), ForeignKey, ForeignKeyName(..), Index, IndexName(..), Layout, PrimaryKey, PrimaryKeyName(..), Schema, SchemaInfo, SchemaName(..), Table, TableComment(..), TableId(..), TableName(..), TableProps, TableState, TableStatus(..), Unique, UniqueName(..), formatTableId, parseTableId)
 import Models.Utils exposing (Position, Size)
@@ -72,7 +73,7 @@ decodeTable =
                     (Decode.succeed tableId)
                     (Decode.succeed schema)
                     (Decode.succeed table)
-                    (Decode.field "columns" (Decode.list decodeColumn |> Decode.map (dictFromList .column)))
+                    (Decode.field "columns" (Decode.list decodeColumn |> Decode.map (D.fromList .column)))
                     (Decode.maybe (Decode.field "primaryKey" decodePrimaryKey))
                     (Decode.field "uniques" (Decode.list decodeUnique))
                     (Decode.field "indexes" (Decode.list decodeIndex))
@@ -371,7 +372,7 @@ encodeMaybe encoder maybe =
 
 encodeMaybeWithoutDefault : (a -> a -> Encode.Value) -> a -> a -> Encode.Value
 encodeMaybeWithoutDefault encode default value =
-    Just value |> maybeFilter (\v -> not (v == default)) |> encodeMaybe (encode default)
+    Just value |> M.filter (\v -> not (v == default)) |> encodeMaybe (encode default)
 
 
 decodeMaybeWithDefault : (a -> Decode.Decoder a) -> a -> Decode.Decoder a

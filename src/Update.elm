@@ -9,7 +9,14 @@ import FileValue exposing (File)
 import Http
 import Json.Decode as Decode
 import JsonFormats.SchemaFormat exposing (decodeSchema)
-import Libs.Std exposing (WheelEvent, cond, dictFromList, listFind, maybeFilter, resultFold, send, set, setSchema, setState)
+import Libs.Bool as B
+import Libs.Dict as D
+import Libs.Html.Events exposing (WheelEvent)
+import Libs.List as L
+import Libs.Maybe as M
+import Libs.Result as R
+import Libs.Std exposing (set, setSchema, setState)
+import Libs.Task as T
 import Mappers.SchemaMapper exposing (buildSchemaFromSql, emptySchema)
 import Models exposing (Canvas, DragId, Errors, Model, Msg(..), initSwitch)
 import Models.Schema exposing (Column, ColumnName, ColumnProps, Layout, LayoutName, Schema, Table, TableId, TableProps, TableStatus(..), formatTableId, parseTableId)
@@ -37,7 +44,7 @@ createSchema now file content model =
 createSampleSchema : Time.Posix -> String -> String -> Result Http.Error String -> Model -> ( Model, Cmd Msg )
 createSampleSchema now name path response model =
     response
-        |> resultFold
+        |> R.fold
             (\err -> ( [ "Can't load '" ++ name ++ "': " ++ formatHttpError err ], emptySchema ))
             (buildSchema now (model.storedSchemas |> List.map .name) name path Nothing)
         |> loadSchema model
@@ -57,7 +64,7 @@ loadSchema model ( errs, schema ) =
                    , saveSchema schema
                    ]
                 ++ (if Dict.size schema.tables < 10 then
-                        [ send ShowAllTables ]
+                        [ T.send ShowAllTables ]
 
                     else
                         [ click conf.ids.searchInput ]
@@ -73,7 +80,7 @@ buildSchema now takenNames name path lastModified content =
 
     else if path |> String.endsWith ".json" then
         Decode.decodeString (decodeSchema takenNames) content
-            |> resultFold
+            |> R.fold
                 (\e -> ( [ "⚠️ Error in <b>" ++ path ++ "</b> ⚠️<br>" ++ decodeErrorToHtml e ], emptySchema ))
                 (\schema -> ( [], schema ))
 
@@ -126,7 +133,7 @@ setSequentialOrder columns =
                 else
                     column |> setState (\state -> { state | order = Just index })
             )
-        |> dictFromList .column
+        |> D.fromList .column
 
 
 showColumn : ColumnName -> Int -> Dict ColumnName Column -> Dict ColumnName Column
@@ -234,7 +241,7 @@ createLayout name model =
 loadLayout : LayoutName -> Model -> ( Model, Cmd Msg )
 loadLayout name model =
     model.schema.layouts
-        |> listFind (\layout -> layout.name == name)
+        |> L.find (\layout -> layout.name == name)
         |> Maybe.map
             (\layout ->
                 let
@@ -260,7 +267,7 @@ updateLayout name model =
         newModel : Model
         newModel =
             model
-                |> setSchema (\s -> { s | layouts = s.layouts |> List.map (\l -> cond (l.name == name) (\_ -> model |> toLayout name) (\_ -> l)) })
+                |> setSchema (\s -> { s | layouts = s.layouts |> List.map (\l -> B.cond (l.name == name) (\_ -> model |> toLayout name) (\_ -> l)) })
                 |> setState (\s -> { s | currentLayout = Just name })
     in
     ( newModel, saveSchema newModel.schema )
@@ -342,7 +349,7 @@ maybeChangeCmd model { id, size } =
 
 getInitializingTable : TableId -> Dict TableId Table -> Maybe Table
 getInitializingTable id tables =
-    Dict.get id tables |> maybeFilter (\t -> t.state.status == Initializing)
+    Dict.get id tables |> M.filter (\t -> t.state.status == Initializing)
 
 
 getArea : Canvas -> Area
@@ -421,7 +428,7 @@ getTable id schema =
 
 setTables : List Table -> Schema -> Schema
 setTables tables schema =
-    { schema | tables = tables |> dictFromList .id }
+    { schema | tables = tables |> D.fromList .id }
 
 
 setSize : (s -> s) -> { item | size : s } -> { item | size : s }

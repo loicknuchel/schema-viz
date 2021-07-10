@@ -7,11 +7,11 @@ import FontAwesome.Solid as Icon
 import Html exposing (Html, a, b, button, div, form, img, input, li, nav, span, text, ul)
 import Html.Attributes exposing (alt, autocomplete, class, height, href, id, placeholder, src, style, title, type_, value)
 import Html.Events exposing (onClick, onInput)
-import Libs.Std exposing (cond)
+import Libs.Bool as B
+import Libs.Bootstrap exposing (BsColor(..), Toggle(..), ariaExpanded, ariaLabel, bsButton, bsToggle, bsToggleCollapse, bsToggleDropdown, bsToggleModal, bsToggleOffcanvas)
 import Models exposing (Msg(..), Search)
 import Models.Schema exposing (Column, ColumnName(..), Layout, LayoutName, Table, TableName(..), TableStatus(..), formatTableId)
 import Models.Utils exposing (Text)
-import Views.Bootstrap exposing (BsColor(..), Toggle(..), ariaExpanded, ariaLabel, bsButton, bsToggle, bsToggleCollapse, bsToggleDropdown, bsToggleModal, bsToggleOffcanvas)
 import Views.Helpers exposing (extractColumnName)
 
 
@@ -28,7 +28,7 @@ viewNavbar search currentLayout layouts tables =
                 , ul [ class "navbar-nav me-auto" ]
                     [ li [ class "nav-item" ] [ a ([ href "#", class "nav-link" ] ++ bsToggleModal conf.ids.helpModal) [ text "?" ] ]
                     ]
-                , cond (List.length tables > 0) (\_ -> viewLayoutButton currentLayout layouts) (\_ -> div [] [])
+                , B.cond (List.length tables > 0) (\_ -> viewLayoutButton currentLayout layouts) (\_ -> div [] [])
                 ]
             ]
         ]

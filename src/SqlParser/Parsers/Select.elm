@@ -1,6 +1,8 @@
 module SqlParser.Parsers.Select exposing (SelectColumn(..), SelectColumnBasic, SelectColumnComplex, SelectInfo, SelectTable(..), SelectTableBasic, SelectTableComplex, TableAlias, parseSelect, parseSelectColumn, parseSelectTable)
 
-import Libs.Std exposing (listResultSeq, maybeToList, regexMatches)
+import Libs.List as L
+import Libs.Maybe as M
+import Libs.Regex as R
 import SqlParser.Utils.Helpers exposing (commaSplit, noEnclosingQuotes)
 import SqlParser.Utils.Types exposing (ParseError, RawSql, SqlColumnName, SqlSchemaName, SqlTableName)
 
@@ -41,11 +43,11 @@ type alias TableAlias =
 
 parseSelect : RawSql -> Result (List ParseError) SelectInfo
 parseSelect select =
-    case select |> regexMatches "^SELECT(?:[ \t]+DISTINCT ON \\([^)]+\\))?[ \t]+(?<columns>.+?)(?:[ \t]+FROM[ \t]+(?<tables>.+?))?(?:[ \t]+WHERE[ \t]+(?<where>.+?))?$" of
+    case select |> R.matches "^SELECT(?:[ \t]+DISTINCT ON \\([^)]+\\))?[ \t]+(?<columns>.+?)(?:[ \t]+FROM[ \t]+(?<tables>.+?))?(?:[ \t]+WHERE[ \t]+(?<where>.+?))?$" of
         (Just columnsStr) :: tablesStr :: whereClause :: [] ->
             Result.map2 (\columns tables -> { columns = columns, tables = tables, whereClause = whereClause })
-                (commaSplit columnsStr |> List.map String.trim |> List.map parseSelectColumn |> listResultSeq)
-                (tablesStr |> maybeToList |> List.map parseSelectTable |> listResultSeq)
+                (commaSplit columnsStr |> List.map String.trim |> List.map parseSelectColumn |> L.resultSeq)
+                (tablesStr |> M.toList |> List.map parseSelectTable |> L.resultSeq)
 
         _ ->
             Err [ "Can't parse select: '" ++ select ++ "'" ]
@@ -53,12 +55,12 @@ parseSelect select =
 
 parseSelectColumn : RawSql -> Result ParseError SelectColumn
 parseSelectColumn column =
-    case column |> regexMatches "^(?:(?<table>[^ .]+)\\.)?(?<column>[^ :]+)(?:[ \t]+AS[ \t]+(?<alias>[^ ]+))?$" of
+    case column |> R.matches "^(?:(?<table>[^ .]+)\\.)?(?<column>[^ :]+)(?:[ \t]+AS[ \t]+(?<alias>[^ ]+))?$" of
         table :: (Just columnName) :: alias :: [] ->
             Ok (BasicColumn { table = table, column = columnName |> noEnclosingQuotes, alias = alias })
 
         _ ->
-            case column |> regexMatches "^(?<formula>.+?)[ \t]+AS[ \t]+(?<alias>[^ ]+)$" of
+            case column |> R.matches "^(?<formula>.+?)[ \t]+AS[ \t]+(?<alias>[^ ]+)$" of
                 (Just formula) :: (Just alias) :: [] ->
                     Ok (ComplexColumn { formula = formula, alias = alias })
 
@@ -68,7 +70,7 @@ parseSelectColumn column =
 
 parseSelectTable : RawSql -> Result ParseError SelectTable
 parseSelectTable table =
-    case table |> regexMatches "^(?:(?<schema>[^ .]+)\\.)?(?<table>[^ ]+)(?:[ \t]+(?<alias>[^ ]+))?$" of
+    case table |> R.matches "^(?:(?<schema>[^ .]+)\\.)?(?<table>[^ ]+)(?:[ \t]+(?<alias>[^ ]+))?$" of
         schema :: (Just tableName) :: alias :: [] ->
             Ok (BasicTable { schema = schema, table = tableName, alias = alias })
 

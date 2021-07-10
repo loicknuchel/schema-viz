@@ -7,11 +7,15 @@ import FontAwesome.Solid as Icon
 import Html exposing (Attribute, Html, a, b, button, div, li, span, text, ul)
 import Html.Attributes exposing (class, classList, href, id, style, title, type_)
 import Html.Events exposing (onClick, onDoubleClick)
-import Libs.Std exposing (divIf, listAddIf, listAppendOn, maybeFilter, plural, stopClick)
+import Libs.Bootstrap exposing (Toggle(..), bsDropdown, bsToggle, bsToggleCollapse)
+import Libs.Html exposing (divIf)
+import Libs.Html.Events exposing (stopClick)
+import Libs.List as L
+import Libs.Maybe as M
+import Libs.String as S
 import Models exposing (Msg(..))
 import Models.Schema exposing (Column, ColumnComment(..), ColumnName, ColumnRef, ColumnValue(..), ForeignKey, Index, IndexName(..), PrimaryKey, Relation, Table, TableComment(..), TableStatus(..), Unique, UniqueName(..), formatTableId, formatTableName)
 import Models.Utils exposing (ZoomLevel)
-import Views.Bootstrap exposing (Toggle(..), bsDropdown, bsToggle, bsToggleCollapse)
 import Views.Helpers exposing (dragAttrs, extractColumnIndex, extractColumnName, extractColumnType, formatColumnRef, placeAt, sizeAttrs, withColumnName, withNullableInfo)
 
 
@@ -30,7 +34,7 @@ viewTable zoom incomingTableRelations table =
             formatTableId table.id ++ "-hidden-columns-collapse"
     in
     div
-        (listAddIf (table.state.status == Initializing)
+        (L.addIf (table.state.status == Initializing)
             (style "visibility" "hidden")
             [ class "erd-table", class table.state.color, classList [ ( "selected", table.state.selected ) ], id (formatTableId table.id), placeAt table.state.position ]
             ++ sizeAttrs table.state.size
@@ -45,7 +49,7 @@ viewTable zoom incomingTableRelations table =
         , divIf (List.length hiddenColumns > 0)
             [ class "hidden-columns" ]
             [ button ([ class "toggle", type_ "button" ] ++ bsToggleCollapse collapseId)
-                [ text (plural (hiddenColumns |> List.length) "No hidden column" "1 hidden column" "hidden columns")
+                [ text (S.plural (hiddenColumns |> List.length) "No hidden column" "1 hidden column" "hidden columns")
                 ]
             , div [ class "collapse", id collapseId ]
                 (hiddenColumns
@@ -59,7 +63,7 @@ viewTable zoom incomingTableRelations table =
 viewHeader : ZoomLevel -> Table -> Html Msg
 viewHeader zoom table =
     div [ class "header", style "display" "flex", style "align-items" "center", onClick (SelectTable table.id) ]
-        [ div [ style "flex-grow" "1" ] (listAppendOn table.comment (\(TableComment comment) -> viewComment comment) [ span (tableNameSize zoom) [ text (formatTableName table.table table.schema) ] ])
+        [ div [ style "flex-grow" "1" ] (L.appendOn table.comment (\(TableComment comment) -> viewComment comment) [ span (tableNameSize zoom) [ text (formatTableName table.table table.schema) ] ])
         , bsDropdown (formatTableId table.id ++ "-settings-dropdown")
             []
             (\attrs -> div ([ style "font-size" "0.9rem", style "opacity" "0.25", style "width" "30px", style "margin-left" "-10px", style "margin-right" "-20px", stopClick Noop ] ++ attrs) [ viewIcon Icon.ellipsisV ])
@@ -145,7 +149,7 @@ viewColumnName pk column =
                     "name"
     in
     div [ class className ]
-        ([ text (extractColumnName column.column) ] |> listAppendOn column.comment (\(ColumnComment comment) -> viewComment comment))
+        ([ text (extractColumnName column.column) ] |> L.appendOn column.comment (\(ColumnComment comment) -> viewComment comment))
 
 
 viewColumnType : Column -> Html msg
@@ -185,7 +189,7 @@ filterIncomingColumnRelations incomingTableRelations column =
 
 inPrimaryKey : ColumnName -> Maybe PrimaryKey -> Maybe PrimaryKey
 inPrimaryKey column pk =
-    pk |> maybeFilter (\{ columns } -> columns |> hasColumn column)
+    pk |> M.filter (\{ columns } -> columns |> hasColumn column)
 
 
 inUniqueIndexes : ColumnName -> List Unique -> List Unique

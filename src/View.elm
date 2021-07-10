@@ -5,13 +5,17 @@ import Conf exposing (conf)
 import FontAwesome.Styles as Icon
 import Html exposing (Attribute, Html, div)
 import Html.Attributes exposing (class, id, style)
-import Libs.Std exposing (listFilterMap, onWheel)
+import Libs.Html.Events exposing (onWheel)
+import Libs.List as L
 import Models exposing (Canvas, Model, Msg(..))
 import Models.Schema exposing (ColumnRef, Relation, RelationRef, Schema, Table, TableAndColumn, TableStatus(..))
 import Models.Utils exposing (Position, ZoomLevel)
 import Views.Helpers exposing (dragAttrs, sizeAttrs)
 import Views.Menu exposing (viewMenu)
-import Views.Modals exposing (viewConfirm, viewCreateLayoutModal, viewHelpModal, viewSchemaSwitchModal)
+import Views.Modals.Confirm exposing (viewConfirm)
+import Views.Modals.CreateSchema exposing (viewCreateLayoutModal)
+import Views.Modals.HelpInstructions exposing (viewHelpModal)
+import Views.Modals.SchemaSwitch exposing (viewSchemaSwitchModal)
 import Views.Navbar exposing (viewNavbar)
 import Views.Relations exposing (viewRelation)
 import Views.Tables exposing (viewTable)
@@ -44,8 +48,8 @@ viewErd canvas schema =
     in
     div ([ id conf.ids.erd, class "erd", onWheel Zoom ] ++ sizeAttrs canvas.size ++ dragAttrs conf.ids.erd)
         [ div [ class "canvas", placeAndZoom canvas.zoom canvas.position ]
-            ((schema.tables |> Dict.values |> listFilterMap shouldDrawTable (\t -> viewTable canvas.zoom (incomingTableRelations relations t) t))
-                ++ (relations |> listFilterMap shouldDrawRelation viewRelation)
+            ((schema.tables |> Dict.values |> L.filterMap shouldDrawTable (\t -> viewTable canvas.zoom (incomingTableRelations relations t) t))
+                ++ (relations |> L.filterMap shouldDrawRelation viewRelation)
             )
         ]
 

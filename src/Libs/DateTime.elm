@@ -1,6 +1,6 @@
 module Libs.DateTime exposing (format, human)
 
-import Libs.Std exposing (plural)
+import Libs.String as S
 import Time
 
 
@@ -61,7 +61,7 @@ human now date =
 
 humanText : Int -> Int -> String -> String -> String
 humanText diff unit one many =
-    plural (abs (round (toFloat diff / toFloat unit))) one one many |> humanDirection diff
+    S.plural (abs (round (toFloat diff / toFloat unit))) one one many |> humanDirection diff
 
 
 humanDirection : Int -> String -> String

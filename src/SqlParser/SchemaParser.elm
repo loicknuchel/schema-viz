@@ -2,7 +2,8 @@ module SqlParser.SchemaParser exposing (Line, SchemaError, SqlCheck, SqlColumn, 
 
 import AssocList as Dict exposing (Dict)
 import Conf exposing (conf)
-import Libs.Std exposing (listFind, listResultSeq, maybeResultSeq)
+import Libs.List as L
+import Libs.Maybe as M
 import Models.Utils exposing (FileContent, FileName)
 import SqlParser.Parsers.AlterTable exposing (ColumnUpdate(..), Predicate, TableConstraint(..), TableUpdate(..))
 import SqlParser.Parsers.Comment exposing (Comment)
@@ -152,7 +153,7 @@ updateColumn id name transform tables =
     updateTable id
         (\table ->
             table.columns
-                |> listFind (\column -> column.name == name)
+                |> L.find (\column -> column.name == name)
                 |> Maybe.map (\column -> transform column |> Result.map (\newColumn -> updateTableColumn name (\_ -> newColumn) table))
                 |> Maybe.withDefault (Err [ "Column " ++ name ++ " does not exist in table " ++ id ])
         )
@@ -179,7 +180,7 @@ buildTable : SqlSchema -> ParsedTable -> Result (List SchemaError) SqlTable
 buildTable tables table =
     table.columns
         |> List.map (buildColumn tables)
-        |> listResultSeq
+        |> L.resultSeq
         |> Result.map
             (\cols ->
                 { schema = table.schema |> withDefaultSchema
@@ -198,7 +199,7 @@ buildColumn : SqlSchema -> ParsedColumn -> Result SchemaError SqlColumn
 buildColumn tables column =
     column.foreignKey
         |> Maybe.map (\( fk, ref ) -> buildFk tables fk ref.schema ref.table ref.column)
-        |> maybeResultSeq
+        |> M.resultSeq
         |> Result.map
             (\fk ->
                 { name = column.name

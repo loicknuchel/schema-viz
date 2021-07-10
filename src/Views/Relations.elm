@@ -1,6 +1,6 @@
 module Views.Relations exposing (viewRelation)
 
-import Libs.Std exposing (listAddIf)
+import Libs.List as L
 import Models exposing (Msg)
 import Models.Schema exposing (Column, ForeignKeyName(..), Relation, Table, TableAndColumn, TableStatus(..), formatTableId)
 import Models.Utils exposing (Color)
@@ -60,7 +60,7 @@ drawRelation src ref optional color name =
 viewLine : Point -> Point -> Bool -> Maybe Color -> Svg Msg
 viewLine p1 p2 optional color =
     line
-        (listAddIf optional
+        (L.addIf optional
             (strokeDasharray "4")
             [ x1 (String.fromFloat p1.x)
             , y1 (String.fromFloat p1.y)

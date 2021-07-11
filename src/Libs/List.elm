@@ -25,7 +25,7 @@ find predicate list =
 
 filterMap : (a -> Bool) -> (a -> b) -> List a -> List b
 filterMap predicate transform list =
-    list |> List.foldr (\a res -> B.cond (predicate a) (\_ -> transform a :: res) (\_ -> res)) []
+    list |> List.foldr (\a res -> B.lazyCond (predicate a) (\_ -> transform a :: res) (\_ -> res)) []
 
 
 addIf : Bool -> a -> List a -> List a

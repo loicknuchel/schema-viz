@@ -18,7 +18,7 @@ buildSchemaFromSql takenNames name info schema =
 
 emptySchema : Schema
 emptySchema =
-    buildSchema [] "No name" { created = Time.millisToPosix 0, updated = Time.millisToPosix 0, fileLastModified = Nothing } [] []
+    buildSchema [] "No name" { created = Time.millisToPosix 0, updated = Time.millisToPosix 0, file = Nothing } [] []
 
 
 buildSchema : List String -> String -> SchemaInfo -> List Table -> List Layout -> Schema

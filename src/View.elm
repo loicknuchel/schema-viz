@@ -5,6 +5,7 @@ import Conf exposing (conf)
 import FontAwesome.Styles as Icon
 import Html exposing (Attribute, Html, div)
 import Html.Attributes exposing (class, id, style)
+import Libs.Bool as B
 import Libs.Html.Events exposing (onWheel)
 import Libs.List as L
 import Models exposing (Canvas, Model, Msg(..))
@@ -13,12 +14,12 @@ import Models.Utils exposing (Position, ZoomLevel)
 import Views.Helpers exposing (dragAttrs, sizeAttrs)
 import Views.Menu exposing (viewMenu)
 import Views.Modals.Confirm exposing (viewConfirm)
-import Views.Modals.CreateSchema exposing (viewCreateLayoutModal)
+import Views.Modals.CreateLayout exposing (viewCreateLayoutModal)
 import Views.Modals.HelpInstructions exposing (viewHelpModal)
 import Views.Modals.SchemaSwitch exposing (viewSchemaSwitchModal)
 import Views.Navbar exposing (viewNavbar)
-import Views.Relations exposing (viewRelation)
-import Views.Tables exposing (viewTable)
+import Views.Relation exposing (viewRelation)
+import Views.Table exposing (viewTable)
 
 
 
@@ -28,10 +29,10 @@ import Views.Tables exposing (viewTable)
 viewApp : Model -> List (Html Msg)
 viewApp model =
     [ Icon.css ]
-        ++ viewNavbar model.state.search model.state.currentLayout model.schema.layouts (Dict.values model.schema.tables)
+        ++ viewNavbar model.state.search model.state.currentLayout model.schema
         ++ viewMenu model.schema
         ++ [ viewErd model.canvas model.schema ]
-        ++ [ viewSchemaSwitchModal model.time model.switch model.schema model.storedSchemas
+        ++ [ viewSchemaSwitchModal model.time model.switch (B.cond (Dict.isEmpty model.schema.tables) "Schema Viz, easily explore your SQL schema!" "Load a new schema") model.storedSchemas
            , viewCreateLayoutModal (model.state.newLayout |> Maybe.withDefault "")
            , viewHelpModal
            , viewConfirm model.confirm

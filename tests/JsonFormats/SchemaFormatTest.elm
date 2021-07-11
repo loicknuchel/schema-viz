@@ -99,7 +99,7 @@ table =
 
 info : SchemaInfo
 info =
-    { created = Time.millisToPosix 1234, updated = Time.millisToPosix 4321, fileLastModified = Nothing }
+    { created = Time.millisToPosix 1234, updated = Time.millisToPosix 4321, file = Nothing }
 
 
 schema : Schema

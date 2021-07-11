@@ -10,13 +10,13 @@ import Html.Events exposing (onClick, onInput)
 import Libs.Bool as B
 import Libs.Bootstrap exposing (BsColor(..), Toggle(..), ariaExpanded, ariaLabel, bsButton, bsToggle, bsToggleCollapse, bsToggleDropdown, bsToggleModal, bsToggleOffcanvas)
 import Models exposing (Msg(..), Search)
-import Models.Schema exposing (Column, ColumnName(..), Layout, LayoutName, Table, TableName(..), TableStatus(..), formatTableId)
+import Models.Schema exposing (Column, ColumnName(..), Layout, LayoutName, Schema, Table, TableName(..), TableStatus(..), formatTableId)
 import Models.Utils exposing (Text)
 import Views.Helpers exposing (extractColumnName)
 
 
-viewNavbar : Search -> Maybe LayoutName -> List Layout -> List Table -> List (Html Msg)
-viewNavbar search currentLayout layouts tables =
+viewNavbar : Search -> Maybe LayoutName -> Schema -> List (Html Msg)
+viewNavbar search currentLayout schema =
     [ nav [ id "navbar", class "navbar navbar-expand-md navbar-light bg-white shadow-sm" ]
         [ div [ class "container-fluid" ]
             [ a ([ href "#", class "navbar-brand" ] ++ bsToggleOffcanvas conf.ids.menu) [ img [ src "assets/logo.png", alt "logo", height 24, class "d-inline-block align-text-top" ] [], text " Schema Viz" ]
@@ -24,11 +24,11 @@ viewNavbar search currentLayout layouts tables =
                 [ span [ class "navbar-toggler-icon" ] []
                 ]
             , div [ class "collapse navbar-collapse", id "navbar-content" ]
-                [ viewSearchBar search tables
+                [ viewSearchBar search (Dict.values schema.tables)
                 , ul [ class "navbar-nav me-auto" ]
                     [ li [ class "nav-item" ] [ a ([ href "#", class "nav-link" ] ++ bsToggleModal conf.ids.helpModal) [ text "?" ] ]
                     ]
-                , B.cond (List.length tables > 0) (\_ -> viewLayoutButton currentLayout layouts) (\_ -> div [] [])
+                , B.lazyCond (Dict.size schema.tables > 0) (\_ -> viewLayoutButton currentLayout schema.layouts) (\_ -> div [] [])
                 ]
             ]
         ]

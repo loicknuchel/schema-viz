@@ -1,4 +1,4 @@
-module Models.Schema exposing (CanvasProps, Column, ColumnComment(..), ColumnIndex(..), ColumnName(..), ColumnProps, ColumnRef, ColumnState, ColumnType(..), ColumnValue(..), ForeignKey, ForeignKeyName(..), Index, IndexName(..), Layout, LayoutName, PrimaryKey, PrimaryKeyName(..), Relation, RelationRef, RelationState, Schema, SchemaInfo, SchemaName(..), Table, TableAndColumn, TableComment(..), TableId(..), TableName(..), TableProps, TableState, TableStatus(..), Unique, UniqueName(..), formatTableId, formatTableName, parseTableId)
+module Models.Schema exposing (CanvasProps, Column, ColumnComment(..), ColumnIndex(..), ColumnName(..), ColumnProps, ColumnRef, ColumnState, ColumnType(..), ColumnValue(..), FileInfo, ForeignKey, ForeignKeyName(..), Index, IndexName(..), Layout, LayoutName, PrimaryKey, PrimaryKeyName(..), Relation, RelationRef, RelationState, Schema, SchemaInfo, SchemaName(..), Table, TableAndColumn, TableComment(..), TableId(..), TableName(..), TableProps, TableState, TableStatus(..), Unique, UniqueName(..), formatTableId, formatTableName, parseTableId)
 
 import AssocList exposing (Dict)
 import Conf exposing (conf)
@@ -22,8 +22,12 @@ type alias Schema =
 type alias SchemaInfo =
     { created : Time.Posix
     , updated : Time.Posix
-    , fileLastModified : Maybe Time.Posix
+    , file : Maybe FileInfo
     }
+
+
+type alias FileInfo =
+    { name : String, lastModified : Time.Posix }
 
 
 type alias RelationRef =

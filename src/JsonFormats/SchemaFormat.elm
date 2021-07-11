@@ -7,7 +7,7 @@ import Json.Encode as Encode
 import Libs.Dict as D
 import Libs.Maybe as M
 import Mappers.SchemaMapper exposing (buildSchema, initTableState)
-import Models.Schema exposing (CanvasProps, Column, ColumnComment(..), ColumnIndex(..), ColumnName(..), ColumnProps, ColumnState, ColumnType(..), ColumnValue(..), ForeignKey, ForeignKeyName(..), Index, IndexName(..), Layout, PrimaryKey, PrimaryKeyName(..), Schema, SchemaInfo, SchemaName(..), Table, TableComment(..), TableId(..), TableName(..), TableProps, TableState, TableStatus(..), Unique, UniqueName(..), formatTableId, parseTableId)
+import Models.Schema exposing (CanvasProps, Column, ColumnComment(..), ColumnIndex(..), ColumnName(..), ColumnProps, ColumnState, ColumnType(..), ColumnValue(..), FileInfo, ForeignKey, ForeignKeyName(..), Index, IndexName(..), Layout, PrimaryKey, PrimaryKeyName(..), Schema, SchemaInfo, SchemaName(..), Table, TableComment(..), TableId(..), TableName(..), TableProps, TableState, TableStatus(..), Unique, UniqueName(..), formatTableId, parseTableId)
 import Models.Utils exposing (Position, Size)
 import Time
 
@@ -36,7 +36,7 @@ encodeInfo value =
     encodeObject
         [ ( "created", value.created |> Time.posixToMillis |> Encode.int )
         , ( "updated", value.updated |> Time.posixToMillis |> Encode.int )
-        , ( "fileLastModified", value.fileLastModified |> Maybe.map Time.posixToMillis |> encodeMaybe Encode.int )
+        , ( "file", value.file |> encodeMaybe encodeFileInfo )
         ]
 
 
@@ -45,7 +45,22 @@ decodeInfo =
     Decode.map3 SchemaInfo
         (Decode.field "created" Decode.int |> Decode.map Time.millisToPosix)
         (Decode.field "updated" Decode.int |> Decode.map Time.millisToPosix)
-        (Decode.maybe (Decode.field "fileLastModified" Decode.int |> Decode.map Time.millisToPosix))
+        (Decode.maybe (Decode.field "file" decodeFileInfo))
+
+
+encodeFileInfo : FileInfo -> Encode.Value
+encodeFileInfo value =
+    encodeObject
+        [ ( "name", value.name |> Encode.string )
+        , ( "lastModified", value.lastModified |> Time.posixToMillis |> Encode.int )
+        ]
+
+
+decodeFileInfo : Decode.Decoder FileInfo
+decodeFileInfo =
+    Decode.map2 FileInfo
+        (Decode.field "name" Decode.string)
+        (Decode.field "lastModified" Decode.int |> Decode.map Time.millisToPosix)
 
 
 encodeTable : Table -> Encode.Value

@@ -1,4 +1,4 @@
-module Views.Tables exposing (viewTable)
+module Views.Table exposing (viewTable)
 
 import AssocList as Dict
 import FontAwesome.Icon exposing (viewIcon)

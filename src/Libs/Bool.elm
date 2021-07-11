@@ -1,8 +1,17 @@
-module Libs.Bool exposing (cond, toString)
+module Libs.Bool exposing (cond, lazyCond, toString)
 
 
-cond : Bool -> (() -> a) -> (() -> a) -> a
+cond : Bool -> a -> a -> a
 cond predicate true false =
+    if predicate then
+        true
+
+    else
+        false
+
+
+lazyCond : Bool -> (() -> a) -> (() -> a) -> a
+lazyCond predicate true false =
     if predicate then
         true ()
 

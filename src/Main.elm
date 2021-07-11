@@ -88,7 +88,7 @@ update msg model =
             ( { model | state = model.state |> set (\state -> { state | search = search }) }, Cmd.none )
 
         SelectTable id ->
-            ( { model | schema = model.schema |> visitTables (\table -> table |> setState (\state -> { state | selected = B.cond (table.id == id) (\_ -> not state.selected) (\_ -> False) })) }, Cmd.none )
+            ( { model | schema = model.schema |> visitTables (\table -> table |> setState (\state -> { state | selected = B.cond (table.id == id) (not state.selected) False })) }, Cmd.none )
 
         HideTable id ->
             ( { model | schema = model.schema |> hideTable id }, Cmd.none )
@@ -127,7 +127,7 @@ update msg model =
             dragItem model delta
 
         NewLayout name ->
-            ( model |> setState (\s -> { s | newLayout = B.cond (String.length name == 0) (\_ -> Nothing) (\_ -> Just name) }), Cmd.none )
+            ( model |> setState (\s -> { s | newLayout = B.cond (String.length name == 0) Nothing (Just name) }), Cmd.none )
 
         CreateLayout name ->
             createLayout name model

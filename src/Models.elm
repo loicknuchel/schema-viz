@@ -25,6 +25,43 @@ type alias Model =
     { time : TimeInfo, switch : Switch, state : State, canvas : Canvas, schema : Schema, storedSchemas : List Schema, confirm : Confirm }
 
 
+type Msg
+    = TimeChanged Time.Posix
+    | ZoneChanged Time.Zone
+    | ChangeSchema
+    | FileDragOver File (List File)
+    | FileDragLeave
+    | FileDropped File (List File)
+    | FileSelected File
+    | LoadSampleData String
+    | GotSampleData Time.Posix String String (Result Http.Error Text)
+    | DeleteSchema Schema
+    | UseSchema Schema
+    | ChangedSearch Search
+    | SelectTable TableId
+    | HideTable TableId
+    | ShowTable TableId
+    | InitializedTable TableId Size Position
+    | HideAllTables
+    | ShowAllTables
+    | HideColumn ColumnRef
+    | ShowColumn ColumnRef Int
+    | Zoom WheelEvent
+    | DragMsg (Draggable.Msg DragId)
+    | StartDragging DragId
+    | StopDragging
+    | OnDragBy Draggable.Delta
+    | NewLayout LayoutName
+    | CreateLayout LayoutName
+    | LoadLayout LayoutName
+    | UpdateLayout LayoutName
+    | DeleteLayout LayoutName
+    | OpenConfirm Confirm
+    | OnConfirm Bool (Cmd Msg)
+    | JsMessage JsMsg
+    | Noop
+
+
 initModel : Model
 initModel =
     { time = initTimeInfo, switch = initSwitch, state = initState, canvas = initCanvas, schema = emptySchema, storedSchemas = [], confirm = initConfirm }
@@ -73,43 +110,6 @@ type alias Confirm =
 initConfirm : Confirm
 initConfirm =
     { content = text "No text", cmd = T.send Noop }
-
-
-type Msg
-    = TimeChanged Time.Posix
-    | ZoneChanged Time.Zone
-    | ChangeSchema
-    | FileDragOver File (List File)
-    | FileDragLeave
-    | FileDropped File (List File)
-    | FileSelected File
-    | LoadSampleData String
-    | GotSampleData Time.Posix String String (Result Http.Error Text)
-    | DeleteSchema Schema
-    | UseSchema Schema
-    | ChangedSearch Search
-    | SelectTable TableId
-    | HideTable TableId
-    | ShowTable TableId
-    | InitializedTable TableId Size Position
-    | HideAllTables
-    | ShowAllTables
-    | HideColumn ColumnRef
-    | ShowColumn ColumnRef Int
-    | Zoom WheelEvent
-    | DragMsg (Draggable.Msg DragId)
-    | StartDragging DragId
-    | StopDragging
-    | OnDragBy Draggable.Delta
-    | NewLayout LayoutName
-    | CreateLayout LayoutName
-    | LoadLayout LayoutName
-    | UpdateLayout LayoutName
-    | DeleteLayout LayoutName
-    | OpenConfirm Confirm
-    | OnConfirm Bool (Cmd Msg)
-    | JsMessage JsMsg
-    | Noop
 
 
 type alias Error =

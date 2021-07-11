@@ -8,7 +8,6 @@ import FontAwesome.Solid as Icon
 import Html exposing (Html, a, br, div, h5, label, li, p, small, span, text, ul)
 import Html.Attributes exposing (class, for, href, id, style, target, title)
 import Html.Events exposing (onClick)
-import Libs.Bool as B
 import Libs.Bootstrap exposing (BsColor(..), Toggle(..), ariaExpanded, ariaLabelledBy, bsButton, bsModal, bsToggle, bsToggleCollapseLink)
 import Libs.Html exposing (bText, codeText, divIf)
 import Libs.Html.Attributes exposing (role)
@@ -19,10 +18,10 @@ import Time
 import Views.Helpers exposing (formatDate, onClickConfirm)
 
 
-viewSchemaSwitchModal : TimeInfo -> Switch -> Schema -> List Schema -> Html Msg
-viewSchemaSwitchModal time switch schema storedSchemas =
+viewSchemaSwitchModal : TimeInfo -> Switch -> String -> List Schema -> Html Msg
+viewSchemaSwitchModal time switch title storedSchemas =
     bsModal conf.ids.schemaSwitchModal
-        (B.cond (Dict.isEmpty schema.tables) (\_ -> "Schema Viz, easily explore your SQL schema!") (\_ -> "Load a new schema"))
+        title
         [ viewWarning
         , viewSavedSchemas time storedSchemas
         , viewFileUpload switch
@@ -53,7 +52,7 @@ viewSavedSchemas time storedSchemas =
                                     [ small [ class "text-muted" ]
                                         [ text (S.plural (List.length s.layouts) "No saved layout" "1 saved layout" "saved layouts")
                                         , br [] []
-                                        , text ("Version from " ++ formatDate time (s.info.fileLastModified |> Maybe.withDefault s.info.created))
+                                        , text ("Version from " ++ formatDate time (s.info.file |> Maybe.map .lastModified |> Maybe.withDefault s.info.created))
                                         ]
                                     ]
                                 ]

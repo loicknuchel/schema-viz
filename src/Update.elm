@@ -19,7 +19,7 @@ import Libs.Std exposing (set, setSchema, setState)
 import Libs.Task as T
 import Mappers.SchemaMapper exposing (buildSchemaFromSql, emptySchema)
 import Models exposing (Canvas, DragId, Errors, Model, Msg(..), initSwitch)
-import Models.Schema exposing (Column, ColumnName, ColumnProps, Layout, LayoutName, Schema, Table, TableId, TableProps, TableStatus(..), formatTableId, parseTableId)
+import Models.Schema exposing (Column, ColumnName, ColumnProps, FileInfo, Layout, LayoutName, Schema, Table, TableId, TableProps, TableStatus(..), formatTableId, parseTableId)
 import Models.Utils exposing (Area, FileContent, Position, SizeChange, ZoomLevel)
 import Ports exposing (activateTooltipsAndPopovers, click, hideModal, observeTableSize, observeTablesSize, saveSchema, toastError, toastInfo)
 import SqlParser.SchemaParser exposing (parseSchema)
@@ -38,7 +38,7 @@ useSchema schema model =
 
 createSchema : Time.Posix -> File -> FileContent -> Model -> ( Model, Cmd Msg )
 createSchema now file content model =
-    buildSchema now (model.storedSchemas |> List.map .name) file.name file.name (Just file.lastModified) content |> loadSchema model
+    buildSchema now (model.storedSchemas |> List.map .name) file.name file.name (Just { name = file.name, lastModified = file.lastModified }) content |> loadSchema model
 
 
 createSampleSchema : Time.Posix -> String -> String -> Result Http.Error String -> Model -> ( Model, Cmd Msg )
@@ -73,10 +73,10 @@ loadSchema model ( errs, schema ) =
         )
 
 
-buildSchema : Time.Posix -> List String -> String -> String -> Maybe Time.Posix -> FileContent -> ( Errors, Schema )
-buildSchema now takenNames name path lastModified content =
+buildSchema : Time.Posix -> List String -> String -> String -> Maybe FileInfo -> FileContent -> ( Errors, Schema )
+buildSchema now takenNames name path file content =
     if path |> String.endsWith ".sql" then
-        parseSchema path content |> Tuple.mapSecond (buildSchemaFromSql takenNames name { created = now, updated = now, fileLastModified = lastModified })
+        parseSchema path content |> Tuple.mapSecond (buildSchemaFromSql takenNames name { created = now, updated = now, file = file })
 
     else if path |> String.endsWith ".json" then
         Decode.decodeString (decodeSchema takenNames) content
@@ -267,7 +267,7 @@ updateLayout name model =
         newModel : Model
         newModel =
             model
-                |> setSchema (\s -> { s | layouts = s.layouts |> List.map (\l -> B.cond (l.name == name) (\_ -> model |> toLayout name) (\_ -> l)) })
+                |> setSchema (\s -> { s | layouts = s.layouts |> List.map (\l -> B.lazyCond (l.name == name) (\_ -> model |> toLayout name) (\_ -> l)) })
                 |> setState (\s -> { s | currentLayout = Just name })
     in
     ( newModel, saveSchema newModel.schema )

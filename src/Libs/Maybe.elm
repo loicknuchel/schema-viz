@@ -15,7 +15,7 @@ orElse other item =
 
 filter : (a -> Bool) -> Maybe a -> Maybe a
 filter predicate maybe =
-    maybe |> Maybe.andThen (\a -> B.cond (predicate a) (\_ -> maybe) (\_ -> Nothing))
+    maybe |> Maybe.andThen (\a -> B.cond (predicate a) maybe Nothing)
 
 
 fold : b -> (a -> b) -> Maybe a -> b

@@ -1,4 +1,4 @@
-module Views.Relations exposing (viewRelation)
+module Views.Relation exposing (viewRelation)
 
 import Libs.List as L
 import Models exposing (Msg)

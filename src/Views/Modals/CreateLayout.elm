@@ -1,4 +1,4 @@
-module Views.Modals.CreateSchema exposing (viewCreateLayoutModal)
+module Views.Modals.CreateLayout exposing (viewCreateLayoutModal)
 
 import Conf exposing (conf)
 import Html exposing (Html, button, div, input, label, text)

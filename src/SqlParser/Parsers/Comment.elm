@@ -1,36 +1,37 @@
-module SqlParser.Parsers.Comment exposing (Comment, CommentOnColumn, CommentOnTable, parseColumnComment, parseTableComment)
+module SqlParser.Parsers.Comment exposing (CommentOnColumn, CommentOnTable, SqlComment, parseColumnComment, parseTableComment)
 
 import Libs.Regex as R
-import SqlParser.Utils.Types exposing (ParseError, RawSql, SqlColumnName, SqlSchemaName, SqlTableName)
+import SqlParser.Utils.Helpers exposing (buildRawSql)
+import SqlParser.Utils.Types exposing (ParseError, SqlColumnName, SqlSchemaName, SqlStatement, SqlTableName)
 
 
 type alias CommentOnTable =
-    { schema : Maybe SqlSchemaName, table : SqlTableName, comment : Comment }
+    { schema : Maybe SqlSchemaName, table : SqlTableName, comment : SqlComment }
 
 
 type alias CommentOnColumn =
-    { schema : Maybe SqlSchemaName, table : SqlTableName, column : SqlColumnName, comment : Comment }
+    { schema : Maybe SqlSchemaName, table : SqlTableName, column : SqlColumnName, comment : SqlComment }
 
 
-type alias Comment =
+type alias SqlComment =
     String
 
 
-parseTableComment : RawSql -> Result (List ParseError) CommentOnTable
-parseTableComment sql =
-    case sql |> R.matches "^COMMENT ON TABLE[ \t]+(?:(?<schema>[^ .]+)\\.)?(?<table>[^ .]+)[ \t]+IS[ \t]+'(?<comment>(?:[^']|'')+)';$" of
+parseTableComment : SqlStatement -> Result (List ParseError) CommentOnTable
+parseTableComment statement =
+    case statement |> buildRawSql |> R.matches "^COMMENT ON TABLE[ \t]+(?:(?<schema>[^ .]+)\\.)?(?<table>[^ .]+)[ \t]+IS[ \t]+'(?<comment>(?:[^']|'')+)';$" of
         schema :: (Just table) :: (Just comment) :: [] ->
             Ok { schema = schema, table = table, comment = comment |> String.replace "''" "'" }
 
         _ ->
-            Err [ "Can't parse table comment: '" ++ sql ++ "'" ]
+            Err [ "Can't parse table comment: '" ++ buildRawSql statement ++ "'" ]
 
 
-parseColumnComment : RawSql -> Result (List ParseError) CommentOnColumn
-parseColumnComment sql =
-    case sql |> R.matches "^COMMENT ON COLUMN[ \t]+(?:(?<schema>[^ .]+)\\.)?(?<table>[^ .]+)\\.(?<column>[^ .]+)[ \t]+IS[ \t]+'(?<comment>(?:[^']|'')+)';$" of
+parseColumnComment : SqlStatement -> Result (List ParseError) CommentOnColumn
+parseColumnComment statement =
+    case statement |> buildRawSql |> R.matches "^COMMENT ON COLUMN[ \t]+(?:(?<schema>[^ .]+)\\.)?(?<table>[^ .]+)\\.(?<column>[^ .]+)[ \t]+IS[ \t]+'(?<comment>(?:[^']|'')+)';$" of
         schema :: (Just table) :: (Just column) :: (Just comment) :: [] ->
             Ok { schema = schema, table = table, column = column, comment = comment |> String.replace "''" "'" }
 
         _ ->
-            Err [ "Can't parse column comment: '" ++ sql ++ "'" ]
+            Err [ "Can't parse column comment: '" ++ buildRawSql statement ++ "'" ]

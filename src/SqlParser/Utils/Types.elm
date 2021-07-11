@@ -1,4 +1,14 @@
-module SqlParser.Utils.Types exposing (ConstraintName, ForeignKeyRef, ParseError, RawSql, SqlColumnName, SqlColumnType, SqlColumnValue, SqlSchemaName, SqlTableName, SqlTableRef)
+module SqlParser.Utils.Types exposing (ParseError, RawSql, SqlColumnName, SqlColumnType, SqlColumnValue, SqlConstraintName, SqlForeignKeyRef, SqlLine, SqlSchemaName, SqlStatement, SqlTableName, SqlTableRef)
+
+import Libs.Nel exposing (Nel)
+
+
+type alias SqlLine =
+    { file : String, line : Int, text : String }
+
+
+type alias SqlStatement =
+    Nel SqlLine
 
 
 type alias RawSql =
@@ -9,7 +19,7 @@ type alias ParseError =
     String
 
 
-type alias ConstraintName =
+type alias SqlConstraintName =
     String
 
 
@@ -37,5 +47,5 @@ type alias SqlTableRef =
     { schema : Maybe SqlSchemaName, table : SqlTableName }
 
 
-type alias ForeignKeyRef =
+type alias SqlForeignKeyRef =
     { schema : Maybe SqlSchemaName, table : SqlTableName, column : Maybe SqlColumnName }

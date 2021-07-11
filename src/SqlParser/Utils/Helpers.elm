@@ -1,7 +1,8 @@
-module SqlParser.Utils.Helpers exposing (commaSplit, noEnclosingQuotes, parseIndexDefinition)
+module SqlParser.Utils.Helpers exposing (buildRawSql, commaSplit, noEnclosingQuotes, parseIndexDefinition)
 
+import Libs.Nel as Nel
 import Libs.Regex as R
-import SqlParser.Utils.Types exposing (ParseError, SqlColumnName)
+import SqlParser.Utils.Types exposing (ParseError, RawSql, SqlColumnName, SqlStatement)
 
 
 parseIndexDefinition : String -> Result (List ParseError) (List SqlColumnName)
@@ -17,6 +18,11 @@ parseIndexDefinition definition =
 
                 _ ->
                     Err [ "Can't parse definition: '" ++ definition ++ "' in create index" ]
+
+
+buildRawSql : SqlStatement -> RawSql
+buildRawSql statement =
+    statement |> Nel.toList |> List.map .text |> String.join " "
 
 
 noEnclosingQuotes : String -> String

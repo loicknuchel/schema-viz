@@ -1,9 +1,9 @@
 module SqlParser.Parsers.CreateViewTest exposing (..)
 
-import Expect
 import SqlParser.Parsers.CreateView exposing (parseView)
 import SqlParser.Parsers.Select exposing (SelectColumn(..), SelectInfo, SelectTable(..))
-import Test exposing (Test, describe, test)
+import SqlParser.Utils.HelpersTest exposing (stmCheck)
+import Test exposing (Test, describe)
 
 
 view : String
@@ -35,6 +35,6 @@ suite : Test
 suite =
     describe "CreateView"
         [ describe "parseView"
-            [ test "basic" (\_ -> parseView view |> Expect.equal (Ok { schema = Just "public", table = "autocomplete", select = select, materialized = True, extra = Just "WITH NO DATA" }))
+            [ stmCheck "basic" view parseView (\s -> Ok { schema = Just "public", table = "autocomplete", select = select, materialized = True, extra = Just "WITH NO DATA", source = s })
             ]
         ]

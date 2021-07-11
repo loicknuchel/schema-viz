@@ -1,7 +1,8 @@
-module Models.Schema exposing (CanvasProps, Column, ColumnComment(..), ColumnIndex(..), ColumnName(..), ColumnProps, ColumnRef, ColumnState, ColumnType(..), ColumnValue(..), FileInfo, ForeignKey, ForeignKeyName(..), Index, IndexName(..), Layout, LayoutName, PrimaryKey, PrimaryKeyName(..), Relation, RelationRef, RelationState, Schema, SchemaInfo, SchemaName(..), Table, TableAndColumn, TableComment(..), TableId(..), TableName(..), TableProps, TableState, TableStatus(..), Unique, UniqueName(..), formatTableId, formatTableName, parseTableId)
+module Models.Schema exposing (CanvasProps, Column, ColumnComment(..), ColumnIndex(..), ColumnName(..), ColumnProps, ColumnRef, ColumnState, ColumnType(..), ColumnValue(..), FileInfo, ForeignKey, ForeignKeyName(..), Index, IndexName(..), Layout, LayoutName, PrimaryKey, PrimaryKeyName(..), Relation, RelationRef, RelationState, Schema, SchemaInfo, SchemaName(..), Source, SourceLine, Table, TableAndColumn, TableComment(..), TableId(..), TableName(..), TableProps, TableState, TableStatus(..), Unique, UniqueName(..), formatTableId, formatTableName, parseTableId)
 
 import AssocList exposing (Dict)
 import Conf exposing (conf)
+import Libs.Nel exposing (Nel)
 import Models.Utils exposing (Color, Position, Size, ZoomLevel)
 import Time
 
@@ -59,6 +60,7 @@ type alias Table =
     , uniques : List Unique
     , indexes : List Index
     , comment : Maybe TableComment
+    , sources : List Source
     , state : TableState
     }
 
@@ -104,6 +106,14 @@ type alias Unique =
 
 type alias ForeignKey =
     { tableId : TableId, schema : SchemaName, table : TableName, column : ColumnName, name : ForeignKeyName }
+
+
+type alias Source =
+    { file : String, lines : Nel SourceLine }
+
+
+type alias SourceLine =
+    { no : Int, text : String }
 
 
 type alias Layout =

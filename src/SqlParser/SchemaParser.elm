@@ -1,29 +1,21 @@
-module SqlParser.SchemaParser exposing (Line, SchemaError, SqlCheck, SqlColumn, SqlForeignKey, SqlIndex, SqlPrimaryKey, SqlSchema, SqlTable, SqlTableId, SqlUnique, Statement, buildRawSql, buildStatements, parseLines, parseSchema, updateColumn, updateTable)
+module SqlParser.SchemaParser exposing (SchemaError, SqlCheck, SqlColumn, SqlForeignKey, SqlIndex, SqlPrimaryKey, SqlSchema, SqlTable, SqlTableId, SqlUnique, buildStatements, parseLines, parseSchema, updateColumn, updateTable)
 
 import AssocList as Dict exposing (Dict)
 import Conf exposing (conf)
 import Libs.List as L
 import Libs.Maybe as M
 import Models.Utils exposing (FileContent, FileName)
-import SqlParser.Parsers.AlterTable exposing (ColumnUpdate(..), Predicate, TableConstraint(..), TableUpdate(..))
-import SqlParser.Parsers.Comment exposing (Comment)
+import SqlParser.Parsers.AlterTable exposing (ColumnUpdate(..), SqlPredicate, TableConstraint(..), TableUpdate(..))
+import SqlParser.Parsers.Comment exposing (SqlComment)
 import SqlParser.Parsers.CreateTable exposing (ParsedColumn, ParsedTable)
 import SqlParser.Parsers.CreateView exposing (ParsedView)
 import SqlParser.Parsers.Select exposing (SelectColumn(..))
 import SqlParser.SqlParser exposing (Command(..), parseCommand)
-import SqlParser.Utils.Types exposing (ConstraintName, RawSql, SqlColumnName, SqlColumnType, SqlColumnValue, SqlSchemaName, SqlTableName)
+import SqlParser.Utils.Types exposing (SqlColumnName, SqlColumnType, SqlColumnValue, SqlConstraintName, SqlLine, SqlSchemaName, SqlStatement, SqlTableName)
 
 
 type alias SchemaError =
     String
-
-
-type alias Line =
-    { file : String, line : Int, text : String }
-
-
-type alias Statement =
-    { first : Line, others : List Line }
 
 
 type alias SqlSchema =
@@ -35,31 +27,46 @@ type alias SqlTableId =
 
 
 type alias SqlTable =
-    { schema : SqlSchemaName, table : SqlTableName, columns : List SqlColumn, primaryKey : Maybe SqlPrimaryKey, indexes : List SqlIndex, uniques : List SqlUnique, checks : List SqlCheck, comment : Maybe Comment }
+    { schema : SqlSchemaName
+    , table : SqlTableName
+    , columns : List SqlColumn
+    , primaryKey : Maybe SqlPrimaryKey
+    , indexes : List SqlIndex
+    , uniques : List SqlUnique
+    , checks : List SqlCheck
+    , comment : Maybe SqlComment
+    , source : SqlStatement
+    }
 
 
 type alias SqlColumn =
-    { name : SqlColumnName, kind : SqlColumnType, nullable : Bool, default : Maybe SqlColumnValue, foreignKey : Maybe SqlForeignKey, comment : Maybe Comment }
+    { name : SqlColumnName
+    , kind : SqlColumnType
+    , nullable : Bool
+    , default : Maybe SqlColumnValue
+    , foreignKey : Maybe SqlForeignKey
+    , comment : Maybe SqlComment
+    }
 
 
 type alias SqlPrimaryKey =
-    { name : ConstraintName, columns : List SqlColumnName }
+    { name : SqlConstraintName, columns : List SqlColumnName }
 
 
 type alias SqlForeignKey =
-    { name : ConstraintName, schema : SqlSchemaName, table : SqlTableName, column : SqlColumnName }
+    { name : SqlConstraintName, schema : SqlSchemaName, table : SqlTableName, column : SqlColumnName }
 
 
 type alias SqlIndex =
-    { name : ConstraintName, columns : List SqlColumnName, definition : String }
+    { name : SqlConstraintName, columns : List SqlColumnName, definition : String }
 
 
 type alias SqlUnique =
-    { name : ConstraintName, columns : List SqlColumnName, definition : String }
+    { name : SqlConstraintName, columns : List SqlColumnName, definition : String }
 
 
 type alias SqlCheck =
-    { name : ConstraintName, predicate : Predicate }
+    { name : SqlConstraintName, predicate : SqlPredicate }
 
 
 parseSchema : FileName -> FileContent -> ( List SchemaError, SqlSchema )
@@ -68,7 +75,7 @@ parseSchema fileName fileContent =
         |> buildStatements
         |> List.foldl
             (\statement ( errs, schema ) ->
-                case statement |> buildRawSql |> parseCommand |> Result.andThen (\command -> schema |> evolve command) of
+                case statement |> parseCommand |> Result.andThen (\command -> schema |> evolve command) of
                     Ok newSchema ->
                         ( errs, newSchema )
 
@@ -190,6 +197,7 @@ buildTable tables table =
                 , indexes = []
                 , uniques = []
                 , checks = []
+                , source = table.source
                 , comment = Nothing
                 }
             )
@@ -212,7 +220,7 @@ buildColumn tables column =
             )
 
 
-buildFk : SqlSchema -> ConstraintName -> Maybe SqlSchemaName -> SqlTableName -> Maybe SqlColumnName -> Result SchemaError SqlForeignKey
+buildFk : SqlSchema -> SqlConstraintName -> Maybe SqlSchemaName -> SqlTableName -> Maybe SqlColumnName -> Result SchemaError SqlForeignKey
 buildFk tables constraint schema table column =
     column
         |> withPkColumn tables schema table
@@ -262,6 +270,7 @@ buildView view =
     , indexes = []
     , uniques = []
     , checks = []
+    , source = view.source
     , comment = Nothing
     }
 
@@ -298,12 +307,7 @@ withDefaultSchema schema =
     schema |> Maybe.withDefault conf.default.schema
 
 
-buildRawSql : Statement -> RawSql
-buildRawSql statement =
-    statement.first :: statement.others |> List.map .text |> String.join " "
-
-
-buildStatements : List Line -> List Statement
+buildStatements : List SqlLine -> List SqlStatement
 buildStatements lines =
     lines
         |> List.filter (\line -> not (String.isEmpty (String.trim line.text) || String.startsWith "--" line.text))
@@ -326,22 +330,22 @@ buildStatements lines =
         |> List.filter (\s -> not (statementIsEmpty s))
 
 
-addStatement : List Line -> List Statement -> List Statement
+addStatement : List SqlLine -> List SqlStatement -> List SqlStatement
 addStatement lines statements =
     case lines of
         [] ->
             statements
 
         head :: tail ->
-            { first = head, others = tail } :: statements
+            { head = head, tail = tail } :: statements
 
 
-statementIsEmpty : Statement -> Bool
+statementIsEmpty : SqlStatement -> Bool
 statementIsEmpty statement =
-    statement.first.text == ";"
+    statement.head.text == ";"
 
 
-parseLines : FileName -> FileContent -> List Line
+parseLines : FileName -> FileContent -> List SqlLine
 parseLines fileName fileContent =
     fileContent
         |> String.split "\n"

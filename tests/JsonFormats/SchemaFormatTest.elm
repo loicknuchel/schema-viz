@@ -79,7 +79,15 @@ columnState =
 
 column : Column
 column =
-    { index = ColumnIndex 1, column = columnName, kind = ColumnType "int", nullable = False, default = Just (ColumnValue "1"), foreignKey = Nothing, comment = Nothing, state = columnState }
+    { index = ColumnIndex 1
+    , column = columnName
+    , kind = ColumnType "int"
+    , nullable = False
+    , default = Just (ColumnValue "1")
+    , foreignKey = Nothing
+    , comment = Nothing
+    , state = columnState
+    }
 
 
 tableStatus : TableStatus
@@ -94,7 +102,17 @@ tableState =
 
 table : Table
 table =
-    { id = tableId, schema = SchemaName "public", table = TableName "users", columns = D.fromList .column [ column ], primaryKey = Nothing, uniques = [], indexes = [], comment = Nothing, state = tableState }
+    { id = tableId
+    , schema = SchemaName "public"
+    , table = TableName "users"
+    , columns = D.fromList .column [ column ]
+    , primaryKey = Nothing
+    , uniques = []
+    , indexes = []
+    , comment = Nothing
+    , sources = []
+    , state = tableState
+    }
 
 
 info : SchemaInfo

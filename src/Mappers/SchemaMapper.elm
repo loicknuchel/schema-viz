@@ -4,10 +4,12 @@ import AssocList as Dict
 import Conf exposing (conf)
 import Libs.Dict as D
 import Libs.List as L
+import Libs.Nel as Nel
 import Libs.String as S
-import Models.Schema exposing (Column, ColumnComment(..), ColumnIndex(..), ColumnName(..), ColumnState, ColumnType(..), ColumnValue(..), ForeignKey, ForeignKeyName(..), Index, IndexName(..), Layout, PrimaryKey, PrimaryKeyName(..), RelationRef, Schema, SchemaInfo, SchemaName(..), Table, TableComment(..), TableId(..), TableName(..), TableState, TableStatus(..), Unique, UniqueName(..))
+import Models.Schema exposing (Column, ColumnComment(..), ColumnIndex(..), ColumnName(..), ColumnState, ColumnType(..), ColumnValue(..), ForeignKey, ForeignKeyName(..), Index, IndexName(..), Layout, PrimaryKey, PrimaryKeyName(..), RelationRef, Schema, SchemaInfo, SchemaName(..), Source, Table, TableComment(..), TableId(..), TableName(..), TableState, TableStatus(..), Unique, UniqueName(..))
 import Models.Utils exposing (Color, Position, Size)
 import SqlParser.SchemaParser exposing (SqlColumn, SqlForeignKey, SqlIndex, SqlPrimaryKey, SqlSchema, SqlTable, SqlUnique)
+import SqlParser.Utils.Types exposing (SqlStatement)
 import Time
 
 
@@ -41,6 +43,7 @@ buildSqlTable table =
     , indexes = table.indexes |> List.map buildSqlIndex
     , uniques = table.uniques |> List.map buildSqlUnique
     , comment = table.comment |> Maybe.map TableComment
+    , sources = [ table.source |> statementAsSource ]
     , state = initTableState (tableIdFromSqlTable table)
     }
 
@@ -89,6 +92,11 @@ buildSqlUnique unique =
     , columns = unique.columns |> List.map ColumnName
     , definition = unique.definition
     }
+
+
+statementAsSource : SqlStatement -> Source
+statementAsSource statement =
+    { file = statement.head.file, lines = statement |> Nel.map (\l -> { no = l.line, text = l.text }) }
 
 
 tableIdFromSqlTable : SqlTable -> TableId

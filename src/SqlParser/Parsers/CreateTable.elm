@@ -2,21 +2,31 @@ module SqlParser.Parsers.CreateTable exposing (ParsedColumn, ParsedTable, parseC
 
 import Libs.List as L
 import Libs.Regex as R
-import SqlParser.Utils.Helpers exposing (commaSplit, noEnclosingQuotes)
-import SqlParser.Utils.Types exposing (ConstraintName, ForeignKeyRef, ParseError, RawSql, SqlColumnName, SqlColumnType, SqlColumnValue, SqlSchemaName, SqlTableName)
+import SqlParser.Utils.Helpers exposing (buildRawSql, commaSplit, noEnclosingQuotes)
+import SqlParser.Utils.Types exposing (ParseError, RawSql, SqlColumnName, SqlColumnType, SqlColumnValue, SqlConstraintName, SqlForeignKeyRef, SqlSchemaName, SqlStatement, SqlTableName)
 
 
 type alias ParsedTable =
-    { schema : Maybe SqlSchemaName, table : SqlTableName, columns : List ParsedColumn }
+    { schema : Maybe SqlSchemaName
+    , table : SqlTableName
+    , columns : List ParsedColumn
+    , source : SqlStatement
+    }
 
 
 type alias ParsedColumn =
-    { name : SqlColumnName, kind : SqlColumnType, nullable : Bool, default : Maybe SqlColumnValue, primaryKey : Maybe ConstraintName, foreignKey : Maybe ( ConstraintName, ForeignKeyRef ) }
+    { name : SqlColumnName
+    , kind : SqlColumnType
+    , nullable : Bool
+    , default : Maybe SqlColumnValue
+    , primaryKey : Maybe SqlConstraintName
+    , foreignKey : Maybe ( SqlConstraintName, SqlForeignKeyRef )
+    }
 
 
-parseCreateTable : RawSql -> Result (List ParseError) ParsedTable
-parseCreateTable sql =
-    case sql |> R.matches "^CREATE TABLE[ \t]+(?:(?<schema>[^ .]+)\\.)?(?<table>[^ .]+)[ \t]*\\((?<body>[^;]+?)\\)(?:[ \t]+WITH[ \t]+\\((?<options>.*?)\\))?;$" of
+parseCreateTable : SqlStatement -> Result (List ParseError) ParsedTable
+parseCreateTable statement =
+    case statement |> buildRawSql |> R.matches "^CREATE TABLE[ \t]+(?:(?<schema>[^ .]+)\\.)?(?<table>[^ .]+)[ \t]*\\((?<body>[^;]+?)\\)(?:[ \t]+WITH[ \t]+\\((?<options>.*?)\\))?;$" of
         schema :: (Just table) :: (Just columns) :: _ :: [] ->
             commaSplit columns
                 |> List.map String.trim
@@ -24,10 +34,10 @@ parseCreateTable sql =
                 |> List.filter (\c -> not (c |> String.toUpper |> String.startsWith "CONSTRAINT"))
                 |> List.map parseCreateTableColumn
                 |> L.resultSeq
-                |> Result.map (\c -> { schema = schema, table = table, columns = c })
+                |> Result.map (\c -> { schema = schema, table = table, columns = c, source = statement })
 
         _ ->
-            Err [ "Can't parse table: '" ++ sql ++ "'" ]
+            Err [ "Can't parse table: '" ++ buildRawSql statement ++ "'" ]
 
 
 parseCreateTableColumn : RawSql -> Result ParseError ParsedColumn
@@ -53,7 +63,7 @@ parseCreateTableColumn sql =
             Err ("Can't parse column: '" ++ sql ++ "'")
 
 
-parseCreateTableColumnPrimaryKey : RawSql -> Result ParseError ConstraintName
+parseCreateTableColumnPrimaryKey : RawSql -> Result ParseError SqlConstraintName
 parseCreateTableColumnPrimaryKey constraint =
     case constraint |> R.matches "^(?<constraint>[^ ]+)[ \t]+PRIMARY KEY$" of
         (Just constraintName) :: [] ->
@@ -63,7 +73,7 @@ parseCreateTableColumnPrimaryKey constraint =
             Err ("Can't parse primary key: '" ++ constraint ++ "' in create table")
 
 
-parseCreateTableColumnForeignKey : RawSql -> Result ParseError ( ConstraintName, ForeignKeyRef )
+parseCreateTableColumnForeignKey : RawSql -> Result ParseError ( SqlConstraintName, SqlForeignKeyRef )
 parseCreateTableColumnForeignKey constraint =
     case constraint |> R.matches "^(?<constraint>[^ ]+)[ \t]+REFERENCES[ \t]+(?:(?<schema>[^ .]+)\\.)?(?<table>[^ .]+)(?:\\.(?<column>[^ .]+))?$" of
         (Just constraintName) :: (Just table) :: (Just column) :: Nothing :: [] ->

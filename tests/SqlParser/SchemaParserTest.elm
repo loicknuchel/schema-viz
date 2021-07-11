@@ -2,7 +2,8 @@ module SqlParser.SchemaParserTest exposing (..)
 
 import AssocList as Dict
 import Expect
-import SqlParser.SchemaParser exposing (Line, SqlTable, Statement, buildRawSql, buildStatements, parseLines, updateColumn, updateTable)
+import SqlParser.SchemaParser exposing (SqlTable, buildStatements, parseLines, updateColumn, updateTable)
+import SqlParser.Utils.Types exposing (SqlLine, SqlStatement)
 import Test exposing (Test, describe, test)
 
 
@@ -28,7 +29,7 @@ ALTER TABLE ONLY public.users
 """
 
 
-fileLines : List Line
+fileLines : List SqlLine
 fileLines =
     [ { file = fileName, line = 1, text = "" }
     , { file = fileName, line = 2, text = "-- a comment" }
@@ -46,15 +47,15 @@ fileLines =
     ]
 
 
-fileStatements : List Statement
+fileStatements : List SqlStatement
 fileStatements =
     [ createUsersStatement, commentUsersStatement, addPrimaryKeyOnUsersStatement ]
 
 
-createUsersStatement : Statement
+createUsersStatement : SqlStatement
 createUsersStatement =
-    { first = { file = fileName, line = 4, text = "CREATE TABLE public.users (" }
-    , others =
+    { head = { file = fileName, line = 4, text = "CREATE TABLE public.users (" }
+    , tail =
         [ { file = fileName, line = 5, text = "  id bigint NOT NULL," }
         , { file = fileName, line = 6, text = "  name character varying(255)" }
         , { file = fileName, line = 7, text = ");" }
@@ -62,15 +63,15 @@ createUsersStatement =
     }
 
 
-commentUsersStatement : Statement
+commentUsersStatement : SqlStatement
 commentUsersStatement =
-    { first = { file = fileName, line = 9, text = "COMMENT ON TABLE public.users IS 'A comment ; ''tricky'' one';" }, others = [] }
+    { head = { file = fileName, line = 9, text = "COMMENT ON TABLE public.users IS 'A comment ; ''tricky'' one';" }, tail = [] }
 
 
-addPrimaryKeyOnUsersStatement : Statement
+addPrimaryKeyOnUsersStatement : SqlStatement
 addPrimaryKeyOnUsersStatement =
-    { first = { file = fileName, line = 11, text = "ALTER TABLE ONLY public.users" }
-    , others = [ { file = fileName, line = 12, text = "  ADD CONSTRAINT users_id_pkey PRIMARY KEY (id);" } ]
+    { head = { file = fileName, line = 11, text = "ALTER TABLE ONLY public.users" }
+    , tail = [ { file = fileName, line = 12, text = "  ADD CONSTRAINT users_id_pkey PRIMARY KEY (id);" } ]
     }
 
 
@@ -87,6 +88,7 @@ users =
     , uniques = []
     , checks = []
     , comment = Nothing
+    , source = createUsersStatement
     }
 
 
@@ -103,6 +105,7 @@ usersWithComment =
     , uniques = []
     , checks = []
     , comment = Just "A comment ; 'tricky' one"
+    , source = createUsersStatement
     }
 
 
@@ -119,6 +122,7 @@ usersWithIdComment =
     , uniques = []
     , checks = []
     , comment = Nothing
+    , source = createUsersStatement
     }
 
 
@@ -137,16 +141,6 @@ suite =
                 (\_ ->
                     updateColumn "public.users" "id" (\c -> Ok { c | comment = Just "A comment" }) (Dict.singleton "public.users" users)
                         |> Expect.equal (Ok (Dict.singleton "public.users" usersWithIdComment))
-                )
-            ]
-        , describe "buildRawSql"
-            [ test "basic"
-                (\_ ->
-                    buildRawSql
-                        { first = { file = fileName, line = 11, text = "ALTER TABLE ONLY public.users" }
-                        , others = [ { file = fileName, line = 12, text = "  ADD CONSTRAINT users_id_pkey PRIMARY KEY (id);" } ]
-                        }
-                        |> Expect.equal "ALTER TABLE ONLY public.users   ADD CONSTRAINT users_id_pkey PRIMARY KEY (id);"
                 )
             ]
         , describe "buildStatements"

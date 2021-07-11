@@ -6,7 +6,8 @@ import SqlParser.Parsers.CreateIndex exposing (ParsedIndex, parseCreateIndex)
 import SqlParser.Parsers.CreateTable exposing (ParsedTable, parseCreateTable)
 import SqlParser.Parsers.CreateUnique exposing (ParsedUnique, parseCreateUniqueIndex)
 import SqlParser.Parsers.CreateView exposing (ParsedView, parseView)
-import SqlParser.Utils.Types exposing (ParseError, RawSql)
+import SqlParser.Utils.Helpers exposing (buildRawSql)
+import SqlParser.Utils.Types exposing (ParseError, SqlStatement)
 
 
 type Command
@@ -17,91 +18,91 @@ type Command
     | CreateUnique ParsedUnique
     | TableComment CommentOnTable
     | ColumnComment CommentOnColumn
-    | Ignored RawSql
+    | Ignored SqlStatement
 
 
-parseCommand : RawSql -> Result (List ParseError) Command
-parseCommand sql =
-    if sql |> String.toUpper |> String.startsWith "CREATE TABLE " then
-        parseCreateTable sql |> Result.map CreateTable
+parseCommand : SqlStatement -> Result (List ParseError) Command
+parseCommand statement =
+    if statement.head.text |> String.toUpper |> String.startsWith "CREATE TABLE " then
+        parseCreateTable statement |> Result.map CreateTable
 
-    else if sql |> String.toUpper |> String.startsWith "CREATE VIEW " then
-        parseView sql |> Result.map CreateView
+    else if statement.head.text |> String.toUpper |> String.startsWith "CREATE VIEW " then
+        parseView statement |> Result.map CreateView
 
-    else if sql |> String.toUpper |> String.startsWith "CREATE MATERIALIZED VIEW " then
-        parseView sql |> Result.map CreateView
+    else if statement.head.text |> String.toUpper |> String.startsWith "CREATE MATERIALIZED VIEW " then
+        parseView statement |> Result.map CreateView
 
-    else if sql |> String.toUpper |> String.startsWith "ALTER TABLE " then
-        parseAlterTable sql |> Result.map AlterTable
+    else if statement.head.text |> String.toUpper |> String.startsWith "ALTER TABLE " then
+        parseAlterTable statement |> Result.map AlterTable
 
-    else if sql |> String.toUpper |> String.startsWith "CREATE INDEX " then
-        parseCreateIndex sql |> Result.map CreateIndex
+    else if statement.head.text |> String.toUpper |> String.startsWith "CREATE INDEX " then
+        parseCreateIndex statement |> Result.map CreateIndex
 
-    else if sql |> String.toUpper |> String.startsWith "CREATE UNIQUE INDEX " then
-        parseCreateUniqueIndex sql |> Result.map CreateUnique
+    else if statement.head.text |> String.toUpper |> String.startsWith "CREATE UNIQUE INDEX " then
+        parseCreateUniqueIndex statement |> Result.map CreateUnique
 
-    else if sql |> String.toUpper |> String.startsWith "COMMENT ON TABLE " then
-        parseTableComment sql |> Result.map TableComment
+    else if statement.head.text |> String.toUpper |> String.startsWith "COMMENT ON TABLE " then
+        parseTableComment statement |> Result.map TableComment
 
-    else if sql |> String.toUpper |> String.startsWith "COMMENT ON COLUMN " then
-        parseColumnComment sql |> Result.map ColumnComment
+    else if statement.head.text |> String.toUpper |> String.startsWith "COMMENT ON COLUMN " then
+        parseColumnComment statement |> Result.map ColumnComment
 
-    else if sql |> String.toUpper |> String.startsWith "CREATE OR REPLACE VIEW " then
-        Ok (Ignored sql)
+    else if statement.head.text |> String.toUpper |> String.startsWith "CREATE OR REPLACE VIEW " then
+        Ok (Ignored statement)
 
-    else if sql |> String.toUpper |> String.startsWith "COMMENT ON VIEW " then
-        Ok (Ignored sql)
+    else if statement.head.text |> String.toUpper |> String.startsWith "COMMENT ON VIEW " then
+        Ok (Ignored statement)
 
-    else if sql |> String.toUpper |> String.startsWith "COMMENT ON INDEX " then
-        Ok (Ignored sql)
+    else if statement.head.text |> String.toUpper |> String.startsWith "COMMENT ON INDEX " then
+        Ok (Ignored statement)
 
-    else if sql |> String.toUpper |> String.startsWith "CREATE TYPE " then
-        Ok (Ignored sql)
+    else if statement.head.text |> String.toUpper |> String.startsWith "CREATE TYPE " then
+        Ok (Ignored statement)
 
-    else if sql |> String.toUpper |> String.startsWith "ALTER TYPE " then
-        Ok (Ignored sql)
+    else if statement.head.text |> String.toUpper |> String.startsWith "ALTER TYPE " then
+        Ok (Ignored statement)
 
-    else if sql |> String.toUpper |> String.startsWith "CREATE FUNCTION " then
-        Ok (Ignored sql)
+    else if statement.head.text |> String.toUpper |> String.startsWith "CREATE FUNCTION " then
+        Ok (Ignored statement)
 
-    else if sql |> String.toUpper |> String.startsWith "ALTER FUNCTION " then
-        Ok (Ignored sql)
+    else if statement.head.text |> String.toUpper |> String.startsWith "ALTER FUNCTION " then
+        Ok (Ignored statement)
 
-    else if sql |> String.toUpper |> String.startsWith "CREATE OPERATOR " then
-        Ok (Ignored sql)
+    else if statement.head.text |> String.toUpper |> String.startsWith "CREATE OPERATOR " then
+        Ok (Ignored statement)
 
-    else if sql |> String.toUpper |> String.startsWith "ALTER OPERATOR " then
-        Ok (Ignored sql)
+    else if statement.head.text |> String.toUpper |> String.startsWith "ALTER OPERATOR " then
+        Ok (Ignored statement)
 
-    else if sql |> String.toUpper |> String.startsWith "CREATE SCHEMA " then
-        Ok (Ignored sql)
+    else if statement.head.text |> String.toUpper |> String.startsWith "CREATE SCHEMA " then
+        Ok (Ignored statement)
 
-    else if sql |> String.toUpper |> String.startsWith "CREATE EXTENSION " then
-        Ok (Ignored sql)
+    else if statement.head.text |> String.toUpper |> String.startsWith "CREATE EXTENSION " then
+        Ok (Ignored statement)
 
-    else if sql |> String.toUpper |> String.startsWith "COMMENT ON EXTENSION " then
-        Ok (Ignored sql)
+    else if statement.head.text |> String.toUpper |> String.startsWith "COMMENT ON EXTENSION " then
+        Ok (Ignored statement)
 
-    else if sql |> String.toUpper |> String.startsWith "CREATE TEXT SEARCH CONFIGURATION " then
-        Ok (Ignored sql)
+    else if statement.head.text |> String.toUpper |> String.startsWith "CREATE TEXT SEARCH CONFIGURATION " then
+        Ok (Ignored statement)
 
-    else if sql |> String.toUpper |> String.startsWith "ALTER TEXT SEARCH CONFIGURATION " then
-        Ok (Ignored sql)
+    else if statement.head.text |> String.toUpper |> String.startsWith "ALTER TEXT SEARCH CONFIGURATION " then
+        Ok (Ignored statement)
 
-    else if sql |> String.toUpper |> String.startsWith "CREATE SEQUENCE " then
-        Ok (Ignored sql)
+    else if statement.head.text |> String.toUpper |> String.startsWith "CREATE SEQUENCE " then
+        Ok (Ignored statement)
 
-    else if sql |> String.toUpper |> String.startsWith "ALTER SEQUENCE " then
-        Ok (Ignored sql)
+    else if statement.head.text |> String.toUpper |> String.startsWith "ALTER SEQUENCE " then
+        Ok (Ignored statement)
 
-    else if sql |> String.toUpper |> String.startsWith "SELECT " then
-        Ok (Ignored sql)
+    else if statement.head.text |> String.toUpper |> String.startsWith "SELECT " then
+        Ok (Ignored statement)
 
-    else if sql |> String.toUpper |> String.startsWith "INSERT INTO " then
-        Ok (Ignored sql)
+    else if statement.head.text |> String.toUpper |> String.startsWith "INSERT INTO " then
+        Ok (Ignored statement)
 
-    else if sql |> String.toUpper |> String.startsWith "SET " then
-        Ok (Ignored sql)
+    else if statement.head.text |> String.toUpper |> String.startsWith "SET " then
+        Ok (Ignored statement)
 
     else
-        Err [ "Statement not handled: '" ++ sql ++ "'" ]
+        Err [ "Statement not handled: '" ++ buildRawSql statement ++ "'" ]

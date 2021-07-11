@@ -1,8 +1,8 @@
-module SqlParser.Parsers.AlterTable exposing (CheckInner, ColumnUpdate(..), ForeignKeyInner, Predicate, PrimaryKeyInner, SqlUser, TableConstraint(..), TableUpdate(..), UniqueInner, parseAlterTable)
+module SqlParser.Parsers.AlterTable exposing (CheckInner, ColumnUpdate(..), ForeignKeyInner, PrimaryKeyInner, SqlPredicate, SqlUser, TableConstraint(..), TableUpdate(..), UniqueInner, parseAlterTable)
 
 import Libs.Regex as R
-import SqlParser.Utils.Helpers exposing (parseIndexDefinition)
-import SqlParser.Utils.Types exposing (ConstraintName, ForeignKeyRef, ParseError, RawSql, SqlColumnName, SqlColumnValue, SqlSchemaName, SqlTableName)
+import SqlParser.Utils.Helpers exposing (buildRawSql, parseIndexDefinition)
+import SqlParser.Utils.Types exposing (ParseError, RawSql, SqlColumnName, SqlColumnValue, SqlConstraintName, SqlForeignKeyRef, SqlSchemaName, SqlStatement, SqlTableName)
 
 
 type TableUpdate
@@ -12,10 +12,10 @@ type TableUpdate
 
 
 type TableConstraint
-    = ParsedPrimaryKey ConstraintName PrimaryKeyInner
-    | ParsedForeignKey ConstraintName ForeignKeyInner
-    | ParsedUnique ConstraintName UniqueInner
-    | ParsedCheck ConstraintName CheckInner
+    = ParsedPrimaryKey SqlConstraintName PrimaryKeyInner
+    | ParsedForeignKey SqlConstraintName ForeignKeyInner
+    | ParsedUnique SqlConstraintName UniqueInner
+    | ParsedCheck SqlConstraintName CheckInner
 
 
 type alias PrimaryKeyInner =
@@ -23,7 +23,7 @@ type alias PrimaryKeyInner =
 
 
 type alias ForeignKeyInner =
-    { column : SqlColumnName, ref : ForeignKeyRef }
+    { column : SqlColumnName, ref : SqlForeignKeyRef }
 
 
 type alias UniqueInner =
@@ -31,10 +31,10 @@ type alias UniqueInner =
 
 
 type alias CheckInner =
-    Predicate
+    SqlPredicate
 
 
-type alias Predicate =
+type alias SqlPredicate =
     String
 
 
@@ -47,9 +47,9 @@ type alias SqlUser =
     String
 
 
-parseAlterTable : RawSql -> Result (List ParseError) TableUpdate
-parseAlterTable sql =
-    case sql |> R.matches "^ALTER TABLE(?:[ \t]+ONLY)?[ \t]+(?:(?<schema>[^ .]+)\\.)?(?<table>[^ .]+)[ \t]+(?<command>.*);$" of
+parseAlterTable : SqlStatement -> Result (List ParseError) TableUpdate
+parseAlterTable statement =
+    case statement |> buildRawSql |> R.matches "^ALTER TABLE(?:[ \t]+ONLY)?[ \t]+(?:(?<schema>[^ .]+)\\.)?(?<table>[^ .]+)[ \t]+(?<command>.*);$" of
         schema :: (Just table) :: (Just command) :: [] ->
             if command |> String.toUpper |> String.startsWith "ADD CONSTRAINT" then
                 parseAlterTableAddConstraint command |> Result.map (AddTableConstraint schema table)
@@ -64,7 +64,7 @@ parseAlterTable sql =
                 Err [ "Command not handled: '" ++ command ++ "'" ]
 
         _ ->
-            Err [ "Can't parse alter table: '" ++ sql ++ "'" ]
+            Err [ "Can't parse alter table: '" ++ buildRawSql statement ++ "'" ]
 
 
 parseAlterTableAddConstraint : RawSql -> Result (List ParseError) TableConstraint

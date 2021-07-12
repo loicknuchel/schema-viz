@@ -4,7 +4,11 @@ import Html exposing (Attribute, Html, button, div, h5, text)
 import Html.Attributes exposing (attribute, class, href, id, tabindex, type_)
 import Libs.Bool as B
 import Libs.Html.Attributes exposing (role)
-import Models.Utils exposing (HtmlId, Text)
+import Libs.Models exposing (HtmlId, Text)
+
+
+
+-- deps = { to = { only = [ "Libs.*" ] } }
 
 
 type BsColor

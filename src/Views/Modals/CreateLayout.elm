@@ -9,6 +9,10 @@ import Models exposing (Msg(..))
 import Models.Schema exposing (LayoutName)
 
 
+
+-- deps = { to = { only = [ "Libs.*", "Models.*", "Conf", "Views.Helpers" ] } }
+
+
 viewCreateLayoutModal : LayoutName -> Html Msg
 viewCreateLayoutModal newLayout =
     bsModal conf.ids.newLayoutModal

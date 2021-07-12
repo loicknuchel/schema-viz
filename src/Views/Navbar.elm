@@ -9,10 +9,14 @@ import Html.Attributes exposing (alt, autocomplete, class, height, href, id, pla
 import Html.Events exposing (onClick, onInput)
 import Libs.Bool as B
 import Libs.Bootstrap exposing (BsColor(..), Toggle(..), ariaExpanded, ariaLabel, bsButton, bsToggle, bsToggleCollapse, bsToggleDropdown, bsToggleModal, bsToggleOffcanvas)
+import Libs.Models exposing (Text)
 import Models exposing (Msg(..), Search)
 import Models.Schema exposing (Column, ColumnName(..), Layout, LayoutName, Schema, Table, TableName(..), TableStatus(..), formatTableId)
-import Models.Utils exposing (Text)
 import Views.Helpers exposing (extractColumnName)
+
+
+
+-- deps = { to = { only = [ "Libs.*", "Models.*", "Conf", "Views.Helpers" ] } }
 
 
 viewNavbar : Search -> Maybe LayoutName -> Schema -> List (Html Msg)

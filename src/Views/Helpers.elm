@@ -1,11 +1,9 @@
-module Views.Helpers exposing (decodeErrorToHtml, dragAttrs, extractColumnIndex, extractColumnName, extractColumnType, formatColumnRef, formatDate, formatHttpError, humanDatetime, onClickConfirm, placeAt, sizeAttrs, withColumnName, withNullableInfo)
+module Views.Helpers exposing (dragAttrs, extractColumnIndex, extractColumnName, extractColumnType, formatColumnRef, formatDate, humanDatetime, onClickConfirm, placeAt, sizeAttrs, withColumnName, withNullableInfo)
 
 import Draggable
 import Html exposing (Attribute, Html, span, text)
 import Html.Attributes exposing (height, style, title, width)
 import Html.Events exposing (onClick)
-import Http exposing (Error(..))
-import Json.Decode as Decode
 import Libs.Bootstrap exposing (Toggle(..), bsToggle)
 import Libs.DateTime as DateTime
 import Libs.Task as T
@@ -16,7 +14,7 @@ import Time
 
 
 
--- Helpers for views, can be included in any view, should not include anything from views
+-- deps = { to = { only = [ "Libs.*", "Models.*", "Conf" ] } }
 
 
 placeAt : Position -> Attribute msg
@@ -85,36 +83,3 @@ formatDate info date =
 humanDatetime : TimeInfo -> Time.Posix -> Html msg
 humanDatetime info date =
     span [ title (DateTime.format "dd MMM yyyy HH:mm" info.zone date), bsToggle Tooltip ] [ text (DateTime.human info.now date) ]
-
-
-decodeErrorToHtml : Decode.Error -> String
-decodeErrorToHtml error =
-    "<pre>" ++ Decode.errorToString error ++ "</pre>"
-
-
-formatHttpError : Http.Error -> String
-formatHttpError error =
-    case error of
-        BadUrl url ->
-            "the URL " ++ url ++ " was invalid"
-
-        Timeout ->
-            "unable to reach the server, try again"
-
-        NetworkError ->
-            "unable to reach the server, check your network connection"
-
-        BadStatus 500 ->
-            "the server had a problem, try again later"
-
-        BadStatus 400 ->
-            "verify your information and try again"
-
-        BadStatus 404 ->
-            "file does not exist"
-
-        BadStatus status ->
-            "network error (" ++ String.fromInt status ++ ")"
-
-        BadBody errorMessage ->
-            errorMessage

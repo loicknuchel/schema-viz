@@ -6,6 +6,10 @@ import Json.Encode as Encode exposing (Value)
 import Libs.Nel exposing (Nel)
 
 
+
+-- deps = { to = { only = [ "Libs.*" ] } }
+
+
 object : List ( String, Encode.Value ) -> Encode.Value
 object attrs =
     Encode.object (attrs |> List.filter (\( _, value ) -> not (value == Encode.null)))

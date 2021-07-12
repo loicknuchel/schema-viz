@@ -6,6 +6,10 @@ import SqlParser.Utils.Helpers exposing (buildRawSql)
 import SqlParser.Utils.Types exposing (ParseError, SqlSchemaName, SqlStatement, SqlTableName)
 
 
+
+-- deps = { to = { only = [ "Libs.*", "SqlParser\\.Utils.*", "SqlParser\\.Parsers.*" ] } }
+
+
 type alias ParsedView =
     { schema : Maybe SqlSchemaName
     , table : SqlTableName

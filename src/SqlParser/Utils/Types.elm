@@ -3,6 +3,10 @@ module SqlParser.Utils.Types exposing (ParseError, RawSql, SqlColumnName, SqlCol
 import Libs.Nel exposing (Nel)
 
 
+
+-- deps = { to = { only = [ "Libs.*", "SqlParser\\.Utils.*" ] } }
+
+
 type alias SqlLine =
     { file : String, line : Int, text : String }
 

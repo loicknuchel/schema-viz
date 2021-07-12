@@ -1,4 +1,4 @@
-port module Ports exposing (JsMsg(..), activateTooltipsAndPopovers, click, dropSchema, hideModal, hideOffcanvas, loadSchemas, observeSize, observeTableSize, observeTablesSize, onJsMessage, readFile, saveSchema, showModal, toastError, toastInfo)
+port module Ports exposing (activateTooltipsAndPopovers, click, dropSchema, hideModal, hideOffcanvas, loadSchemas, observeSize, observeTableSize, observeTablesSize, onJsMessage, readFile, saveSchema, showModal, toastError, toastInfo)
 
 import FileValue exposing (File)
 import Json.Decode as Decode exposing (Decoder, Value)
@@ -6,9 +6,14 @@ import Json.Encode as Encode
 import JsonFormats.SchemaFormat exposing (decodeSchema, decodeSize, encodeSchema)
 import Libs.Json.Decode as D
 import Libs.List as L
+import Libs.Models exposing (FileContent, HtmlId, Text)
+import Models exposing (JsMsg(..))
 import Models.Schema exposing (Schema, TableId, formatTableId)
-import Models.Utils exposing (FileContent, HtmlId, SizeChange, Text)
 import Time
+
+
+
+-- deps = { to = { only = [ "Libs.*", "Models.*" ] } }
 
 
 click : HtmlId -> Cmd msg
@@ -107,13 +112,6 @@ type ElmMsg
 
 type alias Toast =
     { kind : String, message : Text }
-
-
-type JsMsg
-    = SchemasLoaded ( List ( String, Decode.Error ), List Schema )
-    | FileRead Time.Posix File FileContent
-    | SizesChanged (List SizeChange)
-    | Error Decode.Error
 
 
 messageToJs : ElmMsg -> Cmd msg

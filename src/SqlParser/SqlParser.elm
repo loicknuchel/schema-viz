@@ -10,6 +10,10 @@ import SqlParser.Utils.Helpers exposing (buildRawSql)
 import SqlParser.Utils.Types exposing (ParseError, SqlStatement)
 
 
+
+-- deps = { to = { only = [ "Libs.*", "SqlParser\\.Utils.*", "SqlParser\\.Parsers.*" ] } }
+
+
 type Command
     = CreateTable ParsedTable
     | CreateView ParsedView

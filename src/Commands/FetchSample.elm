@@ -10,6 +10,7 @@ import Time
 
 
 
+-- deps = { to = { only = [ "Libs.*", "Conf.*", "Models.*", "Ports.*" ] } }
 -- load external data needed by the app, should have the least possible behaviors, just pack everything in a Msg
 
 

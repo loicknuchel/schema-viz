@@ -5,6 +5,10 @@ import Html.Events exposing (stopPropagationOn)
 import Json.Decode as Decode exposing (Decoder)
 
 
+
+-- deps = { to = { only = [ "Libs.*" ] } }
+
+
 stopClick : msg -> Attribute msg
 stopClick m =
     stopPropagationOn "click" (Decode.succeed ( m, True ))

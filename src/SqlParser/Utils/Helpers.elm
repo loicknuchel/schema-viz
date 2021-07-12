@@ -5,6 +5,10 @@ import Libs.Regex as R
 import SqlParser.Utils.Types exposing (ParseError, RawSql, SqlColumnName, SqlStatement)
 
 
+
+-- deps = { to = { only = [ "Libs.*", "SqlParser\\.Utils.*" ] } }
+
+
 parseIndexDefinition : String -> Result (List ParseError) (List SqlColumnName)
 parseIndexDefinition definition =
     case definition |> R.matches "^\\((?<columns>[^)]+)\\)$" of

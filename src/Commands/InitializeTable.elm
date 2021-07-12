@@ -7,6 +7,7 @@ import Random
 
 
 
+-- deps = { to = { only = [ "Libs.*", "Conf.*", "Models.*", "Ports.*" ] } }
 -- initialize table using random data
 
 

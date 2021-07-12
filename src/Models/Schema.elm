@@ -1,14 +1,17 @@
-module Models.Schema exposing (CanvasProps, Column, ColumnComment(..), ColumnIndex(..), ColumnName(..), ColumnProps, ColumnRef, ColumnState, ColumnType(..), ColumnValue(..), FileInfo, ForeignKey, ForeignKeyName(..), Index, IndexName(..), Layout, LayoutName, PrimaryKey, PrimaryKeyName(..), Relation, RelationRef, RelationState, Schema, SchemaInfo, SchemaName(..), Source, SourceLine, Table, TableAndColumn, TableComment(..), TableId(..), TableName(..), TableProps, TableState, TableStatus(..), Unique, UniqueName(..), formatTableId, formatTableName, parseTableId)
+module Models.Schema exposing (CanvasProps, Column, ColumnComment(..), ColumnIndex(..), ColumnName(..), ColumnProps, ColumnRef, ColumnState, ColumnType(..), ColumnValue(..), FileInfo, ForeignKey, ForeignKeyName(..), Index, IndexName(..), Layout, LayoutName, PrimaryKey, PrimaryKeyName(..), Relation, RelationRef, RelationState, Schema, SchemaInfo, SchemaName(..), Source, SourceLine, Table, TableAndColumn, TableComment(..), TableId(..), TableName(..), TableProps, TableState, TableStatus(..), Unique, UniqueName(..), buildSchema, formatTableId, formatTableName, initColumnState, initTableState, parseTableId)
 
-import AssocList exposing (Dict)
+import AssocList as Dict exposing (Dict)
 import Conf exposing (conf)
+import Libs.Dict as D
+import Libs.List as L
 import Libs.Nel exposing (Nel)
+import Libs.String as S
 import Models.Utils exposing (Color, Position, Size, ZoomLevel)
 import Time
 
 
 
--- Schema model, only use types from Models.Utils or external libs, nothing outside
+-- deps = { to = { only = [ "Libs.*", "Models.*" ] } }
 
 
 type alias Schema =
@@ -210,3 +213,43 @@ parseTableId id =
 
         _ ->
             TableId (SchemaName conf.default.schema) (TableName id)
+
+
+buildSchema : List String -> String -> SchemaInfo -> List Table -> List Layout -> Schema
+buildSchema takenNames name info tables layouts =
+    { name = S.uniqueId takenNames name, info = info, tables = tables |> D.fromList .id, relations = buildRelations tables, layouts = layouts }
+
+
+buildRelations : List Table -> List RelationRef
+buildRelations tables =
+    tables |> List.foldr (\table res -> buildTableRelations table ++ res) []
+
+
+buildTableRelations : Table -> List RelationRef
+buildTableRelations table =
+    table.columns |> Dict.values |> List.filterMap (\col -> col.foreignKey |> Maybe.map (buildRelation table col))
+
+
+buildRelation : Table -> Column -> ForeignKey -> RelationRef
+buildRelation table column fk =
+    { key = fk.name, src = { table = table.id, column = column.column }, ref = { table = fk.tableId, column = fk.column }, state = { show = True } }
+
+
+initTableState : TableId -> TableState
+initTableState id =
+    { status = Uninitialized, color = computeColor id, size = Size 0 0, position = Position 0 0, selected = False }
+
+
+initColumnState : Int -> ColumnState
+initColumnState index =
+    { order = Just index }
+
+
+computeColor : TableId -> Color
+computeColor (TableId _ (TableName table)) =
+    S.wordSplit table
+        |> List.head
+        |> Maybe.map S.hashCode
+        |> Maybe.map (modBy (List.length conf.colors))
+        |> Maybe.andThen (\index -> conf.colors |> L.get index)
+        |> Maybe.withDefault conf.default.color

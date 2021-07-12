@@ -7,6 +7,10 @@ import SqlParser.Utils.Helpers exposing (commaSplit, noEnclosingQuotes)
 import SqlParser.Utils.Types exposing (ParseError, RawSql, SqlColumnName, SqlSchemaName, SqlTableName)
 
 
+
+-- deps = { to = { only = [ "Libs.*", "SqlParser\\.Utils.*", "SqlParser\\.Parsers.*" ] } }
+
+
 type alias SelectInfo =
     { columns : List SelectColumn, tables : List SelectTable, whereClause : Maybe String }
 

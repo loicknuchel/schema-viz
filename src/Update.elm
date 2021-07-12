@@ -1,4 +1,4 @@
-module Update exposing (createLayout, createSampleSchema, createSchema, deleteLayout, dragConfig, dragItem, hideAllTables, hideColumn, hideTable, loadLayout, showAllTables, showColumn, showTable, updateLayout, updateSizes, useSchema, visitTable, visitTables, zoomCanvas)
+module Update exposing (createLayout, createSampleSchema, createSchema, decodeErrorToHtml, deleteLayout, dragConfig, dragItem, hideAllTables, hideColumn, hideTable, loadLayout, showAllTables, showColumn, showTable, updateLayout, updateSizes, useSchema, visitTable, visitTables, zoomCanvas)
 
 import AssocList as Dict exposing (Dict)
 import Commands.InitializeTable exposing (initializeTable)
@@ -6,7 +6,7 @@ import Conf exposing (conf)
 import Draggable
 import Draggable.Events exposing (onDragBy, onDragEnd, onDragStart)
 import FileValue exposing (File)
-import Http
+import Http exposing (Error(..))
 import Json.Decode as Decode
 import JsonFormats.SchemaFormat exposing (decodeSchema)
 import Libs.Bool as B
@@ -14,20 +14,21 @@ import Libs.Dict as D
 import Libs.Html.Events exposing (WheelEvent)
 import Libs.List as L
 import Libs.Maybe as M
+import Libs.Models exposing (FileContent)
 import Libs.Result as R
 import Libs.Std exposing (set, setSchema, setState)
 import Libs.Task as T
-import Mappers.SchemaMapper exposing (buildSchemaFromSql, emptySchema)
-import Models exposing (Canvas, DragId, Errors, Model, Msg(..), initSwitch)
+import Mappers.SchemaMapper exposing (buildSchemaFromSql)
+import Models exposing (Canvas, DragId, Errors, Model, Msg(..), emptySchema, initSwitch)
 import Models.Schema exposing (Column, ColumnName, ColumnProps, FileInfo, Layout, LayoutName, Schema, Table, TableId, TableProps, TableStatus(..), formatTableId, parseTableId)
-import Models.Utils exposing (Area, FileContent, Position, SizeChange, ZoomLevel)
+import Models.Utils exposing (Area, Position, SizeChange, ZoomLevel)
 import Ports exposing (activateTooltipsAndPopovers, click, hideModal, observeTableSize, observeTablesSize, saveSchema, toastError, toastInfo)
 import SqlParser.SchemaParser exposing (parseSchema)
 import Time
-import Views.Helpers exposing (decodeErrorToHtml, formatHttpError)
 
 
 
+-- deps = { to = { only = [ "Libs.*", "Models.*", "Commands.*", "Conf", "JsonFormats.*", "Mappers.*", "Ports", "SqlParser.*" ] } }
 -- utility methods to get the update case down to one line
 
 
@@ -439,3 +440,36 @@ setSize transform item =
 updatePosition : Draggable.Delta -> ZoomLevel -> { item | position : Position } -> { item | position : Position }
 updatePosition ( dx, dy ) zoom item =
     { item | position = Position (item.position.left + (dx / zoom)) (item.position.top + (dy / zoom)) }
+
+
+decodeErrorToHtml : Decode.Error -> String
+decodeErrorToHtml error =
+    "<pre>" ++ Decode.errorToString error ++ "</pre>"
+
+
+formatHttpError : Http.Error -> String
+formatHttpError error =
+    case error of
+        BadUrl url ->
+            "the URL " ++ url ++ " was invalid"
+
+        Timeout ->
+            "unable to reach the server, try again"
+
+        NetworkError ->
+            "unable to reach the server, check your network connection"
+
+        BadStatus 500 ->
+            "the server had a problem, try again later"
+
+        BadStatus 400 ->
+            "verify your information and try again"
+
+        BadStatus 404 ->
+            "file does not exist"
+
+        BadStatus status ->
+            "network error (" ++ String.fromInt status ++ ")"
+
+        BadBody errorMessage ->
+            errorMessage

@@ -7,6 +7,10 @@ import Libs.Bootstrap exposing (Toggle(..), bsDismiss, bsModal)
 import Libs.Html exposing (bText, codeText)
 
 
+
+-- deps = { to = { only = [ "Libs.*", "Models.*", "Conf", "Views.Helpers" ] } }
+
+
 viewHelpModal : Html msg
 viewHelpModal =
     bsModal conf.ids.helpModal

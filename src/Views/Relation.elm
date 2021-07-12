@@ -10,7 +10,7 @@ import Views.Helpers exposing (withColumnName)
 
 
 
--- views showing table relations, can include Views.Helpers, Models or Libs modules. Nothing else from views.
+-- deps = { to = { only = [ "Libs.*", "Models.*", "Conf", "Views.Helpers" ] } }
 
 
 viewRelation : Relation -> Svg Msg

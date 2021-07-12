@@ -7,10 +7,13 @@ import Libs.Dict as D
 import Libs.Json.Decode as D
 import Libs.Json.Encode as E
 import Libs.Maybe as M
-import Mappers.SchemaMapper exposing (buildSchema, initTableState)
-import Models.Schema exposing (CanvasProps, Column, ColumnComment(..), ColumnIndex(..), ColumnName(..), ColumnProps, ColumnState, ColumnType(..), ColumnValue(..), FileInfo, ForeignKey, ForeignKeyName(..), Index, IndexName(..), Layout, PrimaryKey, PrimaryKeyName(..), Schema, SchemaInfo, SchemaName(..), Source, SourceLine, Table, TableComment(..), TableId(..), TableName(..), TableProps, TableState, TableStatus(..), Unique, UniqueName(..), formatTableId, parseTableId)
+import Models.Schema exposing (CanvasProps, Column, ColumnComment(..), ColumnIndex(..), ColumnName(..), ColumnProps, ColumnState, ColumnType(..), ColumnValue(..), FileInfo, ForeignKey, ForeignKeyName(..), Index, IndexName(..), Layout, PrimaryKey, PrimaryKeyName(..), Schema, SchemaInfo, SchemaName(..), Source, SourceLine, Table, TableComment(..), TableId(..), TableName(..), TableProps, TableState, TableStatus(..), Unique, UniqueName(..), buildSchema, formatTableId, initTableState, parseTableId)
 import Models.Utils exposing (Position, Size)
 import Time
+
+
+
+-- deps = { to = { only = [ "Libs.*", "Models.*" ] } }
 
 
 encodeSchema : Schema -> Value

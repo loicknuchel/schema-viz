@@ -1,7 +1,12 @@
 module Conf exposing (conf, schemaSamples)
 
 import AssocList as Dict exposing (Dict)
-import Models.Utils exposing (Color, HtmlId, ZoomLevel)
+import Libs.Models exposing (HtmlId)
+import Models.Utils exposing (Color, ZoomLevel)
+
+
+
+-- deps = { to = { only = [ "Libs.*", "Models.*" ] } }
 
 
 conf :

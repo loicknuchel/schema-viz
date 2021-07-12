@@ -1,19 +1,20 @@
-module Models exposing (Canvas, Confirm, DragId, Error, Errors, Flags, Model, Msg(..), Search, State, Switch, TimeInfo, initConfirm, initModel, initSwitch)
+module Models exposing (Canvas, Confirm, DragId, Error, Errors, Flags, JsMsg(..), Model, Msg(..), Search, State, Switch, TimeInfo, emptySchema, initConfirm, initModel, initSwitch)
 
 import Draggable
 import FileValue exposing (File)
 import Html exposing (Html, text)
 import Http
+import Json.Decode as Decode
 import Libs.Html.Events exposing (WheelEvent)
+import Libs.Models exposing (FileContent, Text)
 import Libs.Task as T
-import Mappers.SchemaMapper exposing (emptySchema)
-import Models.Schema exposing (ColumnRef, LayoutName, Schema, TableId, TableStatus(..))
-import Models.Utils exposing (Position, Size, Text, ZoomLevel)
-import Ports exposing (JsMsg)
+import Models.Schema exposing (ColumnRef, LayoutName, Schema, TableId, TableStatus(..), buildSchema)
+import Models.Utils exposing (Position, Size, SizeChange, ZoomLevel)
 import Time
 
 
 
+-- deps = { to = { only = [ "Libs.*", "Models.*" ] } }
 -- main models for app, the usual Model & Msg but also the ones not deserving their own file or not too generic
 
 
@@ -62,6 +63,13 @@ type Msg
     | Noop
 
 
+type JsMsg
+    = SchemasLoaded ( List ( String, Decode.Error ), List Schema )
+    | FileRead Time.Posix File FileContent
+    | SizesChanged (List SizeChange)
+    | Error Decode.Error
+
+
 initModel : Model
 initModel =
     { time = initTimeInfo, switch = initSwitch, state = initState, canvas = initCanvas, schema = emptySchema, storedSchemas = [], confirm = initConfirm }
@@ -101,6 +109,11 @@ type alias Canvas =
 initCanvas : Canvas
 initCanvas =
     { size = Size 0 0, zoom = 1, position = Position 0 0 }
+
+
+emptySchema : Schema
+emptySchema =
+    buildSchema [] "No name" { created = Time.millisToPosix 0, updated = Time.millisToPosix 0, file = Nothing } [] []
 
 
 type alias Confirm =

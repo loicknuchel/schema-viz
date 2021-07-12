@@ -1,6 +1,9 @@
-module Models.Utils exposing (Area, Color, FileContent, FileName, HtmlId, Position, Size, SizeChange, Text, ZoomLevel)
+module Models.Utils exposing (Area, Color, Position, Size, SizeChange, ZoomLevel)
 
+-- deps = { to = { only = [ "Libs.*", "Models.*" ] } }
 -- generic types to use everywhere, should not include any project value, only libs if really needed
+
+import Libs.Models exposing (HtmlId)
 
 
 type alias ZoomLevel =
@@ -21,22 +24,6 @@ type alias Position =
 
 type alias Area =
     { left : Float, right : Float, top : Float, bottom : Float }
-
-
-type alias HtmlId =
-    String
-
-
-type alias Text =
-    String
-
-
-type alias FileName =
-    String
-
-
-type alias FileContent =
-    String
 
 
 type alias Color =

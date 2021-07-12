@@ -4,6 +4,10 @@ import Bitwise
 import Libs.Regex as R
 
 
+
+-- deps = { to = { only = [ "Libs.*" ] } }
+
+
 wordSplit : String -> List String
 wordSplit input =
     List.foldl (\sep words -> words |> List.concatMap (\word -> String.split sep word)) [ input ] [ "_", "-", " " ]

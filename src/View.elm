@@ -23,6 +23,7 @@ import Views.Table exposing (viewTable)
 
 
 
+-- deps = { to = { only = [ "Libs.*", "Models.*", "Views.*", "Conf" ] } }
 -- view entry point, can include any module from Views, Models or Libs
 
 

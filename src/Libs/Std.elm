@@ -1,6 +1,6 @@
 module Libs.Std exposing (set, setSchema, setState)
 
--- generic utils that could be packaged in external lib. Do not use anything project specific!
+-- deps = { to = { only = [ "Libs.*" ] } }
 
 
 set : (a -> a) -> a -> a

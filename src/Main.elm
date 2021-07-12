@@ -6,17 +6,17 @@ import Conf exposing (conf)
 import Draggable
 import Libs.Bool as B
 import Libs.Std exposing (set, setState)
-import Models exposing (Flags, Model, Msg(..), initConfirm, initModel)
+import Models exposing (Flags, JsMsg(..), Model, Msg(..), initConfirm, initModel)
 import Models.Schema exposing (TableStatus(..))
-import Ports exposing (JsMsg(..), activateTooltipsAndPopovers, dropSchema, hideOffcanvas, loadSchemas, observeSize, onJsMessage, readFile, showModal, toastError)
+import Ports exposing (activateTooltipsAndPopovers, dropSchema, hideOffcanvas, loadSchemas, observeSize, onJsMessage, readFile, showModal, toastError)
 import Task
 import Time
-import Update exposing (createLayout, createSampleSchema, createSchema, deleteLayout, dragConfig, dragItem, hideAllTables, hideColumn, hideTable, loadLayout, showAllTables, showColumn, showTable, updateLayout, updateSizes, useSchema, visitTable, visitTables, zoomCanvas)
+import Update exposing (createLayout, createSampleSchema, createSchema, decodeErrorToHtml, deleteLayout, dragConfig, dragItem, hideAllTables, hideColumn, hideTable, loadLayout, showAllTables, showColumn, showTable, updateLayout, updateSizes, useSchema, visitTable, visitTables, zoomCanvas)
 import View exposing (viewApp)
-import Views.Helpers exposing (decodeErrorToHtml)
 
 
 
+-- deps = { to = {} } => can depend on anything, nothing should depend in it
 -- MAIN: program entry point \o/
 
 

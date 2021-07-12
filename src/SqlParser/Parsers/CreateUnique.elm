@@ -5,6 +5,10 @@ import SqlParser.Utils.Helpers exposing (buildRawSql, parseIndexDefinition)
 import SqlParser.Utils.Types exposing (ParseError, SqlColumnName, SqlConstraintName, SqlStatement, SqlTableRef)
 
 
+
+-- deps = { to = { only = [ "Libs.*", "SqlParser\\.Utils.*", "SqlParser\\.Parsers.*" ] } }
+
+
 type alias ParsedUnique =
     { name : SqlConstraintName, table : SqlTableRef, columns : List SqlColumnName, definition : String }
 

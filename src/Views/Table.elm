@@ -20,7 +20,7 @@ import Views.Helpers exposing (dragAttrs, extractColumnIndex, extractColumnName,
 
 
 
--- views showing tables, can include Views.Helpers, Models or Libs modules. Nothing else from views.
+-- deps = { to = { only = [ "Libs.*", "Models.*", "Conf", "Views.Helpers" ] } }
 
 
 viewTable : ZoomLevel -> List Relation -> Table -> Html Msg

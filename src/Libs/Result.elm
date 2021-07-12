@@ -1,5 +1,7 @@
 module Libs.Result exposing (fold)
 
+-- deps = { to = { only = [ "Libs.*" ] } }
+
 
 fold : (x -> b) -> (a -> b) -> Result x a -> b
 fold onError onSuccess result =

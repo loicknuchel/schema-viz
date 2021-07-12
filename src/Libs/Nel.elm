@@ -1,5 +1,7 @@
 module Libs.Nel exposing (Nel, map, toList)
 
+-- deps = { to = { only = [ "Libs.*" ] } }
+
 
 type alias Nel a =
     { head : a, tail : List a }

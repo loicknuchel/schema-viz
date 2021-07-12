@@ -18,6 +18,10 @@ import Time
 import Views.Helpers exposing (formatDate, onClickConfirm)
 
 
+
+-- deps = { to = { only = [ "Libs.*", "Models.*", "Conf", "Views.Helpers" ] } }
+
+
 viewSchemaSwitchModal : TimeInfo -> Switch -> String -> List Schema -> Html Msg
 viewSchemaSwitchModal time switch title storedSchemas =
     bsModal conf.ids.schemaSwitchModal

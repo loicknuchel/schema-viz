@@ -5,6 +5,10 @@ import SqlParser.Utils.Helpers exposing (buildRawSql, parseIndexDefinition)
 import SqlParser.Utils.Types exposing (ParseError, RawSql, SqlColumnName, SqlColumnValue, SqlConstraintName, SqlForeignKeyRef, SqlSchemaName, SqlStatement, SqlTableName)
 
 
+
+-- deps = { to = { only = [ "Libs.*", "SqlParser\\.Utils.*", "SqlParser\\.Parsers.*" ] } }
+
+
 type TableUpdate
     = AddTableConstraint (Maybe SqlSchemaName) SqlTableName TableConstraint
     | AlterColumn (Maybe SqlSchemaName) SqlTableName ColumnUpdate

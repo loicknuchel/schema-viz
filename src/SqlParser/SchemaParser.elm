@@ -4,7 +4,7 @@ import AssocList as Dict exposing (Dict)
 import Conf exposing (conf)
 import Libs.List as L
 import Libs.Maybe as M
-import Models.Utils exposing (FileContent, FileName)
+import Libs.Models exposing (FileContent, FileName)
 import SqlParser.Parsers.AlterTable exposing (ColumnUpdate(..), SqlPredicate, TableConstraint(..), TableUpdate(..))
 import SqlParser.Parsers.Comment exposing (SqlComment)
 import SqlParser.Parsers.CreateTable exposing (ParsedColumn, ParsedTable)
@@ -12,6 +12,10 @@ import SqlParser.Parsers.CreateView exposing (ParsedView)
 import SqlParser.Parsers.Select exposing (SelectColumn(..))
 import SqlParser.SqlParser exposing (Command(..), parseCommand)
 import SqlParser.Utils.Types exposing (SqlColumnName, SqlColumnType, SqlColumnValue, SqlConstraintName, SqlLine, SqlSchemaName, SqlStatement, SqlTableName)
+
+
+
+-- deps = { to = { only = [ "Libs.*", "SqlParser.*" ] } }
 
 
 type alias SchemaError =

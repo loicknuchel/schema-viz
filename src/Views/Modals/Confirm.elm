@@ -8,6 +8,10 @@ import Libs.Bootstrap exposing (Toggle(..), ariaHidden, ariaLabel, ariaLabelledB
 import Models exposing (Confirm, Msg(..))
 
 
+
+-- deps = { to = { only = [ "Libs.*", "Models.*", "Conf", "Views.Helpers" ] } }
+
+
 viewConfirm : Confirm -> Html Msg
 viewConfirm confirm =
     div [ id conf.ids.confirm, class "modal fade", tabindex -1, bsBackdrop "static", bsKeyboard False, ariaLabelledBy (conf.ids.confirm ++ "-label"), ariaHidden True ]

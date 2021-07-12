@@ -3,6 +3,10 @@ module Libs.Maybe exposing (filter, resultSeq, toList)
 import Libs.Bool as B
 
 
+
+-- deps = { to = { only = [ "Libs.*" ] } }
+
+
 orElse : Maybe a -> Maybe a -> Maybe a
 orElse other item =
     case ( item, other ) of

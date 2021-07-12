@@ -11,7 +11,7 @@ import Models.Schema exposing (Schema, TableStatus(..))
 
 
 
--- menu view, can include Views.Helpers, Models or Libs modules. Nothing else from views.
+-- deps = { to = { only = [ "Libs.*", "Models.*", "Conf", "Views.Helpers" ] } }
 
 
 viewMenu : Schema -> List (Html Msg)

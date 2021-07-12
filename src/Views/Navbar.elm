@@ -7,7 +7,6 @@ import FontAwesome.Solid as Icon
 import Html exposing (Html, a, b, button, div, form, img, input, li, nav, span, text, ul)
 import Html.Attributes exposing (alt, autocomplete, class, height, href, id, placeholder, src, style, title, type_, value)
 import Html.Events exposing (onClick, onInput)
-import Libs.Bool as B
 import Libs.Bootstrap exposing (BsColor(..), Toggle(..), ariaExpanded, ariaLabel, bsButton, bsToggle, bsToggleCollapse, bsToggleDropdown, bsToggleModal, bsToggleOffcanvas)
 import Libs.Models exposing (Text)
 import Models exposing (Msg(..), Search)
@@ -19,8 +18,8 @@ import Views.Helpers exposing (extractColumnName)
 -- deps = { to = { only = [ "Libs.*", "Models.*", "Conf", "Views.Helpers" ] } }
 
 
-viewNavbar : Search -> Maybe LayoutName -> Schema -> List (Html Msg)
-viewNavbar search currentLayout schema =
+viewNavbar : Search -> Maybe Schema -> List (Html Msg)
+viewNavbar search schema =
     [ nav [ id "navbar", class "navbar navbar-expand-md navbar-light bg-white shadow-sm" ]
         [ div [ class "container-fluid" ]
             [ a ([ href "#", class "navbar-brand" ] ++ bsToggleOffcanvas conf.ids.menu) [ img [ src "assets/logo.png", alt "logo", height 24, class "d-inline-block align-text-top" ] [], text " Schema Viz" ]
@@ -28,11 +27,11 @@ viewNavbar search currentLayout schema =
                 [ span [ class "navbar-toggler-icon" ] []
                 ]
             , div [ class "collapse navbar-collapse", id "navbar-content" ]
-                [ viewSearchBar search (Dict.values schema.tables)
+                [ viewSearchBar search (schema |> Maybe.map .tables |> Maybe.map Dict.values |> Maybe.withDefault [])
                 , ul [ class "navbar-nav me-auto" ]
                     [ li [ class "nav-item" ] [ a ([ href "#", class "nav-link" ] ++ bsToggleModal conf.ids.helpModal) [ text "?" ] ]
                     ]
-                , B.lazyCond (Dict.size schema.tables > 0) (\_ -> viewLayoutButton currentLayout schema.layouts) (\_ -> div [] [])
+                , schema |> Maybe.map (\s -> viewLayoutButton s.state.currentLayout s.layouts) |> Maybe.withDefault (div [] [])
                 ]
             ]
         ]

@@ -14,13 +14,13 @@ import Libs.Dict as D
 import Libs.Html.Events exposing (WheelEvent)
 import Libs.List as L
 import Libs.Maybe as M
-import Libs.Models exposing (FileContent)
+import Libs.Models exposing (FileContent, FileName)
 import Libs.Result as R
 import Libs.Std exposing (set, setSchema, setState)
 import Libs.Task as T
 import Mappers.SchemaMapper exposing (buildSchemaFromSql)
-import Models exposing (Canvas, DragId, Errors, Model, Msg(..), emptySchema, initSwitch)
-import Models.Schema exposing (Column, ColumnName, ColumnProps, FileInfo, Layout, LayoutName, Schema, Table, TableId, TableProps, TableStatus(..), formatTableId, parseTableId)
+import Models exposing (Canvas, DragId, Errors, Model, Msg(..), initSwitch)
+import Models.Schema exposing (Column, ColumnName, ColumnProps, FileInfo, Layout, LayoutName, Schema, SchemaId, SchemaState, Table, TableId, TableProps, TableStatus(..), Tables, formatTableId, parseTableId)
 import Models.Utils exposing (Area, Position, SizeChange, ZoomLevel)
 import Ports exposing (activateTooltipsAndPopovers, click, hideModal, observeTableSize, observeTablesSize, saveSchema, toastError, toastInfo)
 import SqlParser.SchemaParser exposing (parseSchema)
@@ -34,59 +34,60 @@ import Time
 
 useSchema : Schema -> Model -> ( Model, Cmd Msg )
 useSchema schema model =
-    loadSchema model ( [], schema )
+    loadSchema model ( [], Just schema )
 
 
 createSchema : Time.Posix -> File -> FileContent -> Model -> ( Model, Cmd Msg )
 createSchema now file content model =
-    buildSchema now (model.storedSchemas |> List.map .name) file.name file.name (Just { name = file.name, lastModified = file.lastModified }) content |> loadSchema model
+    buildSchema now (model.storedSchemas |> List.map .id) file.name file.name (Just { name = file.name, lastModified = file.lastModified }) content |> loadSchema model
 
 
-createSampleSchema : Time.Posix -> String -> String -> Result Http.Error String -> Model -> ( Model, Cmd Msg )
-createSampleSchema now name path response model =
+createSampleSchema : Time.Posix -> SchemaId -> FileName -> Result Http.Error FileContent -> Model -> ( Model, Cmd Msg )
+createSampleSchema now id path response model =
     response
         |> R.fold
-            (\err -> ( [ "Can't load '" ++ name ++ "': " ++ formatHttpError err ], emptySchema ))
-            (buildSchema now (model.storedSchemas |> List.map .name) name path Nothing)
+            (\err -> ( [ "Can't load '" ++ id ++ "': " ++ formatHttpError err ], Nothing ))
+            (buildSchema now (model.storedSchemas |> List.map .id) id path Nothing)
         |> loadSchema model
 
 
-loadSchema : Model -> ( Errors, Schema ) -> ( Model, Cmd Msg )
+loadSchema : Model -> ( Errors, Maybe Schema ) -> ( Model, Cmd Msg )
 loadSchema model ( errs, schema ) =
-    if Dict.isEmpty schema.tables then
-        ( { model | switch = initSwitch }, Cmd.batch (errs |> List.map toastError) )
+    schema
+        |> Maybe.map
+            (\s ->
+                ( { model | switch = initSwitch, schema = Just s }
+                , Cmd.batch
+                    ((errs |> List.map toastError)
+                        ++ [ toastInfo ("<b>" ++ s.id ++ "</b> loaded.<br>Use the search bar to explore it")
+                           , hideModal conf.ids.schemaSwitchModal
+                           , saveSchema s
+                           ]
+                        ++ (if Dict.size s.tables < 10 then
+                                [ T.send ShowAllTables ]
 
-    else
-        ( { model | switch = initSwitch, schema = schema }
-        , Cmd.batch
-            ((errs |> List.map toastError)
-                ++ [ toastInfo ("<b>" ++ schema.name ++ "</b> loaded.<br>Use the search bar to explore it")
-                   , hideModal conf.ids.schemaSwitchModal
-                   , saveSchema schema
-                   ]
-                ++ (if Dict.size schema.tables < 10 then
-                        [ T.send ShowAllTables ]
-
-                    else
-                        [ click conf.ids.searchInput ]
-                   )
+                            else
+                                [ click conf.ids.searchInput ]
+                           )
+                    )
+                )
             )
-        )
+        |> Maybe.withDefault ( { model | switch = initSwitch }, Cmd.batch (errs |> List.map toastError) )
 
 
-buildSchema : Time.Posix -> List String -> String -> String -> Maybe FileInfo -> FileContent -> ( Errors, Schema )
-buildSchema now takenNames name path file content =
+buildSchema : Time.Posix -> List SchemaId -> SchemaId -> FileName -> Maybe FileInfo -> FileContent -> ( Errors, Maybe Schema )
+buildSchema now takenIds id path file content =
     if path |> String.endsWith ".sql" then
-        parseSchema path content |> Tuple.mapSecond (buildSchemaFromSql takenNames name { created = now, updated = now, file = file })
+        parseSchema path content |> Tuple.mapSecond (\s -> Just (buildSchemaFromSql takenIds id { created = now, updated = now, file = file } s))
 
     else if path |> String.endsWith ".json" then
-        Decode.decodeString (decodeSchema takenNames) content
+        Decode.decodeString (decodeSchema takenIds) content
             |> R.fold
-                (\e -> ( [ "⚠️ Error in <b>" ++ path ++ "</b> ⚠️<br>" ++ decodeErrorToHtml e ], emptySchema ))
-                (\schema -> ( [], schema ))
+                (\e -> ( [ "⚠️ Error in <b>" ++ path ++ "</b> ⚠️<br>" ++ decodeErrorToHtml e ], Nothing ))
+                (\schema -> ( [], Just schema ))
 
     else
-        ( [ "Invalid file (" ++ path ++ "), expected .sql or .json one" ], emptySchema )
+        ( [ "Invalid file (" ++ path ++ "), expected .sql or .json one" ], Nothing )
 
 
 hideTable : TableId -> Schema -> Schema
@@ -94,24 +95,24 @@ hideTable id schema =
     schema |> visitTable id (setState (\state -> { state | status = Hidden }))
 
 
-showTable : Model -> TableId -> ( Model, Cmd Msg )
-showTable model id =
-    case getTable id model.schema |> Maybe.map (\t -> t.state.status) of
+showTable : Schema -> TableId -> ( Schema, Cmd Msg )
+showTable schema id =
+    case getTable id schema |> Maybe.map (\t -> t.state.status) of
         Just Uninitialized ->
             -- race condition problem when observe is performed before table is shown :(
-            ( { model | schema = model.schema |> visitTable id (setState (\state -> { state | status = Initializing })) }, Cmd.batch [ observeTableSize id, activateTooltipsAndPopovers ] )
+            ( schema |> visitTable id (setState (\state -> { state | status = Initializing })), Cmd.batch [ observeTableSize id, activateTooltipsAndPopovers ] )
 
         Just Initializing ->
-            ( model, Cmd.none )
+            ( schema, Cmd.none )
 
         Just Hidden ->
-            ( { model | schema = model.schema |> visitTable id (setState (\state -> { state | status = Shown, selected = False })) }, Cmd.batch [ observeTableSize id, activateTooltipsAndPopovers ] )
+            ( schema |> visitTable id (setState (\state -> { state | status = Shown, selected = False })), Cmd.batch [ observeTableSize id, activateTooltipsAndPopovers ] )
 
         Just Shown ->
-            ( model, toastInfo ("Table <b>" ++ formatTableId id ++ "</b> is already shown") )
+            ( schema, toastInfo ("Table <b>" ++ formatTableId id ++ "</b> is already shown") )
 
         Nothing ->
-            ( model, toastError ("Can't show table <b>" ++ formatTableId id ++ "</b>: not found") )
+            ( schema, toastError ("Can't show table <b>" ++ formatTableId id ++ "</b>: not found") )
 
 
 hideColumn : ColumnName -> Dict ColumnName Column -> Dict ColumnName Column
@@ -174,18 +175,13 @@ hideAllTables schema =
             )
 
 
-showAllTables : Model -> ( Model, Cmd Msg )
-showAllTables model =
+showAllTables : Schema -> ( Schema, Cmd Msg )
+showAllTables schema =
     let
         ( cmds, tables ) =
-            model.schema.tables
-                |> Dict.values
-                |> List.map showTableByState
-                |> List.unzip
+            schema.tables |> Dict.values |> List.map showTableByState |> List.unzip
     in
-    ( { model | schema = model.schema |> setTables tables }
-    , Cmd.batch [ observeTablesSize (cmds |> List.filterMap identity), activateTooltipsAndPopovers ]
-    )
+    ( schema |> setTables tables, Cmd.batch [ observeTablesSize (cmds |> List.filterMap identity), activateTooltipsAndPopovers ] )
 
 
 showTableByState : Table -> ( Maybe TableId, Table )
@@ -204,11 +200,11 @@ showTableByState table =
             ( Nothing, table )
 
 
-toLayout : LayoutName -> Model -> Layout
-toLayout name model =
+toLayout : LayoutName -> Schema -> Layout
+toLayout name schema =
     { name = name
-    , canvas = { zoom = model.canvas.zoom, position = model.canvas.position }
-    , tables = model.schema.tables |> Dict.values |> List.filter (\t -> t.state.status == Shown) |> List.map tableToLayout |> Dict.fromList
+    , canvas = { zoom = schema.state.zoom, position = schema.state.position }
+    , tables = schema.tables |> Dict.values |> List.filter (\t -> t.state.status == Shown) |> List.map tableToLayout |> Dict.fromList
     }
 
 
@@ -233,29 +229,48 @@ createLayout name model =
         newModel : Model
         newModel =
             model
-                |> setState (\s -> { s | newLayout = Nothing, currentLayout = Just name })
-                |> setSchema (\s -> { s | layouts = (model |> toLayout name) :: s.layouts })
+                |> setState (\s -> { s | newLayout = Nothing })
+                |> setSchema
+                    (\ms ->
+                        ms
+                            |> Maybe.map
+                                (\s ->
+                                    { s
+                                        | layouts = s.layouts |> L.addOn model.schema (toLayout name)
+                                        , state = s.state |> set (\st -> { st | currentLayout = Just name })
+                                    }
+                                )
+                    )
     in
-    ( newModel, Cmd.batch [ saveSchema newModel.schema, activateTooltipsAndPopovers ] )
+    ( newModel, Cmd.batch ([ activateTooltipsAndPopovers ] |> L.addOn newModel.schema saveSchema) )
 
 
 loadLayout : LayoutName -> Model -> ( Model, Cmd Msg )
 loadLayout name model =
-    model.schema.layouts
+    model.schema
+        |> Maybe.map .layouts
+        |> Maybe.withDefault []
         |> L.find (\layout -> layout.name == name)
         |> Maybe.map
             (\layout ->
                 let
                     ( cmds, tables ) =
-                        model.schema.tables
-                            |> Dict.values
+                        model.schema
+                            |> Maybe.map .tables
+                            |> Maybe.map Dict.values
+                            |> Maybe.withDefault []
                             |> List.map (\table -> showTableWithLayout (layout.tables |> Dict.get table.id) table)
                             |> List.unzip
                 in
                 ( model
-                    |> set (\m -> { m | canvas = { size = model.canvas.size, zoom = layout.canvas.zoom, position = layout.canvas.position } })
-                    |> setSchema (setTables tables)
-                    |> setState (\s -> { s | currentLayout = Just name })
+                    |> setSchema
+                        (Maybe.map
+                            (\s ->
+                                s
+                                    |> setTables tables
+                                    |> setState (\st -> { st | currentLayout = Just layout.name, zoom = layout.canvas.zoom, position = layout.canvas.position })
+                            )
+                        )
                 , Cmd.batch [ observeTablesSize (cmds |> List.filterMap identity), activateTooltipsAndPopovers ]
                 )
             )
@@ -268,10 +283,19 @@ updateLayout name model =
         newModel : Model
         newModel =
             model
-                |> setSchema (\s -> { s | layouts = s.layouts |> List.map (\l -> B.lazyCond (l.name == name) (\_ -> model |> toLayout name) (\_ -> l)) })
-                |> setState (\s -> { s | currentLayout = Just name })
+                |> setSchema
+                    (\ms ->
+                        ms
+                            |> Maybe.map
+                                (\s ->
+                                    { s
+                                        | layouts = s.layouts |> List.map (\l -> B.lazyCond (l.name == name) (\_ -> s |> toLayout name) (\_ -> l))
+                                        , state = s.state |> set (\st -> { st | currentLayout = Just name })
+                                    }
+                                )
+                    )
     in
-    ( newModel, saveSchema newModel.schema )
+    ( newModel, newModel.schema |> Maybe.map saveSchema |> Maybe.withDefault Cmd.none )
 
 
 deleteLayout : LayoutName -> Model -> ( Model, Cmd Msg )
@@ -280,17 +304,24 @@ deleteLayout name model =
         newModel : Model
         newModel =
             model
-                |> setSchema (\s -> { s | layouts = s.layouts |> List.filter (\l -> not (l.name == name)) })
-                |> setState
-                    (\s ->
-                        if s.currentLayout == Just name then
-                            { s | currentLayout = Nothing }
+                |> setSchema
+                    (\ms ->
+                        ms
+                            |> Maybe.map
+                                (\s ->
+                                    { s
+                                        | layouts = s.layouts |> List.filter (\l -> not (l.name == name))
+                                        , state =
+                                            if s.state.currentLayout == Just name then
+                                                s.state |> set (\st -> { st | currentLayout = Nothing })
 
-                        else
-                            s
+                                            else
+                                                s.state
+                                    }
+                                )
                     )
     in
-    ( newModel, saveSchema newModel.schema )
+    ( newModel, newModel.schema |> Maybe.map saveSchema |> Maybe.withDefault Cmd.none )
 
 
 showTableWithLayout : Maybe TableProps -> Table -> ( Maybe TableId, Table )
@@ -340,49 +371,49 @@ updateSize change model =
         { model | canvas = model.canvas |> setSize (\_ -> change.size) }
 
     else
-        { model | schema = model.schema |> visitTable (parseTableId change.id) (setState (\state -> { state | size = change.size })) }
+        { model | schema = model.schema |> Maybe.map (visitTable (parseTableId change.id) (setState (\state -> { state | size = change.size }))) }
 
 
 maybeChangeCmd : Model -> SizeChange -> Maybe (Cmd Msg)
 maybeChangeCmd model { id, size } =
-    model.schema.tables |> getInitializingTable (parseTableId id) |> Maybe.map (\t -> t.id |> initializeTable size (getArea model.canvas))
+    model.schema |> Maybe.andThen (\s -> s.tables |> getInitializingTable (parseTableId id) |> Maybe.map (\t -> t.id |> initializeTable size (getArea model.canvas s.state)))
 
 
-getInitializingTable : TableId -> Dict TableId Table -> Maybe Table
+getInitializingTable : TableId -> Tables -> Maybe Table
 getInitializingTable id tables =
     Dict.get id tables |> M.filter (\t -> t.state.status == Initializing)
 
 
-getArea : Canvas -> Area
-getArea canvas =
-    { left = (0 - canvas.position.left) / canvas.zoom
-    , right = (canvas.size.width - canvas.position.left) / canvas.zoom
-    , top = (0 - canvas.position.top) / canvas.zoom
-    , bottom = (canvas.size.height - canvas.position.top) / canvas.zoom
+getArea : Canvas -> SchemaState -> Area
+getArea canvas state =
+    { left = (0 - state.position.left) / state.zoom
+    , right = (canvas.size.width - state.position.left) / state.zoom
+    , top = (0 - state.position.top) / state.zoom
+    , bottom = (canvas.size.height - state.position.top) / state.zoom
     }
 
 
-zoomCanvas : WheelEvent -> Canvas -> Canvas
-zoomCanvas wheel canvas =
+zoomCanvas : WheelEvent -> SchemaState -> SchemaState
+zoomCanvas wheel state =
     let
         newZoom : ZoomLevel
         newZoom =
-            (canvas.zoom + (wheel.delta.y * conf.zoom.speed)) |> clamp conf.zoom.min conf.zoom.max
+            (state.zoom + (wheel.delta.y * conf.zoom.speed)) |> clamp conf.zoom.min conf.zoom.max
 
         zoomFactor : Float
         zoomFactor =
-            newZoom / canvas.zoom
+            newZoom / state.zoom
 
         -- to zoom on cursor, works only if origin is top left (CSS property: "transform-origin: top left;")
         newLeft : Float
         newLeft =
-            canvas.position.left - ((wheel.mouse.x - canvas.position.left) * (zoomFactor - 1))
+            state.position.left - ((wheel.mouse.x - state.position.left) * (zoomFactor - 1))
 
         newTop : Float
         newTop =
-            canvas.position.top - ((wheel.mouse.y - canvas.position.top) * (zoomFactor - 1))
+            state.position.top - ((wheel.mouse.y - state.position.top) * (zoomFactor - 1))
     in
-    { canvas | zoom = newZoom, position = Position newLeft newTop }
+    { state | zoom = newZoom, position = Position newLeft newTop }
 
 
 dragConfig : Draggable.Config DragId Msg
@@ -399,10 +430,10 @@ dragItem model delta =
     case model.state.dragId of
         Just id ->
             if id == conf.ids.erd then
-                ( { model | canvas = model.canvas |> updatePosition delta 1 }, Cmd.none )
+                ( { model | schema = model.schema |> Maybe.map (setState (updatePosition delta 1)) }, Cmd.none )
 
             else
-                ( { model | schema = model.schema |> visitTable (parseTableId id) (setState (updatePosition delta model.canvas.zoom)) }, Cmd.none )
+                ( { model | schema = model.schema |> Maybe.map (\s -> s |> visitTable (parseTableId id) (setState (updatePosition delta s.state.zoom))) }, Cmd.none )
 
         Nothing ->
             ( model, toastError "Can't dragItem when no drag id" )

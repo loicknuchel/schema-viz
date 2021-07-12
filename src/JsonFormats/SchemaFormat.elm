@@ -1,4 +1,4 @@
-module JsonFormats.SchemaFormat exposing (decodeCanvasProps, decodeColumn, decodeColumnName, decodeColumnProps, decodeColumnState, decodeForeignKey, decodeIndex, decodeInfo, decodeLayout, decodePosition, decodePrimaryKey, decodeSchema, decodeSize, decodeTable, decodeTableProps, decodeTableState, decodeTableStatus, decodeUnique, encodeCanvasProps, encodeColumn, encodeColumnName, encodeColumnProps, encodeColumnState, encodeForeignKey, encodeIndex, encodeInfo, encodeLayout, encodePosition, encodePrimaryKey, encodeSchema, encodeSize, encodeTable, encodeTableProps, encodeTableState, encodeTableStatus, encodeUnique)
+module JsonFormats.SchemaFormat exposing (decodeCanvasProps, decodeColumn, decodeColumnName, decodeColumnProps, decodeColumnState, decodeForeignKey, decodeIndex, decodeInfo, decodeLayout, decodePosition, decodePrimaryKey, decodeSchema, decodeSize, decodeState, decodeTable, decodeTableProps, decodeTableState, decodeTableStatus, decodeUnique, encodeCanvasProps, encodeColumn, encodeColumnName, encodeColumnProps, encodeColumnState, encodeForeignKey, encodeIndex, encodeInfo, encodeLayout, encodePosition, encodePrimaryKey, encodeSchema, encodeSize, encodeState, encodeTable, encodeTableProps, encodeTableState, encodeTableStatus, encodeUnique)
 
 import AssocList as Dict
 import Json.Decode as Decode
@@ -7,7 +7,7 @@ import Libs.Dict as D
 import Libs.Json.Decode as D
 import Libs.Json.Encode as E
 import Libs.Maybe as M
-import Models.Schema exposing (CanvasProps, Column, ColumnComment(..), ColumnIndex(..), ColumnName(..), ColumnProps, ColumnState, ColumnType(..), ColumnValue(..), FileInfo, ForeignKey, ForeignKeyName(..), Index, IndexName(..), Layout, PrimaryKey, PrimaryKeyName(..), Schema, SchemaInfo, SchemaName(..), Source, SourceLine, Table, TableComment(..), TableId(..), TableName(..), TableProps, TableState, TableStatus(..), Unique, UniqueName(..), buildSchema, formatTableId, initTableState, parseTableId)
+import Models.Schema exposing (CanvasProps, Column, ColumnComment(..), ColumnIndex(..), ColumnName(..), ColumnProps, ColumnState, ColumnType(..), ColumnValue(..), FileInfo, ForeignKey, ForeignKeyName(..), Index, IndexName(..), Layout, PrimaryKey, PrimaryKeyName(..), Schema, SchemaInfo, SchemaName(..), SchemaState, Source, SourceLine, Table, TableComment(..), TableId(..), TableName(..), TableProps, TableState, TableStatus(..), Unique, UniqueName(..), buildSchema, formatTableId, initSchemaState, initTableState, parseTableId)
 import Models.Utils exposing (Position, Size)
 import Time
 
@@ -19,8 +19,9 @@ import Time
 encodeSchema : Schema -> Value
 encodeSchema value =
     E.object
-        [ ( "name", value.name |> Encode.string )
+        [ ( "id", value.id |> Encode.string )
         , ( "info", value.info |> encodeInfo )
+        , ( "state", value.state |> encodeMaybeWithoutDefault encodeState initSchemaState )
         , ( "tables", value.tables |> Dict.values |> Encode.list encodeTable )
         , ( "layouts", value.layouts |> Encode.list encodeLayout )
         ]
@@ -28,9 +29,10 @@ encodeSchema value =
 
 decodeSchema : List String -> Decode.Decoder Schema
 decodeSchema takenNames =
-    Decode.map4 (buildSchema takenNames)
-        (Decode.field "name" Decode.string)
+    Decode.map5 (buildSchema takenNames)
+        (Decode.field "id" Decode.string)
         (Decode.field "info" decodeInfo)
+        (decodeMaybeWithDefault (\state -> Decode.field "state" (decodeState state)) initSchemaState)
         (Decode.field "tables" (Decode.list decodeTable))
         (Decode.field "layouts" (Decode.list decodeLayout))
 
@@ -65,6 +67,23 @@ decodeFileInfo =
     Decode.map2 FileInfo
         (Decode.field "name" Decode.string)
         (Decode.field "lastModified" Decode.int |> Decode.map Time.millisToPosix)
+
+
+encodeState : SchemaState -> SchemaState -> Value
+encodeState default value =
+    E.object
+        [ ( "currentLayout", value.currentLayout |> encodeMaybeWithoutDefault (\_ -> encodeMaybe Encode.string) default.currentLayout )
+        , ( "zoom", value.zoom |> encodeMaybeWithoutDefault (\_ -> Encode.float) default.zoom )
+        , ( "position", value.position |> encodeMaybeWithoutDefault (\_ -> encodePosition) default.position )
+        ]
+
+
+decodeState : SchemaState -> Decode.Decoder SchemaState
+decodeState default =
+    Decode.map3 SchemaState
+        (Decode.maybe (Decode.field "currentLayout" Decode.string))
+        (decodeMaybeWithDefault (\_ -> Decode.field "zoom" Decode.float) default.zoom)
+        (decodeMaybeWithDefault (\_ -> Decode.field "position" decodePosition) default.position)
 
 
 encodeTable : Table -> Value

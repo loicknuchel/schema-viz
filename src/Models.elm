@@ -1,4 +1,4 @@
-module Models exposing (Canvas, Confirm, DragId, Error, Errors, Flags, JsMsg(..), Model, Msg(..), Search, State, Switch, TimeInfo, emptySchema, initConfirm, initModel, initSwitch)
+module Models exposing (Canvas, Confirm, DragId, Error, Errors, Flags, JsMsg(..), Model, Msg(..), Search, State, Switch, TimeInfo, initConfirm, initModel, initSwitch)
 
 import Draggable
 import FileValue exposing (File)
@@ -8,8 +8,8 @@ import Json.Decode as Decode
 import Libs.Html.Events exposing (WheelEvent)
 import Libs.Models exposing (FileContent, Text)
 import Libs.Task as T
-import Models.Schema exposing (ColumnRef, LayoutName, Schema, TableId, TableStatus(..), buildSchema)
-import Models.Utils exposing (Position, Size, SizeChange, ZoomLevel)
+import Models.Schema exposing (ColumnRef, LayoutName, Schema, TableId, TableStatus(..))
+import Models.Utils exposing (Position, Size, SizeChange)
 import Time
 
 
@@ -23,7 +23,7 @@ type alias Flags =
 
 
 type alias Model =
-    { time : TimeInfo, switch : Switch, state : State, canvas : Canvas, schema : Schema, storedSchemas : List Schema, confirm : Confirm }
+    { time : TimeInfo, switch : Switch, state : State, canvas : Canvas, schema : Maybe Schema, storedSchemas : List Schema, confirm : Confirm }
 
 
 type Msg
@@ -72,7 +72,7 @@ type JsMsg
 
 initModel : Model
 initModel =
-    { time = initTimeInfo, switch = initSwitch, state = initState, canvas = initCanvas, schema = emptySchema, storedSchemas = [], confirm = initConfirm }
+    { time = initTimeInfo, switch = initSwitch, state = initState, canvas = initCanvas, schema = Nothing, storedSchemas = [], confirm = initConfirm }
 
 
 type alias TimeInfo =
@@ -94,26 +94,21 @@ initSwitch =
 
 
 type alias State =
-    { search : Search, newLayout : Maybe LayoutName, currentLayout : Maybe LayoutName, dragId : Maybe DragId, drag : Draggable.State DragId }
+    { search : Search, newLayout : Maybe LayoutName, dragId : Maybe DragId, drag : Draggable.State DragId }
 
 
 initState : State
 initState =
-    { search = "", newLayout = Nothing, currentLayout = Nothing, dragId = Nothing, drag = Draggable.init }
+    { search = "", newLayout = Nothing, dragId = Nothing, drag = Draggable.init }
 
 
 type alias Canvas =
-    { size : Size, zoom : ZoomLevel, position : Position }
+    { size : Size }
 
 
 initCanvas : Canvas
 initCanvas =
-    { size = Size 0 0, zoom = 1, position = Position 0 0 }
-
-
-emptySchema : Schema
-emptySchema =
-    buildSchema [] "No name" { created = Time.millisToPosix 0, updated = Time.millisToPosix 0, file = Nothing } [] []
+    { size = Size 0 0 }
 
 
 type alias Confirm =

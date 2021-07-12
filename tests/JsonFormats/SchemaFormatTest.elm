@@ -6,7 +6,7 @@ import Json.Decode as Decode
 import Json.Encode as Encode
 import JsonFormats.SchemaFormat exposing (..)
 import Libs.Dict as D
-import Models.Schema exposing (CanvasProps, Column, ColumnIndex(..), ColumnName(..), ColumnProps, ColumnState, ColumnType(..), ColumnValue(..), ForeignKey, ForeignKeyName(..), Index, IndexName(..), Layout, PrimaryKey, PrimaryKeyName(..), Schema, SchemaInfo, SchemaName(..), Table, TableId(..), TableName(..), TableProps, TableState, TableStatus(..), Unique, UniqueName(..))
+import Models.Schema exposing (CanvasProps, Column, ColumnIndex(..), ColumnName(..), ColumnProps, ColumnState, ColumnType(..), ColumnValue(..), ForeignKey, ForeignKeyName(..), Index, IndexName(..), Layout, PrimaryKey, PrimaryKeyName(..), Schema, SchemaInfo, SchemaName(..), SchemaState, Table, TableId(..), TableName(..), TableProps, TableState, TableStatus(..), Unique, UniqueName(..), initSchemaState)
 import Models.Utils exposing (Position, Size)
 import Test exposing (Test, describe, test)
 import Time
@@ -120,9 +120,14 @@ info =
     { created = Time.millisToPosix 1234, updated = Time.millisToPosix 4321, file = Nothing }
 
 
+state : SchemaState
+state =
+    { currentLayout = Just "test", zoom = 1.5, position = Position 10 -4 }
+
+
 schema : Schema
 schema =
-    { name = "a schema", info = info, layouts = [ layout ], tables = D.fromList .id [ table ], relations = [] }
+    { id = "a schema", info = info, state = state, layouts = [ layout ], tables = D.fromList .id [ table ], relations = [] }
 
 
 
@@ -135,6 +140,7 @@ suite =
     describe "SchemaFormatTest"
         [ test "encode/decode Schema" (\_ -> schema |> expectRoundTrip encodeSchema (decodeSchema []))
         , test "encode/decode SchemaInfo" (\_ -> info |> expectRoundTrip encodeInfo decodeInfo)
+        , test "encode/decode SchemaState" (\_ -> state |> expectRoundTrip (encodeState initSchemaState) (decodeState initSchemaState))
         , test "encode/decode Table" (\_ -> table |> expectRoundTrip encodeTable decodeTable)
         , test "encode/decode TableState" (\_ -> tableState |> expectRoundTrip (encodeTableState tableState) (decodeTableState tableState))
         , test "encode/decode TableStatus" (\_ -> tableStatus |> expectRoundTrip encodeTableStatus decodeTableStatus)

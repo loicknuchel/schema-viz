@@ -79,7 +79,7 @@ update msg model =
             createSampleSchema now name path response model
 
         DeleteSchema schema ->
-            ( { model | storedSchemas = model.storedSchemas |> List.filter (\s -> not (s.name == schema.name)) }, dropSchema schema )
+            ( { model | storedSchemas = model.storedSchemas |> List.filter (\s -> not (s.id == schema.id)) }, dropSchema schema )
 
         UseSchema schema ->
             useSchema schema model
@@ -88,31 +88,31 @@ update msg model =
             ( { model | state = model.state |> set (\state -> { state | search = search }) }, Cmd.none )
 
         SelectTable id ->
-            ( { model | schema = model.schema |> visitTables (\table -> table |> setState (\state -> { state | selected = B.cond (table.id == id) (not state.selected) False })) }, Cmd.none )
+            ( { model | schema = model.schema |> Maybe.map (visitTables (\table -> table |> setState (\state -> { state | selected = B.cond (table.id == id) (not state.selected) False }))) }, Cmd.none )
 
         HideTable id ->
-            ( { model | schema = model.schema |> hideTable id }, Cmd.none )
+            ( { model | schema = model.schema |> Maybe.map (hideTable id) }, Cmd.none )
 
         ShowTable id ->
-            showTable model id
+            model.schema |> Maybe.map (\s -> showTable s id |> Tuple.mapFirst (\r -> { model | schema = Just r })) |> Maybe.withDefault ( model, Cmd.none )
 
         InitializedTable id size position ->
-            ( { model | schema = model.schema |> visitTable id (setState (\state -> { state | status = Shown, size = size, position = position })) }, Cmd.none )
+            ( { model | schema = model.schema |> Maybe.map (visitTable id (setState (\state -> { state | status = Shown, size = size, position = position }))) }, Cmd.none )
 
         HideAllTables ->
-            ( { model | schema = hideAllTables model.schema }, Cmd.none )
+            ( { model | schema = model.schema |> Maybe.map hideAllTables }, Cmd.none )
 
         ShowAllTables ->
-            showAllTables model
+            model.schema |> Maybe.map (\s -> showAllTables s |> Tuple.mapFirst (\r -> { model | schema = Just r })) |> Maybe.withDefault ( model, Cmd.none )
 
         HideColumn ref ->
-            ( { model | schema = model.schema |> visitTable ref.table (\table -> { table | columns = table.columns |> hideColumn ref.column }) }, activateTooltipsAndPopovers )
+            ( { model | schema = model.schema |> Maybe.map (visitTable ref.table (\table -> { table | columns = table.columns |> hideColumn ref.column })) }, activateTooltipsAndPopovers )
 
         ShowColumn ref index ->
-            ( { model | schema = model.schema |> visitTable ref.table (\table -> { table | columns = table.columns |> showColumn ref.column index }) }, activateTooltipsAndPopovers )
+            ( { model | schema = model.schema |> Maybe.map (visitTable ref.table (\table -> { table | columns = table.columns |> showColumn ref.column index })) }, activateTooltipsAndPopovers )
 
         Zoom zoom ->
-            ( { model | canvas = zoomCanvas zoom model.canvas }, Cmd.none )
+            ( model.schema |> Maybe.map (\s -> { model | schema = Just (s |> setState (zoomCanvas zoom)) }) |> Maybe.withDefault model, Cmd.none )
 
         DragMsg dragMsg ->
             Tuple.mapFirst (\newState -> { model | state = newState }) (Draggable.update dragConfig dragMsg model.state)

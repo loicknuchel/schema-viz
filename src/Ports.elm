@@ -6,9 +6,9 @@ import Json.Encode as Encode
 import JsonFormats.SchemaFormat exposing (decodeSchema, decodeSize, encodeSchema)
 import Libs.Json.Decode as D
 import Libs.List as L
-import Libs.Models exposing (FileContent, HtmlId, Text)
+import Libs.Models exposing (HtmlId, Text)
 import Models exposing (JsMsg(..))
-import Models.Schema exposing (Schema, TableId, formatTableId)
+import Models.Schema exposing (Schema, SchemaId, TableId, formatTableId)
 import Time
 
 
@@ -203,7 +203,7 @@ jsDecoder =
             )
 
 
-schemasDecoder : Decoder ( List ( String, Decode.Error ), List Schema )
+schemasDecoder : Decoder ( List ( SchemaId, Decode.Error ), List Schema )
 schemasDecoder =
     Decode.list (D.tuple Decode.string Decode.value)
         |> Decode.map

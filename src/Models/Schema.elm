@@ -1,4 +1,4 @@
-module Models.Schema exposing (CanvasProps, Column, ColumnComment(..), ColumnIndex(..), ColumnName(..), ColumnProps, ColumnRef, ColumnState, ColumnType(..), ColumnValue(..), FileInfo, ForeignKey, ForeignKeyName(..), Index, IndexName(..), Layout, LayoutName, PrimaryKey, PrimaryKeyName(..), Relation, RelationRef, RelationState, Schema, SchemaInfo, SchemaName(..), Source, SourceLine, Table, TableAndColumn, TableComment(..), TableId(..), TableName(..), TableProps, TableState, TableStatus(..), Unique, UniqueName(..), buildSchema, formatTableId, formatTableName, initColumnState, initTableState, parseTableId)
+module Models.Schema exposing (CanvasProps, Column, ColumnComment(..), ColumnIndex(..), ColumnName(..), ColumnProps, ColumnRef, ColumnState, ColumnType(..), ColumnValue(..), FileInfo, ForeignKey, ForeignKeyName(..), Index, IndexName(..), Layout, LayoutName, PrimaryKey, PrimaryKeyName(..), Relation, RelationRef, RelationState, Schema, SchemaId, SchemaInfo, SchemaName(..), SchemaState, Source, SourceLine, Table, TableAndColumn, TableComment(..), TableId(..), TableName(..), TableProps, TableState, TableStatus(..), Tables, Unique, UniqueName(..), buildSchema, formatTableId, formatTableName, initColumnState, initSchemaState, initTableState, parseTableId)
 
 import AssocList as Dict exposing (Dict)
 import Conf exposing (conf)
@@ -15,11 +15,12 @@ import Time
 
 
 type alias Schema =
-    { name : String
+    { id : SchemaId
     , info : SchemaInfo
-    , layouts : List Layout
-    , tables : Dict TableId Table
+    , state : SchemaState
+    , tables : Tables
     , relations : List RelationRef
+    , layouts : List Layout
     }
 
 
@@ -32,6 +33,14 @@ type alias SchemaInfo =
 
 type alias FileInfo =
     { name : String, lastModified : Time.Posix }
+
+
+type alias SchemaState =
+    { currentLayout : Maybe LayoutName, zoom : ZoomLevel, position : Position }
+
+
+type alias Tables =
+    Dict TableId Table
 
 
 type alias RelationRef =
@@ -121,6 +130,10 @@ type alias SourceLine =
 
 type alias Layout =
     { name : LayoutName, canvas : CanvasProps, tables : Dict TableId TableProps }
+
+
+type alias SchemaId =
+    String
 
 
 type alias LayoutName =
@@ -215,9 +228,9 @@ parseTableId id =
             TableId (SchemaName conf.default.schema) (TableName id)
 
 
-buildSchema : List String -> String -> SchemaInfo -> List Table -> List Layout -> Schema
-buildSchema takenNames name info tables layouts =
-    { name = S.uniqueId takenNames name, info = info, tables = tables |> D.fromList .id, relations = buildRelations tables, layouts = layouts }
+buildSchema : List SchemaId -> SchemaId -> SchemaInfo -> SchemaState -> List Table -> List Layout -> Schema
+buildSchema takenIds id info state tables layouts =
+    { id = S.uniqueId takenIds id, info = info, state = state, tables = tables |> D.fromList .id, relations = buildRelations tables, layouts = layouts }
 
 
 buildRelations : List Table -> List RelationRef
@@ -233,6 +246,11 @@ buildTableRelations table =
 buildRelation : Table -> Column -> ForeignKey -> RelationRef
 buildRelation table column fk =
     { key = fk.name, src = { table = table.id, column = column.column }, ref = { table = fk.tableId, column = fk.column }, state = { show = True } }
+
+
+initSchemaState : SchemaState
+initSchemaState =
+    { currentLayout = Nothing, zoom = 1, position = Position 0 0 }
 
 
 initTableState : TableId -> TableState

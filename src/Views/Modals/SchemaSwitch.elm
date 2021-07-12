@@ -51,7 +51,7 @@ viewSavedSchemas time storedSchemas =
                     div [ class "col", style "margin-top" "1em" ]
                         [ div [ class "card h-100" ]
                             [ div [ class "card-body" ]
-                                [ h5 [ class "card-title" ] [ text s.name ]
+                                [ h5 [ class "card-title" ] [ text s.id ]
                                 , p [ class "card-text" ]
                                     [ small [ class "text-muted" ]
                                         [ text (S.plural (List.length s.layouts) "No saved layout" "1 saved layout" "saved layouts")
@@ -61,7 +61,7 @@ viewSavedSchemas time storedSchemas =
                                     ]
                                 ]
                             , div [ class "card-footer d-flex" ]
-                                [ a [ class "btn-text link-secondary me-auto", href "#", title "Delete this schema", bsToggle Tooltip, onClickConfirm ("You you really want to delete " ++ s.name ++ " schema ?") (DeleteSchema s) ] [ viewIcon Icon.trash ]
+                                [ a [ class "btn-text link-secondary me-auto", href "#", title "Delete this schema", bsToggle Tooltip, onClickConfirm ("You you really want to delete " ++ s.id ++ " schema ?") (DeleteSchema s) ] [ viewIcon Icon.trash ]
                                 , bsButton Primary [ onClick (UseSchema s) ] [ text "Use this schema" ]
                                 ]
                             ]

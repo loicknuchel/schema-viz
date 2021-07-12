@@ -5,11 +5,10 @@ import Conf exposing (conf)
 import FontAwesome.Styles as Icon
 import Html exposing (Attribute, Html, div)
 import Html.Attributes exposing (class, id, style)
-import Libs.Bool as B
 import Libs.Html.Events exposing (onWheel)
 import Libs.List as L
 import Models exposing (Canvas, Model, Msg(..))
-import Models.Schema exposing (ColumnRef, Relation, RelationRef, Schema, Table, TableAndColumn, TableStatus(..))
+import Models.Schema exposing (ColumnRef, Relation, RelationRef, Schema, Table, TableAndColumn, TableStatus(..), Tables)
 import Models.Utils exposing (Position, ZoomLevel)
 import Views.Helpers exposing (dragAttrs, sizeAttrs)
 import Views.Menu exposing (viewMenu)
@@ -30,10 +29,10 @@ import Views.Table exposing (viewTable)
 viewApp : Model -> List (Html Msg)
 viewApp model =
     [ Icon.css ]
-        ++ viewNavbar model.state.search model.state.currentLayout model.schema
+        ++ viewNavbar model.state.search model.schema
         ++ viewMenu model.schema
         ++ [ viewErd model.canvas model.schema ]
-        ++ [ viewSchemaSwitchModal model.time model.switch (B.cond (Dict.isEmpty model.schema.tables) "Schema Viz, easily explore your SQL schema!" "Load a new schema") model.storedSchemas
+        ++ [ viewSchemaSwitchModal model.time model.switch (model.schema |> Maybe.map (\_ -> "Schema Viz, easily explore your SQL schema!") |> Maybe.withDefault "Load a new schema") model.storedSchemas
            , viewCreateLayoutModal (model.state.newLayout |> Maybe.withDefault "")
            , viewHelpModal
            , viewConfirm model.confirm
@@ -41,16 +40,16 @@ viewApp model =
            ]
 
 
-viewErd : Canvas -> Schema -> Html Msg
+viewErd : Canvas -> Maybe Schema -> Html Msg
 viewErd canvas schema =
     let
         relations : List Relation
         relations =
-            schema.relations |> List.filterMap (buildRelation schema)
+            schema |> Maybe.map (\s -> s.relations |> List.filterMap (buildRelation s.tables)) |> Maybe.withDefault []
     in
     div ([ id conf.ids.erd, class "erd", onWheel Zoom ] ++ sizeAttrs canvas.size ++ dragAttrs conf.ids.erd)
-        [ div [ class "canvas", placeAndZoom canvas.zoom canvas.position ]
-            ((schema.tables |> Dict.values |> L.filterMap shouldDrawTable (\t -> viewTable canvas.zoom (incomingTableRelations relations t) t))
+        [ div [ class "canvas", schema |> Maybe.map (\s -> placeAndZoom s.state.zoom s.state.position) |> Maybe.withDefault (placeAndZoom 1 (Position 0 0)) ]
+            ((schema |> Maybe.map .tables |> Maybe.map Dict.values |> Maybe.withDefault [] |> L.filterMap shouldDrawTable (\t -> viewTable (schema |> Maybe.map (\s -> s.state.zoom) |> Maybe.withDefault 1) (incomingTableRelations relations t) t))
                 ++ (relations |> L.filterMap shouldDrawRelation viewRelation)
             )
         ]
@@ -109,11 +108,11 @@ incomingTableRelations relations table =
     relations |> List.filter (\r -> r.ref.table.id == table.id)
 
 
-buildRelation : Schema -> RelationRef -> Maybe Relation
-buildRelation schema rel =
-    Maybe.map2 (\from to -> { key = rel.key, src = from, ref = to, state = rel.state }) (getTableAndColumn rel.src schema) (getTableAndColumn rel.ref schema)
+buildRelation : Tables -> RelationRef -> Maybe Relation
+buildRelation tables rel =
+    Maybe.map2 (\from to -> { key = rel.key, src = from, ref = to, state = rel.state }) (getTableAndColumn rel.src tables) (getTableAndColumn rel.ref tables)
 
 
-getTableAndColumn : ColumnRef -> Schema -> Maybe TableAndColumn
-getTableAndColumn ref schema =
-    schema.tables |> Dict.get ref.table |> Maybe.andThen (\table -> table.columns |> Dict.get ref.column |> Maybe.map (\column -> { table = table, column = column }))
+getTableAndColumn : ColumnRef -> Tables -> Maybe TableAndColumn
+getTableAndColumn ref tables =
+    tables |> Dict.get ref.table |> Maybe.andThen (\table -> table.columns |> Dict.get ref.column |> Maybe.map (\column -> { table = table, column = column }))

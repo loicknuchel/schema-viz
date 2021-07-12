@@ -1,4 +1,4 @@
-module Libs.List exposing (addIf, appendOn, filterMap, find, get, resultCollect, resultSeq)
+module Libs.List exposing (addIf, addOn, appendOn, filterMap, find, get, resultCollect, resultSeq)
 
 import Libs.Bool as B
 import Random

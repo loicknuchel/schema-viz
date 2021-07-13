@@ -79,6 +79,7 @@ viewLayoutButton currentLayout layouts =
                 ++ [ ul [ class "dropdown-menu dropdown-menu-end" ]
                         ([ li [] [ a ([ class "dropdown-item", href "#" ] ++ bsToggleModal conf.ids.newLayoutModal) [ viewIcon Icon.plus, text " Create new layout" ] ] ]
                             ++ (layouts
+                                    |> List.sortBy .name
                                     |> List.map
                                         (\l ->
                                             li []

@@ -5,13 +5,16 @@ import Commands.FetchSample exposing (loadSample)
 import Conf exposing (conf)
 import Draggable
 import Libs.Bool as B
-import Libs.Std exposing (set, setState)
 import Models exposing (Flags, JsMsg(..), Model, Msg(..), initConfirm, initModel)
 import Models.Schema exposing (TableStatus(..))
 import Ports exposing (activateTooltipsAndPopovers, dropSchema, hideOffcanvas, loadSchemas, observeSize, onJsMessage, readFile, showModal, toastError)
 import Task
 import Time
-import Update exposing (createLayout, createSampleSchema, createSchema, decodeErrorToHtml, deleteLayout, dragConfig, dragItem, hideAllTables, hideColumn, hideTable, loadLayout, showAllTables, showColumn, showTable, updateLayout, updateSizes, useSchema, visitTable, visitTables, zoomCanvas)
+import Update exposing (dragConfig, dragItem, updateSizes, zoomCanvas)
+import Updates.Helpers exposing (decodeErrorToHtml, setSchema, setSchemaWithCmd, setState, setSwitch, setTime, updateTable, updateTables)
+import Updates.Layout exposing (createLayout, deleteLayout, loadLayout, updateLayout)
+import Updates.Schema exposing (createSampleSchema, createSchema, useSchema)
+import Updates.Table exposing (hideAllTables, hideColumn, hideTable, showAllTables, showColumn, showTable)
 import View exposing (viewApp)
 
 
@@ -46,10 +49,10 @@ update msg model =
             updateSizes sizes model
 
         TimeChanged time ->
-            ( { model | time = model.time |> set (\t -> { t | now = time }) }, Cmd.none )
+            ( model |> setTime (\t -> { t | now = time }), Cmd.none )
 
         ZoneChanged zone ->
-            ( { model | time = model.time |> set (\t -> { t | zone = zone }) }, Cmd.none )
+            ( model |> setTime (\t -> { t | zone = zone }), Cmd.none )
 
         ChangeSchema ->
             ( model, Cmd.batch [ hideOffcanvas conf.ids.menu, showModal conf.ids.schemaSwitchModal, loadSchemas ] )
@@ -64,64 +67,64 @@ update msg model =
             ( model, Cmd.none )
 
         FileDropped file _ ->
-            ( { model | switch = model.switch |> set (\s -> { s | loading = True }) }, readFile file )
+            ( model |> setSwitch (\s -> { s | loading = True }), readFile file )
 
         FileSelected file ->
-            ( { model | switch = model.switch |> set (\s -> { s | loading = True }) }, readFile file )
+            ( model |> setSwitch (\s -> { s | loading = True }), readFile file )
 
         JsMessage (FileRead now file content) ->
-            createSchema now file content model
+            model |> createSchema now file content
 
         LoadSampleData sampleName ->
             ( model, loadSample sampleName )
 
         GotSampleData now name path response ->
-            createSampleSchema now name path response model
+            model |> createSampleSchema now name path response
 
         DeleteSchema schema ->
             ( { model | storedSchemas = model.storedSchemas |> List.filter (\s -> not (s.id == schema.id)) }, dropSchema schema )
 
         UseSchema schema ->
-            useSchema schema model
+            model |> useSchema schema
 
         ChangedSearch search ->
-            ( { model | state = model.state |> set (\state -> { state | search = search }) }, Cmd.none )
+            ( model |> setState (\s -> { s | search = search }), Cmd.none )
 
         SelectTable id ->
-            ( { model | schema = model.schema |> Maybe.map (visitTables (\table -> table |> setState (\state -> { state | selected = B.cond (table.id == id) (not state.selected) False }))) }, Cmd.none )
+            ( model |> setSchema (updateTables (\table -> table |> setState (\state -> { state | selected = B.cond (table.id == id) (not state.selected) False }))), Cmd.none )
 
         HideTable id ->
-            ( { model | schema = model.schema |> Maybe.map (hideTable id) }, Cmd.none )
+            ( model |> setSchema (hideTable id), Cmd.none )
 
         ShowTable id ->
-            model.schema |> Maybe.map (\s -> showTable s id |> Tuple.mapFirst (\r -> { model | schema = Just r })) |> Maybe.withDefault ( model, Cmd.none )
+            model |> setSchemaWithCmd (showTable id)
 
         InitializedTable id size position ->
-            ( { model | schema = model.schema |> Maybe.map (visitTable id (setState (\state -> { state | status = Shown, size = size, position = position }))) }, Cmd.none )
+            ( model |> setSchema (updateTable id (setState (\s -> { s | status = Shown, size = size, position = position }))), Cmd.none )
 
         HideAllTables ->
-            ( { model | schema = model.schema |> Maybe.map hideAllTables }, Cmd.none )
+            ( model |> setSchema hideAllTables, Cmd.none )
 
         ShowAllTables ->
-            model.schema |> Maybe.map (\s -> showAllTables s |> Tuple.mapFirst (\r -> { model | schema = Just r })) |> Maybe.withDefault ( model, Cmd.none )
+            model |> setSchemaWithCmd showAllTables
 
-        HideColumn ref ->
-            ( { model | schema = model.schema |> Maybe.map (visitTable ref.table (\table -> { table | columns = table.columns |> hideColumn ref.column })) }, activateTooltipsAndPopovers )
+        HideColumn { table, column } ->
+            ( model |> setSchema (updateTable table (\t -> { t | columns = t.columns |> hideColumn column })), activateTooltipsAndPopovers )
 
-        ShowColumn ref index ->
-            ( { model | schema = model.schema |> Maybe.map (visitTable ref.table (\table -> { table | columns = table.columns |> showColumn ref.column index })) }, activateTooltipsAndPopovers )
+        ShowColumn { table, column } index ->
+            ( model |> setSchema (updateTable table (\t -> { t | columns = t.columns |> showColumn column index })), activateTooltipsAndPopovers )
 
         Zoom zoom ->
-            ( model.schema |> Maybe.map (\s -> { model | schema = Just (s |> setState (zoomCanvas zoom)) }) |> Maybe.withDefault model, Cmd.none )
+            ( model |> setSchema (setState (zoomCanvas zoom)), Cmd.none )
 
         DragMsg dragMsg ->
-            Tuple.mapFirst (\newState -> { model | state = newState }) (Draggable.update dragConfig dragMsg model.state)
+            model.state |> Draggable.update dragConfig dragMsg |> Tuple.mapFirst (\s -> { model | state = s })
 
         StartDragging id ->
-            ( { model | state = model.state |> set (\state -> { state | dragId = Just id }) }, Cmd.none )
+            ( model |> setState (\s -> { s | dragId = Just id }), Cmd.none )
 
         StopDragging ->
-            ( { model | state = model.state |> set (\state -> { state | dragId = Nothing }) }, Cmd.none )
+            ( model |> setState (\s -> { s | dragId = Nothing }), Cmd.none )
 
         OnDragBy delta ->
             dragItem model delta
@@ -130,26 +133,22 @@ update msg model =
             ( model |> setState (\s -> { s | newLayout = B.cond (String.length name == 0) Nothing (Just name) }), Cmd.none )
 
         CreateLayout name ->
-            createLayout name model
+            model |> setState (\s -> { s | newLayout = Nothing }) |> setSchemaWithCmd (createLayout name)
 
         LoadLayout name ->
-            loadLayout name model
+            model |> setSchemaWithCmd (loadLayout name)
 
         UpdateLayout name ->
-            updateLayout name model
+            model |> setSchemaWithCmd (updateLayout name)
 
         DeleteLayout name ->
-            deleteLayout name model
+            model |> setSchemaWithCmd (deleteLayout name)
 
         OpenConfirm confirm ->
             ( { model | confirm = confirm }, showModal conf.ids.confirm )
 
         OnConfirm answer cmd ->
-            if answer then
-                ( { model | confirm = initConfirm }, cmd )
-
-            else
-                ( { model | confirm = initConfirm }, Cmd.none )
+            ( { model | confirm = initConfirm }, B.cond answer cmd Cmd.none )
 
         JsMessage (Error err) ->
             ( model, toastError ("Unable to decode JavaScript message:<br>" ++ decodeErrorToHtml err) )

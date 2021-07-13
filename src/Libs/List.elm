@@ -1,4 +1,4 @@
-module Libs.List exposing (addIf, addOn, appendOn, filterMap, find, get, resultCollect, resultSeq)
+module Libs.List exposing (addIf, appendOn, filterMap, find, get, prependOn, resultCollect, resultSeq)
 
 import Libs.Bool as B
 import Random
@@ -41,8 +41,8 @@ addIf predicate item list =
         list
 
 
-addOn : Maybe b -> (b -> a) -> List a -> List a
-addOn maybe transform list =
+prependOn : Maybe b -> (b -> a) -> List a -> List a
+prependOn maybe transform list =
     case maybe of
         Just b ->
             transform b :: list

@@ -47,6 +47,26 @@ resultSeq maybe =
             Ok Nothing
 
 
+tupleFirstSeq : b -> Maybe ( a, b ) -> ( Maybe a, b )
+tupleFirstSeq default maybe =
+    case maybe of
+        Just ( a, b ) ->
+            ( Just a, b )
+
+        Nothing ->
+            ( Nothing, default )
+
+
+tupleSecondSeq : a -> Maybe ( a, b ) -> ( a, Maybe b )
+tupleSecondSeq default maybe =
+    case maybe of
+        Just ( a, b ) ->
+            ( a, Just b )
+
+        Nothing ->
+            ( default, Nothing )
+
+
 toList : Maybe a -> List a
 toList maybe =
     case maybe of

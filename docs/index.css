@@ -38,6 +38,10 @@ body {
     z-index: calc(var(--offcanvas-z-index) + 1);
 }
 
+.modal-open #navbar {
+    z-index: calc(var(--modal-backdrop-z-index) - 1);
+}
+
 #menu {
     top: var(--navbar-height);
 }
@@ -227,11 +231,6 @@ body {
 
 .btn-text {
     line-height: 38px;
-}
-
-.dropdown-menu {
-    max-height: 1000px;
-    overflow-y: auto;
 }
 
 #toast-container {

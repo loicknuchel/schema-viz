@@ -1,122 +1,65 @@
 module Updates.Table exposing (hideAllTables, hideColumn, hideTable, showAllTables, showColumn, showTable)
 
-import AssocList as Dict exposing (Dict)
-import Libs.Dict as D
+import AssocList as Dict
+import Libs.List as L
+import Libs.Maybe as M
 import Models exposing (Msg)
-import Models.Schema exposing (Column, ColumnName, Schema, Table, TableId, TableStatus(..), formatTableId)
-import Ports exposing (activateTooltipsAndPopovers, observeTableSize, observeTablesSize, toastError, toastInfo)
-import Updates.Helpers exposing (setState, updateTable, updateTables)
+import Models.Schema exposing (ColumnName, Layout, Schema, TableId, initTableProps, showTableId)
+import Ports exposing (activateTooltipsAndPopovers, observeTableSize, observeTablesSize, toastError)
+import Updates.Helpers exposing (setLayout)
 
 
 
 -- deps = { to = { except = [ "Main", "Update", "Updates.*", "View", "Views.*" ] } }
 
 
-hideTable : TableId -> Schema -> Schema
-hideTable id schema =
-    schema |> updateTable id (setState (\state -> { state | status = Hidden }))
+hideTable : TableId -> Layout -> Layout
+hideTable id layout =
+    { layout
+        | tables = layout.tables |> Dict.update id (\_ -> Nothing)
+        , hiddenTables = layout.hiddenTables |> Dict.update id (\_ -> layout.tables |> Dict.get id)
+    }
 
 
 showTable : TableId -> Schema -> ( Schema, Cmd Msg )
 showTable id schema =
-    case schema.tables |> Dict.get id |> Maybe.map (\t -> t.state.status) of
-        Just Uninitialized ->
-            -- race condition problem when observe is performed before table is shown :(
-            ( schema |> updateTable id (setState (\state -> { state | status = Initializing })), Cmd.batch [ observeTableSize id, activateTooltipsAndPopovers ] )
-
-        Just Initializing ->
-            ( schema, Cmd.none )
-
-        Just Hidden ->
-            ( schema |> updateTable id (setState (\state -> { state | status = Shown, selected = False })), Cmd.batch [ observeTableSize id, activateTooltipsAndPopovers ] )
-
-        Just Shown ->
-            ( schema, toastInfo ("Table <b>" ++ formatTableId id ++ "</b> is already shown") )
+    case schema.tables |> Dict.get id of
+        Just table ->
+            ( schema |> setLayout (\l -> { l | tables = l.tables |> Dict.update id (\_ -> Just (l.hiddenTables |> Dict.get id |> Maybe.withDefault (initTableProps table))) })
+            , Cmd.batch [ observeTableSize id, activateTooltipsAndPopovers ]
+            )
 
         Nothing ->
-            ( schema, toastError ("Can't show table <b>" ++ formatTableId id ++ "</b>: not found") )
+            ( schema, toastError ("Can't show table <b>" ++ showTableId id ++ "</b>: not found") )
 
 
-hideColumn : ColumnName -> Dict ColumnName Column -> Dict ColumnName Column
-hideColumn columnName columns =
-    columns
-        |> Dict.update columnName (Maybe.map (setState (\state -> { state | order = Nothing })))
-        |> setSequentialOrder
+hideColumn : TableId -> ColumnName -> Layout -> Layout
+hideColumn table column layout =
+    { layout | tables = layout.tables |> Dict.update table (Maybe.map (\t -> { t | columns = t.columns |> List.filter (\c -> not (c == column)) })) }
 
 
-showColumn : ColumnName -> Int -> Dict ColumnName Column -> Dict ColumnName Column
-showColumn columnName index columns =
-    columns
-        |> Dict.map
-            (\_ column ->
-                case column.state.order of
-                    Just order ->
-                        if order < index then
-                            column
-
-                        else
-                            column |> setState (\state -> { state | order = Just (order + 1) })
-
-                    Nothing ->
-                        if column.column == columnName then
-                            column |> setState (\state -> { state | order = Just index })
-
-                        else
-                            column
-            )
+showColumn : TableId -> ColumnName -> Int -> Layout -> Layout
+showColumn table column index layout =
+    { layout | tables = layout.tables |> Dict.update table (Maybe.map (\t -> { t | columns = t.columns |> L.addAt column index })) }
 
 
-setSequentialOrder : Dict ColumnName Column -> Dict ColumnName Column
-setSequentialOrder columns =
-    columns
-        |> Dict.values
-        |> List.sortBy (\c -> c.state.order |> Maybe.withDefault (Dict.size columns))
-        |> List.indexedMap
-            (\index column ->
-                if column.state.order == Nothing then
-                    column
-
-                else
-                    column |> setState (\state -> { state | order = Just index })
-            )
-        |> D.fromList .column
-
-
-hideAllTables : Schema -> Schema
-hideAllTables schema =
-    schema
-        |> updateTables
-            (setState
-                (\state ->
-                    if state.status == Shown then
-                        { state | status = Hidden }
-
-                    else
-                        state
-                )
-            )
+hideAllTables : Layout -> Layout
+hideAllTables layout =
+    { layout
+        | tables = Dict.empty
+        , hiddenTables = Dict.union layout.tables layout.hiddenTables
+    }
 
 
 showAllTables : Schema -> ( Schema, Cmd Msg )
 showAllTables schema =
-    let
-        ( cmds, tables ) =
-            schema.tables |> Dict.values |> List.map showTableByState |> List.unzip
-    in
-    ( { schema | tables = tables |> D.fromList .id }, Cmd.batch [ observeTablesSize (cmds |> List.filterMap identity), activateTooltipsAndPopovers ] )
-
-
-showTableByState : Table -> ( Maybe TableId, Table )
-showTableByState table =
-    case table.state.status of
-        Uninitialized ->
-            ( Just table.id, table |> setState (\state -> { state | status = Initializing }) )
-
-        Initializing ->
-            ( Nothing, table )
-
-        Hidden ->
-            ( Just table.id, table |> setState (\state -> { state | status = Shown, selected = False }) )
-
-        Shown ->
-            ( Nothing, table )
+    ( schema
+        |> setLayout
+            (\l ->
+                { l
+                    | tables = schema.tables |> Dict.map (\id t -> l.tables |> Dict.get id |> M.orElse (l.hiddenTables |> Dict.get id) |> Maybe.withDefault (initTableProps t))
+                    , hiddenTables = Dict.empty
+                }
+            )
+    , Cmd.batch [ observeTablesSize (schema.tables |> Dict.keys |> List.filter (\id -> not (schema.layout.tables |> Dict.member id))), activateTooltipsAndPopovers ]
+    )

@@ -1,4 +1,4 @@
-module Libs.Maybe exposing (filter, resultSeq, toList)
+module Libs.Maybe exposing (andThenZip, exist, filter, orElse, resultSeq, toList, zip)
 
 import Libs.Bool as B
 
@@ -20,6 +20,21 @@ orElse other item =
 filter : (a -> Bool) -> Maybe a -> Maybe a
 filter predicate maybe =
     maybe |> Maybe.andThen (\a -> B.cond (predicate a) maybe Nothing)
+
+
+exist : (a -> Bool) -> Maybe a -> Bool
+exist predicate maybe =
+    maybe |> Maybe.map predicate |> Maybe.withDefault False
+
+
+zip : Maybe a -> Maybe b -> Maybe ( a, b )
+zip maybeA maybeB =
+    Maybe.map2 (\a b -> ( a, b )) maybeA maybeB
+
+
+andThenZip : (a -> Maybe b) -> Maybe a -> Maybe ( a, b )
+andThenZip f maybe =
+    maybe |> Maybe.andThen (\a -> f a |> Maybe.map (\b -> ( a, b )))
 
 
 fold : b -> (a -> b) -> Maybe a -> b

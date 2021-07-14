@@ -46,7 +46,7 @@ createSampleSchema now id path response model =
 
 loadSchema : Model -> ( Errors, Maybe Schema ) -> ( Model, Cmd Msg )
 loadSchema model ( errs, schema ) =
-    ( { model | switch = initSwitch, schema = schema }
+    ( { model | switch = initSwitch, schema = schema, sizes = model.sizes |> Dict.filter (\id _ -> not (id |> String.startsWith "table-")) }
     , Cmd.batch
         ((errs |> List.map toastError)
             ++ (schema

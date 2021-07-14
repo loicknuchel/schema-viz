@@ -1,6 +1,6 @@
 module Views.Navbar exposing (viewNavbar)
 
-import AssocList as Dict
+import AssocList as Dict exposing (Dict)
 import Conf exposing (conf)
 import FontAwesome.Icon exposing (viewIcon)
 import FontAwesome.Solid as Icon
@@ -10,7 +10,7 @@ import Html.Events exposing (onClick, onInput)
 import Libs.Bootstrap exposing (BsColor(..), Toggle(..), ariaExpanded, ariaLabel, bsButton, bsToggle, bsToggleCollapse, bsToggleDropdown, bsToggleModal, bsToggleOffcanvas)
 import Libs.Models exposing (Text)
 import Models exposing (Msg(..), Search)
-import Models.Schema exposing (Column, ColumnName(..), Layout, LayoutName, Schema, Table, TableName(..), TableStatus(..), formatTableId)
+import Models.Schema exposing (Column, ColumnName(..), Layout, LayoutName, Schema, Table, TableId, TableName(..), showTableId)
 import Views.Helpers exposing (extractColumnName)
 
 
@@ -27,42 +27,44 @@ viewNavbar search schema =
                 [ span [ class "navbar-toggler-icon" ] []
                 ]
             , div [ class "collapse navbar-collapse", id "navbar-content" ]
-                [ viewSearchBar search (schema |> Maybe.map .tables |> Maybe.map Dict.values |> Maybe.withDefault [])
+                [ viewSearchBar schema search
                 , ul [ class "navbar-nav me-auto" ]
                     [ li [ class "nav-item" ] [ a ([ href "#", class "nav-link" ] ++ bsToggleModal conf.ids.helpModal) [ text "?" ] ]
                     ]
-                , schema |> Maybe.map (\s -> viewLayoutButton s.state.currentLayout s.layouts) |> Maybe.withDefault (div [] [])
+                , schema |> Maybe.map (\s -> viewLayoutButton s.layoutName s.layouts) |> Maybe.withDefault (div [] [])
                 ]
             ]
         ]
     ]
 
 
-viewSearchBar : Search -> List Table -> Html Msg
-viewSearchBar search tables =
-    if List.isEmpty tables then
-        form [ class "d-flex" ]
-            [ div []
-                [ input [ type_ "search", class "form-control", value search, placeholder "Search", ariaLabel "Search", autocomplete False, onInput ChangedSearch, id conf.ids.searchInput ] []
+viewSearchBar : Maybe Schema -> Search -> Html Msg
+viewSearchBar schema search =
+    schema
+        |> Maybe.map
+            (\s ->
+                form [ class "d-flex" ]
+                    [ div [ class "dropdown" ]
+                        [ input ([ type_ "search", class "form-control", value search, placeholder "Search", ariaLabel "Search", autocomplete False, onInput ChangedSearch ] ++ bsToggleDropdown conf.ids.searchInput) []
+                        , ul [ class "dropdown-menu" ]
+                            (buildSuggestions s.tables s.layout search
+                                |> List.map (\suggestion -> li [] [ a [ class "dropdown-item", style "cursor" "pointer", onClick suggestion.msg ] suggestion.content ])
+                            )
+                        ]
+                    ]
+            )
+        |> Maybe.withDefault
+            (form [ class "d-flex" ]
+                [ div []
+                    [ input [ type_ "search", class "form-control", value search, placeholder "Search", ariaLabel "Search", autocomplete False, onInput ChangedSearch, id conf.ids.searchInput ] []
+                    ]
                 ]
-            ]
-
-    else
-        form [ class "d-flex" ]
-            [ div [ class "dropdown" ]
-                [ input ([ type_ "search", class "form-control", value search, placeholder "Search", ariaLabel "Search", autocomplete False, onInput ChangedSearch ] ++ bsToggleDropdown conf.ids.searchInput) []
-                , ul [ class "dropdown-menu" ]
-                    (tables
-                        |> buildSuggestions search
-                        |> List.map (\s -> li [] [ a [ class "dropdown-item", style "cursor" "pointer", onClick s.msg ] s.content ])
-                    )
-                ]
-            ]
+            )
 
 
-viewLayoutButton : Maybe LayoutName -> List Layout -> Html Msg
+viewLayoutButton : Maybe LayoutName -> Dict LayoutName Layout -> Html Msg
 viewLayoutButton currentLayout layouts =
-    if List.isEmpty layouts then
+    if Dict.isEmpty layouts then
         bsButton Primary ([ title "Save your current layout to reload it later" ] ++ bsToggleModal conf.ids.newLayoutModal) [ text "Save layout" ]
 
     else
@@ -79,18 +81,19 @@ viewLayoutButton currentLayout layouts =
                 ++ [ ul [ class "dropdown-menu dropdown-menu-end" ]
                         ([ li [] [ a ([ class "dropdown-item", href "#" ] ++ bsToggleModal conf.ids.newLayoutModal) [ viewIcon Icon.plus, text " Create new layout" ] ] ]
                             ++ (layouts
-                                    |> List.sortBy .name
+                                    |> Dict.toList
+                                    |> List.sortBy (\( name, _ ) -> name)
                                     |> List.map
-                                        (\l ->
+                                        (\( name, l ) ->
                                             li []
                                                 [ a [ class "dropdown-item", href "#" ]
-                                                    [ span [ title "Load layout", bsToggle Tooltip, onClick (LoadLayout l.name) ] [ viewIcon Icon.upload ]
+                                                    [ span [ title "Load layout", bsToggle Tooltip, onClick (LoadLayout name) ] [ viewIcon Icon.upload ]
                                                     , text " "
-                                                    , span [ title "Update layout with current one", bsToggle Tooltip, onClick (UpdateLayout l.name) ] [ viewIcon Icon.edit ]
+                                                    , span [ title "Update layout with current one", bsToggle Tooltip, onClick (UpdateLayout name) ] [ viewIcon Icon.edit ]
                                                     , text " "
-                                                    , span [ title "Delete layout", bsToggle Tooltip, onClick (DeleteLayout l.name) ] [ viewIcon Icon.trashAlt ]
+                                                    , span [ title "Delete layout", bsToggle Tooltip, onClick (DeleteLayout name) ] [ viewIcon Icon.trashAlt ]
                                                     , text " "
-                                                    , span [ onClick (LoadLayout l.name) ] [ text (l.name ++ " (" ++ String.fromInt (Dict.size l.tables) ++ " tables)") ]
+                                                    , span [ onClick (LoadLayout name) ] [ text (name ++ " (" ++ String.fromInt (Dict.size l.tables) ++ " tables)") ]
                                                     ]
                                                 ]
                                         )
@@ -104,15 +107,15 @@ type alias Suggestion =
     { priority : Float, content : List (Html Msg), msg : Msg }
 
 
-buildSuggestions : Search -> List Table -> List Suggestion
-buildSuggestions search tables =
-    tables |> List.concatMap (asSuggestions search) |> List.sortBy .priority |> List.take 30
+buildSuggestions : Dict TableId Table -> Layout -> Search -> List Suggestion
+buildSuggestions tables layout search =
+    tables |> Dict.values |> List.concatMap (asSuggestions layout search) |> List.sortBy .priority |> List.take 30
 
 
-asSuggestions : Search -> Table -> List Suggestion
-asSuggestions search table =
-    { priority = 0 - matchStrength search table
-    , content = viewIcon Icon.angleRight :: text " " :: highlightMatch search (formatTableId table.id)
+asSuggestions : Layout -> Search -> Table -> List Suggestion
+asSuggestions layout search table =
+    { priority = 0 - matchStrength table layout search
+    , content = viewIcon Icon.angleRight :: text " " :: highlightMatch search (showTableId table.id)
     , msg = ShowTable table.id
     }
         :: (table.columns |> Dict.values |> List.filterMap (columnSuggestion search table))
@@ -125,7 +128,7 @@ columnSuggestion search table column =
             if name == search then
                 Just
                     { priority = 0 - 0.5
-                    , content = viewIcon Icon.angleDoubleRight :: [ text (" " ++ formatTableId table.id ++ "."), b [] [ text (extractColumnName column.column) ] ]
+                    , content = viewIcon Icon.angleDoubleRight :: [ text (" " ++ showTableId table.id ++ "."), b [] [ text (extractColumnName column.column) ] ]
                     , msg = ShowTable table.id
                     }
 
@@ -138,14 +141,14 @@ highlightMatch search value =
     value |> String.split search |> List.map text |> List.foldr (\i acc -> b [] [ text search ] :: i :: acc) [] |> List.drop 1
 
 
-matchStrength : Search -> Table -> Float
-matchStrength search table =
+matchStrength : Table -> Layout -> Search -> Float
+matchStrength table layout search =
     case table.table of
         TableName name ->
             exactMatch search name
                 + matchAtBeginning search name
                 + matchNotAtBeginning search name
-                + tableShownMalus table
+                + tableShownMalus layout table
                 + columnMatchingBonus search table
                 + (5 * manyColumnBonus table)
                 + shortNameBonus name
@@ -220,9 +223,9 @@ manyColumnBonus table =
         -1 / toFloat (Dict.size table.columns)
 
 
-tableShownMalus : Table -> Float
-tableShownMalus table =
-    if table.state.status == Shown then
+tableShownMalus : Layout -> Table -> Float
+tableShownMalus layout table =
+    if layout.tables |> Dict.member table.id then
         -2
 
     else

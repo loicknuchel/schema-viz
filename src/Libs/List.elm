@@ -1,4 +1,4 @@
-module Libs.List exposing (addIf, appendOn, filterMap, find, get, prependOn, resultCollect, resultSeq)
+module Libs.List exposing (addAt, addIf, appendOn, filterMap, filterZip, find, get, has, hasNot, indexOf, prependOn, resultCollect, resultSeq)
 
 import Libs.Bool as B
 import Random
@@ -27,9 +27,40 @@ find predicate list =
                 find predicate rest
 
 
+indexOf : a -> List a -> Maybe Int
+indexOf item xs =
+    xs |> List.indexedMap (\i a -> ( i, a )) |> find (\( _, a ) -> a == item) |> Maybe.map Tuple.first
+
+
+has : a -> List a -> Bool
+has item xs =
+    xs |> List.any (\a -> a == item)
+
+
+hasNot : a -> List a -> Bool
+hasNot item xs =
+    not (has item xs)
+
+
+filterZip : (a -> Maybe b) -> List a -> List ( a, b )
+filterZip f xs =
+    List.filterMap (\a -> f a |> Maybe.map (\b -> ( a, b ))) xs
+
+
 filterMap : (a -> Bool) -> (a -> b) -> List a -> List b
 filterMap predicate transform list =
     list |> List.foldr (\a res -> B.lazyCond (predicate a) (\_ -> transform a :: res) (\_ -> res)) []
+
+
+addAt : a -> Int -> List a -> List a
+addAt item index list =
+    if index >= List.length list then
+        List.concat [ list, [ item ] ]
+
+    else
+        -- list |> List.indexedMap (\i a -> ( i, a )) |> List.concatMap (\( i, a ) -> B.cond (i == index) [ item, a ] [ a ])
+        -- list |> List.foldl (\a ( res, i ) -> ( List.concat [ res, B.cond (i == index) [ item, a ] [ a ] ], i + 1 )) ( [], 0 ) |> Tuple.first
+        list |> List.foldr (\a ( res, i ) -> ( B.cond (i == index) (item :: a :: res) (a :: res), i - 1 )) ( [], List.length list - 1 ) |> Tuple.first
 
 
 addIf : Bool -> a -> List a -> List a

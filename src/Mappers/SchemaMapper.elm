@@ -3,7 +3,7 @@ module Mappers.SchemaMapper exposing (buildSchemaFromSql)
 import AssocList as Dict
 import Libs.Dict as D
 import Libs.Nel as Nel
-import Models.Schema exposing (Column, ColumnComment(..), ColumnIndex(..), ColumnName(..), ColumnType(..), ColumnValue(..), ForeignKey, ForeignKeyName(..), Index, IndexName(..), PrimaryKey, PrimaryKeyName(..), Schema, SchemaInfo, SchemaName(..), Source, Table, TableComment(..), TableId(..), TableName(..), TableStatus(..), Unique, UniqueName(..), buildSchema, initColumnState, initSchemaState, initTableState)
+import Models.Schema exposing (Column, ColumnComment(..), ColumnIndex(..), ColumnName(..), ColumnType(..), ColumnValue(..), ForeignKey, ForeignKeyName(..), Index, IndexName(..), PrimaryKey, PrimaryKeyName(..), Schema, SchemaInfo, SchemaName(..), Source, Table, TableComment(..), TableId(..), TableName(..), Unique, UniqueName(..), buildSchema, initLayout)
 import SqlParser.SchemaParser exposing (SqlColumn, SqlForeignKey, SqlIndex, SqlPrimaryKey, SqlSchema, SqlTable, SqlUnique)
 import SqlParser.Utils.Types exposing (SqlStatement)
 
@@ -14,7 +14,7 @@ import SqlParser.Utils.Types exposing (SqlStatement)
 
 buildSchemaFromSql : List String -> String -> SchemaInfo -> SqlSchema -> Schema
 buildSchemaFromSql takenNames name info schema =
-    buildSqlTables schema |> (\tables -> buildSchema takenNames name info initSchemaState tables [])
+    buildSqlTables schema |> (\tables -> buildSchema takenNames name info tables initLayout Nothing Dict.empty)
 
 
 buildSqlTables : SqlSchema -> List Table
@@ -33,7 +33,6 @@ buildSqlTable table =
     , uniques = table.uniques |> List.map buildSqlUnique
     , comment = table.comment |> Maybe.map TableComment
     , sources = [ table.source |> statementAsSource ]
-    , state = initTableState (tableIdFromSqlTable table)
     }
 
 
@@ -46,7 +45,6 @@ buildSqlColumn index column =
     , default = column.default |> Maybe.map ColumnValue
     , foreignKey = column.foreignKey |> Maybe.map buildSqlForeignKey
     , comment = column.comment |> Maybe.map ColumnComment
-    , state = initColumnState index
     }
 
 

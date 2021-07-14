@@ -1,4 +1,4 @@
-module Libs.Json.Decode exposing (dict, map10, nel, tuple)
+module Libs.Json.Decode exposing (dict, map9, nel, tuple)
 
 import AssocList as Dict exposing (Dict)
 import Dict as ElmDict

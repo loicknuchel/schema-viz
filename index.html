@@ -101,7 +101,7 @@
                 sendToElm({kind: "SchemasLoaded", schemas: values})
             }
             function saveSchema(schema) {
-                const key = schemaPrefix + schema.name
+                const key = schemaPrefix + schema.id
                 // setting dates should be done in Elm but can't find how to run a Task before calling a Port
                 const now = Date.now()
                 schema.info.updated = now
@@ -109,7 +109,7 @@
                 localStorage.setItem(key, JSON.stringify(schema))
             }
             function dropSchema(schema) {
-                localStorage.removeItem(schemaPrefix + schema.name)
+                localStorage.removeItem(schemaPrefix + schema.id)
             }
 
             function readFile(file) {

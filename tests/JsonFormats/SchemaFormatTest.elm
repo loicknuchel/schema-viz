@@ -6,7 +6,7 @@ import Json.Decode as Decode
 import Json.Encode as Encode
 import JsonFormats.SchemaFormat exposing (..)
 import Libs.Dict as D
-import Models.Schema exposing (CanvasProps, Column, ColumnIndex(..), ColumnName(..), ColumnProps, ColumnState, ColumnType(..), ColumnValue(..), ForeignKey, ForeignKeyName(..), Index, IndexName(..), Layout, PrimaryKey, PrimaryKeyName(..), Schema, SchemaInfo, SchemaName(..), SchemaState, Table, TableId(..), TableName(..), TableProps, TableState, TableStatus(..), Unique, UniqueName(..), initSchemaState)
+import Models.Schema exposing (CanvasProps, Column, ColumnIndex(..), ColumnName(..), ColumnType(..), ColumnValue(..), ForeignKey, ForeignKeyName(..), Index, IndexName(..), Layout, PrimaryKey, PrimaryKeyName(..), Schema, SchemaInfo, SchemaName(..), Table, TableId(..), TableName(..), TableProps, Unique, UniqueName(..))
 import Models.Utils exposing (Position, Size)
 import Test exposing (Test, describe, test)
 import Time
@@ -22,14 +22,9 @@ position =
     { left = 12.1, top = 23.4 }
 
 
-columnProps : ColumnProps
-columnProps =
-    { position = 2 }
-
-
 tableProps : TableProps
 tableProps =
-    { position = position, color = "green", columns = Dict.fromList [ ( ColumnName "id", columnProps ) ] }
+    { position = position, color = "green", selected = False, columns = [ ColumnName "id" ] }
 
 
 canvasProps : CanvasProps
@@ -44,7 +39,7 @@ tableId =
 
 layout : Layout
 layout =
-    { name = "layout", canvas = canvasProps, tables = Dict.fromList [ ( tableId, tableProps ) ] }
+    { canvas = canvasProps, tables = Dict.fromList [ ( tableId, tableProps ) ], hiddenTables = Dict.empty }
 
 
 columnName : ColumnName
@@ -72,11 +67,6 @@ primaryKey =
     { columns = [ ColumnName "id" ], name = PrimaryKeyName "id_pk" }
 
 
-columnState : ColumnState
-columnState =
-    { order = Just 1 }
-
-
 column : Column
 column =
     { index = ColumnIndex 1
@@ -86,18 +76,7 @@ column =
     , default = Just (ColumnValue "1")
     , foreignKey = Nothing
     , comment = Nothing
-    , state = columnState
     }
-
-
-tableStatus : TableStatus
-tableStatus =
-    Shown
-
-
-tableState : TableState
-tableState =
-    { status = Uninitialized, size = size, position = position, color = "red", selected = False }
 
 
 table : Table
@@ -111,7 +90,6 @@ table =
     , indexes = []
     , comment = Nothing
     , sources = []
-    , state = tableState
     }
 
 
@@ -120,14 +98,9 @@ info =
     { created = Time.millisToPosix 1234, updated = Time.millisToPosix 4321, file = Nothing }
 
 
-state : SchemaState
-state =
-    { currentLayout = Just "test", zoom = 1.5, position = Position 10 -4 }
-
-
 schema : Schema
 schema =
-    { id = "a schema", info = info, state = state, layouts = [ layout ], tables = D.fromList .id [ table ], relations = [] }
+    { id = "a schema", info = info, tables = D.fromList .id [ table ], relations = [], layout = layout, layoutName = Nothing, layouts = Dict.empty }
 
 
 
@@ -140,12 +113,8 @@ suite =
     describe "SchemaFormatTest"
         [ test "encode/decode Schema" (\_ -> schema |> expectRoundTrip encodeSchema (decodeSchema []))
         , test "encode/decode SchemaInfo" (\_ -> info |> expectRoundTrip encodeInfo decodeInfo)
-        , test "encode/decode SchemaState" (\_ -> state |> expectRoundTrip (encodeState initSchemaState) (decodeState initSchemaState))
         , test "encode/decode Table" (\_ -> table |> expectRoundTrip encodeTable decodeTable)
-        , test "encode/decode TableState" (\_ -> tableState |> expectRoundTrip (encodeTableState tableState) (decodeTableState tableState))
-        , test "encode/decode TableStatus" (\_ -> tableStatus |> expectRoundTrip encodeTableStatus decodeTableStatus)
         , test "encode/decode Column" (\_ -> column |> expectRoundTrip encodeColumn decodeColumn)
-        , test "encode/decode ColumnState" (\_ -> columnState |> expectRoundTrip encodeColumnState decodeColumnState)
         , test "encode/decode PrimaryKey" (\_ -> primaryKey |> expectRoundTrip encodePrimaryKey decodePrimaryKey)
         , test "encode/decode Unique" (\_ -> unique |> expectRoundTrip encodeUnique decodeUnique)
         , test "encode/decode Index" (\_ -> index |> expectRoundTrip encodeIndex decodeIndex)
@@ -154,7 +123,6 @@ suite =
         , test "encode/decode Layout" (\_ -> layout |> expectRoundTrip encodeLayout decodeLayout)
         , test "encode/decode CanvasProps" (\_ -> canvasProps |> expectRoundTrip encodeCanvasProps decodeCanvasProps)
         , test "encode/decode TableProps" (\_ -> tableProps |> expectRoundTrip encodeTableProps decodeTableProps)
-        , test "encode/decode ColumnProps" (\_ -> columnProps |> expectRoundTrip encodeColumnProps decodeColumnProps)
         , test "encode/decode Position" (\_ -> position |> expectRoundTrip encodePosition decodePosition)
         , test "encode/decode Size" (\_ -> size |> expectRoundTrip encodeSize decodeSize)
         ]

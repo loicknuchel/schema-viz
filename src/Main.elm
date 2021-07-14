@@ -1,17 +1,17 @@
 module Main exposing (main)
 
+import AssocList as Dict
 import Browser
 import Commands.FetchSample exposing (loadSample)
 import Conf exposing (conf)
 import Draggable
 import Libs.Bool as B
 import Models exposing (Flags, JsMsg(..), Model, Msg(..), initConfirm, initModel)
-import Models.Schema exposing (TableStatus(..))
 import Ports exposing (activateTooltipsAndPopovers, dropSchema, hideOffcanvas, loadSchemas, observeSize, onJsMessage, readFile, showModal, toastError)
 import Task
 import Time
 import Update exposing (dragConfig, dragItem, updateSizes, zoomCanvas)
-import Updates.Helpers exposing (decodeErrorToHtml, setSchema, setSchemaWithCmd, setState, setSwitch, setTime, updateTable, updateTables)
+import Updates.Helpers exposing (decodeErrorToHtml, setCanvas, setDictTable, setLayout, setSchema, setSchemaWithCmd, setSwitch, setTables, setTime)
 import Updates.Layout exposing (createLayout, deleteLayout, loadLayout, updateLayout)
 import Updates.Schema exposing (createSampleSchema, createSchema, useSchema)
 import Updates.Table exposing (hideAllTables, hideColumn, hideTable, showAllTables, showColumn, showTable)
@@ -88,52 +88,52 @@ update msg model =
             model |> useSchema schema
 
         ChangedSearch search ->
-            ( model |> setState (\s -> { s | search = search }), Cmd.none )
+            ( { model | search = search }, Cmd.none )
 
         SelectTable id ->
-            ( model |> setSchema (updateTables (\table -> table |> setState (\state -> { state | selected = B.cond (table.id == id) (not state.selected) False }))), Cmd.none )
+            ( model |> setSchema (setLayout (setTables (Dict.map (\i t -> { t | selected = B.cond (i == id) (not t.selected) False })))), Cmd.none )
 
         HideTable id ->
-            ( model |> setSchema (hideTable id), Cmd.none )
+            ( model |> setSchema (setLayout (hideTable id)), Cmd.none )
 
         ShowTable id ->
             model |> setSchemaWithCmd (showTable id)
 
-        InitializedTable id size position ->
-            ( model |> setSchema (updateTable id (setState (\s -> { s | status = Shown, size = size, position = position }))), Cmd.none )
+        InitializedTable id position ->
+            ( model |> setSchema (setLayout (setDictTable id (\t -> { t | position = position }))), Cmd.none )
 
         HideAllTables ->
-            ( model |> setSchema hideAllTables, Cmd.none )
+            ( model |> setSchema (setLayout hideAllTables), Cmd.none )
 
         ShowAllTables ->
             model |> setSchemaWithCmd showAllTables
 
         HideColumn { table, column } ->
-            ( model |> setSchema (updateTable table (\t -> { t | columns = t.columns |> hideColumn column })), activateTooltipsAndPopovers )
+            ( model |> setSchema (setLayout (hideColumn table column)), Cmd.none )
 
         ShowColumn { table, column } index ->
-            ( model |> setSchema (updateTable table (\t -> { t | columns = t.columns |> showColumn column index })), activateTooltipsAndPopovers )
+            ( model |> setSchema (setLayout (showColumn table column index)), activateTooltipsAndPopovers )
 
         Zoom zoom ->
-            ( model |> setSchema (setState (zoomCanvas zoom)), Cmd.none )
+            ( model |> setSchema (setLayout (setCanvas (zoomCanvas zoom))), Cmd.none )
 
         DragMsg dragMsg ->
-            model.state |> Draggable.update dragConfig dragMsg |> Tuple.mapFirst (\s -> { model | state = s })
+            model |> Draggable.update dragConfig dragMsg
 
         StartDragging id ->
-            ( model |> setState (\s -> { s | dragId = Just id }), Cmd.none )
+            ( { model | dragId = Just id }, Cmd.none )
 
         StopDragging ->
-            ( model |> setState (\s -> { s | dragId = Nothing }), Cmd.none )
+            ( { model | dragId = Nothing }, Cmd.none )
 
         OnDragBy delta ->
             dragItem model delta
 
         NewLayout name ->
-            ( model |> setState (\s -> { s | newLayout = B.cond (String.length name == 0) Nothing (Just name) }), Cmd.none )
+            ( { model | newLayout = B.cond (String.length name == 0) Nothing (Just name) }, Cmd.none )
 
         CreateLayout name ->
-            model |> setState (\s -> { s | newLayout = Nothing }) |> setSchemaWithCmd (createLayout name)
+            { model | newLayout = Nothing } |> setSchemaWithCmd (createLayout name)
 
         LoadLayout name ->
             model |> setSchemaWithCmd (loadLayout name)
@@ -165,7 +165,7 @@ view model =
 subscriptions : Model -> Sub Msg
 subscriptions model =
     Sub.batch
-        [ Draggable.subscriptions DragMsg model.state.drag
+        [ Draggable.subscriptions DragMsg model.drag
         , Time.every (10 * 1000) TimeChanged
         , onJsMessage JsMessage
         ]

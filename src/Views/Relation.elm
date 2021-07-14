@@ -1,9 +1,10 @@
 module Views.Relation exposing (viewRelation)
 
 import Libs.List as L
+import Libs.Maybe as M
 import Models exposing (Msg)
-import Models.Schema exposing (Column, ForeignKeyName(..), Relation, Table, TableAndColumn, TableStatus(..), formatTableId)
-import Models.Utils exposing (Color)
+import Models.Schema exposing (Column, ForeignKeyName(..), Relation, RelationTarget, Table, TableProps, showTableId)
+import Models.Utils exposing (Color, Size)
 import Svg exposing (Svg, line, svg, text)
 import Svg.Attributes exposing (class, height, strokeDasharray, style, width, x1, x2, y1, y2)
 import Views.Helpers exposing (withColumnName)
@@ -15,22 +16,22 @@ import Views.Helpers exposing (withColumnName)
 
 viewRelation : Relation -> Svg Msg
 viewRelation { key, src, ref } =
-    case ( ( src.table.state.status == Shown, ref.table.state.status == Shown ), ( formatText key src ref, getColor src ref ) ) of
-        ( ( False, False ), ( name, _ ) ) ->
+    case ( ( src.props, ref.props ), ( formatText key src ref, getColor src ref ) ) of
+        ( ( Nothing, Nothing ), ( name, _ ) ) ->
             svg [ class "erd-relation" ] [ text name ]
 
-        ( ( True, False ), ( name, color ) ) ->
-            case { x = src.table.state.position.left + src.table.state.size.width, y = positionY src } of
+        ( ( Just ( sProps, sSize ), Nothing ), ( name, color ) ) ->
+            case { x = sProps.position.left + sSize.width, y = positionY sProps src.column } of
                 srcPos ->
                     drawRelation srcPos { x = srcPos.x + 20, y = srcPos.y } src.column.nullable color name
 
-        ( ( False, True ), ( name, color ) ) ->
-            case { x = ref.table.state.position.left, y = positionY ref } of
+        ( ( Nothing, Just ( rProps, _ ) ), ( name, color ) ) ->
+            case { x = rProps.position.left, y = positionY rProps ref.column } of
                 refPos ->
                     drawRelation { x = refPos.x - 20, y = refPos.y } refPos src.column.nullable color name
 
-        ( ( True, True ), ( name, color ) ) ->
-            case ( positionX src.table ref.table, ( positionY src, positionY ref ) ) of
+        ( ( Just ( sProps, sSize ), Just ( rProps, rSize ) ), ( name, color ) ) ->
+            case ( positionX ( sProps, sSize ) ( rProps, rSize ), ( positionY sProps src.column, positionY rProps ref.column ) ) of
                 ( ( srcX, refX ), ( srcY, refY ) ) ->
                     drawRelation { x = srcX, y = srcY } { x = refX, y = refY } src.column.nullable color name
 
@@ -84,19 +85,13 @@ type alias Point =
     { x : Float, y : Float }
 
 
-getColor : TableAndColumn -> TableAndColumn -> Maybe Color
+getColor : RelationTarget -> RelationTarget -> Maybe Color
 getColor src ref =
-    if src.table.state.status == Shown && src.table.state.selected then
-        Just src.table.state.color
-
-    else if ref.table.state.status == Shown && ref.table.state.selected then
-        Just ref.table.state.color
-
-    else
-        Nothing
+    (src.props |> Maybe.map Tuple.first |> M.filter .selected |> Maybe.map .color)
+        |> M.orElse (ref.props |> Maybe.map Tuple.first |> M.filter .selected |> Maybe.map .color)
 
 
-positionX : Table -> Table -> ( Float, Float )
+positionX : ( TableProps, Size ) -> ( TableProps, Size ) -> ( Float, Float )
 positionX srcTable refTable =
     case ( tablePositions srcTable, tablePositions refTable ) of
         ( ( srcLeft, srcCenter, srcRight ), ( refLeft, refCenter, refRight ) ) ->
@@ -113,9 +108,9 @@ positionX srcTable refTable =
                 ( srcLeft, refRight )
 
 
-tablePositions : Table -> ( Float, Float, Float )
-tablePositions table =
-    ( table.state.position.left, table.state.position.left + (table.state.size.width / 2), table.state.position.left + table.state.size.width )
+tablePositions : ( TableProps, Size ) -> ( Float, Float, Float )
+tablePositions ( props, size ) =
+    ( props.position.left, props.position.left + (size.width / 2), props.position.left + size.width )
 
 
 headerHeight : Float
@@ -128,9 +123,9 @@ columnHeight =
     31
 
 
-positionY : TableAndColumn -> Float
-positionY { table, column } =
-    table.state.position.top + headerHeight + (columnHeight * (0.5 + (column.state.order |> Maybe.withDefault -1 |> toFloat)))
+positionY : TableProps -> Column -> Float
+positionY props column =
+    props.position.top + headerHeight + (columnHeight * (0.5 + (props.columns |> L.indexOf column.column |> Maybe.withDefault -1 |> toFloat)))
 
 
 minus : Point -> Point -> Point
@@ -142,14 +137,14 @@ minus p1 p2 =
 -- formatters
 
 
-formatText : ForeignKeyName -> TableAndColumn -> TableAndColumn -> String
+formatText : ForeignKeyName -> RelationTarget -> RelationTarget -> String
 formatText fk src ref =
     formatRef src.table src.column ++ " -> " ++ formatForeignKeyName fk ++ " -> " ++ formatRef ref.table ref.column
 
 
 formatRef : Table -> Column -> String
 formatRef table column =
-    formatTableId table.id |> withColumnName column.column
+    showTableId table.id |> withColumnName column.column
 
 
 formatForeignKeyName : ForeignKeyName -> String

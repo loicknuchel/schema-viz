@@ -8,7 +8,7 @@ import Libs.Json.Decode as D
 import Libs.List as L
 import Libs.Models exposing (HtmlId, Text)
 import Models exposing (JsMsg(..))
-import Models.Schema exposing (Schema, SchemaId, TableId, formatTableId)
+import Models.Schema exposing (Schema, SchemaId, TableId, tableIdAsHtmlId)
 import Time
 
 
@@ -88,12 +88,12 @@ observeSize id =
 
 observeTableSize : TableId -> Cmd msg
 observeTableSize id =
-    observeSizes [ formatTableId id ]
+    observeSizes [ tableIdAsHtmlId id ]
 
 
 observeTablesSize : List TableId -> Cmd msg
 observeTablesSize ids =
-    observeSizes (List.map formatTableId ids)
+    observeSizes (List.map tableIdAsHtmlId ids)
 
 
 type ElmMsg

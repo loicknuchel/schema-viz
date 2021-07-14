@@ -54,7 +54,7 @@ viewSavedSchemas time storedSchemas =
                                 [ h5 [ class "card-title" ] [ text s.id ]
                                 , p [ class "card-text" ]
                                     [ small [ class "text-muted" ]
-                                        [ text (S.plural (List.length s.layouts) "No saved layout" "1 saved layout" "saved layouts")
+                                        [ text (S.plural (Dict.size s.layouts) "No saved layout" "1 saved layout" "saved layouts")
                                         , br [] []
                                         , text ("Version from " ++ formatDate time (s.info.file |> Maybe.map .lastModified |> Maybe.withDefault s.info.created))
                                         ]

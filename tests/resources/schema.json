@@ -14,46 +14,31 @@
           "column": "id",
           "type": "int",
           "nullable": false,
-          "comment": "The user id which is automatically defined based on subscription order. Should never change!",
-          "state": {
-            "order": 0
-          }
+          "comment": "The user id which is automatically defined based on subscription order. Should never change!"
         },
         {
           "index": 1,
           "column": "first_name",
           "type": "varchar(255)",
-          "nullable": false,
-          "state": {
-            "order": 1
-          }
+          "nullable": false
         },
         {
           "index": 2,
           "column": "last_name",
           "type": "varchar(255)",
-          "nullable": false,
-          "state": {
-            "order": 2
-          }
+          "nullable": false
         },
         {
           "index": 3,
           "column": "email",
           "type": "varchar(255)",
-          "nullable": true,
-          "state": {
-            "order": 3
-          }
+          "nullable": true
         },
         {
           "index": 4,
           "column": "external_id",
           "type": "uuid",
-          "nullable": true,
-          "state": {
-            "order": 4
-          }
+          "nullable": true
         }
       ],
       "primaryKey": {
@@ -98,55 +83,37 @@
           "index": 0,
           "column": "id",
           "type": "int",
-          "nullable": false,
-          "state": {
-            "order": 0
-          }
+          "nullable": false
         },
         {
           "index": 1,
           "column": "slug",
           "type": "varchar(255)",
-          "nullable": false,
-          "state": {
-            "order": 1
-          }
+          "nullable": false
         },
         {
           "index": 2,
           "column": "name",
           "type": "varchar(255)",
-          "nullable": false,
-          "state": {
-            "order": 2
-          }
+          "nullable": false
         },
         {
           "index": 3,
           "column": "description",
           "type": "text",
-          "nullable": true,
-          "state": {
-            "order": 3
-          }
+          "nullable": true
         },
         {
           "index": 4,
           "column": "created_at",
           "type": "timestamp",
-          "nullable": false,
-          "state": {
-            "order": 4
-          }
+          "nullable": false
         },
         {
           "index": 5,
           "column": "updated_at",
           "type": "timestamp",
-          "nullable": false,
-          "state": {
-            "order": 5
-          }
+          "nullable": false
         }
       ],
       "primaryKey": {
@@ -187,28 +154,19 @@
             "table": "users",
             "column": "id",
             "name": "credentials_user_id_fk"
-          },
-          "state": {
-            "order": 0
           }
         },
         {
           "index": 1,
           "column": "login",
           "type": "varchar(255)",
-          "nullable": false,
-          "state": {
-            "order": 1
-          }
+          "nullable": false
         },
         {
           "index": 2,
           "column": "password",
           "type": "varchar(255)",
-          "nullable": false,
-          "state": {
-            "order": 2
-          }
+          "nullable": false
         }
       ],
       "uniques": [
@@ -230,10 +188,7 @@
           "index": 0,
           "column": "id",
           "type": "int",
-          "nullable": false,
-          "state": {
-            "order": 0
-          }
+          "nullable": false
         },
         {
           "index": 1,
@@ -245,9 +200,6 @@
             "table": "roles",
             "column": "id",
             "name": "role_user_role_id_fk"
-          },
-          "state": {
-            "order": 1
           }
         },
         {
@@ -260,28 +212,19 @@
             "table": "users",
             "column": "id",
             "name": "role_user_user_id_fk"
-          },
-          "state": {
-            "order": 2
           }
         },
         {
           "index": 3,
           "column": "created_at",
           "type": "timestamp",
-          "nullable": false,
-          "state": {
-            "order": 3
-          }
+          "nullable": false
         },
         {
           "index": 4,
           "column": "updated_at",
           "type": "timestamp",
-          "nullable": false,
-          "state": {
-            "order": 4
-          }
+          "nullable": false
         }
       ],
       "primaryKey": {
@@ -293,6 +236,5 @@
       "uniques": [],
       "indexes": []
     }
-  ],
-  "layouts": []
+  ]
 }

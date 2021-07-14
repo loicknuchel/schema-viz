@@ -1,14 +1,15 @@
-module Models exposing (Canvas, Confirm, DragId, Error, Errors, Flags, JsMsg(..), Model, Msg(..), Search, State, Switch, TimeInfo, initConfirm, initModel, initSwitch)
+module Models exposing (Confirm, DragId, Error, Errors, Flags, JsMsg(..), Model, Msg(..), Search, Switch, TimeInfo, initConfirm, initModel, initSwitch)
 
+import AssocList as Dict exposing (Dict)
 import Draggable
 import FileValue exposing (File)
 import Html exposing (Html, text)
 import Http
 import Json.Decode as Decode
 import Libs.Html.Events exposing (WheelEvent)
-import Libs.Models exposing (FileContent, Text)
+import Libs.Models exposing (FileContent, HtmlId, Text)
 import Libs.Task as T
-import Models.Schema exposing (ColumnRef, LayoutName, Schema, TableId, TableStatus(..))
+import Models.Schema exposing (ColumnRef, LayoutName, Schema, TableId)
 import Models.Utils exposing (Position, Size, SizeChange)
 import Time
 
@@ -23,7 +24,32 @@ type alias Flags =
 
 
 type alias Model =
-    { time : TimeInfo, switch : Switch, state : State, canvas : Canvas, schema : Maybe Schema, storedSchemas : List Schema, confirm : Confirm }
+    { time : TimeInfo
+    , switch : Switch
+    , storedSchemas : List Schema
+    , schema : Maybe Schema
+    , search : Search
+    , newLayout : Maybe LayoutName
+    , confirm : Confirm
+    , sizes : Dict HtmlId Size
+    , dragId : Maybe DragId
+    , drag : Draggable.State DragId
+    }
+
+
+initModel : Model
+initModel =
+    { time = initTimeInfo
+    , switch = initSwitch
+    , storedSchemas = []
+    , schema = Nothing
+    , search = ""
+    , newLayout = Nothing
+    , confirm = initConfirm
+    , sizes = Dict.empty
+    , dragId = Nothing
+    , drag = Draggable.init
+    }
 
 
 type Msg
@@ -42,7 +68,7 @@ type Msg
     | SelectTable TableId
     | HideTable TableId
     | ShowTable TableId
-    | InitializedTable TableId Size Position
+    | InitializedTable TableId Position
     | HideAllTables
     | ShowAllTables
     | HideColumn ColumnRef
@@ -70,11 +96,6 @@ type JsMsg
     | Error Decode.Error
 
 
-initModel : Model
-initModel =
-    { time = initTimeInfo, switch = initSwitch, state = initState, canvas = initCanvas, schema = Nothing, storedSchemas = [], confirm = initConfirm }
-
-
 type alias TimeInfo =
     { zone : Time.Zone, now : Time.Posix }
 
@@ -91,24 +112,6 @@ type alias Switch =
 initSwitch : Switch
 initSwitch =
     { loading = False }
-
-
-type alias State =
-    { search : Search, newLayout : Maybe LayoutName, dragId : Maybe DragId, drag : Draggable.State DragId }
-
-
-initState : State
-initState =
-    { search = "", newLayout = Nothing, dragId = Nothing, drag = Draggable.init }
-
-
-type alias Canvas =
-    { size : Size }
-
-
-initCanvas : Canvas
-initCanvas =
-    { size = Size 0 0 }
 
 
 type alias Confirm =
@@ -133,4 +136,4 @@ type alias Search =
 
 
 type alias DragId =
-    String
+    HtmlId

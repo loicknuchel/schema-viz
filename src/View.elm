@@ -1,15 +1,17 @@
 module View exposing (viewApp)
 
-import AssocList as Dict
+import AssocList as Dict exposing (Dict)
 import Conf exposing (conf)
 import FontAwesome.Styles as Icon
 import Html exposing (Attribute, Html, div)
 import Html.Attributes exposing (class, id, style)
 import Libs.Html.Events exposing (onWheel)
 import Libs.List as L
-import Models exposing (Canvas, Model, Msg(..))
-import Models.Schema exposing (ColumnRef, Relation, RelationRef, Schema, Table, TableAndColumn, TableStatus(..), Tables)
-import Models.Utils exposing (Position, ZoomLevel)
+import Libs.Maybe as M
+import Libs.Models exposing (HtmlId)
+import Models exposing (Model, Msg(..))
+import Models.Schema exposing (ColumnName, ColumnRef, Layout, Relation, RelationRef, RelationTarget, Schema, Table, TableId, tableIdAsHtmlId)
+import Models.Utils exposing (Position, Size, ZoomLevel)
 import Views.Helpers exposing (dragAttrs, sizeAttrs)
 import Views.Menu exposing (viewMenu)
 import Views.Modals.Confirm exposing (viewConfirm)
@@ -29,28 +31,37 @@ import Views.Table exposing (viewTable)
 viewApp : Model -> List (Html Msg)
 viewApp model =
     [ Icon.css ]
-        ++ viewNavbar model.state.search model.schema
+        ++ viewNavbar model.search model.schema
         ++ viewMenu model.schema
-        ++ [ viewErd model.canvas model.schema ]
+        ++ [ viewErd model.sizes model.schema ]
         ++ [ viewSchemaSwitchModal model.time model.switch (model.schema |> Maybe.map (\_ -> "Schema Viz, easily explore your SQL schema!") |> Maybe.withDefault "Load a new schema") model.storedSchemas
-           , viewCreateLayoutModal (model.state.newLayout |> Maybe.withDefault "")
+           , viewCreateLayoutModal model.newLayout
            , viewHelpModal
            , viewConfirm model.confirm
            , viewToasts
            ]
 
 
-viewErd : Canvas -> Maybe Schema -> Html Msg
-viewErd canvas schema =
+viewErd : Dict HtmlId Size -> Maybe Schema -> Html Msg
+viewErd sizes schema =
     let
         relations : List Relation
         relations =
-            schema |> Maybe.map (\s -> s.relations |> List.filterMap (buildRelation s.tables)) |> Maybe.withDefault []
+            schema |> Maybe.map (\s -> s.relations |> List.filterMap (buildRelation s.tables s.layout sizes)) |> Maybe.withDefault []
     in
-    div ([ id conf.ids.erd, class "erd", onWheel Zoom ] ++ sizeAttrs canvas.size ++ dragAttrs conf.ids.erd)
-        [ div [ class "canvas", schema |> Maybe.map (\s -> placeAndZoom s.state.zoom s.state.position) |> Maybe.withDefault (placeAndZoom 1 (Position 0 0)) ]
-            ((schema |> Maybe.map .tables |> Maybe.map Dict.values |> Maybe.withDefault [] |> L.filterMap shouldDrawTable (\t -> viewTable (schema |> Maybe.map (\s -> s.state.zoom) |> Maybe.withDefault 1) (incomingTableRelations relations t) t))
-                ++ (relations |> L.filterMap shouldDrawRelation viewRelation)
+    div ([ id conf.ids.erd, class "erd", onWheel Zoom ] ++ sizeAttrs (sizes |> Dict.get conf.ids.erd |> Maybe.withDefault (Size 0 0)) ++ dragAttrs conf.ids.erd)
+        [ div [ class "canvas", schema |> Maybe.map (\s -> placeAndZoom s.layout.canvas.zoom s.layout.canvas.position) |> Maybe.withDefault (placeAndZoom 1 (Position 0 0)) ]
+            (schema
+                |> Maybe.map
+                    (\s ->
+                        (s.tables
+                            |> Dict.values
+                            |> L.filterZip (\t -> (s.layout.tables |> Dict.get t.id) |> Maybe.map (\p -> ( p, sizes |> Dict.get (tableIdAsHtmlId t.id) )))
+                            |> List.map (\( t, ( p, size ) ) -> viewTable s.layout.canvas.zoom (incomingTableRelations relations t) t p size)
+                        )
+                            ++ (relations |> L.filterMap (shouldDrawRelation s.layout) viewRelation)
+                    )
+                |> Maybe.withDefault []
             )
         ]
 
@@ -69,38 +80,19 @@ placeAndZoom zoom pan =
     style "transform" ("translate(" ++ String.fromFloat pan.left ++ "px, " ++ String.fromFloat pan.top ++ "px) scale(" ++ String.fromFloat zoom ++ ")")
 
 
-shouldDrawTable : Table -> Bool
-shouldDrawTable table =
-    case table.state.status of
-        Uninitialized ->
-            False
-
-        Hidden ->
-            False
-
-        Initializing ->
-            True
-
-        Shown ->
-            True
+shouldDrawRelation : Layout -> Relation -> Bool
+shouldDrawRelation layout relation =
+    relation.state.show && (isShown relation.src layout || isShown relation.ref layout)
 
 
-shouldDrawRelation : Relation -> Bool
-shouldDrawRelation relation =
-    relation.state.show
-        && (case ( relation.src.table.state.status, relation.ref.table.state.status ) of
-                ( Shown, Shown ) ->
-                    not (relation.src.column.state.order == Nothing) && not (relation.ref.column.state.order == Nothing)
+isShown : RelationTarget -> Layout -> Bool
+isShown ref layout =
+    isColumnShown ref.table.id ref.column.column layout
 
-                ( Shown, _ ) ->
-                    not (relation.src.column.state.order == Nothing)
 
-                ( _, Shown ) ->
-                    not (relation.ref.column.state.order == Nothing)
-
-                _ ->
-                    False
-           )
+isColumnShown : TableId -> ColumnName -> Layout -> Bool
+isColumnShown table column layout =
+    layout.tables |> Dict.get table |> Maybe.map (\t -> t.columns |> List.any (\c -> c == column)) |> Maybe.withDefault False
 
 
 incomingTableRelations : List Relation -> Table -> List Relation
@@ -108,11 +100,14 @@ incomingTableRelations relations table =
     relations |> List.filter (\r -> r.ref.table.id == table.id)
 
 
-buildRelation : Tables -> RelationRef -> Maybe Relation
-buildRelation tables rel =
-    Maybe.map2 (\from to -> { key = rel.key, src = from, ref = to, state = rel.state }) (getTableAndColumn rel.src tables) (getTableAndColumn rel.ref tables)
+buildRelation : Dict TableId Table -> Layout -> Dict HtmlId Size -> RelationRef -> Maybe Relation
+buildRelation tables layout sizes rel =
+    Maybe.map2 (\src ref -> { key = rel.key, src = src, ref = ref, state = rel.state })
+        (buildRelationTarget tables layout sizes rel.src)
+        (buildRelationTarget tables layout sizes rel.ref)
 
 
-getTableAndColumn : ColumnRef -> Tables -> Maybe TableAndColumn
-getTableAndColumn ref tables =
-    tables |> Dict.get ref.table |> Maybe.andThen (\table -> table.columns |> Dict.get ref.column |> Maybe.map (\column -> { table = table, column = column }))
+buildRelationTarget : Dict TableId Table -> Layout -> Dict HtmlId Size -> ColumnRef -> Maybe RelationTarget
+buildRelationTarget tables layout sizes ref =
+    (tables |> Dict.get ref.table |> M.andThenZip (\table -> table.columns |> Dict.get ref.column))
+        |> Maybe.map (\( table, column ) -> { table = table, column = column, props = M.zip (layout.tables |> Dict.get ref.table) (sizes |> Dict.get (tableIdAsHtmlId ref.table)) })

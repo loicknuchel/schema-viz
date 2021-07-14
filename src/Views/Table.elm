@@ -14,36 +14,37 @@ import Libs.List as L
 import Libs.Maybe as M
 import Libs.String as S
 import Models exposing (Msg(..))
-import Models.Schema exposing (Column, ColumnComment(..), ColumnName, ColumnRef, ColumnValue(..), ForeignKey, Index, IndexName(..), PrimaryKey, Relation, Table, TableComment(..), TableStatus(..), Unique, UniqueName(..), formatTableId, formatTableName)
-import Models.Utils exposing (ZoomLevel)
-import Views.Helpers exposing (dragAttrs, extractColumnIndex, extractColumnName, extractColumnType, formatColumnRef, placeAt, sizeAttrs, withColumnName, withNullableInfo)
+import Models.Schema exposing (Column, ColumnComment(..), ColumnName, ColumnRef, ColumnValue(..), ForeignKey, Index, IndexName(..), PrimaryKey, Relation, Table, TableComment(..), TableProps, Unique, UniqueName(..), extractColumnIndex, showTableId, showTableName, tableIdAsHtmlId)
+import Models.Utils exposing (Size, ZoomLevel)
+import Views.Helpers exposing (columnRefAsHtmlId, dragAttrs, extractColumnName, extractColumnType, placeAt, sizeAttrs, withColumnName, withNullableInfo)
 
 
 
 -- deps = { to = { only = [ "Libs.*", "Models.*", "Conf", "Views.Helpers" ] } }
 
 
-viewTable : ZoomLevel -> List Relation -> Table -> Html Msg
-viewTable zoom incomingTableRelations table =
+viewTable : ZoomLevel -> List Relation -> Table -> TableProps -> Maybe Size -> Html Msg
+viewTable zoom incomingTableRelations table props size =
     let
-        ( hiddenColumns, visibleColumns ) =
-            table.columns |> Dict.values |> List.partition (\column -> column.state.order == Nothing)
+        hiddenColumns : List Column
+        hiddenColumns =
+            table.columns |> Dict.values |> List.filter (\c -> props.columns |> L.hasNot c.column)
 
         collapseId : String
         collapseId =
-            formatTableId table.id ++ "-hidden-columns-collapse"
+            tableIdAsHtmlId table.id ++ "-hidden-columns-collapse"
     in
     div
-        (L.addIf (table.state.status == Initializing)
+        (L.addIf (size == Nothing)
             (style "visibility" "hidden")
-            [ class "erd-table", class table.state.color, classList [ ( "selected", table.state.selected ) ], id (formatTableId table.id), placeAt table.state.position ]
-            ++ sizeAttrs table.state.size
-            ++ dragAttrs (formatTableId table.id)
+            [ class "erd-table", class props.color, classList [ ( "selected", props.selected ) ], id (tableIdAsHtmlId table.id), placeAt props.position ]
+            ++ (size |> Maybe.map sizeAttrs |> Maybe.withDefault [])
+            ++ dragAttrs (tableIdAsHtmlId table.id)
         )
         [ viewHeader zoom table
         , div [ class "columns" ]
-            (visibleColumns
-                |> List.sortBy (\c -> c.state.order |> Maybe.withDefault -1)
+            (props.columns
+                |> List.filterMap (\c -> table.columns |> Dict.get c)
                 |> List.map (\c -> viewColumn { table = table.id, column = c.column } table.primaryKey table.uniques table.indexes (filterIncomingColumnRelations incomingTableRelations c) c)
             )
         , divIf (List.length hiddenColumns > 0)
@@ -63,8 +64,8 @@ viewTable zoom incomingTableRelations table =
 viewHeader : ZoomLevel -> Table -> Html Msg
 viewHeader zoom table =
     div [ class "header", style "display" "flex", style "align-items" "center", onClick (SelectTable table.id) ]
-        [ div [ style "flex-grow" "1" ] (L.appendOn table.comment (\(TableComment comment) -> viewComment comment) [ span (tableNameSize zoom) [ text (formatTableName table.table table.schema) ] ])
-        , bsDropdown (formatTableId table.id ++ "-settings-dropdown")
+        [ div [ style "flex-grow" "1" ] (L.appendOn table.comment (\(TableComment comment) -> viewComment comment) [ span (tableNameSize zoom) [ text (showTableName table.schema table.table) ] ])
+        , bsDropdown (tableIdAsHtmlId table.id ++ "-settings-dropdown")
             []
             (\attrs -> div ([ style "font-size" "0.9rem", style "opacity" "0.25", style "width" "30px", style "margin-left" "-10px", style "margin-right" "-20px", stopClick Noop ] ++ attrs) [ viewIcon Icon.ellipsisV ])
             (\attrs -> ul attrs [ li [] [ a [ class "dropdown-item", href "#", onClick (HideTable table.id) ] [ text "Hide table" ] ] ])
@@ -116,10 +117,10 @@ viewColumnDropdown incomingColumnRelations ref element =
             |> List.map
                 (\relation ->
                     li []
-                        [ a [ class "dropdown-item", classList [ ( "disabled", relation.src.table.state.status == Shown ) ], onClick (ShowTable relation.src.table.id) ]
+                        [ a [ class "dropdown-item", classList [ ( "disabled", not (relation.src.props == Nothing) ) ], onClick (ShowTable relation.src.table.id) ]
                             [ viewIcon Icon.externalLinkAlt
                             , text " "
-                            , b [] [ text (formatTableId relation.src.table.id) ]
+                            , b [] [ text (showTableId relation.src.table.id) ]
                             , text ("" |> withColumnName relation.src.column.column |> withNullableInfo relation.src.column.nullable)
                             ]
                         ]
@@ -130,7 +131,7 @@ viewColumnDropdown incomingColumnRelations ref element =
             div [] [ element [] ]
 
         items ->
-            bsDropdown (formatColumnRef ref ++ "-relations-dropdown")
+            bsDropdown (columnRefAsHtmlId ref ++ "-relations-dropdown")
                 [ class "dropdown-menu-end" ]
                 (\attrs -> element attrs)
                 (\attrs -> ul attrs items)
@@ -238,7 +239,7 @@ formatIndexTitle indexes =
 
 formatReference : ForeignKey -> String
 formatReference { schema, table, column } =
-    formatTableName table schema |> withColumnName column
+    showTableName schema table |> withColumnName column
 
 
 formatUniqueIndexName : UniqueName -> String

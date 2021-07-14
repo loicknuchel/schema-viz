@@ -1,4 +1,4 @@
-module Views.Helpers exposing (dragAttrs, extractColumnIndex, extractColumnName, extractColumnType, formatColumnRef, formatDate, humanDatetime, onClickConfirm, placeAt, sizeAttrs, withColumnName, withNullableInfo)
+module Views.Helpers exposing (columnRefAsHtmlId, dragAttrs, extractColumnName, extractColumnType, formatDate, humanDatetime, onClickConfirm, placeAt, sizeAttrs, withColumnName, withNullableInfo)
 
 import Draggable
 import Html exposing (Attribute, Html, span, text)
@@ -6,9 +6,10 @@ import Html.Attributes exposing (height, style, title, width)
 import Html.Events exposing (onClick)
 import Libs.Bootstrap exposing (Toggle(..), bsToggle)
 import Libs.DateTime as DateTime
+import Libs.Models exposing (HtmlId)
 import Libs.Task as T
 import Models exposing (DragId, Msg(..), TimeInfo)
-import Models.Schema exposing (ColumnIndex(..), ColumnName(..), ColumnRef, ColumnType(..), formatTableId)
+import Models.Schema exposing (ColumnName(..), ColumnRef, ColumnType(..), tableIdAsHtmlId)
 import Models.Utils exposing (Position, Size)
 import Time
 
@@ -41,11 +42,6 @@ onClickConfirm content msg =
 -- formatters
 
 
-extractColumnIndex : ColumnIndex -> Int
-extractColumnIndex (ColumnIndex index) =
-    index
-
-
 extractColumnName : ColumnName -> String
 extractColumnName (ColumnName name) =
     name
@@ -61,9 +57,9 @@ withColumnName (ColumnName column) table =
     table ++ "." ++ column
 
 
-formatColumnRef : ColumnRef -> String
-formatColumnRef ref =
-    formatTableId ref.table |> withColumnName ref.column
+columnRefAsHtmlId : ColumnRef -> HtmlId
+columnRefAsHtmlId ref =
+    tableIdAsHtmlId ref.table |> withColumnName ref.column
 
 
 withNullableInfo : Bool -> String -> String

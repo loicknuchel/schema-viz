@@ -85,16 +85,16 @@ type alias PrimaryKey =
     { columns : List ColumnName, name : PrimaryKeyName }
 
 
-type alias Index =
-    { name : IndexName, columns : List ColumnName, definition : String }
+type alias ForeignKey =
+    { tableId : TableId, schema : SchemaName, table : TableName, column : ColumnName, name : ForeignKeyName }
 
 
 type alias Unique =
     { name : UniqueName, columns : List ColumnName, definition : String }
 
 
-type alias ForeignKey =
-    { tableId : TableId, schema : SchemaName, table : TableName, column : ColumnName, name : ForeignKeyName }
+type alias Index =
+    { name : IndexName, columns : List ColumnName, definition : String }
 
 
 type alias Source =

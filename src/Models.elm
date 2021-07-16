@@ -73,7 +73,7 @@ type Msg
     | ShowAllTables
     | HideColumn ColumnRef
     | ShowColumn ColumnRef Int
-    | Zoom WheelEvent
+    | OnWheel WheelEvent
     | DragMsg (Draggable.Msg DragId)
     | StartDragging DragId
     | StopDragging

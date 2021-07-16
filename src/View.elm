@@ -49,7 +49,7 @@ viewErd sizes schema =
         relations =
             schema |> Maybe.map (\s -> s.relations |> List.filterMap (buildRelation s.tables s.layout sizes)) |> Maybe.withDefault []
     in
-    div ([ id conf.ids.erd, class "erd", onWheel Zoom ] ++ sizeAttrs (sizes |> Dict.get conf.ids.erd |> Maybe.withDefault (Size 0 0)) ++ dragAttrs conf.ids.erd)
+    div ([ id conf.ids.erd, class "erd", onWheel OnWheel ] ++ sizeAttrs (sizes |> Dict.get conf.ids.erd |> Maybe.withDefault (Size 0 0)) ++ dragAttrs conf.ids.erd)
         [ div [ class "canvas", schema |> Maybe.map (\s -> placeAndZoom s.layout.canvas.zoom s.layout.canvas.position) |> Maybe.withDefault (placeAndZoom 1 (Position 0 0)) ]
             (schema
                 |> Maybe.map

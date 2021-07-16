@@ -10,7 +10,7 @@ import Models exposing (Flags, JsMsg(..), Model, Msg(..), initConfirm, initModel
 import Ports exposing (activateTooltipsAndPopovers, dropSchema, hideOffcanvas, loadSchemas, observeSize, onJsMessage, readFile, showModal, toastError)
 import Task
 import Time
-import Update exposing (dragConfig, dragItem, updateSizes, zoomCanvas)
+import Update exposing (dragConfig, dragItem, handleWheel, updateSizes)
 import Updates.Helpers exposing (decodeErrorToHtml, setCanvas, setDictTable, setLayout, setSchema, setSchemaWithCmd, setSwitch, setTables, setTime)
 import Updates.Layout exposing (createLayout, deleteLayout, loadLayout, updateLayout)
 import Updates.Schema exposing (createSampleSchema, createSchema, useSchema)
@@ -114,8 +114,8 @@ update msg model =
         ShowColumn { table, column } index ->
             ( model |> setSchema (setLayout (showColumn table column index)), activateTooltipsAndPopovers )
 
-        Zoom zoom ->
-            ( model |> setSchema (setLayout (setCanvas (zoomCanvas zoom))), Cmd.none )
+        OnWheel event ->
+            ( model |> setSchema (setLayout (setCanvas (handleWheel event))), Cmd.none )
 
         DragMsg dragMsg ->
             model |> Draggable.update dragConfig dragMsg

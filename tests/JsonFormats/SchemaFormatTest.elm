@@ -126,7 +126,7 @@ suite =
         , test "encode/decode Position" (\_ -> position |> expectRoundTrip encodePosition decodePosition)
         , test "encode/decode Size" (\_ -> size |> expectRoundTrip encodeSize decodeSize)
 
-        -- , fuzz Fuzzers.schema "encode/decode any Schema" (expectRoundTrip encodeSchema (decodeSchema [])) -- TOO LONG :(
+        -- , fuzz Fuzzers.schema "encode/decode any Schema" (expectRoundTrip encodeSchema (decodeSchema [])) -- TOO LONG & Maximum call stack size exceeded :(
         , fuzz Fuzzers.schemaInfo "encode/decode any SchemaInfo" (expectRoundTrip encodeSchemaInfo decodeSchemaInfo)
         , fuzz Fuzzers.fileInfo "encode/decode any FileInfo" (expectRoundTrip encodeFileInfo decodeFileInfo)
 
@@ -139,7 +139,7 @@ suite =
         , fuzz Fuzzers.source "encode/decode any Source" (expectRoundTrip encodeSource decodeSource)
         , fuzz Fuzzers.sourceLine "encode/decode any SourceLine" (expectRoundTrip encodeSourceLine decodeSourceLine)
 
-        -- , fuzz Fuzzers.layout "encode/decode any Layout" (\p -> Debug.log "Layout" p |> expectRoundTrip encodeLayout decodeLayout) -- TOO LONG :(
+        -- , fuzz Fuzzers.layout "encode/decode any Layout" (expectRoundTrip encodeLayout decodeLayout) -- TOO LONG & Dict order matter :(
         , fuzz Fuzzers.canvasProps "encode/decode any CanvasProps" (expectRoundTrip encodeCanvasProps decodeCanvasProps)
         , fuzz Fuzzers.tableProps "encode/decode any TableProps" (expectRoundTrip encodeTableProps decodeTableProps)
         , fuzz Fuzzers.position "encode/decode any Position" (expectRoundTrip encodePosition decodePosition)

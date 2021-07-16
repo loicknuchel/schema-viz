@@ -4,17 +4,15 @@ import AssocList as Dict exposing (Dict)
 import Conf exposing (conf)
 import Fuzz exposing (Fuzzer)
 import Libs.Dict as D
-import Libs.Nel exposing (Nel)
+import Libs.Fuzz as F
 import Models.Schema exposing (CanvasProps, Column, ColumnComment(..), ColumnIndex(..), ColumnName(..), ColumnType(..), ColumnValue(..), FileInfo, ForeignKey, ForeignKeyName(..), Index, IndexName(..), Layout, LayoutName, PrimaryKey, PrimaryKeyName(..), Schema, SchemaId, SchemaInfo, SchemaName(..), Source, SourceLine, Table, TableComment(..), TableId(..), TableName(..), TableProps, Unique, UniqueName(..), buildSchema)
 import Models.Utils exposing (Color, Position, Size, ZoomLevel)
-import Random
-import Shrink
 import Time
 
 
 schema : Fuzzer Schema
 schema =
-    map7 buildSchema (listSmall schemaId) schemaId schemaInfo (listSmall table) layout (Fuzz.maybe layoutName) (dictSmall layoutName layout)
+    F.map7 buildSchema (listSmall schemaId) schemaId schemaInfo (listSmall table) layout (Fuzz.maybe layoutName) (dictSmall layoutName layout)
 
 
 schemaInfo : Fuzzer SchemaInfo
@@ -29,7 +27,7 @@ fileInfo =
 
 table : Fuzzer Table
 table =
-    map8 (\s t c p u i co so -> Table (TableId s t) s t c p u i co so)
+    F.map8 (\s t c p u i co so -> Table (TableId s t) s t c p u i co so)
         schemaName
         tableName
         (listSmall column |> Fuzz.map (D.fromList .column))
@@ -42,7 +40,7 @@ table =
 
 column : Fuzzer Column
 column =
-    map7 Column columnIndex columnName columnType Fuzz.bool (Fuzz.maybe columnValue) (Fuzz.maybe foreignKey) (Fuzz.maybe columnComment)
+    F.map7 Column columnIndex columnName columnType Fuzz.bool (Fuzz.maybe columnValue) (Fuzz.maybe foreignKey) (Fuzz.maybe columnComment)
 
 
 primaryKey : Fuzzer PrimaryKey
@@ -67,7 +65,7 @@ index =
 
 source : Fuzzer Source
 source =
-    Fuzz.map2 Source path (nel sourceLine)
+    Fuzz.map2 Source path (F.nel sourceLine)
 
 
 sourceLine : Fuzzer SourceLine
@@ -193,16 +191,6 @@ color =
 -- Generic fuzzers
 
 
-posix : Fuzzer Time.Posix
-posix =
-    Fuzz.intRange -10000000000 10000000000 |> Fuzz.map (\offset -> Time.millisToPosix (1626342639000 + offset))
-
-
-nel : Fuzzer a -> Fuzzer (Nel a)
-nel fuzz =
-    Fuzz.map2 Nel fuzz (Fuzz.list fuzz)
-
-
 dictSmall : Fuzzer k -> Fuzzer v -> Fuzzer (Dict k v)
 dictSmall kFuzz vFuzz =
     Fuzz.tuple ( kFuzz, vFuzz ) |> listSmall |> Fuzz.map Dict.fromList
@@ -210,7 +198,9 @@ dictSmall kFuzz vFuzz =
 
 listSmall : Fuzzer a -> Fuzzer (List a)
 listSmall fuzz =
-    Fuzz.list fuzz |> Fuzz.map (List.take 10)
+    -- TODO: should find a way to randomize list size but keep it small efficiently
+    -- Fuzz.list can generate long lists & F.listN generate only size of n list, generating a random int then chaining with listN will be best
+    F.listN 3 fuzz
 
 
 stringSmall : Fuzzer String
@@ -221,62 +211,26 @@ stringSmall =
 identifier : Fuzzer String
 identifier =
     -- TODO: this should generate valid sql identifiers (letters, digits, _)
-    letter |> Fuzz.list |> Fuzz.map String.fromList
+    F.letter |> Fuzz.list |> Fuzz.map String.fromList
 
 
 path : Fuzzer String
 path =
     -- TODO: this should generate a file path
-    letter |> Fuzz.list |> Fuzz.map String.fromList
+    F.letter |> Fuzz.list |> Fuzz.map String.fromList
 
 
 text : Fuzzer String
 text =
     -- TODO: this should generate a text "normal" text, for example for comments
-    letter |> Fuzz.list |> Fuzz.map String.fromList
+    F.letter |> Fuzz.list |> Fuzz.map String.fromList
 
 
 word : Fuzzer String
 word =
-    letter |> Fuzz.list |> Fuzz.map String.fromList
+    F.letter |> Fuzz.list |> Fuzz.map String.fromList
 
 
-letter : Fuzzer Char
-letter =
-    Fuzz.custom (Random.map Char.fromCode (Random.int 97 122)) Shrink.character
-
-
-digit : Fuzzer Char
-digit =
-    Fuzz.custom (Random.map Char.fromCode (Random.int 48 57)) Shrink.character
-
-
-map6 : (a -> b -> c -> d -> e -> f -> g) -> Fuzzer a -> Fuzzer b -> Fuzzer c -> Fuzzer d -> Fuzzer e -> Fuzzer f -> Fuzzer g
-map6 transform fuzzA fuzzB fuzzC fuzzD fuzzE fuzzF =
-    Fuzz.map2 (\( a, b, c ) ( d, e, f ) -> transform a b c d e f)
-        (Fuzz.tuple3 ( fuzzA, fuzzB, fuzzC ))
-        (Fuzz.tuple3 ( fuzzD, fuzzE, fuzzF ))
-
-
-map7 : (a -> b -> c -> d -> e -> f -> g -> h) -> Fuzzer a -> Fuzzer b -> Fuzzer c -> Fuzzer d -> Fuzzer e -> Fuzzer f -> Fuzzer g -> Fuzzer h
-map7 transform fuzzA fuzzB fuzzC fuzzD fuzzE fuzzF fuzzG =
-    Fuzz.map3 (\( a, b, c ) ( d, e, f ) g -> transform a b c d e f g)
-        (Fuzz.tuple3 ( fuzzA, fuzzB, fuzzC ))
-        (Fuzz.tuple3 ( fuzzD, fuzzE, fuzzF ))
-        fuzzG
-
-
-map8 : (a -> b -> c -> d -> e -> f -> g -> h -> i) -> Fuzzer a -> Fuzzer b -> Fuzzer c -> Fuzzer d -> Fuzzer e -> Fuzzer f -> Fuzzer g -> Fuzzer h -> Fuzzer i
-map8 transform fuzzA fuzzB fuzzC fuzzD fuzzE fuzzF fuzzG fuzzH =
-    Fuzz.map3 (\( a, b, c ) ( d, e, f ) ( g, h ) -> transform a b c d e f g h)
-        (Fuzz.tuple3 ( fuzzA, fuzzB, fuzzC ))
-        (Fuzz.tuple3 ( fuzzD, fuzzE, fuzzF ))
-        (Fuzz.tuple ( fuzzG, fuzzH ))
-
-
-map9 : (a -> b -> c -> d -> e -> f -> g -> h -> i -> j) -> Fuzzer a -> Fuzzer b -> Fuzzer c -> Fuzzer d -> Fuzzer e -> Fuzzer f -> Fuzzer g -> Fuzzer h -> Fuzzer i -> Fuzzer j
-map9 transform fuzzA fuzzB fuzzC fuzzD fuzzE fuzzF fuzzG fuzzH fuzzI =
-    Fuzz.map3 (\( a, b, c ) ( d, e, f ) ( g, h, i ) -> transform a b c d e f g h i)
-        (Fuzz.tuple3 ( fuzzA, fuzzB, fuzzC ))
-        (Fuzz.tuple3 ( fuzzD, fuzzE, fuzzF ))
-        (Fuzz.tuple3 ( fuzzG, fuzzH, fuzzI ))
+posix : Fuzzer Time.Posix
+posix =
+    Fuzz.intRange -10000000000 10000000000 |> Fuzz.map (\offset -> Time.millisToPosix (1626342639000 + offset))

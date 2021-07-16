@@ -1,20 +1,20 @@
 module Views.Menu exposing (viewMenu)
 
-import AssocList as Dict
+import AssocList as Dict exposing (Dict)
 import Conf exposing (conf)
 import Html exposing (Html, button, div, h5, text)
 import Html.Attributes exposing (class, id, tabindex, type_)
 import Html.Events exposing (onClick)
 import Libs.Bootstrap exposing (BsColor(..), Toggle(..), ariaLabel, ariaLabelledBy, bsBackdrop, bsButton, bsButtonGroup, bsDismiss, bsScroll)
 import Models exposing (Msg(..))
-import Models.Schema exposing (Schema)
+import Models.Schema exposing (RelationRef, Table, TableId)
 
 
 
 -- deps = { to = { only = [ "Libs.*", "Models.*", "Conf", "Views.Helpers" ] } }
 
 
-viewMenu : Maybe Schema -> List (Html Msg)
+viewMenu : Maybe ( Dict TableId Table, Dict TableId (List RelationRef) ) -> List (Html Msg)
 viewMenu schema =
     [ div [ id conf.ids.menu, class "offcanvas offcanvas-start", bsScroll True, bsBackdrop "false", ariaLabelledBy (conf.ids.menu ++ "-label"), tabindex -1 ]
         [ div [ class "offcanvas-header" ]
@@ -25,17 +25,17 @@ viewMenu schema =
             ([ div [] [ bsButton Primary [ onClick ChangeSchema ] [ text "Load a schema" ] ] ]
                 ++ (schema
                         |> Maybe.map
-                            (\s ->
-                                if Dict.isEmpty s.tables then
+                            (\( tables, relations ) ->
+                                if Dict.isEmpty tables then
                                     []
 
                                 else
                                     [ text
-                                        ((s.tables |> Dict.size |> String.fromInt)
+                                        ((tables |> Dict.size |> String.fromInt)
                                             ++ " tables, "
-                                            ++ (s.tables |> Dict.foldl (\_ t c -> c + Dict.size t.columns) 0 |> String.fromInt)
+                                            ++ (tables |> Dict.foldl (\_ t c -> c + Dict.size t.columns) 0 |> String.fromInt)
                                             ++ " columns, "
-                                            ++ (s.relations |> List.length |> String.fromInt)
+                                            ++ (relations |> Dict.values |> List.map List.length |> List.sum |> String.fromInt)
                                             ++ " relations"
                                         )
                                     , div []

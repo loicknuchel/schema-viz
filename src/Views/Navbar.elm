@@ -10,7 +10,7 @@ import Html.Events exposing (onClick, onInput)
 import Libs.Bootstrap exposing (BsColor(..), Toggle(..), ariaExpanded, ariaLabel, bsButton, bsToggle, bsToggleCollapse, bsToggleDropdown, bsToggleModal, bsToggleOffcanvas)
 import Libs.Models exposing (Text)
 import Models exposing (Msg(..), Search)
-import Models.Schema exposing (Column, ColumnName(..), Layout, LayoutName, Schema, Table, TableId, TableName(..), showTableId)
+import Models.Schema exposing (Column, ColumnName(..), Layout, LayoutName, Table, TableId, TableName(..), showTableId)
 import Views.Helpers exposing (extractColumnName)
 
 
@@ -18,7 +18,7 @@ import Views.Helpers exposing (extractColumnName)
 -- deps = { to = { only = [ "Libs.*", "Models.*", "Conf", "Views.Helpers" ] } }
 
 
-viewNavbar : Search -> Maybe Schema -> List (Html Msg)
+viewNavbar : Search -> Maybe ( ( Dict TableId Table, Layout ), ( Maybe LayoutName, Dict LayoutName Layout ) ) -> List (Html Msg)
 viewNavbar search schema =
     [ nav [ id "navbar", class "navbar navbar-expand-md navbar-light bg-white shadow-sm" ]
         [ div [ class "container-fluid" ]
@@ -27,27 +27,27 @@ viewNavbar search schema =
                 [ span [ class "navbar-toggler-icon" ] []
                 ]
             , div [ class "collapse navbar-collapse", id "navbar-content" ]
-                [ viewSearchBar schema search
+                [ viewSearchBar (schema |> Maybe.map Tuple.first) search
                 , ul [ class "navbar-nav me-auto" ]
                     [ li [ class "nav-item" ] [ a ([ href "#", class "nav-link" ] ++ bsToggleModal conf.ids.helpModal) [ text "?" ] ]
                     ]
-                , schema |> Maybe.map (\s -> viewLayoutButton s.layoutName s.layouts) |> Maybe.withDefault (div [] [])
+                , schema |> Maybe.map (\( _, ( layoutName, layouts ) ) -> viewLayoutButton layoutName layouts) |> Maybe.withDefault (div [] [])
                 ]
             ]
         ]
     ]
 
 
-viewSearchBar : Maybe Schema -> Search -> Html Msg
+viewSearchBar : Maybe ( Dict TableId Table, Layout ) -> Search -> Html Msg
 viewSearchBar schema search =
     schema
         |> Maybe.map
-            (\s ->
+            (\( tables, layout ) ->
                 form [ class "d-flex" ]
                     [ div [ class "dropdown" ]
                         [ input ([ type_ "search", class "form-control", value search, placeholder "Search", ariaLabel "Search", autocomplete False, onInput ChangedSearch ] ++ bsToggleDropdown conf.ids.searchInput) []
                         , ul [ class "dropdown-menu" ]
-                            (buildSuggestions s.tables s.layout search
+                            (buildSuggestions tables layout search
                                 |> List.map (\suggestion -> li [] [ a [ class "dropdown-item", style "cursor" "pointer", onClick suggestion.msg ] suggestion.content ])
                             )
                         ]

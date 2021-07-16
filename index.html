@@ -129,7 +129,10 @@
                 sendToElm({kind: "SizesChanged", sizes: sizes})
             })
             function observeSizes(ids) {
-                ids.forEach(id => resizeObserver.observe(document.getElementById(id)))
+                ids.forEach(id => {
+                    const el = document.getElementById(id)
+                    el ? resizeObserver.observe(el) : console.error("Can't observe element with '" + id + "' id, it doesn't exist")
+                })
             }
 
 

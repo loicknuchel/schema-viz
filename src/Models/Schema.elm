@@ -1,4 +1,4 @@
-module Models.Schema exposing (CanvasProps, Column, ColumnComment(..), ColumnIndex(..), ColumnName(..), ColumnRef, ColumnType(..), ColumnValue(..), FileInfo, ForeignKey, ForeignKeyName(..), Index, IndexName(..), Layout, LayoutName, PrimaryKey, PrimaryKeyName(..), Relation, RelationRef, RelationState, RelationTarget, Schema, SchemaId, SchemaInfo, SchemaName(..), Source, SourceLine, Table, TableComment(..), TableId(..), TableName(..), TableProps, Unique, UniqueName(..), buildSchema, extractColumnIndex, htmlIdAsTableId, initLayout, initTableProps, showTableId, showTableName, stringAsTableId, tableIdAsHtmlId, tableIdAsString)
+module Models.Schema exposing (CanvasProps, Column, ColumnComment(..), ColumnIndex(..), ColumnName(..), ColumnRef, ColumnType(..), ColumnValue(..), FileInfo, ForeignKey, ForeignKeyName(..), Index, IndexName(..), Layout, LayoutName, PrimaryKey, PrimaryKeyName(..), Relation, RelationRef, RelationTarget, Schema, SchemaId, SchemaInfo, SchemaName(..), Source, SourceLine, Table, TableComment(..), TableId(..), TableName(..), TableProps, Unique, UniqueName(..), buildSchema, extractColumnIndex, htmlIdAsTableId, initLayout, initTableProps, outgoingRelations, showTableId, showTableName, stringAsTableId, tableIdAsHtmlId, tableIdAsString)
 
 import AssocList as Dict exposing (Dict)
 import Conf exposing (conf)
@@ -19,7 +19,7 @@ type alias Schema =
     { id : SchemaId
     , info : SchemaInfo
     , tables : Dict TableId Table
-    , relations : List RelationRef
+    , incomingRelations : Dict TableId (List RelationRef)
     , layout : Layout
     , layoutName : Maybe LayoutName
     , layouts : Dict LayoutName Layout
@@ -38,7 +38,7 @@ type alias FileInfo =
 
 
 type alias RelationRef =
-    { key : ForeignKeyName, src : ColumnRef, ref : ColumnRef, state : RelationState }
+    { key : ForeignKeyName, src : ColumnRef, ref : ColumnRef }
 
 
 type alias ColumnRef =
@@ -46,15 +46,11 @@ type alias ColumnRef =
 
 
 type alias Relation =
-    { key : ForeignKeyName, src : RelationTarget, ref : RelationTarget, state : RelationState }
+    { key : ForeignKeyName, src : RelationTarget, ref : RelationTarget }
 
 
 type alias RelationTarget =
     { table : Table, column : Column, props : Maybe ( TableProps, Size ) }
-
-
-type alias RelationState =
-    { show : Bool }
 
 
 type alias Table =
@@ -226,26 +222,31 @@ buildSchema takenIds id info tables layout layoutName layouts =
     { id = S.uniqueId takenIds id
     , info = info
     , tables = tables |> D.fromList .id
-    , relations = buildRelations tables
+    , incomingRelations = buildIncomingRelations tables
     , layout = layout
     , layoutName = layoutName
     , layouts = layouts
     }
 
 
+buildIncomingRelations : List Table -> Dict TableId (List RelationRef)
+buildIncomingRelations tables =
+    tables |> buildRelations |> D.groupBy (\r -> r.ref.table)
+
+
 buildRelations : List Table -> List RelationRef
 buildRelations tables =
-    tables |> List.foldr (\table res -> buildTableRelations table ++ res) []
+    tables |> List.foldr (\table res -> outgoingRelations table ++ res) []
 
 
-buildTableRelations : Table -> List RelationRef
-buildTableRelations table =
+outgoingRelations : Table -> List RelationRef
+outgoingRelations table =
     table.columns |> Dict.values |> List.filterMap (\col -> col.foreignKey |> Maybe.map (buildRelation table col))
 
 
 buildRelation : Table -> Column -> ForeignKey -> RelationRef
 buildRelation table column fk =
-    { key = fk.name, src = { table = table.id, column = column.column }, ref = { table = fk.tableId, column = fk.column }, state = { show = True } }
+    { key = fk.name, src = { table = table.id, column = column.column }, ref = { table = fk.tableId, column = fk.column } }
 
 
 initLayout : Layout

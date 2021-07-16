@@ -23,8 +23,8 @@ import Views.Helpers exposing (columnRefAsHtmlId, dragAttrs, extractColumnName, 
 -- deps = { to = { only = [ "Libs.*", "Models.*", "Conf", "Views.Helpers" ] } }
 
 
-viewTable : ZoomLevel -> List Relation -> Table -> TableProps -> Maybe Size -> Html Msg
-viewTable zoom incomingTableRelations table props size =
+viewTable : ZoomLevel -> Table -> TableProps -> List Relation -> Maybe Size -> Html Msg
+viewTable zoom table props incomingRelations size =
     let
         hiddenColumns : List Column
         hiddenColumns =
@@ -45,7 +45,7 @@ viewTable zoom incomingTableRelations table props size =
         , div [ class "columns" ]
             (props.columns
                 |> List.filterMap (\c -> table.columns |> Dict.get c)
-                |> List.map (\c -> viewColumn { table = table.id, column = c.column } table.primaryKey table.uniques table.indexes (filterIncomingColumnRelations incomingTableRelations c) c)
+                |> List.map (\c -> viewColumn { table = table.id, column = c.column } table.primaryKey table.uniques table.indexes (filterIncomingColumnRelations incomingRelations c) c)
             )
         , divIf (List.length hiddenColumns > 0)
             [ class "hidden-columns" ]

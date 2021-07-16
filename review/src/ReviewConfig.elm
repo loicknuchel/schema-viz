@@ -47,5 +47,5 @@ config =
     , NoUnused.Modules.rule |> Rule.ignoreErrorsForDirectories [ "src/Libs" ]
     , NoUnused.Parameters.rule
     , NoUnused.Patterns.rule
-    , NoUnused.Variables.rule |> Rule.ignoreErrorsForDirectories [ "src/Libs" ]
+    , NoUnused.Variables.rule |> Rule.ignoreErrorsForDirectories [ "src/Libs" ] |> Rule.ignoreErrorsForDirectories [ "tests/Libs" ]
     ]

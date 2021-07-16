@@ -101,7 +101,7 @@ info =
 
 schema : Schema
 schema =
-    { id = "a schema", info = info, tables = D.fromList .id [ table ], relations = [], layout = layout, layoutName = Nothing, layouts = Dict.empty }
+    { id = "a schema", info = info, tables = D.fromList .id [ table ], incomingRelations = Dict.empty, layout = layout, layoutName = Nothing, layouts = Dict.empty }
 
 
 

@@ -1,11 +1,14 @@
 module Main exposing (main)
 
 import Browser
+import Browser.Events as Events
 import Commands.FetchSample exposing (loadSample)
 import Conf exposing (conf)
 import Dict
 import Draggable
+import Json.Decode as Decode
 import Libs.Bool as B
+import Libs.Browser.Events exposing (keyboardEventDecoder)
 import Models exposing (Flags, JsMsg(..), Model, Msg(..), initConfirm, initModel)
 import Ports exposing (activateTooltipsAndPopovers, dropSchema, hideOffcanvas, loadSchemas, observeSize, onJsMessage, readFile, showModal, toastError)
 import Task
@@ -153,6 +156,9 @@ update msg model =
         JsMessage (Error err) ->
             ( model, toastError ("Unable to decode JavaScript message:<br>" ++ decodeErrorToHtml err) )
 
+        KeyDown _ ->
+            ( model, Cmd.none )
+
         Noop ->
             ( model, Cmd.none )
 
@@ -168,6 +174,7 @@ subscriptions model =
         [ Draggable.subscriptions DragMsg model.drag
         , Time.every (10 * 1000) TimeChanged
         , onJsMessage JsMessage
+        , Events.onKeyDown (keyboardEventDecoder |> Decode.map KeyDown)
         ]
 
 

@@ -192,6 +192,10 @@
                     searchEl.blur()
                 }
             })
+            // do not submit search form on enter
+            searchEl.parentElement.parentElement.addEventListener('submit', function(e) {
+                e.preventDefault()
+            })
         }
     </script>
 </head>

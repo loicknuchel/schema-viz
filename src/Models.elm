@@ -6,6 +6,7 @@ import FileValue exposing (File)
 import Html exposing (Html, text)
 import Http
 import Json.Decode as Decode
+import Libs.Browser.Events exposing (KeyboardEvent)
 import Libs.Html.Events exposing (WheelEvent)
 import Libs.Models exposing (FileContent, HtmlId, Text)
 import Libs.Task as T
@@ -86,6 +87,7 @@ type Msg
     | OpenConfirm Confirm
     | OnConfirm Bool (Cmd Msg)
     | JsMessage JsMsg
+    | KeyDown KeyboardEvent
     | Noop
 
 

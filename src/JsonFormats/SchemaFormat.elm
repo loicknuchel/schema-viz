@@ -1,13 +1,13 @@
 module JsonFormats.SchemaFormat exposing (decodeCanvasProps, decodeColor, decodeColumn, decodeColumnComment, decodeColumnIndex, decodeColumnName, decodeColumnType, decodeColumnValue, decodeFileInfo, decodeForeignKey, decodeForeignKeyName, decodeIndex, decodeIndexName, decodeLayout, decodePosition, decodePosix, decodePrimaryKey, decodePrimaryKeyName, decodeSchema, decodeSchemaInfo, decodeSchemaName, decodeSize, decodeSource, decodeSourceLine, decodeTable, decodeTableComment, decodeTableId, decodeTableName, decodeTableProps, decodeUnique, decodeUniqueName, decodeZoomLevel, encodeCanvasProps, encodeColor, encodeColumn, encodeColumnComment, encodeColumnIndex, encodeColumnName, encodeColumnType, encodeColumnValue, encodeFileInfo, encodeForeignKey, encodeForeignKeyName, encodeIndex, encodeIndexName, encodeLayout, encodePosition, encodePosix, encodePrimaryKey, encodePrimaryKeyName, encodeSchema, encodeSchemaInfo, encodeSchemaName, encodeSize, encodeSource, encodeSourceLine, encodeTable, encodeTableComment, encodeTableId, encodeTableName, encodeTableProps, encodeUnique, encodeUniqueName, encodeZoomLevel)
 
-import AssocList as Dict
+import Dict
 import Json.Decode as Decode
 import Json.Encode as Encode exposing (Value)
 import Libs.Dict as D
 import Libs.Json.Decode as D
 import Libs.Json.Encode as E
 import Libs.Maybe as M
-import Models.Schema exposing (CanvasProps, Column, ColumnComment(..), ColumnIndex(..), ColumnName(..), ColumnType(..), ColumnValue(..), FileInfo, ForeignKey, ForeignKeyName(..), Index, IndexName(..), Layout, PrimaryKey, PrimaryKeyName(..), Schema, SchemaInfo, SchemaName(..), Source, SourceLine, Table, TableComment(..), TableId(..), TableName(..), TableProps, Unique, UniqueName(..), buildSchema, initLayout, stringAsTableId, tableIdAsString)
+import Models.Schema exposing (CanvasProps, Column, ColumnComment(..), ColumnIndex(..), ColumnName, ColumnType(..), ColumnValue(..), FileInfo, ForeignKey, ForeignKeyName(..), Index, IndexName(..), Layout, PrimaryKey, PrimaryKeyName(..), Schema, SchemaInfo, SchemaName, Source, SourceLine, Table, TableComment(..), TableId, TableName, TableProps, Unique, UniqueName(..), buildSchema, initLayout, stringAsTableId, tableIdAsString)
 import Models.Utils exposing (Color, Position, Size, ZoomLevel)
 import Time
 
@@ -24,7 +24,7 @@ encodeSchema value =
         , ( "tables", value.tables |> Dict.values |> Encode.list encodeTable )
         , ( "layout", value.layout |> encodeMaybeWithoutDefault (\_ -> encodeLayout) initLayout )
         , ( "layoutName", value.layoutName |> encodeMaybe Encode.string )
-        , ( "layouts", value.layouts |> encodeMaybeWithoutDefault (\_ -> E.dict identity encodeLayout) Dict.empty )
+        , ( "layouts", value.layouts |> encodeMaybeWithoutDefault (\_ -> Encode.dict identity encodeLayout) Dict.empty )
         ]
 
 
@@ -36,7 +36,7 @@ decodeSchema takenNames =
         (Decode.field "tables" (Decode.list decodeTable))
         (decodeMaybeWithDefault (\_ -> Decode.field "layout" decodeLayout) initLayout)
         (Decode.maybe (Decode.field "layoutName" Decode.string))
-        (decodeMaybeWithDefault (\_ -> Decode.field "layouts" (D.dict identity decodeLayout)) Dict.empty)
+        (decodeMaybeWithDefault (\_ -> Decode.field "layouts" (Decode.dict decodeLayout)) Dict.empty)
 
 
 encodeSchemaInfo : SchemaInfo -> Value
@@ -87,7 +87,7 @@ encodeTable value =
 
 decodeTable : Decode.Decoder Table
 decodeTable =
-    Decode.map8 (\schema table columns primaryKey uniques indexes comment sources -> Table (TableId schema table) schema table columns primaryKey uniques indexes comment sources)
+    Decode.map8 (\schema table columns primaryKey uniques indexes comment sources -> Table ( schema, table ) schema table columns primaryKey uniques indexes comment sources)
         (Decode.field "schema" decodeSchemaName)
         (Decode.field "table" decodeTableName)
         (Decode.field "columns" (Decode.list decodeColumn |> Decode.map (D.fromList .column)))
@@ -150,7 +150,7 @@ encodeForeignKey value =
 
 decodeForeignKey : Decode.Decoder ForeignKey
 decodeForeignKey =
-    Decode.map4 (\schema table column name -> ForeignKey (TableId schema table) schema table column name)
+    Decode.map4 (\schema table column name -> ForeignKey ( schema, table ) schema table column name)
         (Decode.field "schema" decodeSchemaName)
         (Decode.field "table" decodeTableName)
         (Decode.field "column" decodeColumnName)
@@ -225,8 +225,8 @@ encodeLayout : Layout -> Value
 encodeLayout value =
     E.object
         [ ( "canvas", value.canvas |> encodeCanvasProps )
-        , ( "tables", value.tables |> E.dict tableIdAsString encodeTableProps )
-        , ( "hiddenTables", value.hiddenTables |> E.dict tableIdAsString encodeTableProps )
+        , ( "tables", value.tables |> Encode.dict tableIdAsString encodeTableProps )
+        , ( "hiddenTables", value.hiddenTables |> Encode.dict tableIdAsString encodeTableProps )
         ]
 
 
@@ -333,33 +333,33 @@ decodeTableId =
 
 
 encodeSchemaName : SchemaName -> Value
-encodeSchemaName (SchemaName value) =
+encodeSchemaName value =
     Encode.string value
 
 
 decodeSchemaName : Decode.Decoder SchemaName
 decodeSchemaName =
-    Decode.string |> Decode.map SchemaName
+    Decode.string
 
 
 encodeTableName : TableName -> Value
-encodeTableName (TableName value) =
+encodeTableName value =
     Encode.string value
 
 
 decodeTableName : Decode.Decoder TableName
 decodeTableName =
-    Decode.string |> Decode.map TableName
+    Decode.string
 
 
 encodeColumnName : ColumnName -> Value
-encodeColumnName (ColumnName value) =
+encodeColumnName value =
     Encode.string value
 
 
 decodeColumnName : Decode.Decoder ColumnName
 decodeColumnName =
-    Decode.string |> Decode.map ColumnName
+    Decode.string
 
 
 encodeColumnIndex : ColumnIndex -> Value

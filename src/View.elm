@@ -1,7 +1,7 @@
 module View exposing (viewApp)
 
-import AssocList as Dict exposing (Dict)
 import Conf exposing (conf)
+import Dict exposing (Dict)
 import FontAwesome.Styles as Icon
 import Html exposing (Attribute, Html, div)
 import Html.Attributes exposing (class, id, style)

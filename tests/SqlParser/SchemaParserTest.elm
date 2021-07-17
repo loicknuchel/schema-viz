@@ -1,6 +1,6 @@
 module SqlParser.SchemaParserTest exposing (..)
 
-import AssocList as Dict
+import Dict
 import Expect
 import SqlParser.SchemaParser exposing (SqlTable, buildStatements, parseLines, updateColumn, updateTable)
 import SqlParser.Utils.Types exposing (SqlLine, SqlStatement)

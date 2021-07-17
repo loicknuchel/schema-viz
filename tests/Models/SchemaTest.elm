@@ -1,13 +1,13 @@
 module Models.SchemaTest exposing (..)
 
 import Expect
-import Models.Schema exposing (SchemaName(..), TableId(..), TableName(..), htmlIdAsTableId, showTableName, stringAsTableId, tableIdAsHtmlId, tableIdAsString)
+import Models.Schema exposing (TableId, htmlIdAsTableId, showTableName, stringAsTableId, tableIdAsHtmlId, tableIdAsString)
 import Test exposing (Test, describe, test)
 
 
 tableId : TableId
 tableId =
-    TableId (SchemaName "public") (TableName "users")
+    ( "public", "users" )
 
 
 suite : Test
@@ -22,7 +22,7 @@ suite =
             , test "serialize" (\_ -> tableId |> tableIdAsString |> Expect.equal "public.users")
             ]
         , describe "showTableName"
-            [ test "with default schema" (\_ -> showTableName (SchemaName "public") (TableName "users") |> Expect.equal "users")
-            , test "with other schema" (\_ -> showTableName (SchemaName "wp") (TableName "users") |> Expect.equal "wp.users")
+            [ test "with default schema" (\_ -> showTableName "public" "users" |> Expect.equal "users")
+            , test "with other schema" (\_ -> showTableName "wp" "users" |> Expect.equal "wp.users")
             ]
         ]

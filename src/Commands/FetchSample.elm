@@ -1,7 +1,7 @@
 module Commands.FetchSample exposing (loadSample)
 
-import AssocList as Dict
 import Conf exposing (schemaSamples)
+import Dict
 import Http exposing (Response(..))
 import Models exposing (Msg(..))
 import Ports exposing (toastError)

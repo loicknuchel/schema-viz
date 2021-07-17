@@ -1,6 +1,6 @@
 module Models exposing (Confirm, DragId, Error, Errors, Flags, JsMsg(..), Model, Msg(..), Search, Switch, TimeInfo, initConfirm, initModel, initSwitch)
 
-import AssocList as Dict exposing (Dict)
+import Dict exposing (Dict)
 import Draggable
 import FileValue exposing (File)
 import Html exposing (Html, text)

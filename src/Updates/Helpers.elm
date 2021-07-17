@@ -1,6 +1,6 @@
 module Updates.Helpers exposing (decodeErrorToHtml, map, setCanvas, setDictTable, setLayout, setLayouts, setPosition, setSchema, setSchemaWithCmd, setSwitch, setTables, setTime)
 
-import AssocList as Dict exposing (Dict)
+import Dict exposing (Dict)
 import Draggable
 import Json.Decode as Decode
 import Models.Utils exposing (Position, ZoomLevel)
@@ -56,7 +56,7 @@ setPosition ( dx, dy ) zoom item =
     { item | position = Position (item.position.left + (dx / zoom)) (item.position.top + (dy / zoom)) }
 
 
-setDictTable : id -> (table -> table) -> { item | tables : Dict id table } -> { item | tables : Dict id table }
+setDictTable : comparable -> (table -> table) -> { item | tables : Dict comparable table } -> { item | tables : Dict comparable table }
 setDictTable id transform item =
     { item | tables = item.tables |> Dict.update id (Maybe.map transform) }
 

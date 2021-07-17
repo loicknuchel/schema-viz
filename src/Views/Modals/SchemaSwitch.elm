@@ -1,7 +1,7 @@
 module Views.Modals.SchemaSwitch exposing (viewSchemaSwitchModal)
 
-import AssocList as Dict
 import Conf exposing (conf, schemaSamples)
+import Dict
 import FileValue exposing (hiddenInputSingle)
 import FontAwesome.Icon exposing (viewIcon)
 import FontAwesome.Solid as Icon

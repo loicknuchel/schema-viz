@@ -1,11 +1,11 @@
 module TestHelpers.Fuzzers exposing (..)
 
-import AssocList as Dict exposing (Dict)
 import Conf exposing (conf)
+import Dict exposing (Dict)
 import Fuzz exposing (Fuzzer)
 import Libs.Dict as D
 import Libs.Fuzz as F
-import Models.Schema exposing (CanvasProps, Column, ColumnComment(..), ColumnIndex(..), ColumnName(..), ColumnType(..), ColumnValue(..), FileInfo, ForeignKey, ForeignKeyName(..), Index, IndexName(..), Layout, LayoutName, PrimaryKey, PrimaryKeyName(..), Schema, SchemaId, SchemaInfo, SchemaName(..), Source, SourceLine, Table, TableComment(..), TableId(..), TableName(..), TableProps, Unique, UniqueName(..), buildSchema)
+import Models.Schema exposing (CanvasProps, Column, ColumnComment(..), ColumnIndex(..), ColumnName, ColumnType(..), ColumnValue(..), FileInfo, ForeignKey, ForeignKeyName(..), Index, IndexName(..), Layout, LayoutName, PrimaryKey, PrimaryKeyName(..), Schema, SchemaId, SchemaInfo, SchemaName, Source, SourceLine, Table, TableComment(..), TableId, TableName, TableProps, Unique, UniqueName(..), buildSchema)
 import Models.Utils exposing (Color, Position, Size, ZoomLevel)
 import Time
 
@@ -27,7 +27,7 @@ fileInfo =
 
 table : Fuzzer Table
 table =
-    F.map8 (\s t c p u i co so -> Table (TableId s t) s t c p u i co so)
+    F.map8 (\s t c p u i co so -> Table ( s, t ) s t c p u i co so)
         schemaName
         tableName
         (listSmall column |> Fuzz.map (D.fromList .column))
@@ -50,7 +50,7 @@ primaryKey =
 
 foreignKey : Fuzzer ForeignKey
 foreignKey =
-    Fuzz.map4 (\s t c f -> ForeignKey (TableId s t) s t c f) schemaName tableName columnName foreignKeyName
+    Fuzz.map4 (\s t c f -> ForeignKey ( s, t ) s t c f) schemaName tableName columnName foreignKeyName
 
 
 unique : Fuzzer Unique
@@ -114,22 +114,22 @@ layoutName =
 
 tableId : Fuzzer TableId
 tableId =
-    Fuzz.map2 TableId schemaName tableName
+    Fuzz.tuple ( schemaName, tableName )
 
 
 schemaName : Fuzzer SchemaName
 schemaName =
-    Fuzz.map SchemaName identifier
+    identifier
 
 
 tableName : Fuzzer TableName
 tableName =
-    Fuzz.map TableName identifier
+    identifier
 
 
 columnName : Fuzzer ColumnName
 columnName =
-    Fuzz.map ColumnName identifier
+    identifier
 
 
 columnIndex : Fuzzer ColumnIndex
@@ -191,7 +191,7 @@ color =
 -- Generic fuzzers
 
 
-dictSmall : Fuzzer k -> Fuzzer v -> Fuzzer (Dict k v)
+dictSmall : Fuzzer comparable -> Fuzzer v -> Fuzzer (Dict comparable v)
 dictSmall kFuzz vFuzz =
     Fuzz.tuple ( kFuzz, vFuzz ) |> listSmall |> Fuzz.map Dict.fromList
 

@@ -1,7 +1,6 @@
 module Libs.Json.Decode exposing (dict, map9, nel, tuple)
 
-import AssocList as Dict exposing (Dict)
-import Dict as ElmDict
+import Dict exposing (Dict)
 import Json.Decode as Decode exposing (Decoder)
 import Libs.Nel exposing (Nel)
 
@@ -17,9 +16,9 @@ tuple aDecoder bDecoder =
         (Decode.index 1 bDecoder)
 
 
-dict : (String -> k) -> Decode.Decoder a -> Decode.Decoder (Dict k a)
+dict : (String -> comparable) -> Decode.Decoder a -> Decode.Decoder (Dict comparable a)
 dict buildKey decoder =
-    Decode.dict decoder |> Decode.map (\d -> d |> ElmDict.toList |> List.map (\( k, a ) -> ( buildKey k, a )) |> Dict.fromList)
+    Decode.dict decoder |> Decode.map (\d -> d |> Dict.toList |> List.map (\( k, a ) -> ( buildKey k, a )) |> Dict.fromList)
 
 
 nel : Decode.Decoder a -> Decode.Decoder (Nel a)

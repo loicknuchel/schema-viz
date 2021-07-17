@@ -1,7 +1,7 @@
 module Views.Navbar exposing (viewNavbar)
 
-import AssocList as Dict exposing (Dict)
 import Conf exposing (conf)
+import Dict exposing (Dict)
 import FontAwesome.Icon exposing (viewIcon)
 import FontAwesome.Solid as Icon
 import Html exposing (Html, a, b, button, div, form, img, input, li, nav, span, text, ul)
@@ -10,7 +10,7 @@ import Html.Events exposing (onClick, onInput)
 import Libs.Bootstrap exposing (BsColor(..), Toggle(..), ariaExpanded, ariaLabel, bsButton, bsToggle, bsToggleCollapse, bsToggleDropdown, bsToggleModal, bsToggleOffcanvas)
 import Libs.Models exposing (Text)
 import Models exposing (Msg(..), Search)
-import Models.Schema exposing (Column, ColumnName(..), Layout, LayoutName, Table, TableId, TableName(..), showTableId)
+import Models.Schema exposing (Column, Layout, LayoutName, Table, TableId, showTableId)
 import Views.Helpers exposing (extractColumnName)
 
 
@@ -123,17 +123,15 @@ asSuggestions layout search table =
 
 columnSuggestion : Search -> Table -> Column -> Maybe Suggestion
 columnSuggestion search table column =
-    case column.column of
-        ColumnName name ->
-            if name == search then
-                Just
-                    { priority = 0 - 0.5
-                    , content = viewIcon Icon.angleDoubleRight :: [ text (" " ++ showTableId table.id ++ "."), b [] [ text (extractColumnName column.column) ] ]
-                    , msg = ShowTable table.id
-                    }
+    if column.column == search then
+        Just
+            { priority = 0 - 0.5
+            , content = viewIcon Icon.angleDoubleRight :: [ text (" " ++ showTableId table.id ++ "."), b [] [ text (extractColumnName column.column) ] ]
+            , msg = ShowTable table.id
+            }
 
-            else
-                Nothing
+    else
+        Nothing
 
 
 highlightMatch : Search -> Text -> List (Html msg)
@@ -143,15 +141,13 @@ highlightMatch search value =
 
 matchStrength : Table -> Layout -> Search -> Float
 matchStrength table layout search =
-    case table.table of
-        TableName name ->
-            exactMatch search name
-                + matchAtBeginning search name
-                + matchNotAtBeginning search name
-                + tableShownMalus layout table
-                + columnMatchingBonus search table
-                + (5 * manyColumnBonus table)
-                + shortNameBonus name
+    exactMatch search table.table
+        + matchAtBeginning search table.table
+        + matchNotAtBeginning search table.table
+        + tableShownMalus layout table
+        + columnMatchingBonus search table
+        + (5 * manyColumnBonus table)
+        + shortNameBonus table.table
 
 
 exactMatch : Search -> Text -> Float

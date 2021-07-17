@@ -1,7 +1,7 @@
-module Models.Schema exposing (CanvasProps, Column, ColumnComment(..), ColumnIndex(..), ColumnName(..), ColumnRef, ColumnType(..), ColumnValue(..), FileInfo, ForeignKey, ForeignKeyName(..), Index, IndexName(..), Layout, LayoutName, PrimaryKey, PrimaryKeyName(..), Relation, RelationRef, RelationTarget, Schema, SchemaId, SchemaInfo, SchemaName(..), Source, SourceLine, Table, TableComment(..), TableId(..), TableName(..), TableProps, Unique, UniqueName(..), buildSchema, extractColumnIndex, htmlIdAsTableId, initLayout, initTableProps, outgoingRelations, showTableId, showTableName, stringAsTableId, tableIdAsHtmlId, tableIdAsString)
+module Models.Schema exposing (CanvasProps, Column, ColumnComment(..), ColumnIndex(..), ColumnName, ColumnRef, ColumnType(..), ColumnValue(..), FileInfo, ForeignKey, ForeignKeyName(..), Index, IndexName(..), Layout, LayoutName, PrimaryKey, PrimaryKeyName(..), Relation, RelationRef, RelationTarget, Schema, SchemaId, SchemaInfo, SchemaName, Source, SourceLine, Table, TableComment(..), TableId, TableName, TableProps, Unique, UniqueName(..), buildSchema, extractColumnIndex, htmlIdAsTableId, initLayout, initTableProps, outgoingRelations, showTableId, showTableName, stringAsTableId, tableIdAsHtmlId, tableIdAsString)
 
-import AssocList as Dict exposing (Dict)
 import Conf exposing (conf)
+import Dict exposing (Dict)
 import Libs.Dict as D
 import Libs.List as L
 import Libs.Models exposing (HtmlId)
@@ -129,24 +129,24 @@ type ColumnComment
     = ColumnComment String
 
 
-type SchemaName
-    = SchemaName String
+type alias SchemaName =
+    String
 
 
-type TableId
-    = TableId SchemaName TableName
+type alias TableName =
+    String
 
 
-type TableName
-    = TableName String
+type alias TableId =
+    ( SchemaName, TableName )
 
 
 type ColumnIndex
     = ColumnIndex Int
 
 
-type ColumnName
-    = ColumnName String
+type alias ColumnName =
+    String
 
 
 type ColumnType
@@ -174,7 +174,7 @@ type ForeignKeyName
 
 
 tableIdAsHtmlId : TableId -> HtmlId
-tableIdAsHtmlId (TableId (SchemaName schema) (TableName table)) =
+tableIdAsHtmlId ( schema, table ) =
     "table-" ++ schema ++ "-" ++ table
 
 
@@ -182,14 +182,14 @@ htmlIdAsTableId : HtmlId -> TableId
 htmlIdAsTableId id =
     case String.split "-" id of
         "table" :: schema :: table :: [] ->
-            TableId (SchemaName schema) (TableName table)
+            ( schema, table )
 
         _ ->
-            TableId (SchemaName conf.default.schema) (TableName id)
+            ( conf.default.schema, id )
 
 
 tableIdAsString : TableId -> String
-tableIdAsString (TableId (SchemaName schema) (TableName table)) =
+tableIdAsString ( schema, table ) =
     schema ++ "." ++ table
 
 
@@ -197,14 +197,14 @@ stringAsTableId : String -> TableId
 stringAsTableId id =
     case String.split "." id of
         schema :: table :: [] ->
-            TableId (SchemaName schema) (TableName table)
+            ( schema, table )
 
         _ ->
-            TableId (SchemaName conf.default.schema) (TableName id)
+            ( conf.default.schema, id )
 
 
 showTableName : SchemaName -> TableName -> String
-showTableName (SchemaName schema) (TableName table) =
+showTableName schema table =
     if schema == conf.default.schema then
         table
 
@@ -213,7 +213,7 @@ showTableName (SchemaName schema) (TableName table) =
 
 
 showTableId : TableId -> String
-showTableId (TableId schema table) =
+showTableId ( schema, table ) =
     showTableName schema table
 
 
@@ -264,7 +264,7 @@ initTableProps table =
 
 
 computeColor : TableId -> Color
-computeColor (TableId _ (TableName table)) =
+computeColor ( _, table ) =
     S.wordSplit table
         |> List.head
         |> Maybe.map S.hashCode

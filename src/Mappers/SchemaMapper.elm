@@ -1,9 +1,9 @@
 module Mappers.SchemaMapper exposing (buildSchemaFromSql)
 
-import AssocList as Dict
+import Dict
 import Libs.Dict as D
 import Libs.Nel as Nel
-import Models.Schema exposing (Column, ColumnComment(..), ColumnIndex(..), ColumnName(..), ColumnType(..), ColumnValue(..), ForeignKey, ForeignKeyName(..), Index, IndexName(..), PrimaryKey, PrimaryKeyName(..), Schema, SchemaInfo, SchemaName(..), Source, Table, TableComment(..), TableId(..), TableName(..), Unique, UniqueName(..), buildSchema, initLayout)
+import Models.Schema exposing (Column, ColumnComment(..), ColumnIndex(..), ColumnType(..), ColumnValue(..), ForeignKey, ForeignKeyName(..), Index, IndexName(..), PrimaryKey, PrimaryKeyName(..), Schema, SchemaInfo, Source, Table, TableComment(..), TableId, Unique, UniqueName(..), buildSchema, initLayout)
 import SqlParser.SchemaParser exposing (SqlColumn, SqlForeignKey, SqlIndex, SqlPrimaryKey, SqlSchema, SqlTable, SqlUnique)
 import SqlParser.Utils.Types exposing (SqlStatement)
 
@@ -25,8 +25,8 @@ buildSqlTables schema =
 buildSqlTable : SqlTable -> Table
 buildSqlTable table =
     { id = tableIdFromSqlTable table
-    , schema = table.schema |> SchemaName
-    , table = table.table |> TableName
+    , schema = table.schema
+    , table = table.table
     , columns = table.columns |> List.indexedMap buildSqlColumn |> D.fromList .column
     , primaryKey = table.primaryKey |> Maybe.map buildSqlPrimaryKey
     , indexes = table.indexes |> List.map buildSqlIndex
@@ -39,7 +39,7 @@ buildSqlTable table =
 buildSqlColumn : Int -> SqlColumn -> Column
 buildSqlColumn index column =
     { index = index |> ColumnIndex
-    , column = column.name |> ColumnName
+    , column = column.name
     , kind = column.kind |> ColumnType
     , nullable = column.nullable
     , default = column.default |> Maybe.map ColumnValue
@@ -50,7 +50,7 @@ buildSqlColumn index column =
 
 buildSqlPrimaryKey : SqlPrimaryKey -> PrimaryKey
 buildSqlPrimaryKey pk =
-    { columns = pk.columns |> List.map ColumnName
+    { columns = pk.columns
     , name = pk.name |> PrimaryKeyName
     }
 
@@ -58,9 +58,9 @@ buildSqlPrimaryKey pk =
 buildSqlForeignKey : SqlForeignKey -> ForeignKey
 buildSqlForeignKey fk =
     { tableId = fk |> tableIdFromSqlForeignKey
-    , schema = fk.schema |> SchemaName
-    , table = fk.table |> TableName
-    , column = fk.column |> ColumnName
+    , schema = fk.schema
+    , table = fk.table
+    , column = fk.column
     , name = fk.name |> ForeignKeyName
     }
 
@@ -68,7 +68,7 @@ buildSqlForeignKey fk =
 buildSqlIndex : SqlIndex -> Index
 buildSqlIndex index =
     { name = index.name |> IndexName
-    , columns = index.columns |> List.map ColumnName
+    , columns = index.columns
     , definition = index.definition
     }
 
@@ -76,7 +76,7 @@ buildSqlIndex index =
 buildSqlUnique : SqlUnique -> Unique
 buildSqlUnique unique =
     { name = unique.name |> UniqueName
-    , columns = unique.columns |> List.map ColumnName
+    , columns = unique.columns
     , definition = unique.definition
     }
 
@@ -88,9 +88,9 @@ statementAsSource statement =
 
 tableIdFromSqlTable : SqlTable -> TableId
 tableIdFromSqlTable table =
-    TableId (SchemaName table.schema) (TableName table.table)
+    ( table.schema, table.table )
 
 
 tableIdFromSqlForeignKey : SqlForeignKey -> TableId
 tableIdFromSqlForeignKey fk =
-    TableId (SchemaName fk.schema) (TableName fk.table)
+    ( fk.schema, fk.table )

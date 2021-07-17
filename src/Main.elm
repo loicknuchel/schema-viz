@@ -1,9 +1,9 @@
 module Main exposing (main)
 
-import AssocList as Dict
 import Browser
 import Commands.FetchSample exposing (loadSample)
 import Conf exposing (conf)
+import Dict
 import Draggable
 import Libs.Bool as B
 import Models exposing (Flags, JsMsg(..), Model, Msg(..), initConfirm, initModel)

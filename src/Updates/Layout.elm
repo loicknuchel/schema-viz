@@ -1,6 +1,6 @@
 module Updates.Layout exposing (createLayout, deleteLayout, loadLayout, updateLayout)
 
-import AssocList as Dict
+import Dict
 import Libs.Bool as B
 import Models exposing (Msg)
 import Models.Schema exposing (LayoutName, Schema)

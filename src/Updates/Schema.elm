@@ -1,7 +1,7 @@
 module Updates.Schema exposing (createSampleSchema, createSchema, useSchema)
 
-import AssocList as Dict
 import Conf exposing (conf)
+import Dict
 import FileValue exposing (File)
 import Http exposing (Error(..))
 import Json.Decode as Decode

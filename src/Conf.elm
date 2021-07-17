@@ -1,6 +1,6 @@
 module Conf exposing (conf, schemaSamples)
 
-import AssocList as Dict exposing (Dict)
+import Dict exposing (Dict)
 import Libs.Models exposing (HtmlId)
 import Models.Utils exposing (Color, ZoomLevel)
 

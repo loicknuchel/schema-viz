@@ -1,7 +1,7 @@
 module SqlParser.SchemaParser exposing (SchemaError, SqlCheck, SqlColumn, SqlForeignKey, SqlIndex, SqlPrimaryKey, SqlSchema, SqlTable, SqlTableId, SqlUnique, buildStatements, parseLines, parseSchema, updateColumn, updateTable)
 
-import AssocList as Dict exposing (Dict)
 import Conf exposing (conf)
+import Dict exposing (Dict)
 import Libs.List as L
 import Libs.Maybe as M
 import Libs.Models exposing (FileContent, FileName)

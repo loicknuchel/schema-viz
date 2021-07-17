@@ -17,7 +17,6 @@
             "elm/time": "1.0.0",
             "lattyware/elm-fontawesome": "5.0.0",
             "mpizenberg/elm-file": "1.0.0",
-            "pzp1997/assoc-list": "1.0.0",
             "zaboco/elm-draggable": "5.0.0"
         },
         "indirect": {

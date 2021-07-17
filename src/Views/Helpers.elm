@@ -9,7 +9,7 @@ import Libs.DateTime as DateTime
 import Libs.Models exposing (HtmlId)
 import Libs.Task as T
 import Models exposing (DragId, Msg(..), TimeInfo)
-import Models.Schema exposing (ColumnName(..), ColumnRef, ColumnType(..), tableIdAsHtmlId)
+import Models.Schema exposing (ColumnName, ColumnRef, ColumnType(..), tableIdAsHtmlId)
 import Models.Utils exposing (Position, Size)
 import Time
 
@@ -43,7 +43,7 @@ onClickConfirm content msg =
 
 
 extractColumnName : ColumnName -> String
-extractColumnName (ColumnName name) =
+extractColumnName name =
     name
 
 
@@ -53,7 +53,7 @@ extractColumnType (ColumnType kind) =
 
 
 withColumnName : ColumnName -> String -> String
-withColumnName (ColumnName column) table =
+withColumnName column table =
     table ++ "." ++ column
 
 

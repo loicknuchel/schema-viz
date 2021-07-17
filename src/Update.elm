@@ -1,8 +1,8 @@
 module Update exposing (dragConfig, dragItem, handleWheel, updateSizes)
 
-import AssocList as Dict
 import Commands.InitializeTable exposing (initializeTable)
 import Conf exposing (conf)
+import Dict
 import Draggable
 import Draggable.Events exposing (onDragBy, onDragEnd, onDragStart)
 import Libs.Bool as B

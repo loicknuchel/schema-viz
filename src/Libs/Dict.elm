@@ -1,32 +1,30 @@
-module Libs.Dict exposing (filterZip, fromList, getOrElse, groupBy)
-
-import AssocList as Dict exposing (Dict)
-
-
+module Libs.Dict exposing (fromList, getOrElse, groupBy)
 
 -- deps = { to = { only = [ "Libs.*" ] } }
 
+import Dict exposing (Dict)
 
-fromList : (a -> k) -> List a -> Dict k a
+
+fromList : (a -> comparable) -> List a -> Dict comparable a
 fromList getKey list =
-    list |> List.reverse |> List.map (\item -> ( getKey item, item )) |> Dict.fromList
+    list |> List.map (\item -> ( getKey item, item )) |> Dict.fromList
 
 
-getOrElse : k -> a -> Dict k a -> a
+getOrElse : comparable -> a -> Dict comparable a -> a
 getOrElse key default dict =
     dict |> Dict.get key |> Maybe.withDefault default
 
 
-groupBy : (a -> k) -> List a -> Dict k (List a)
+groupBy : (a -> comparable) -> List a -> Dict comparable (List a)
 groupBy key list =
     List.foldr (\a dict -> dict |> Dict.update (key a) (\v -> v |> Maybe.map ((::) a) |> Maybe.withDefault [ a ] |> Just)) Dict.empty list
 
 
-filterMap : (k -> a -> Maybe b) -> Dict k a -> Dict k b
+filterMap : (comparable -> a -> Maybe b) -> Dict comparable a -> Dict comparable b
 filterMap f dict =
     dict |> Dict.toList |> List.filterMap (\( k, a ) -> f k a |> Maybe.map (\b -> ( k, b ))) |> Dict.fromList
 
 
-filterZip : (k -> a -> Maybe b) -> Dict k a -> Dict k ( a, b )
+filterZip : (comparable -> a -> Maybe b) -> Dict comparable a -> Dict comparable ( a, b )
 filterZip f dict =
     dict |> Dict.toList |> List.filterMap (\( k, a ) -> f k a |> Maybe.map (\b -> ( k, ( a, b ) ))) |> Dict.fromList

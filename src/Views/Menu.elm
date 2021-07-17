@@ -1,7 +1,7 @@
 module Views.Menu exposing (viewMenu)
 
-import AssocList as Dict exposing (Dict)
 import Conf exposing (conf)
+import Dict exposing (Dict)
 import Html exposing (Html, button, div, h5, text)
 import Html.Attributes exposing (class, id, tabindex, type_)
 import Html.Events exposing (onClick)

@@ -1,12 +1,12 @@
 module JsonFormats.SchemaFormatTest exposing (..)
 
-import AssocList as Dict
+import Dict
 import Expect exposing (Expectation)
 import Json.Decode as Decode
 import Json.Encode as Encode
 import JsonFormats.SchemaFormat exposing (..)
 import Libs.Dict as D
-import Models.Schema exposing (CanvasProps, Column, ColumnIndex(..), ColumnName(..), ColumnType(..), ColumnValue(..), ForeignKey, ForeignKeyName(..), Index, IndexName(..), Layout, PrimaryKey, PrimaryKeyName(..), Schema, SchemaInfo, SchemaName(..), Table, TableId(..), TableName(..), TableProps, Unique, UniqueName(..))
+import Models.Schema exposing (CanvasProps, Column, ColumnIndex(..), ColumnName, ColumnType(..), ColumnValue(..), ForeignKey, ForeignKeyName(..), Index, IndexName(..), Layout, PrimaryKey, PrimaryKeyName(..), Schema, SchemaInfo, Table, TableId, TableProps, Unique, UniqueName(..))
 import Models.Utils exposing (Position, Size)
 import Test exposing (Test, describe, fuzz, test)
 import TestHelpers.Fuzzers as Fuzzers
@@ -25,7 +25,7 @@ position =
 
 tableProps : TableProps
 tableProps =
-    { position = position, color = "green", selected = False, columns = [ ColumnName "id" ] }
+    { position = position, color = "green", selected = False, columns = [ "id" ] }
 
 
 canvasProps : CanvasProps
@@ -35,7 +35,7 @@ canvasProps =
 
 tableId : TableId
 tableId =
-    TableId (SchemaName "public") (TableName "users")
+    ( "public", "users" )
 
 
 layout : Layout
@@ -45,27 +45,27 @@ layout =
 
 columnName : ColumnName
 columnName =
-    ColumnName "id"
+    "id"
 
 
 foreignKey : ForeignKey
 foreignKey =
-    { tableId = tableId, schema = SchemaName "public", table = TableName "users", column = columnName, name = ForeignKeyName "users_pk" }
+    { tableId = tableId, schema = "public", table = "users", column = columnName, name = ForeignKeyName "users_pk" }
 
 
 index : Index
 index =
-    { name = IndexName "name_index", columns = [ ColumnName "name" ], definition = "btree (name)" }
+    { name = IndexName "name_index", columns = [ "name" ], definition = "btree (name)" }
 
 
 unique : Unique
 unique =
-    { name = UniqueName "email_unique", columns = [ ColumnName "email" ], definition = "(email)" }
+    { name = UniqueName "email_unique", columns = [ "email" ], definition = "(email)" }
 
 
 primaryKey : PrimaryKey
 primaryKey =
-    { columns = [ ColumnName "id" ], name = PrimaryKeyName "id_pk" }
+    { columns = [ "id" ], name = PrimaryKeyName "id_pk" }
 
 
 column : Column
@@ -83,8 +83,8 @@ column =
 table : Table
 table =
     { id = tableId
-    , schema = SchemaName "public"
-    , table = TableName "users"
+    , schema = "public"
+    , table = "users"
     , columns = D.fromList .column [ column ]
     , primaryKey = Nothing
     , uniques = []

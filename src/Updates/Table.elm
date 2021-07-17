@@ -1,6 +1,6 @@
 module Updates.Table exposing (hideAllTables, hideColumn, hideTable, showAllTables, showColumn, showTable)
 
-import AssocList as Dict
+import Dict
 import Libs.List as L
 import Libs.Maybe as M
 import Models exposing (Msg)

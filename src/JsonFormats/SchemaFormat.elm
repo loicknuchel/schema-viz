@@ -23,7 +23,7 @@ encodeSchema value =
         , ( "info", value.info |> encodeSchemaInfo )
         , ( "tables", value.tables |> Dict.values |> Encode.list encodeTable )
         , ( "layout", value.layout |> encodeMaybeWithoutDefault (\_ -> encodeLayout) initLayout )
-        , ( "layoutName", value.layoutName |> encodeMaybe Encode.string )
+        , ( "layoutName", value.layoutName |> E.maybe Encode.string )
         , ( "layouts", value.layouts |> encodeMaybeWithoutDefault (\_ -> Encode.dict identity encodeLayout) Dict.empty )
         ]
 
@@ -44,7 +44,7 @@ encodeSchemaInfo value =
     E.object
         [ ( "created", value.created |> encodePosix )
         , ( "updated", value.updated |> encodePosix )
-        , ( "file", value.file |> encodeMaybe encodeFileInfo )
+        , ( "file", value.file |> E.maybe encodeFileInfo )
         ]
 
 
@@ -77,10 +77,10 @@ encodeTable value =
         [ ( "schema", value.schema |> encodeSchemaName )
         , ( "table", value.table |> encodeTableName )
         , ( "columns", value.columns |> Ned.values |> E.nel encodeColumn )
-        , ( "primaryKey", value.primaryKey |> encodeMaybe encodePrimaryKey )
+        , ( "primaryKey", value.primaryKey |> E.maybe encodePrimaryKey )
         , ( "uniques", value.uniques |> encodeMaybeWithoutDefault (\_ -> Encode.list encodeUnique) [] )
         , ( "indexes", value.indexes |> encodeMaybeWithoutDefault (\_ -> Encode.list encodeIndex) [] )
-        , ( "comment", value.comment |> encodeMaybe encodeTableComment )
+        , ( "comment", value.comment |> E.maybe encodeTableComment )
         , ( "sources", value.sources |> encodeMaybeWithoutDefault (\_ -> Encode.list encodeSource) [] )
         ]
 
@@ -105,9 +105,9 @@ encodeColumn value =
         , ( "name", value.column |> encodeColumnName )
         , ( "type", value.kind |> encodeColumnType )
         , ( "nullable", value.nullable |> encodeMaybeWithoutDefault (\_ -> Encode.bool) True )
-        , ( "default", value.default |> encodeMaybe encodeColumnValue )
-        , ( "foreignKey", value.foreignKey |> encodeMaybe encodeForeignKey )
-        , ( "comment", value.comment |> encodeMaybe encodeColumnComment )
+        , ( "default", value.default |> E.maybe encodeColumnValue )
+        , ( "foreignKey", value.foreignKey |> E.maybe encodeForeignKey )
+        , ( "comment", value.comment |> E.maybe encodeColumnComment )
         ]
 
 
@@ -462,14 +462,9 @@ decodePosix =
     Decode.int |> Decode.map Time.millisToPosix
 
 
-encodeMaybe : (a -> Value) -> Maybe a -> Value
-encodeMaybe encoder maybe =
-    maybe |> Maybe.map encoder |> Maybe.withDefault Encode.null
-
-
 encodeMaybeWithoutDefault : (a -> a -> Value) -> a -> a -> Value
 encodeMaybeWithoutDefault encode default value =
-    Just value |> M.filter (\v -> not (v == default)) |> encodeMaybe (encode default)
+    Just value |> M.filter (\v -> not (v == default)) |> E.maybe (encode default)
 
 
 decodeMaybeWithDefault : (a -> Decode.Decoder a) -> a -> Decode.Decoder a

@@ -95,6 +95,7 @@ type JsMsg
     = SchemasLoaded ( List ( String, Decode.Error ), List Schema )
     | FileRead Time.Posix File FileContent
     | SizesChanged (List SizeChange)
+    | HotkeyUsed String
     | Error Decode.Error
 
 

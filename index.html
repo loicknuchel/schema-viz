@@ -42,6 +42,7 @@
                         case "DropSchema":    dropSchema(msg.schema); break;
                         case "ReadFile":      readFile(msg.file); break;
                         case "ObserveSizes":  observeSizes(msg.ids); break;
+                        case "ListenKeys":    listenHotkeys(msg.keys); break;
                         default: console.error('Unsupported Elm message', msg); break;
                     }
                 }, 100)
@@ -133,6 +134,29 @@
                     const el = document.getElementById(id)
                     el ? resizeObserver.observe(el) : console.error("Can't observe element with '" + id + "' id, it doesn't exist")
                 })
+            }
+
+            const hotkeys = {}
+            document.addEventListener('keydown', function (e) {
+                Object.entries(hotkeys).forEach(([id, hotkey]) => {
+                    if ((!hotkey.key || hotkey.key === e.key) &&
+                        (!hotkey.ctrl || e.ctrlKey) &&
+                        (!hotkey.shift || e.shiftKey) &&
+                        (!hotkey.alt || e.altKey) &&
+                        (!hotkey.meta || e.metaKey) &&
+                        ((!hotkey.target && e.target.localName !== 'input') || (hotkey.target &&
+                            (!hotkey.target.id || hotkey.target.id === e.target.id) &&
+                            (!hotkey.target.class || e.target.className.split(' ').includes(hotkey.target.class)) &&
+                            (!hotkey.target.tag || hotkey.target.tag === e.target.localName)))) {
+                        if (hotkey.preventDefault) {
+                            e.preventDefault()
+                        }
+                        sendToElm({kind: "HotkeyUsed", id: id})
+                    }
+                })
+            })
+            function listenHotkeys(keys) {
+                Object.assign(hotkeys, keys)
             }
 
 

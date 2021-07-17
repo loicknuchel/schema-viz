@@ -4,13 +4,13 @@ import Browser
 import Browser.Events as Events
 import Commands.FetchSample exposing (loadSample)
 import Conf exposing (conf)
-import Dict
+import Dict exposing (Dict)
 import Draggable
 import Json.Decode as Decode
 import Libs.Bool as B
 import Libs.Browser.Events exposing (keyboardEventDecoder)
 import Models exposing (Flags, JsMsg(..), Model, Msg(..), initConfirm, initModel)
-import Ports exposing (activateTooltipsAndPopovers, dropSchema, hideOffcanvas, loadSchemas, observeSize, onJsMessage, readFile, showModal, toastError)
+import Ports exposing (activateTooltipsAndPopovers, dropSchema, hideOffcanvas, hotkey, listenHotkeys, loadSchemas, observeSize, onJsMessage, readFile, showModal, target, toastError)
 import Task
 import Time
 import Update exposing (dragConfig, dragItem, handleWheel, updateSizes)
@@ -40,6 +40,17 @@ init _ =
         , loadSchemas
         , getZone
         , getTime
+        , listenHotkeys
+            (Dict.fromList
+                [ ( "save", { hotkey | key = Just "s", ctrl = True, preventDefault = True } )
+                , ( "undo", { hotkey | key = Just "z", ctrl = True } )
+                , ( "redo", { hotkey | key = Just "Z", ctrl = True, shift = True } )
+                , ( "focus-search", { hotkey | key = Just "/" } )
+                , ( "autocomplete-down", { hotkey | key = Just "ArrowDown", target = Just { target | id = Just "search", tag = Just "input" } } )
+                , ( "autocomplete-up", { hotkey | key = Just "ArrowUp", target = Just { target | id = Just "search", tag = Just "input" } } )
+                , ( "help", { hotkey | key = Just "?" } )
+                ]
+            )
         ]
     )
 
@@ -153,11 +164,14 @@ update msg model =
         OnConfirm answer cmd ->
             ( { model | confirm = initConfirm }, B.cond answer cmd Cmd.none )
 
+        KeyDown event ->
+            ( model, Debug.log (Debug.toString event) Cmd.none )
+
+        JsMessage (HotkeyUsed hotkey) ->
+            ( model, Debug.log hotkey Cmd.none )
+
         JsMessage (Error err) ->
             ( model, toastError ("Unable to decode JavaScript message:<br>" ++ decodeErrorToHtml err) )
-
-        KeyDown _ ->
-            ( model, Cmd.none )
 
         Noop ->
             ( model, Cmd.none )

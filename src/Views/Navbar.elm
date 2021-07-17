@@ -5,7 +5,7 @@ import Dict exposing (Dict)
 import FontAwesome.Icon exposing (viewIcon)
 import FontAwesome.Solid as Icon
 import Html exposing (Html, a, b, button, div, form, img, input, li, nav, span, text, ul)
-import Html.Attributes exposing (alt, autocomplete, class, height, href, id, placeholder, src, style, title, type_, value)
+import Html.Attributes exposing (alt, attribute, autocomplete, class, height, href, id, placeholder, src, style, title, type_, value)
 import Html.Events exposing (onClick, onInput)
 import Libs.Bootstrap exposing (BsColor(..), Toggle(..), ariaExpanded, ariaLabel, bsButton, bsToggle, bsToggleCollapse, bsToggleDropdown, bsToggleModal, bsToggleOffcanvas)
 import Libs.Models exposing (Text)
@@ -47,7 +47,7 @@ viewSearchBar schema search =
             (\( tables, layout ) ->
                 form [ class "d-flex" ]
                     [ div [ class "dropdown" ]
-                        [ input ([ type_ "search", class "form-control", value search, placeholder "Search", ariaLabel "Search", autocomplete False, onInput ChangedSearch ] ++ bsToggleDropdown conf.ids.searchInput) []
+                        [ input ([ type_ "text", class "form-control", value search, placeholder "Search", ariaLabel "Search", autocomplete False, onInput ChangedSearch, attribute "data-bs-auto-close" "false" ] ++ bsToggleDropdown conf.ids.searchInput) []
                         , ul [ class "dropdown-menu" ]
                             (buildSuggestions tables layout search
                                 |> List.map (\suggestion -> li [] [ a [ class "dropdown-item", style "cursor" "pointer", onClick suggestion.msg ] suggestion.content ])
@@ -58,7 +58,8 @@ viewSearchBar schema search =
         |> Maybe.withDefault
             (form [ class "d-flex" ]
                 [ div []
-                    [ input [ type_ "search", class "form-control", value search, placeholder "Search", ariaLabel "Search", autocomplete False, onInput ChangedSearch, id conf.ids.searchInput ] []
+                    [ input [ type_ "text", class "form-control", value search, placeholder "Search", ariaLabel "Search", autocomplete False, onInput ChangedSearch, attribute "data-bs-auto-close" "false", id conf.ids.searchInput ] []
+                    , ul [ class "dropdown-menu" ] []
                     ]
                 ]
             )

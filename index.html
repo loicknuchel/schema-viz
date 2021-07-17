@@ -158,6 +158,40 @@
                 const toast = document.getElementById(e.target.id)
                 toast.parentNode.removeChild(toast)
             })
+
+
+            /* Autocomplete hacks, this is more than ugly and also very fragile, should find better ways to handle autocomplete!!! */
+
+            // when the search is focused, the dropdown should be open:
+            //  - prevent closing it if search input is still active
+            //  - open it when search input is focused
+            //  - close it when search input is blurred
+            const searchEl = document.getElementById('search')
+            window.addEventListener('hide.bs.dropdown', function (e) {
+                if(e.target.id === 'search' && searchEl === document.activeElement) {
+                    e.preventDefault()
+                }
+            })
+            searchEl.addEventListener('focus', function () {
+                setTimeout(function() { bootstrap.Dropdown.getOrCreateInstance(searchEl).show() }, 10)
+            })
+            searchEl.addEventListener('blur', function () {
+                setTimeout(function() { bootstrap.Dropdown.getOrCreateInstance(searchEl).hide() }, 10)
+            })
+            // search input parent is the dropdown element, on mousedown it's blurred but we want that only on click
+            searchEl.parentElement.addEventListener('mousedown', function () {
+                setTimeout(function () { searchEl.focus() }, 10)
+            })
+            // the second node inside the dropdown element is the dropdown menu, we want to blur the search on click
+            searchEl.parentElement.childNodes[1].addEventListener('click', function () {
+                searchEl.blur()
+            })
+            // blur search when esc key is pressed
+            searchEl.addEventListener('keydown', function (e) {
+                if (e.keyCode === 27) {
+                    searchEl.blur()
+                }
+            })
         }
     </script>
 </head>

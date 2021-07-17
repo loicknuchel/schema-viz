@@ -1,4 +1,4 @@
-module Libs.Fuzz exposing (letter, listN, map7, map8, nel)
+module Libs.Fuzz exposing (letter, listN, map7, map8, nel, nelN)
 
 import Fuzz exposing (Fuzzer)
 import Libs.Nel exposing (Nel)
@@ -22,6 +22,11 @@ listN n fuzzer =
 
     else
         Fuzz.andMap (listN (n - 1) fuzzer) (fuzzer |> Fuzz.map (\a xs -> a :: xs))
+
+
+nelN : Int -> Fuzzer a -> Fuzzer (Nel a)
+nelN n fuzz =
+    Fuzz.map2 Nel fuzz (listN (n - 1) fuzz)
 
 
 digit : Fuzzer Char

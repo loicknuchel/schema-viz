@@ -1,6 +1,7 @@
 module SqlParser.Parsers.SelectTest exposing (..)
 
 import Expect
+import Libs.Nel exposing (Nel)
 import SqlParser.Parsers.Select exposing (SelectColumn(..), SelectTable(..), parseSelect, parseSelectColumn, parseSelectTable)
 import Test exposing (Test, describe, test)
 
@@ -15,9 +16,8 @@ suite =
                         |> Expect.equal
                             (Ok
                                 { columns =
-                                    [ BasicColumn { table = Nothing, column = "id", alias = Nothing }
-                                    , BasicColumn { table = Nothing, column = "name", alias = Nothing }
-                                    ]
+                                    Nel (BasicColumn { table = Nothing, column = "id", alias = Nothing })
+                                        [ BasicColumn { table = Nothing, column = "name", alias = Nothing } ]
                                 , tables = [ BasicTable { schema = Nothing, table = "users", alias = Nothing } ]
                                 , whereClause = Nothing
                                 }
@@ -29,9 +29,8 @@ suite =
                         |> Expect.equal
                             (Ok
                                 { columns =
-                                    [ BasicColumn { table = Nothing, column = "id", alias = Nothing }
-                                    , BasicColumn { table = Nothing, column = "name", alias = Nothing }
-                                    ]
+                                    Nel (BasicColumn { table = Nothing, column = "id", alias = Nothing })
+                                        [ BasicColumn { table = Nothing, column = "name", alias = Nothing } ]
                                 , tables = [ BasicTable { schema = Nothing, table = "users", alias = Nothing } ]
                                 , whereClause = Nothing
                                 }

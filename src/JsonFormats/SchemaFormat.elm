@@ -1,12 +1,12 @@
-module JsonFormats.SchemaFormat exposing (decodeCanvasProps, decodeColor, decodeColumn, decodeColumnComment, decodeColumnIndex, decodeColumnName, decodeColumnType, decodeColumnValue, decodeFileInfo, decodeForeignKey, decodeForeignKeyName, decodeIndex, decodeIndexName, decodeLayout, decodePosition, decodePosix, decodePrimaryKey, decodePrimaryKeyName, decodeSchema, decodeSchemaInfo, decodeSchemaName, decodeSize, decodeSource, decodeSourceLine, decodeTable, decodeTableComment, decodeTableId, decodeTableName, decodeTableProps, decodeUnique, decodeUniqueName, decodeZoomLevel, encodeCanvasProps, encodeColor, encodeColumn, encodeColumnComment, encodeColumnIndex, encodeColumnName, encodeColumnType, encodeColumnValue, encodeFileInfo, encodeForeignKey, encodeForeignKeyName, encodeIndex, encodeIndexName, encodeLayout, encodePosition, encodePosix, encodePrimaryKey, encodePrimaryKeyName, encodeSchema, encodeSchemaInfo, encodeSchemaName, encodeSize, encodeSource, encodeSourceLine, encodeTable, encodeTableComment, encodeTableId, encodeTableName, encodeTableProps, encodeUnique, encodeUniqueName, encodeZoomLevel)
+module JsonFormats.SchemaFormat exposing (decodeCanvasProps, decodeColor, decodeColumn, decodeColumnComment, decodeColumnIndex, decodeColumnName, decodeColumnType, decodeColumnValue, decodeFileInfo, decodeForeignKey, decodeForeignKeyName, decodeIndex, decodeIndexName, decodePosition, decodePosix, decodePrimaryKey, decodePrimaryKeyName, decodeSchema, decodeSchemaInfo, decodeSchemaName, decodeSize, decodeSource, decodeSourceLine, decodeTableComment, decodeTableId, decodeTableName, decodeTableProps, decodeUnique, decodeUniqueName, decodeZoomLevel, encodeCanvasProps, encodeColor, encodeColumn, encodeColumnComment, encodeColumnIndex, encodeColumnName, encodeColumnType, encodeColumnValue, encodeFileInfo, encodeForeignKey, encodeForeignKeyName, encodeIndex, encodeIndexName, encodePosition, encodePosix, encodePrimaryKey, encodePrimaryKeyName, encodeSchema, encodeSchemaInfo, encodeSchemaName, encodeSize, encodeSource, encodeSourceLine, encodeTableComment, encodeTableId, encodeTableName, encodeTableProps, encodeUnique, encodeUniqueName, encodeZoomLevel)
 
 import Dict
 import Json.Decode as Decode
 import Json.Encode as Encode exposing (Value)
-import Libs.Dict as D
 import Libs.Json.Decode as D
 import Libs.Json.Encode as E
 import Libs.Maybe as M
+import Libs.Ned as Ned
 import Models.Schema exposing (CanvasProps, Column, ColumnComment(..), ColumnIndex(..), ColumnName, ColumnType(..), ColumnValue(..), FileInfo, ForeignKey, ForeignKeyName(..), Index, IndexName(..), Layout, PrimaryKey, PrimaryKeyName(..), Schema, SchemaInfo, SchemaName, Source, SourceLine, Table, TableComment(..), TableId, TableName, TableProps, Unique, UniqueName(..), buildSchema, initLayout, stringAsTableId, tableIdAsString)
 import Models.Utils exposing (Color, Position, Size, ZoomLevel)
 import Time
@@ -76,10 +76,10 @@ encodeTable value =
     E.object
         [ ( "schema", value.schema |> encodeSchemaName )
         , ( "table", value.table |> encodeTableName )
-        , ( "columns", value.columns |> Dict.values |> Encode.list encodeColumn )
+        , ( "columns", value.columns |> Ned.values |> E.nel encodeColumn )
         , ( "primaryKey", value.primaryKey |> encodeMaybe encodePrimaryKey )
-        , ( "uniques", value.uniques |> Encode.list encodeUnique )
-        , ( "indexes", value.indexes |> Encode.list encodeIndex )
+        , ( "uniques", value.uniques |> encodeMaybeWithoutDefault (\_ -> Encode.list encodeUnique) [] )
+        , ( "indexes", value.indexes |> encodeMaybeWithoutDefault (\_ -> Encode.list encodeIndex) [] )
         , ( "comment", value.comment |> encodeMaybe encodeTableComment )
         , ( "sources", value.sources |> encodeMaybeWithoutDefault (\_ -> Encode.list encodeSource) [] )
         ]
@@ -90,10 +90,10 @@ decodeTable =
     Decode.map8 (\schema table columns primaryKey uniques indexes comment sources -> Table ( schema, table ) schema table columns primaryKey uniques indexes comment sources)
         (Decode.field "schema" decodeSchemaName)
         (Decode.field "table" decodeTableName)
-        (Decode.field "columns" (Decode.list decodeColumn |> Decode.map (D.fromList .column)))
+        (Decode.field "columns" (D.nel decodeColumn |> Decode.map (Ned.fromNelMap .column)))
         (Decode.maybe (Decode.field "primaryKey" decodePrimaryKey))
-        (Decode.field "uniques" (Decode.list decodeUnique))
-        (Decode.field "indexes" (Decode.list decodeIndex))
+        (decodeMaybeWithDefault (\_ -> Decode.field "uniques" (Decode.list decodeUnique)) [])
+        (decodeMaybeWithDefault (\_ -> Decode.field "indexes" (Decode.list decodeIndex)) [])
         (Decode.maybe (Decode.field "comment" decodeTableComment))
         (decodeMaybeWithDefault (\_ -> Decode.field "sources" (Decode.list decodeSource)) [])
 
@@ -102,9 +102,9 @@ encodeColumn : Column -> Value
 encodeColumn value =
     E.object
         [ ( "index", value.index |> encodeColumnIndex )
-        , ( "column", value.column |> encodeColumnName )
+        , ( "name", value.column |> encodeColumnName )
         , ( "type", value.kind |> encodeColumnType )
-        , ( "nullable", value.nullable |> Encode.bool )
+        , ( "nullable", value.nullable |> encodeMaybeWithoutDefault (\_ -> Encode.bool) True )
         , ( "default", value.default |> encodeMaybe encodeColumnValue )
         , ( "foreignKey", value.foreignKey |> encodeMaybe encodeForeignKey )
         , ( "comment", value.comment |> encodeMaybe encodeColumnComment )
@@ -115,9 +115,9 @@ decodeColumn : Decode.Decoder Column
 decodeColumn =
     Decode.map7 Column
         (Decode.field "index" decodeColumnIndex)
-        (Decode.field "column" decodeColumnName)
+        (Decode.field "name" decodeColumnName)
         (Decode.field "type" decodeColumnType)
-        (Decode.field "nullable" Decode.bool)
+        (decodeMaybeWithDefault (\_ -> Decode.field "nullable" Decode.bool) True)
         (Decode.maybe (Decode.field "default" decodeColumnValue))
         (Decode.maybe (Decode.field "foreignKey" decodeForeignKey))
         (Decode.maybe (Decode.field "comment" decodeColumnComment))
@@ -126,42 +126,42 @@ decodeColumn =
 encodePrimaryKey : PrimaryKey -> Value
 encodePrimaryKey value =
     E.object
-        [ ( "columns", value.columns |> Encode.list encodeColumnName )
-        , ( "name", value.name |> encodePrimaryKeyName )
+        [ ( "name", value.name |> encodePrimaryKeyName )
+        , ( "columns", value.columns |> E.nel encodeColumnName )
         ]
 
 
 decodePrimaryKey : Decode.Decoder PrimaryKey
 decodePrimaryKey =
     Decode.map2 PrimaryKey
-        (Decode.field "columns" (Decode.list decodeColumnName))
         (Decode.field "name" decodePrimaryKeyName)
+        (Decode.field "columns" (D.nel decodeColumnName))
 
 
 encodeForeignKey : ForeignKey -> Value
 encodeForeignKey value =
     E.object
-        [ ( "schema", value.schema |> encodeSchemaName )
-        , ( "table", value.table |> encodeTableName )
+        [ ( "name", value.name |> encodeForeignKeyName )
+        , ( "schema", value.tableId |> Tuple.first |> encodeSchemaName )
+        , ( "table", value.tableId |> Tuple.second |> encodeTableName )
         , ( "column", value.column |> encodeColumnName )
-        , ( "name", value.name |> encodeForeignKeyName )
         ]
 
 
 decodeForeignKey : Decode.Decoder ForeignKey
 decodeForeignKey =
-    Decode.map4 (\schema table column name -> ForeignKey ( schema, table ) schema table column name)
+    Decode.map4 (\name schema table column -> ForeignKey name ( schema, table ) column)
+        (Decode.field "name" decodeForeignKeyName)
         (Decode.field "schema" decodeSchemaName)
         (Decode.field "table" decodeTableName)
         (Decode.field "column" decodeColumnName)
-        (Decode.field "name" decodeForeignKeyName)
 
 
 encodeUnique : Unique -> Value
 encodeUnique value =
     E.object
         [ ( "name", value.name |> encodeUniqueName )
-        , ( "columns", value.columns |> Encode.list encodeColumnName )
+        , ( "columns", value.columns |> E.nel encodeColumnName )
         , ( "definition", value.definition |> Encode.string )
         ]
 
@@ -170,7 +170,7 @@ decodeUnique : Decode.Decoder Unique
 decodeUnique =
     Decode.map3 Unique
         (Decode.field "name" decodeUniqueName)
-        (Decode.field "columns" (Decode.list decodeColumnName))
+        (Decode.field "columns" (D.nel decodeColumnName))
         (Decode.field "definition" Decode.string)
 
 
@@ -178,7 +178,7 @@ encodeIndex : Index -> Value
 encodeIndex value =
     E.object
         [ ( "name", value.name |> encodeIndexName )
-        , ( "columns", value.columns |> Encode.list encodeColumnName )
+        , ( "columns", value.columns |> E.nel encodeColumnName )
         , ( "definition", value.definition |> Encode.string )
         ]
 
@@ -187,7 +187,7 @@ decodeIndex : Decode.Decoder Index
 decodeIndex =
     Decode.map3 Index
         (Decode.field "name" decodeIndexName)
-        (Decode.field "columns" (Decode.list decodeColumnName))
+        (Decode.field "columns" (D.nel decodeColumnName))
         (Decode.field "definition" Decode.string)
 
 
@@ -225,8 +225,8 @@ encodeLayout : Layout -> Value
 encodeLayout value =
     E.object
         [ ( "canvas", value.canvas |> encodeCanvasProps )
-        , ( "tables", value.tables |> Encode.dict tableIdAsString encodeTableProps )
-        , ( "hiddenTables", value.hiddenTables |> Encode.dict tableIdAsString encodeTableProps )
+        , ( "tables", value.tables |> encodeMaybeWithoutDefault (\_ -> Encode.dict tableIdAsString encodeTableProps) Dict.empty )
+        , ( "hiddenTables", value.hiddenTables |> encodeMaybeWithoutDefault (\_ -> Encode.dict tableIdAsString encodeTableProps) Dict.empty )
         ]
 
 
@@ -234,8 +234,8 @@ decodeLayout : Decode.Decoder Layout
 decodeLayout =
     Decode.map3 Layout
         (Decode.field "canvas" decodeCanvasProps)
-        (Decode.field "tables" (D.dict stringAsTableId decodeTableProps))
-        (Decode.field "hiddenTables" (D.dict stringAsTableId decodeTableProps))
+        (decodeMaybeWithDefault (\_ -> Decode.field "tables" (D.dict stringAsTableId decodeTableProps)) Dict.empty)
+        (decodeMaybeWithDefault (\_ -> Decode.field "hiddenTables" (D.dict stringAsTableId decodeTableProps)) Dict.empty)
 
 
 encodeCanvasProps : CanvasProps -> Value
@@ -258,8 +258,8 @@ encodeTableProps value =
     E.object
         [ ( "position", value.position |> encodePosition )
         , ( "color", value.color |> encodeColor )
-        , ( "selected", value.selected |> Encode.bool )
-        , ( "columns", value.columns |> Encode.list encodeColumnName )
+        , ( "selected", value.selected |> encodeMaybeWithoutDefault (\_ -> Encode.bool) False )
+        , ( "columns", value.columns |> encodeMaybeWithoutDefault (\_ -> Encode.list encodeColumnName) [] )
         ]
 
 
@@ -268,8 +268,8 @@ decodeTableProps =
     Decode.map4 TableProps
         (Decode.field "position" decodePosition)
         (Decode.field "color" decodeColor)
-        (Decode.field "selected" Decode.bool)
-        (Decode.field "columns" (Decode.list decodeColumnName))
+        (decodeMaybeWithDefault (\_ -> Decode.field "selected" Decode.bool) False)
+        (decodeMaybeWithDefault (\_ -> Decode.field "columns" (Decode.list decodeColumnName)) [])
 
 
 encodePosition : Position -> Value

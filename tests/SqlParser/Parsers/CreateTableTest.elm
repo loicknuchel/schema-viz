@@ -1,6 +1,7 @@
 module SqlParser.Parsers.CreateTableTest exposing (..)
 
 import Expect
+import Libs.Nel exposing (Nel)
 import SqlParser.Parsers.CreateTable exposing (parseCreateTable, parseCreateTableColumn)
 import SqlParser.Utils.HelpersTest exposing (stmCheck)
 import Test exposing (Test, describe, test)
@@ -10,7 +11,7 @@ suite : Test
 suite =
     describe "CreateTable"
         [ describe "parseCreateTable"
-            [ stmCheck "basic" "CREATE TABLE aaa.bbb (ccc int);" parseCreateTable (\s -> Ok { schema = Just "aaa", table = "bbb", columns = [ { name = "ccc", kind = "int", nullable = True, default = Nothing, primaryKey = Nothing, foreignKey = Nothing } ], source = s })
+            [ stmCheck "basic" "CREATE TABLE aaa.bbb (ccc int);" parseCreateTable (\s -> Ok { schema = Just "aaa", table = "bbb", columns = Nel { name = "ccc", kind = "int", nullable = True, default = Nothing, primaryKey = Nothing, foreignKey = Nothing } [], source = s })
             , stmCheck "complex"
                 "CREATE TABLE public.users (id bigint NOT NULL, name character varying(255), price numeric(8,2)) WITH (autovacuum_enabled='false');"
                 parseCreateTable
@@ -19,15 +20,15 @@ suite =
                         { schema = Just "public"
                         , table = "users"
                         , columns =
-                            [ { name = "id", kind = "bigint", nullable = False, default = Nothing, primaryKey = Nothing, foreignKey = Nothing }
-                            , { name = "name", kind = "character varying(255)", nullable = True, default = Nothing, primaryKey = Nothing, foreignKey = Nothing }
-                            , { name = "price", kind = "numeric(8,2)", nullable = True, default = Nothing, primaryKey = Nothing, foreignKey = Nothing }
-                            ]
+                            Nel { name = "id", kind = "bigint", nullable = False, default = Nothing, primaryKey = Nothing, foreignKey = Nothing }
+                                [ { name = "name", kind = "character varying(255)", nullable = True, default = Nothing, primaryKey = Nothing, foreignKey = Nothing }
+                                , { name = "price", kind = "numeric(8,2)", nullable = True, default = Nothing, primaryKey = Nothing, foreignKey = Nothing }
+                                ]
                         , source = s
                         }
                 )
-            , stmCheck "with options" "CREATE TABLE p.table (id bigint NOT NULL)    WITH (autovacuum_analyze_threshold='100000');" parseCreateTable (\s -> Ok { schema = Just "p", table = "table", columns = [ { name = "id", kind = "bigint", nullable = False, default = Nothing, primaryKey = Nothing, foreignKey = Nothing } ], source = s })
-            , stmCheck "without schema, lowercase and no space before body" "create table migrations(version varchar not null);" parseCreateTable (\s -> Ok { schema = Nothing, table = "migrations", columns = [ { name = "version", kind = "varchar", nullable = False, default = Nothing, primaryKey = Nothing, foreignKey = Nothing } ], source = s })
+            , stmCheck "with options" "CREATE TABLE p.table (id bigint NOT NULL)    WITH (autovacuum_analyze_threshold='100000');" parseCreateTable (\s -> Ok { schema = Just "p", table = "table", columns = Nel { name = "id", kind = "bigint", nullable = False, default = Nothing, primaryKey = Nothing, foreignKey = Nothing } [], source = s })
+            , stmCheck "without schema, lowercase and no space before body" "create table migrations(version varchar not null);" parseCreateTable (\s -> Ok { schema = Nothing, table = "migrations", columns = Nel { name = "version", kind = "varchar", nullable = False, default = Nothing, primaryKey = Nothing, foreignKey = Nothing } [], source = s })
             , stmCheck "bad" "bad" parseCreateTable (\_ -> Err [ "Can't parse table: 'bad'" ])
             ]
         , describe "parseCreateTableColumn"

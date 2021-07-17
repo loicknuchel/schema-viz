@@ -2,6 +2,7 @@ module SqlParser.Parsers.Select exposing (SelectColumn(..), SelectColumnBasic, S
 
 import Libs.List as L
 import Libs.Maybe as M
+import Libs.Nel as Nel exposing (Nel)
 import Libs.Regex as R
 import SqlParser.Utils.Helpers exposing (commaSplit, noEnclosingQuotes)
 import SqlParser.Utils.Types exposing (ParseError, RawSql, SqlColumnName, SqlSchemaName, SqlTableName)
@@ -12,7 +13,7 @@ import SqlParser.Utils.Types exposing (ParseError, RawSql, SqlColumnName, SqlSch
 
 
 type alias SelectInfo =
-    { columns : List SelectColumn, tables : List SelectTable, whereClause : Maybe String }
+    { columns : Nel SelectColumn, tables : List SelectTable, whereClause : Maybe String }
 
 
 type SelectColumn
@@ -50,7 +51,7 @@ parseSelect select =
     case select |> R.matches "^SELECT(?:[ \t]+DISTINCT ON \\([^)]+\\))?[ \t]+(?<columns>.+?)(?:[ \t]+FROM[ \t]+(?<tables>.+?))?(?:[ \t]+WHERE[ \t]+(?<where>.+?))?$" of
         (Just columnsStr) :: tablesStr :: whereClause :: [] ->
             Result.map2 (\columns tables -> { columns = columns, tables = tables, whereClause = whereClause })
-                (commaSplit columnsStr |> List.map String.trim |> List.map parseSelectColumn |> L.resultSeq)
+                (commaSplit columnsStr |> List.map String.trim |> List.map parseSelectColumn |> L.resultSeq |> Result.andThen (\cols -> cols |> Nel.fromList |> Result.fromMaybe [ "Select can't have empty columns" ]))
                 (tablesStr |> M.toList |> List.map parseSelectTable |> L.resultSeq)
 
         _ ->

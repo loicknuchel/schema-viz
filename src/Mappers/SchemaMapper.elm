@@ -1,7 +1,7 @@
 module Mappers.SchemaMapper exposing (buildSchemaFromSql)
 
 import Dict
-import Libs.Dict as D
+import Libs.Ned as Ned
 import Libs.Nel as Nel
 import Models.Schema exposing (Column, ColumnComment(..), ColumnIndex(..), ColumnType(..), ColumnValue(..), ForeignKey, ForeignKeyName(..), Index, IndexName(..), PrimaryKey, PrimaryKeyName(..), Schema, SchemaInfo, Source, Table, TableComment(..), TableId, Unique, UniqueName(..), buildSchema, initLayout)
 import SqlParser.SchemaParser exposing (SqlColumn, SqlForeignKey, SqlIndex, SqlPrimaryKey, SqlSchema, SqlTable, SqlUnique)
@@ -27,7 +27,7 @@ buildSqlTable table =
     { id = tableIdFromSqlTable table
     , schema = table.schema
     , table = table.table
-    , columns = table.columns |> List.indexedMap buildSqlColumn |> D.fromList .column
+    , columns = table.columns |> Nel.indexedMap buildSqlColumn |> Ned.fromNelMap .column
     , primaryKey = table.primaryKey |> Maybe.map buildSqlPrimaryKey
     , indexes = table.indexes |> List.map buildSqlIndex
     , uniques = table.uniques |> List.map buildSqlUnique
@@ -57,9 +57,7 @@ buildSqlPrimaryKey pk =
 
 buildSqlForeignKey : SqlForeignKey -> ForeignKey
 buildSqlForeignKey fk =
-    { tableId = fk |> tableIdFromSqlForeignKey
-    , schema = fk.schema
-    , table = fk.table
+    { tableId = ( fk.schema, fk.table )
     , column = fk.column
     , name = fk.name |> ForeignKeyName
     }
@@ -89,8 +87,3 @@ statementAsSource statement =
 tableIdFromSqlTable : SqlTable -> TableId
 tableIdFromSqlTable table =
     ( table.schema, table.table )
-
-
-tableIdFromSqlForeignKey : SqlForeignKey -> TableId
-tableIdFromSqlForeignKey fk =
-    ( fk.schema, fk.table )

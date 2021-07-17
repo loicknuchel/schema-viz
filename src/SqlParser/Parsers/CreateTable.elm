@@ -1,6 +1,7 @@
 module SqlParser.Parsers.CreateTable exposing (ParsedColumn, ParsedTable, parseCreateTable, parseCreateTableColumn)
 
 import Libs.List as L
+import Libs.Nel as Nel exposing (Nel)
 import Libs.Regex as R
 import SqlParser.Utils.Helpers exposing (buildRawSql, commaSplit, noEnclosingQuotes)
 import SqlParser.Utils.Types exposing (ParseError, RawSql, SqlColumnName, SqlColumnType, SqlColumnValue, SqlConstraintName, SqlForeignKeyRef, SqlSchemaName, SqlStatement, SqlTableName)
@@ -13,7 +14,7 @@ import SqlParser.Utils.Types exposing (ParseError, RawSql, SqlColumnName, SqlCol
 type alias ParsedTable =
     { schema : Maybe SqlSchemaName
     , table : SqlTableName
-    , columns : List ParsedColumn
+    , columns : Nel ParsedColumn
     , source : SqlStatement
     }
 
@@ -38,7 +39,8 @@ parseCreateTable statement =
                 |> List.filter (\c -> not (c |> String.toUpper |> String.startsWith "CONSTRAINT"))
                 |> List.map parseCreateTableColumn
                 |> L.resultSeq
-                |> Result.map (\c -> { schema = schema, table = table, columns = c, source = statement })
+                |> Result.andThen (\cols -> cols |> Nel.fromList |> Result.fromMaybe [ "Create table can't have empty columns" ])
+                |> Result.map (\cols -> { schema = schema, table = table, columns = cols, source = statement })
 
         _ ->
             Err [ "Can't parse table: '" ++ buildRawSql statement ++ "'" ]

@@ -2,6 +2,7 @@ module SqlParser.SchemaParserTest exposing (..)
 
 import Dict
 import Expect
+import Libs.Nel exposing (Nel)
 import SqlParser.SchemaParser exposing (SqlTable, buildStatements, parseLines, updateColumn, updateTable)
 import SqlParser.Utils.Types exposing (SqlLine, SqlStatement)
 import Test exposing (Test, describe, test)
@@ -80,9 +81,8 @@ users =
     { schema = "public"
     , table = "users"
     , columns =
-        [ { name = "id", kind = "bigint", nullable = False, default = Nothing, foreignKey = Nothing, comment = Nothing }
-        , { name = "name", kind = "character varying(255)", nullable = True, default = Nothing, foreignKey = Nothing, comment = Nothing }
-        ]
+        Nel { name = "id", kind = "bigint", nullable = False, default = Nothing, foreignKey = Nothing, comment = Nothing }
+            [ { name = "name", kind = "character varying(255)", nullable = True, default = Nothing, foreignKey = Nothing, comment = Nothing } ]
     , primaryKey = Nothing
     , indexes = []
     , uniques = []
@@ -97,9 +97,8 @@ usersWithComment =
     { schema = "public"
     , table = "users"
     , columns =
-        [ { name = "id", kind = "bigint", nullable = False, default = Nothing, foreignKey = Nothing, comment = Nothing }
-        , { name = "name", kind = "character varying(255)", nullable = True, default = Nothing, foreignKey = Nothing, comment = Nothing }
-        ]
+        Nel { name = "id", kind = "bigint", nullable = False, default = Nothing, foreignKey = Nothing, comment = Nothing }
+            [ { name = "name", kind = "character varying(255)", nullable = True, default = Nothing, foreignKey = Nothing, comment = Nothing } ]
     , primaryKey = Nothing
     , indexes = []
     , uniques = []
@@ -114,9 +113,8 @@ usersWithIdComment =
     { schema = "public"
     , table = "users"
     , columns =
-        [ { name = "id", kind = "bigint", nullable = False, default = Nothing, foreignKey = Nothing, comment = Just "A comment" }
-        , { name = "name", kind = "character varying(255)", nullable = True, default = Nothing, foreignKey = Nothing, comment = Nothing }
-        ]
+        Nel { name = "id", kind = "bigint", nullable = False, default = Nothing, foreignKey = Nothing, comment = Just "A comment" }
+            [ { name = "name", kind = "character varying(255)", nullable = True, default = Nothing, foreignKey = Nothing, comment = Nothing } ]
     , primaryKey = Nothing
     , indexes = []
     , uniques = []

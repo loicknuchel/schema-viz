@@ -3,8 +3,9 @@ module TestHelpers.Fuzzers exposing (..)
 import Conf exposing (conf)
 import Dict exposing (Dict)
 import Fuzz exposing (Fuzzer)
-import Libs.Dict as D
 import Libs.Fuzz as F
+import Libs.Ned as Ned
+import Libs.Nel exposing (Nel)
 import Models.Schema exposing (CanvasProps, Column, ColumnComment(..), ColumnIndex(..), ColumnName, ColumnType(..), ColumnValue(..), FileInfo, ForeignKey, ForeignKeyName(..), Index, IndexName(..), Layout, LayoutName, PrimaryKey, PrimaryKeyName(..), Schema, SchemaId, SchemaInfo, SchemaName, Source, SourceLine, Table, TableComment(..), TableId, TableName, TableProps, Unique, UniqueName(..), buildSchema)
 import Models.Utils exposing (Color, Position, Size, ZoomLevel)
 import Time
@@ -30,7 +31,7 @@ table =
     F.map8 (\s t c p u i co so -> Table ( s, t ) s t c p u i co so)
         schemaName
         tableName
-        (listSmall column |> Fuzz.map (D.fromList .column))
+        (nelSmall column |> Fuzz.map (Ned.fromNelMap .column))
         (Fuzz.maybe primaryKey)
         (listSmall unique)
         (listSmall index)
@@ -45,22 +46,22 @@ column =
 
 primaryKey : Fuzzer PrimaryKey
 primaryKey =
-    Fuzz.map2 PrimaryKey (listSmall columnName) primaryKeyName
+    Fuzz.map2 PrimaryKey primaryKeyName (nelSmall columnName)
 
 
 foreignKey : Fuzzer ForeignKey
 foreignKey =
-    Fuzz.map4 (\s t c f -> ForeignKey ( s, t ) s t c f) schemaName tableName columnName foreignKeyName
+    Fuzz.map4 (\f s t c -> ForeignKey f ( s, t ) c) foreignKeyName schemaName tableName columnName
 
 
 unique : Fuzzer Unique
 unique =
-    Fuzz.map3 Unique uniqueName (listSmall columnName) text
+    Fuzz.map3 Unique uniqueName (nelSmall columnName) text
 
 
 index : Fuzzer Index
 index =
-    Fuzz.map3 Index indexName (listSmall columnName) text
+    Fuzz.map3 Index indexName (nelSmall columnName) text
 
 
 source : Fuzzer Source
@@ -201,6 +202,11 @@ listSmall fuzz =
     -- TODO: should find a way to randomize list size but keep it small efficiently
     -- Fuzz.list can generate long lists & F.listN generate only size of n list, generating a random int then chaining with listN will be best
     F.listN 3 fuzz
+
+
+nelSmall : Fuzzer a -> Fuzzer (Nel a)
+nelSmall fuzz =
+    F.nelN 3 fuzz
 
 
 stringSmall : Fuzzer String

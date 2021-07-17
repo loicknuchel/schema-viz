@@ -5,7 +5,8 @@ import Dict exposing (Dict)
 import Libs.Dict as D
 import Libs.List as L
 import Libs.Models exposing (HtmlId)
-import Libs.Nel exposing (Nel)
+import Libs.Ned as Ned exposing (Ned)
+import Libs.Nel as Nel exposing (Nel)
 import Libs.String as S
 import Models.Utils exposing (Color, Position, Size, ZoomLevel)
 import Time
@@ -57,7 +58,7 @@ type alias Table =
     { id : TableId
     , schema : SchemaName
     , table : TableName
-    , columns : Dict ColumnName Column
+    , columns : Ned ColumnName Column
     , primaryKey : Maybe PrimaryKey
     , uniques : List Unique
     , indexes : List Index
@@ -78,19 +79,19 @@ type alias Column =
 
 
 type alias PrimaryKey =
-    { columns : List ColumnName, name : PrimaryKeyName }
+    { name : PrimaryKeyName, columns : Nel ColumnName }
 
 
 type alias ForeignKey =
-    { tableId : TableId, schema : SchemaName, table : TableName, column : ColumnName, name : ForeignKeyName }
+    { name : ForeignKeyName, tableId : TableId, column : ColumnName }
 
 
 type alias Unique =
-    { name : UniqueName, columns : List ColumnName, definition : String }
+    { name : UniqueName, columns : Nel ColumnName, definition : String }
 
 
 type alias Index =
-    { name : IndexName, columns : List ColumnName, definition : String }
+    { name : IndexName, columns : Nel ColumnName, definition : String }
 
 
 type alias Source =
@@ -221,7 +222,7 @@ buildSchema : List SchemaId -> SchemaId -> SchemaInfo -> List Table -> Layout ->
 buildSchema takenIds id info tables layout layoutName layouts =
     { id = S.uniqueId takenIds id
     , info = info
-    , tables = tables |> D.fromList .id
+    , tables = tables |> D.fromListMap .id
     , incomingRelations = buildIncomingRelations tables
     , layout = layout
     , layoutName = layoutName
@@ -241,7 +242,7 @@ buildRelations tables =
 
 outgoingRelations : Table -> List RelationRef
 outgoingRelations table =
-    table.columns |> Dict.values |> List.filterMap (\col -> col.foreignKey |> Maybe.map (buildRelation table col))
+    table.columns |> Ned.values |> Nel.filterMap (\col -> col.foreignKey |> Maybe.map (buildRelation table col))
 
 
 buildRelation : Table -> Column -> ForeignKey -> RelationRef
@@ -259,7 +260,7 @@ initTableProps table =
     { position = Position 0 0
     , color = computeColor table.id
     , selected = False
-    , columns = table.columns |> Dict.values |> List.sortBy (\c -> c.index |> extractColumnIndex) |> List.map .column
+    , columns = table.columns |> Ned.values |> Nel.toList |> List.sortBy (\c -> c.index |> extractColumnIndex) |> List.map .column
     }
 
 

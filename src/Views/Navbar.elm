@@ -9,6 +9,8 @@ import Html.Attributes exposing (alt, autocomplete, class, height, href, id, pla
 import Html.Events exposing (onClick, onInput)
 import Libs.Bootstrap exposing (BsColor(..), Toggle(..), ariaExpanded, ariaLabel, bsButton, bsToggle, bsToggleCollapse, bsToggleDropdown, bsToggleModal, bsToggleOffcanvas)
 import Libs.Models exposing (Text)
+import Libs.Ned as Ned
+import Libs.Nel as Nel exposing (Nel)
 import Models exposing (Msg(..), Search)
 import Models.Schema exposing (Column, Layout, LayoutName, Table, TableId, showTableId)
 import Views.Helpers exposing (extractColumnName)
@@ -118,7 +120,7 @@ asSuggestions layout search table =
     , content = viewIcon Icon.angleRight :: text " " :: highlightMatch search (showTableId table.id)
     , msg = ShowTable table.id
     }
-        :: (table.columns |> Dict.values |> List.filterMap (columnSuggestion search table))
+        :: (table.columns |> Ned.values |> Nel.filterMap (columnSuggestion search table))
 
 
 columnSuggestion : Search -> Table -> Column -> Maybe Suggestion
@@ -180,18 +182,18 @@ matchNotAtBeginning search text =
 columnMatchingBonus : Search -> Table -> Float
 columnMatchingBonus search table =
     let
-        columnNames : List Text
+        columnNames : Nel Text
         columnNames =
-            Dict.values table.columns |> List.map (\c -> extractColumnName c.column)
+            table.columns |> Ned.values |> Nel.map (\c -> extractColumnName c.column)
     in
     if not (search == "") then
-        if columnNames |> List.any (\columnName -> not (exactMatch search columnName == 0)) then
+        if columnNames |> Nel.any (\columnName -> not (exactMatch search columnName == 0)) then
             0.5
 
-        else if columnNames |> List.any (\columnName -> not (matchAtBeginning search columnName == 0)) then
+        else if columnNames |> Nel.any (\columnName -> not (matchAtBeginning search columnName == 0)) then
             0.2
 
-        else if columnNames |> List.any (\columnName -> not (matchNotAtBeginning search columnName == 0)) then
+        else if columnNames |> Nel.any (\columnName -> not (matchNotAtBeginning search columnName == 0)) then
             0.1
 
         else
@@ -212,11 +214,16 @@ shortNameBonus name =
 
 manyColumnBonus : Table -> Float
 manyColumnBonus table =
-    if Dict.size table.columns == 0 then
+    let
+        size : Int
+        size =
+            Ned.size table.columns
+    in
+    if size == 0 then
         -0.3
 
     else
-        -1 / toFloat (Dict.size table.columns)
+        -1 / toFloat size
 
 
 tableShownMalus : Layout -> Table -> Float

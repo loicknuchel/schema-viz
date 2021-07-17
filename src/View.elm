@@ -10,6 +10,7 @@ import Libs.Html.Events exposing (onWheel)
 import Libs.List as L
 import Libs.Maybe as M
 import Libs.Models exposing (HtmlId)
+import Libs.Ned as Ned
 import Models exposing (Model, Msg(..))
 import Models.Schema exposing (ColumnRef, Layout, Relation, RelationRef, RelationTarget, Table, TableId, outgoingRelations, tableIdAsHtmlId)
 import Models.Utils exposing (Position, Size, ZoomLevel)
@@ -107,5 +108,5 @@ buildRelation tables layout sizes rel =
 
 buildRelationTarget : Dict TableId Table -> Layout -> Dict HtmlId Size -> ColumnRef -> Maybe RelationTarget
 buildRelationTarget tables layout sizes ref =
-    (tables |> Dict.get ref.table |> M.andThenZip (\table -> table.columns |> Dict.get ref.column))
+    (tables |> Dict.get ref.table |> M.andThenZip (\table -> table.columns |> Ned.get ref.column))
         |> Maybe.map (\( table, column ) -> { table = table, column = column, props = M.zip (layout.tables |> Dict.get ref.table) (sizes |> Dict.get (tableIdAsHtmlId ref.table)) })

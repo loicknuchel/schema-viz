@@ -5,6 +5,7 @@ import Dict exposing (Dict)
 import Libs.List as L
 import Libs.Maybe as M
 import Libs.Models exposing (FileContent, FileName)
+import Libs.Nel as Nel exposing (Nel)
 import SqlParser.Parsers.AlterTable exposing (ColumnUpdate(..), SqlPredicate, TableConstraint(..), TableUpdate(..))
 import SqlParser.Parsers.Comment exposing (SqlComment)
 import SqlParser.Parsers.CreateTable exposing (ParsedColumn, ParsedTable)
@@ -33,7 +34,7 @@ type alias SqlTableId =
 type alias SqlTable =
     { schema : SqlSchemaName
     , table : SqlTableName
-    , columns : List SqlColumn
+    , columns : Nel SqlColumn
     , primaryKey : Maybe SqlPrimaryKey
     , indexes : List SqlIndex
     , uniques : List SqlUnique
@@ -54,7 +55,7 @@ type alias SqlColumn =
 
 
 type alias SqlPrimaryKey =
-    { name : SqlConstraintName, columns : List SqlColumnName }
+    { name : SqlConstraintName, columns : Nel SqlColumnName }
 
 
 type alias SqlForeignKey =
@@ -62,11 +63,11 @@ type alias SqlForeignKey =
 
 
 type alias SqlIndex =
-    { name : SqlConstraintName, columns : List SqlColumnName, definition : String }
+    { name : SqlConstraintName, columns : Nel SqlColumnName, definition : String }
 
 
 type alias SqlUnique =
-    { name : SqlConstraintName, columns : List SqlColumnName, definition : String }
+    { name : SqlConstraintName, columns : Nel SqlColumnName, definition : String }
 
 
 type alias SqlCheck =
@@ -164,7 +165,7 @@ updateColumn id name transform tables =
     updateTable id
         (\table ->
             table.columns
-                |> L.find (\column -> column.name == name)
+                |> Nel.find (\column -> column.name == name)
                 |> Maybe.map (\column -> transform column |> Result.map (\newColumn -> updateTableColumn name (\_ -> newColumn) table))
                 |> Maybe.withDefault (Err [ "Column " ++ name ++ " does not exist in table " ++ id ])
         )
@@ -176,7 +177,7 @@ updateTableColumn column transform table =
     { table
         | columns =
             table.columns
-                |> List.map
+                |> Nel.map
                     (\c ->
                         if c.name == column then
                             transform c
@@ -190,14 +191,16 @@ updateTableColumn column transform table =
 buildTable : SqlSchema -> ParsedTable -> Result (List SchemaError) SqlTable
 buildTable tables table =
     table.columns
+        |> Nel.toList
         |> List.map (buildColumn tables)
         |> L.resultSeq
+        |> Result.andThen (\cols -> cols |> Nel.fromList |> Result.fromMaybe [ "No valid column for table " ++ buildId table.schema table.table ])
         |> Result.map
             (\cols ->
                 { schema = table.schema |> withDefaultSchema
                 , table = table.table
                 , columns = cols
-                , primaryKey = table.columns |> List.filterMap (\c -> c.primaryKey |> Maybe.map (\pk -> { name = pk, columns = [ c.name ] })) |> List.head
+                , primaryKey = table.columns |> Nel.filterMap (\c -> c.primaryKey |> Maybe.map (\pk -> { name = pk, columns = Nel c.name [] })) |> List.head
                 , indexes = []
                 , uniques = []
                 , checks = []
@@ -250,14 +253,12 @@ withPkColumn tables schema table name =
                 |> Maybe.map
                     (\t ->
                         case t.primaryKey |> Maybe.map .columns of
-                            Just [] ->
-                                Err ("Table " ++ buildId schema table ++ " has a primary key with no column...")
-
-                            Just (pk :: []) ->
-                                Ok pk
-
                             Just cols ->
-                                Err ("Table " ++ buildId schema table ++ " has a primary key with more than one column (" ++ String.join ", " cols ++ ")")
+                                if List.isEmpty cols.tail then
+                                    Ok cols.head
+
+                                else
+                                    Err ("Table " ++ buildId schema table ++ " has a primary key with more than one column (" ++ String.join ", " (Nel.toList cols) ++ ")")
 
                             Nothing ->
                                 Err ("No primary key on table " ++ buildId schema table)
@@ -269,7 +270,7 @@ buildView : ParsedView -> SqlTable
 buildView view =
     { schema = view.schema |> withDefaultSchema
     , table = view.table
-    , columns = view.select.columns |> List.map buildViewColumn
+    , columns = view.select.columns |> Nel.map buildViewColumn
     , primaryKey = Nothing
     , indexes = []
     , uniques = []

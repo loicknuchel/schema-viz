@@ -1,7 +1,7 @@
 module Libs.Json.Encode exposing (nel, object)
 
 import Json.Encode as Encode exposing (Value)
-import Libs.Nel exposing (Nel)
+import Libs.Nel as Nel exposing (Nel)
 
 
 
@@ -15,7 +15,4 @@ object attrs =
 
 nel : (a -> Value) -> Nel a -> Encode.Value
 nel encoder value =
-    object
-        [ ( "head", value.head |> encoder )
-        , ( "tail", value.tail |> Encode.list encoder )
-        ]
+    value |> Nel.toList |> Encode.list encoder

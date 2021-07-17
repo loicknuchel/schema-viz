@@ -2,7 +2,7 @@ module Libs.Json.Decode exposing (dict, map9, nel, tuple)
 
 import Dict exposing (Dict)
 import Json.Decode as Decode exposing (Decoder)
-import Libs.Nel exposing (Nel)
+import Libs.Nel as Nel exposing (Nel)
 
 
 
@@ -23,9 +23,7 @@ dict buildKey decoder =
 
 nel : Decode.Decoder a -> Decode.Decoder (Nel a)
 nel decoder =
-    Decode.map2 Nel
-        (Decode.field "head" decoder)
-        (Decode.field "tail" (Decode.list decoder))
+    Decode.list decoder |> Decode.andThen (\l -> l |> Nel.fromList |> Maybe.map Decode.succeed |> Maybe.withDefault (Decode.fail "Non empty list can't be empty"))
 
 
 map9 : (a -> b -> c -> d -> e -> f -> g -> h -> i -> value) -> Decode.Decoder a -> Decode.Decoder b -> Decode.Decoder c -> Decode.Decoder d -> Decode.Decoder e -> Decode.Decoder f -> Decode.Decoder g -> Decode.Decoder h -> Decode.Decoder i -> Decode.Decoder value

@@ -1,6 +1,5 @@
 module Views.Table exposing (viewTable)
 
-import Dict
 import FontAwesome.Icon exposing (viewIcon)
 import FontAwesome.Regular as IconLight
 import FontAwesome.Solid as Icon
@@ -12,6 +11,8 @@ import Libs.Html exposing (divIf)
 import Libs.Html.Events exposing (stopClick)
 import Libs.List as L
 import Libs.Maybe as M
+import Libs.Ned as Ned
+import Libs.Nel as Nel exposing (Nel)
 import Libs.String as S
 import Models exposing (Msg(..))
 import Models.Schema exposing (Column, ColumnComment(..), ColumnName, ColumnRef, ColumnValue(..), ForeignKey, Index, IndexName(..), PrimaryKey, Relation, Table, TableComment(..), TableProps, Unique, UniqueName(..), extractColumnIndex, showTableId, showTableName, tableIdAsHtmlId)
@@ -28,7 +29,7 @@ viewTable zoom table props incomingRelations size =
     let
         hiddenColumns : List Column
         hiddenColumns =
-            table.columns |> Dict.values |> List.filter (\c -> props.columns |> L.hasNot c.column)
+            table.columns |> Ned.values |> Nel.filter (\c -> props.columns |> L.hasNot c.column)
 
         collapseId : String
         collapseId =
@@ -44,7 +45,7 @@ viewTable zoom table props incomingRelations size =
         [ viewHeader zoom table
         , div [ class "columns" ]
             (props.columns
-                |> List.filterMap (\c -> table.columns |> Dict.get c)
+                |> List.filterMap (\c -> table.columns |> Ned.get c)
                 |> List.map (\c -> viewColumn { table = table.id, column = c.column } table.primaryKey table.uniques table.indexes (filterIncomingColumnRelations incomingRelations c) c)
             )
         , divIf (List.length hiddenColumns > 0)
@@ -203,9 +204,9 @@ inIndexes column indexes =
     indexes |> List.filter (\{ columns } -> columns |> hasColumn column)
 
 
-hasColumn : ColumnName -> List ColumnName -> Bool
+hasColumn : ColumnName -> Nel ColumnName -> Bool
 hasColumn column columns =
-    columns |> List.any (\c -> c == column)
+    columns |> Nel.any (\c -> c == column)
 
 
 
@@ -238,8 +239,8 @@ formatIndexTitle indexes =
 
 
 formatReference : ForeignKey -> String
-formatReference { schema, table, column } =
-    showTableName schema table |> withColumnName column
+formatReference { tableId, column } =
+    showTableName (tableId |> Tuple.first) (tableId |> Tuple.second) |> withColumnName column
 
 
 formatUniqueIndexName : UniqueName -> String

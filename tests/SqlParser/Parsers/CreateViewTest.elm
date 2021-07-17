@@ -1,5 +1,6 @@
 module SqlParser.Parsers.CreateViewTest exposing (..)
 
+import Libs.Nel exposing (Nel)
 import SqlParser.Parsers.CreateView exposing (parseView)
 import SqlParser.Parsers.Select exposing (SelectColumn(..), SelectInfo, SelectTable(..))
 import SqlParser.Utils.HelpersTest exposing (stmCheck)
@@ -21,12 +22,9 @@ WITH NO DATA;
 select : SelectInfo
 select =
     { columns =
-        [ BasicColumn { table = Just "accounts", column = "id", alias = Just "account_id" }
-        , BasicColumn { table = Just "accounts", column = "email", alias = Nothing }
-        ]
-    , tables =
-        [ BasicTable { schema = Just "public", table = "accounts", alias = Nothing }
-        ]
+        Nel (BasicColumn { table = Just "accounts", column = "id", alias = Just "account_id" })
+            [ BasicColumn { table = Just "accounts", column = "email", alias = Nothing } ]
+    , tables = [ BasicTable { schema = Just "public", table = "accounts", alias = Nothing } ]
     , whereClause = Just "accounts.deleted_at IS NULL"
     }
 

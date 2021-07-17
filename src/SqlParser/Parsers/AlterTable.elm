@@ -1,5 +1,6 @@
 module SqlParser.Parsers.AlterTable exposing (CheckInner, ColumnUpdate(..), ForeignKeyInner, PrimaryKeyInner, SqlPredicate, SqlUser, TableConstraint(..), TableUpdate(..), UniqueInner, parseAlterTable)
 
+import Libs.Nel as Nel exposing (Nel)
 import Libs.Regex as R
 import SqlParser.Utils.Helpers exposing (buildRawSql, parseIndexDefinition)
 import SqlParser.Utils.Types exposing (ParseError, RawSql, SqlColumnName, SqlColumnValue, SqlConstraintName, SqlForeignKeyRef, SqlSchemaName, SqlStatement, SqlTableName)
@@ -23,7 +24,7 @@ type TableConstraint
 
 
 type alias PrimaryKeyInner =
-    List SqlColumnName
+    Nel SqlColumnName
 
 
 type alias ForeignKeyInner =
@@ -31,7 +32,7 @@ type alias ForeignKeyInner =
 
 
 type alias UniqueInner =
-    { columns : List SqlColumnName, definition : String }
+    { columns : Nel SqlColumnName, definition : String }
 
 
 type alias CheckInner =
@@ -98,7 +99,7 @@ parseAlterTableAddConstraintPrimaryKey : RawSql -> Result (List ParseError) Prim
 parseAlterTableAddConstraintPrimaryKey constraint =
     case constraint |> R.matches "^PRIMARY KEY[ \t]+\\((?<columns>[^)]+)\\)$" of
         (Just columns) :: [] ->
-            Ok (columns |> String.split "," |> List.map String.trim)
+            columns |> String.split "," |> List.map String.trim |> Nel.fromList |> Result.fromMaybe [ "Primary key can't have empty columns" ]
 
         _ ->
             Err [ "Can't parse primary key: '" ++ constraint ++ "'" ]
@@ -118,7 +119,9 @@ parseAlterTableAddConstraintUnique : RawSql -> Result (List ParseError) UniqueIn
 parseAlterTableAddConstraintUnique constraint =
     case constraint |> R.matches "^UNIQUE[ \t]+(?<definition>.+)$" of
         (Just definition) :: [] ->
-            parseIndexDefinition definition |> Result.map (\columns -> { columns = columns, definition = definition })
+            parseIndexDefinition definition
+                |> Result.andThen (\columns -> Nel.fromList columns |> Result.fromMaybe [ "Unique index can't have empty columns" ])
+                |> Result.map (\columns -> { columns = columns, definition = definition })
 
         _ ->
             Err [ "Can't parse unique constraint: '" ++ constraint ++ "'" ]

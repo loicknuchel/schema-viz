@@ -6,6 +6,7 @@ import Html exposing (Html, button, div, h5, text)
 import Html.Attributes exposing (class, id, tabindex, type_)
 import Html.Events exposing (onClick)
 import Libs.Bootstrap exposing (BsColor(..), Toggle(..), ariaLabel, ariaLabelledBy, bsBackdrop, bsButton, bsButtonGroup, bsDismiss, bsScroll)
+import Libs.Ned as Ned
 import Models exposing (Msg(..))
 import Models.Schema exposing (RelationRef, Table, TableId)
 
@@ -33,7 +34,7 @@ viewMenu schema =
                                     [ text
                                         ((tables |> Dict.size |> String.fromInt)
                                             ++ " tables, "
-                                            ++ (tables |> Dict.foldl (\_ t c -> c + Dict.size t.columns) 0 |> String.fromInt)
+                                            ++ (tables |> Dict.foldl (\_ t c -> c + Ned.size t.columns) 0 |> String.fromInt)
                                             ++ " columns, "
                                             ++ (relations |> Dict.values |> List.map List.length |> List.sum |> String.fromInt)
                                             ++ " relations"

@@ -1,12 +1,12 @@
-module Libs.Dict exposing (fromList, getOrElse, groupBy)
+module Libs.Dict exposing (fromListMap, getOrElse, groupBy)
 
 -- deps = { to = { only = [ "Libs.*" ] } }
 
 import Dict exposing (Dict)
 
 
-fromList : (a -> comparable) -> List a -> Dict comparable a
-fromList getKey list =
+fromListMap : (a -> comparable) -> List a -> Dict comparable a
+fromListMap getKey list =
     list |> List.map (\item -> ( getKey item, item )) |> Dict.fromList
 
 

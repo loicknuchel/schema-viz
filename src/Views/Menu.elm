@@ -2,20 +2,25 @@ module Views.Menu exposing (viewMenu)
 
 import Conf exposing (conf)
 import Dict exposing (Dict)
-import Html exposing (Html, button, div, h5, text)
-import Html.Attributes exposing (class, id, tabindex, type_)
+import FontAwesome.Icon exposing (viewIcon)
+import FontAwesome.Solid as Icon
+import Html exposing (Html, a, button, div, h5, li, span, text, ul)
+import Html.Attributes exposing (class, href, id, style, tabindex, title, type_)
 import Html.Events exposing (onClick)
-import Libs.Bootstrap exposing (BsColor(..), Toggle(..), ariaLabel, ariaLabelledBy, bsBackdrop, bsButton, bsButtonGroup, bsDismiss, bsScroll)
+import Libs.Bool exposing (cond)
+import Libs.Bootstrap exposing (BsColor(..), Toggle(..), ariaLabel, ariaLabelledBy, bsBackdrop, bsButton, bsButtonGroup, bsDismiss, bsScroll, bsToggle)
+import Libs.Dict as D
 import Libs.Ned as Ned
+import Libs.String as S exposing (plural)
 import Models exposing (Msg(..))
-import Models.Schema exposing (RelationRef, Table, TableId)
+import Models.Schema exposing (Layout, RelationRef, Table, TableId, showTableId)
 
 
 
 -- deps = { to = { only = [ "Libs.*", "Models.*", "Conf", "Views.Helpers" ] } }
 
 
-viewMenu : Maybe ( Dict TableId Table, Dict TableId (List RelationRef) ) -> List (Html Msg)
+viewMenu : Maybe ( Dict TableId Table, Dict TableId (List RelationRef), Layout ) -> List (Html Msg)
 viewMenu schema =
     [ div [ id conf.ids.menu, class "offcanvas offcanvas-start", bsScroll True, bsBackdrop "false", ariaLabelledBy (conf.ids.menu ++ "-label"), tabindex -1 ]
         [ div [ class "offcanvas-header" ]
@@ -26,25 +31,28 @@ viewMenu schema =
             ([ div [] [ bsButton Primary [ onClick ChangeSchema ] [ text "Load a schema" ] ] ]
                 ++ (schema
                         |> Maybe.map
-                            (\( tables, relations ) ->
+                            (\( tables, relations, layout ) ->
                                 if Dict.isEmpty tables then
                                     []
 
                                 else
-                                    [ text
-                                        ((tables |> Dict.size |> String.fromInt)
-                                            ++ " tables, "
-                                            ++ (tables |> Dict.foldl (\_ t c -> c + Ned.size t.columns) 0 |> String.fromInt)
-                                            ++ " columns, "
-                                            ++ (relations |> Dict.values |> List.map List.length |> List.sum |> String.fromInt)
-                                            ++ " relations"
-                                        )
-                                    , div []
+                                    [ div [ style "margin-top" "1em" ]
                                         [ bsButtonGroup "Toggle all"
                                             [ bsButton Secondary [ onClick HideAllTables ] [ text "Hide all tables" ]
                                             , bsButton Secondary [ onClick ShowAllTables ] [ text "Show all tables" ]
                                             ]
                                         ]
+                                    , div [ style "margin-top" "1em" ]
+                                        [ text
+                                            ((tables |> Dict.size |> String.fromInt)
+                                                ++ " tables, "
+                                                ++ (tables |> Dict.foldl (\_ t c -> c + Ned.size t.columns) 0 |> String.fromInt)
+                                                ++ " columns, "
+                                                ++ (relations |> Dict.values |> List.map List.length |> List.sum |> String.fromInt)
+                                                ++ " relations"
+                                            )
+                                        ]
+                                    , viewTableList tables layout
                                     ]
                             )
                         |> Maybe.withDefault []
@@ -52,3 +60,34 @@ viewMenu schema =
             )
         ]
     ]
+
+
+viewTableList : Dict TableId Table -> Layout -> Html Msg
+viewTableList tables layout =
+    div [ style "margin-top" "1em" ]
+        [ div [ class "list-group" ]
+            (tables
+                |> Dict.values
+                |> D.groupBy (\t -> t.id |> Tuple.second |> S.wordSplit |> List.head |> Maybe.withDefault "")
+                |> Dict.toList
+                |> List.sortBy (\( name, _ ) -> name)
+                |> List.concatMap
+                    (\( groupTitle, groupedTables ) ->
+                        [ a [ class "list-group-item list-group-item-secondary", bsToggle Collapse, href ("#" ++ groupTitle ++ "-table-list") ]
+                            [ text (groupTitle ++ " (" ++ plural (List.length groupedTables) "" "1 table" "tables" ++ ")") ]
+                        , div [ class "collapse show", id (groupTitle ++ "-table-list") ]
+                            (groupedTables
+                                |> List.map
+                                    (\t ->
+                                        div [ class "list-group-item d-flex", title (showTableId t.id) ]
+                                            [ div [ class "text-truncate me-auto" ] [ text (showTableId t.id) ]
+                                            , cond (layout.tables |> Dict.member t.id)
+                                                (a [ href "#", class "text-muted", onClick (HideTable t.id) ] [ viewIcon Icon.eyeSlash ])
+                                                (a [ href "#", class "text-muted", onClick (ShowTable t.id) ] [ viewIcon Icon.eye ])
+                                            ]
+                                    )
+                            )
+                        ]
+                    )
+            )
+        ]

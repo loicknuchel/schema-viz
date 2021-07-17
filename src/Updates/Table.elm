@@ -5,7 +5,7 @@ import Libs.List as L
 import Libs.Maybe as M
 import Models exposing (Msg)
 import Models.Schema exposing (ColumnName, Layout, Schema, TableId, initTableProps, showTableId)
-import Ports exposing (activateTooltipsAndPopovers, observeTableSize, observeTablesSize, toastError)
+import Ports exposing (activateTooltipsAndPopovers, observeTableSize, observeTablesSize, toastError, toastInfo)
 import Updates.Helpers exposing (setLayout)
 
 
@@ -25,9 +25,13 @@ showTable : TableId -> Schema -> ( Schema, Cmd Msg )
 showTable id schema =
     case schema.tables |> Dict.get id of
         Just table ->
-            ( schema |> setLayout (\l -> { l | tables = l.tables |> Dict.update id (\_ -> Just (l.hiddenTables |> Dict.get id |> Maybe.withDefault (initTableProps table))) })
-            , Cmd.batch [ observeTableSize id, activateTooltipsAndPopovers ]
-            )
+            if schema.layout.tables |> Dict.member id then
+                ( schema, toastInfo ("Table <b>" ++ showTableId id ++ "</b> already shown") )
+
+            else
+                ( schema |> setLayout (\l -> { l | tables = l.tables |> Dict.update id (\_ -> Just (l.hiddenTables |> Dict.get id |> Maybe.withDefault (initTableProps table))) })
+                , Cmd.batch [ observeTableSize id, activateTooltipsAndPopovers ]
+                )
 
         Nothing ->
             ( schema, toastError ("Can't show table <b>" ++ showTableId id ++ "</b>: not found") )

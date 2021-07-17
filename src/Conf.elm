@@ -25,7 +25,7 @@ conf :
     , loading : { showTablesThreshold : Int }
     }
 conf =
-    { zoom = { min = 0.1, max = 5, speed = 0.001 }
+    { zoom = { min = 0.05, max = 5, speed = 0.001 }
     , colors = [ "red", "yellow", "green", "blue", "indigo", "purple", "pink" ]
     , default = { schema = "public", color = "gray" }
     , ids =

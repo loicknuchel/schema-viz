@@ -10,7 +10,7 @@ import Json.Decode as Decode
 import Libs.Bool as B
 import Libs.Browser.Events exposing (keyboardEventDecoder)
 import Models exposing (Flags, JsMsg(..), Model, Msg(..), initConfirm, initModel)
-import Ports exposing (activateTooltipsAndPopovers, dropSchema, hideOffcanvas, hotkey, listenHotkeys, loadSchemas, observeSize, onJsMessage, readFile, showModal, target, toastError)
+import Ports exposing (activateTooltipsAndPopovers, click, dropSchema, hideOffcanvas, listenHotkeys, loadSchemas, observeSize, onJsMessage, readFile, saveSchema, showModal, toastError, toastInfo, toastWarning)
 import Task
 import Time
 import Update exposing (dragConfig, dragItem, handleWheel, updateSizes)
@@ -40,17 +40,7 @@ init _ =
         , loadSchemas
         , getZone
         , getTime
-        , listenHotkeys
-            (Dict.fromList
-                [ ( "save", { hotkey | key = Just "s", ctrl = True, preventDefault = True } )
-                , ( "undo", { hotkey | key = Just "z", ctrl = True } )
-                , ( "redo", { hotkey | key = Just "Z", ctrl = True, shift = True } )
-                , ( "focus-search", { hotkey | key = Just "/" } )
-                , ( "autocomplete-down", { hotkey | key = Just "ArrowDown", target = Just { target | id = Just "search", tag = Just "input" } } )
-                , ( "autocomplete-up", { hotkey | key = Just "ArrowUp", target = Just { target | id = Just "search", tag = Just "input" } } )
-                , ( "help", { hotkey | key = Just "?" } )
-                ]
-            )
+        , listenHotkeys conf.hotkeys
         ]
     )
 
@@ -167,8 +157,17 @@ update msg model =
         KeyDown event ->
             ( model, Debug.log (Debug.toString event) Cmd.none )
 
+        JsMessage (HotkeyUsed "save") ->
+            ( model, model.schema |> Maybe.map (\s -> Cmd.batch [ saveSchema s, toastInfo "Schema saved" ]) |> Maybe.withDefault (toastWarning "No schema to save") )
+
+        JsMessage (HotkeyUsed "focus-search") ->
+            ( model, click conf.ids.searchInput )
+
+        JsMessage (HotkeyUsed "help") ->
+            ( model, showModal conf.ids.helpModal )
+
         JsMessage (HotkeyUsed hotkey) ->
-            ( model, Debug.log hotkey Cmd.none )
+            ( model, toastInfo ("Shortcut <b>" ++ hotkey ++ "</b> is not implemented yet :(") )
 
         JsMessage (Error err) ->
             ( model, toastError ("Unable to decode JavaScript message:<br>" ++ decodeErrorToHtml err) )

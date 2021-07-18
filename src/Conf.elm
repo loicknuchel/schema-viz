@@ -1,6 +1,7 @@
 module Conf exposing (conf, schemaSamples)
 
 import Dict exposing (Dict)
+import Libs.Hotkey exposing (Hotkey, hotkey, target)
 import Libs.Models exposing (HtmlId)
 import Models.Utils exposing (Color, ZoomLevel)
 
@@ -23,6 +24,7 @@ conf :
         , confirm : HtmlId
         }
     , loading : { showTablesThreshold : Int }
+    , hotkeys : Dict String Hotkey
     }
 conf =
     { zoom = { min = 0.05, max = 5, speed = 0.001 }
@@ -38,6 +40,16 @@ conf =
         , confirm = "confirm-modal"
         }
     , loading = { showTablesThreshold = 20 }
+    , hotkeys =
+        Dict.fromList
+            [ ( "save", { hotkey | key = Just "s", ctrl = True, onInput = True, preventDefault = True } )
+            , ( "undo", { hotkey | key = Just "z", ctrl = True } )
+            , ( "redo", { hotkey | key = Just "Z", ctrl = True, shift = True } )
+            , ( "focus-search", { hotkey | key = Just "/" } )
+            , ( "autocomplete-down", { hotkey | key = Just "ArrowDown", target = Just { target | id = Just "search", tag = Just "input" } } )
+            , ( "autocomplete-up", { hotkey | key = Just "ArrowUp", target = Just { target | id = Just "search", tag = Just "input" } } )
+            , ( "help", { hotkey | key = Just "?" } )
+            ]
     }
 
 

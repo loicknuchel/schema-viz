@@ -1,12 +1,12 @@
-port module Ports exposing (activateTooltipsAndPopovers, click, dropSchema, hideModal, hideOffcanvas, hotkey, listenHotkeys, loadSchemas, observeSize, observeTableSize, observeTablesSize, onJsMessage, readFile, saveSchema, showModal, target, toastError, toastInfo)
+port module Ports exposing (activateTooltipsAndPopovers, click, dropSchema, hideModal, hideOffcanvas, listenHotkeys, loadSchemas, observeSize, observeTableSize, observeTablesSize, onJsMessage, readFile, saveSchema, showModal, toastError, toastInfo, toastWarning)
 
 import Dict exposing (Dict)
 import FileValue exposing (File)
 import Json.Decode as Decode exposing (Decoder, Value)
 import Json.Encode as Encode
 import JsonFormats.SchemaFormat exposing (decodeSchema, decodeSize, encodeSchema)
+import Libs.Hotkey exposing (Hotkey, hotkeyEncoder)
 import Libs.Json.Decode as D
-import Libs.Json.Encode as E
 import Libs.List as L
 import Libs.Models exposing (HtmlId, Text)
 import Models exposing (JsMsg(..))
@@ -46,6 +46,11 @@ activateTooltipsAndPopovers =
 toastInfo : Text -> Cmd msg
 toastInfo message =
     showToast { kind = "info", message = message }
+
+
+toastWarning : Text -> Cmd msg
+toastWarning message =
+    showToast { kind = "warning", message = message }
 
 
 toastError : Text -> Cmd msg
@@ -122,24 +127,6 @@ type alias Toast =
     { kind : String, message : Text }
 
 
-type alias Hotkey =
-    { key : Maybe String, ctrl : Bool, shift : Bool, alt : Bool, meta : Bool, target : Maybe HotkeyTarget, preventDefault : Bool }
-
-
-type alias HotkeyTarget =
-    { id : Maybe String, class : Maybe String, tag : Maybe String }
-
-
-hotkey : Hotkey
-hotkey =
-    { key = Nothing, ctrl = False, shift = False, alt = False, meta = False, target = Nothing, preventDefault = False }
-
-
-target : HotkeyTarget
-target =
-    { id = Nothing, class = Nothing, tag = Nothing }
-
-
 messageToJs : ElmMsg -> Cmd msg
 messageToJs message =
     elmToJs (elmEncoder message)
@@ -201,28 +188,6 @@ elmEncoder elm =
 toastEncoder : Toast -> Value
 toastEncoder toast =
     Encode.object [ ( "kind", toast.kind |> Encode.string ), ( "message", toast.message |> Encode.string ) ]
-
-
-hotkeyEncoder : Hotkey -> Value
-hotkeyEncoder key =
-    Encode.object
-        [ ( "key", key.key |> E.maybe Encode.string )
-        , ( "ctrl", key.ctrl |> Encode.bool )
-        , ( "shift", key.shift |> Encode.bool )
-        , ( "alt", key.alt |> Encode.bool )
-        , ( "meta", key.meta |> Encode.bool )
-        , ( "target", key.target |> E.maybe hotkeyTargetEncoder )
-        , ( "preventDefault", key.preventDefault |> Encode.bool )
-        ]
-
-
-hotkeyTargetEncoder : HotkeyTarget -> Value
-hotkeyTargetEncoder t =
-    Encode.object
-        [ ( "id", t.id |> E.maybe Encode.string )
-        , ( "class", t.class |> E.maybe Encode.string )
-        , ( "tag", t.tag |> E.maybe Encode.string )
-        ]
 
 
 jsDecoder : Decoder JsMsg

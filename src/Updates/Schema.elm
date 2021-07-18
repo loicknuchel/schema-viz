@@ -6,14 +6,13 @@ import FileValue exposing (File)
 import Http exposing (Error(..))
 import Json.Decode as Decode
 import JsonFormats.SchemaFormat exposing (decodeSchema)
-import Libs.Bool as B
 import Libs.Models exposing (FileContent, FileName)
 import Libs.Result as R
 import Libs.Task as T
 import Mappers.SchemaMapper exposing (buildSchemaFromSql)
 import Models exposing (Errors, Model, Msg(..), initSwitch)
 import Models.Schema exposing (FileInfo, Schema, SchemaId)
-import Ports exposing (click, hideModal, saveSchema, toastError, toastInfo)
+import Ports exposing (click, hideModal, observeTablesSize, saveSchema, toastError, toastInfo)
 import SqlParser.SchemaParser exposing (parseSchema)
 import Time
 import Updates.Helpers exposing (decodeErrorToHtml)
@@ -52,7 +51,15 @@ loadSchema model ( errs, schema ) =
             ++ (schema
                     |> Maybe.map
                         (\s ->
-                            B.cond (Dict.size s.tables < 10) (T.send ShowAllTables) (click conf.ids.searchInput)
+                            (if not (s.layout.tables |> Dict.isEmpty) then
+                                observeTablesSize (s.layout.tables |> Dict.keys)
+
+                             else if Dict.size s.tables < 10 then
+                                T.send ShowAllTables
+
+                             else
+                                click conf.ids.searchInput
+                            )
                                 :: [ toastInfo ("<b>" ++ s.id ++ "</b> loaded.<br>Use the search bar to explore it")
                                    , hideModal conf.ids.schemaSwitchModal
                                    , saveSchema s

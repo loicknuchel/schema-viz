@@ -1,4 +1,4 @@
-module Libs.Browser.Events exposing (KeyboardEvent, keyboardEventDecoder)
+module Libs.Browser.Events exposing (EventTarget, KeyboardEvent, keyboardEventDecoder)
 
 import Json.Decode as Decode
 

@@ -4,7 +4,7 @@ import Conf exposing (conf)
 import Dict exposing (Dict)
 import FontAwesome.Icon exposing (viewIcon)
 import FontAwesome.Solid as Icon
-import Html exposing (Html, a, button, div, h5, li, span, text, ul)
+import Html exposing (Html, a, button, div, h5, text)
 import Html.Attributes exposing (class, href, id, style, tabindex, title, type_)
 import Html.Events exposing (onClick)
 import Libs.Bool exposing (cond)

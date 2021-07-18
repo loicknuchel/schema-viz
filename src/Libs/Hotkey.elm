@@ -1,4 +1,4 @@
-module Libs.Hotkey exposing (Hotkey, hotkey, hotkeyEncoder, target)
+module Libs.Hotkey exposing (Hotkey, HotkeyTarget, hotkey, hotkeyEncoder, target)
 
 import Json.Encode as Encode exposing (Value)
 import Libs.Json.Encode as E

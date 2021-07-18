@@ -3,7 +3,7 @@ module Main exposing (main)
 import Browser
 import Commands.FetchSample exposing (loadSample)
 import Conf exposing (conf)
-import Dict exposing (Dict)
+import Dict
 import Draggable
 import Libs.Bool as B
 import Models exposing (Flags, JsMsg(..), Model, Msg(..), initConfirm, initModel)

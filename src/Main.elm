@@ -1,14 +1,11 @@
 module Main exposing (main)
 
 import Browser
-import Browser.Events as Events
 import Commands.FetchSample exposing (loadSample)
 import Conf exposing (conf)
 import Dict exposing (Dict)
 import Draggable
-import Json.Decode as Decode
 import Libs.Bool as B
-import Libs.Browser.Events exposing (keyboardEventDecoder)
 import Models exposing (Flags, JsMsg(..), Model, Msg(..), initConfirm, initModel)
 import Ports exposing (activateTooltipsAndPopovers, click, dropSchema, hideOffcanvas, listenHotkeys, loadSchemas, observeSize, onJsMessage, readFile, saveSchema, showModal, toastError, toastInfo, toastWarning)
 import Task
@@ -154,9 +151,6 @@ update msg model =
         OnConfirm answer cmd ->
             ( { model | confirm = initConfirm }, B.cond answer cmd Cmd.none )
 
-        KeyDown event ->
-            ( model, Debug.log (Debug.toString event) Cmd.none )
-
         JsMessage (HotkeyUsed "save") ->
             ( model, model.schema |> Maybe.map (\s -> Cmd.batch [ saveSchema s, toastInfo "Schema saved" ]) |> Maybe.withDefault (toastWarning "No schema to save") )
 
@@ -187,7 +181,6 @@ subscriptions model =
         [ Draggable.subscriptions DragMsg model.drag
         , Time.every (10 * 1000) TimeChanged
         , onJsMessage JsMessage
-        , Events.onKeyDown (keyboardEventDecoder |> Decode.map KeyDown)
         ]
 
 

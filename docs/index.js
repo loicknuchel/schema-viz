@@ -784,11 +784,11 @@ function _Debug_crash_UNUSED(identifier, fact1, fact2, fact3, fact4)
 
 function _Debug_regionToString(region)
 {
-	if (region.ar.cA === region.aG.cA)
+	if (region.ay.cD === region.aL.cD)
 	{
-		return 'on line ' + region.ar.cA;
+		return 'on line ' + region.ay.cD;
 	}
-	return 'on lines ' + region.ar.cA + ' through ' + region.aG.cA;
+	return 'on lines ' + region.ay.cD + ' through ' + region.aL.cD;
 }
 
 
@@ -1857,9 +1857,9 @@ var _Platform_worker = F4(function(impl, flagDecoder, debugMetadata, args)
 	return _Platform_initialize(
 		flagDecoder,
 		args,
-		impl.cr,
-		impl.dT,
-		impl.dH,
+		impl.cu,
+		impl.dW,
+		impl.dL,
 		function() { return function() {} }
 	);
 });
@@ -2704,9 +2704,9 @@ var _VirtualDom_mapEventTuple = F2(function(func, tuple)
 var _VirtualDom_mapEventRecord = F2(function(func, record)
 {
 	return {
-		aW: func(record.aW),
-		bo: record.bo,
-		a8: record.a8
+		a1: func(record.a1),
+		bs: record.bs,
+		dm: record.dm
 	}
 });
 
@@ -2974,11 +2974,11 @@ function _VirtualDom_makeCallback(eventNode, initialHandler)
 		// 3 = Custom
 
 		var value = result.a;
-		var message = !tag ? value : tag < 3 ? value.a : value.aW;
-		var stopPropagation = tag == 1 ? value.b : tag == 3 && value.bo;
+		var message = !tag ? value : tag < 3 ? value.a : value.a1;
+		var stopPropagation = tag == 1 ? value.b : tag == 3 && value.bs;
 		var currentEventNode = (
 			stopPropagation && event.stopPropagation(),
-			(tag == 2 ? value.b : tag == 3 && value.a8) && event.preventDefault(),
+			(tag == 2 ? value.b : tag == 3 && value.dm) && event.preventDefault(),
 			eventNode
 		);
 		var tagger;
@@ -3928,11 +3928,11 @@ var _Browser_element = _Debugger_element || F4(function(impl, flagDecoder, debug
 	return _Platform_initialize(
 		flagDecoder,
 		args,
-		impl.cr,
-		impl.dT,
-		impl.dH,
+		impl.cu,
+		impl.dW,
+		impl.dL,
 		function(sendToApp, initialModel) {
-			var view = impl.dW;
+			var view = impl.dZ;
 			/**/
 			var domNode = args['node'];
 			//*/
@@ -3964,12 +3964,12 @@ var _Browser_document = _Debugger_document || F4(function(impl, flagDecoder, deb
 	return _Platform_initialize(
 		flagDecoder,
 		args,
-		impl.cr,
-		impl.dT,
-		impl.dH,
+		impl.cu,
+		impl.dW,
+		impl.dL,
 		function(sendToApp, initialModel) {
-			var divertHrefToApp = impl.ap && impl.ap(sendToApp)
-			var view = impl.dW;
+			var divertHrefToApp = impl.aw && impl.aw(sendToApp)
+			var view = impl.dZ;
 			var title = _VirtualDom_doc.title;
 			var bodyNode = _VirtualDom_doc.body;
 			var currNode = _VirtualDom_virtualize(bodyNode);
@@ -3977,12 +3977,12 @@ var _Browser_document = _Debugger_document || F4(function(impl, flagDecoder, deb
 			{
 				_VirtualDom_divertHrefToApp = divertHrefToApp;
 				var doc = view(model);
-				var nextNode = _VirtualDom_node('body')(_List_Nil)(doc.bI);
+				var nextNode = _VirtualDom_node('body')(_List_Nil)(doc.bN);
 				var patches = _VirtualDom_diff(currNode, nextNode);
 				bodyNode = _VirtualDom_applyPatches(bodyNode, currNode, patches, sendToApp);
 				currNode = nextNode;
 				_VirtualDom_divertHrefToApp = 0;
-				(title !== doc.dQ) && (_VirtualDom_doc.title = title = doc.dQ);
+				(title !== doc.dT) && (_VirtualDom_doc.title = title = doc.dT);
 			});
 		}
 	);
@@ -4038,12 +4038,12 @@ function _Browser_makeAnimator(model, draw)
 
 function _Browser_application(impl)
 {
-	var onUrlChange = impl.c8;
-	var onUrlRequest = impl.c9;
+	var onUrlChange = impl.db;
+	var onUrlRequest = impl.dc;
 	var key = function() { key.a(onUrlChange(_Browser_getUrl())); };
 
 	return _Browser_document({
-		ap: function(sendToApp)
+		aw: function(sendToApp)
 		{
 			key.a = sendToApp;
 			_Browser_window.addEventListener('popstate', key);
@@ -4059,9 +4059,9 @@ function _Browser_application(impl)
 					var next = $elm$url$Url$fromString(href).a;
 					sendToApp(onUrlRequest(
 						(next
-							&& curr.bb === next.bb
-							&& curr.aO === next.aO
-							&& curr.a5.a === next.a5.a
+							&& curr.bh === next.bh
+							&& curr.aT === next.aT
+							&& curr.bc.a === next.bc.a
 						)
 							? $elm$browser$Browser$Internal(next)
 							: $elm$browser$Browser$External(href)
@@ -4069,13 +4069,13 @@ function _Browser_application(impl)
 				}
 			});
 		},
-		cr: function(flags)
+		cu: function(flags)
 		{
-			return A3(impl.cr, flags, _Browser_getUrl(), key);
+			return A3(impl.cu, flags, _Browser_getUrl(), key);
 		},
+		dZ: impl.dZ,
 		dW: impl.dW,
-		dT: impl.dT,
-		dH: impl.dH
+		dL: impl.dL
 	});
 }
 
@@ -4141,17 +4141,17 @@ var _Browser_decodeEvent = F2(function(decoder, event)
 function _Browser_visibilityInfo()
 {
 	return (typeof _VirtualDom_doc.hidden !== 'undefined')
-		? { ci: 'hidden', bO: 'visibilitychange' }
+		? { cl: 'hidden', bT: 'visibilitychange' }
 		:
 	(typeof _VirtualDom_doc.mozHidden !== 'undefined')
-		? { ci: 'mozHidden', bO: 'mozvisibilitychange' }
+		? { cl: 'mozHidden', bT: 'mozvisibilitychange' }
 		:
 	(typeof _VirtualDom_doc.msHidden !== 'undefined')
-		? { ci: 'msHidden', bO: 'msvisibilitychange' }
+		? { cl: 'msHidden', bT: 'msvisibilitychange' }
 		:
 	(typeof _VirtualDom_doc.webkitHidden !== 'undefined')
-		? { ci: 'webkitHidden', bO: 'webkitvisibilitychange' }
-		: { ci: 'hidden', bO: 'visibilitychange' };
+		? { cl: 'webkitHidden', bT: 'webkitvisibilitychange' }
+		: { cl: 'hidden', bT: 'visibilitychange' };
 }
 
 
@@ -4232,12 +4232,12 @@ var _Browser_call = F2(function(functionName, id)
 function _Browser_getViewport()
 {
 	return {
-		bj: _Browser_getScene(),
-		bz: {
-			bC: _Browser_window.pageXOffset,
-			bD: _Browser_window.pageYOffset,
-			dX: _Browser_doc.documentElement.clientWidth,
-			cg: _Browser_doc.documentElement.clientHeight
+		bo: _Browser_getScene(),
+		bF: {
+			bI: _Browser_window.pageXOffset,
+			bJ: _Browser_window.pageYOffset,
+			d_: _Browser_doc.documentElement.clientWidth,
+			cj: _Browser_doc.documentElement.clientHeight
 		}
 	};
 }
@@ -4247,8 +4247,8 @@ function _Browser_getScene()
 	var body = _Browser_doc.body;
 	var elem = _Browser_doc.documentElement;
 	return {
-		dX: Math.max(body.scrollWidth, body.offsetWidth, elem.scrollWidth, elem.offsetWidth, elem.clientWidth),
-		cg: Math.max(body.scrollHeight, body.offsetHeight, elem.scrollHeight, elem.offsetHeight, elem.clientHeight)
+		d_: Math.max(body.scrollWidth, body.offsetWidth, elem.scrollWidth, elem.offsetWidth, elem.clientWidth),
+		cj: Math.max(body.scrollHeight, body.offsetHeight, elem.scrollHeight, elem.offsetHeight, elem.clientHeight)
 	};
 }
 
@@ -4271,15 +4271,15 @@ function _Browser_getViewportOf(id)
 	return _Browser_withNode(id, function(node)
 	{
 		return {
-			bj: {
-				dX: node.scrollWidth,
-				cg: node.scrollHeight
+			bo: {
+				d_: node.scrollWidth,
+				cj: node.scrollHeight
 			},
-			bz: {
-				bC: node.scrollLeft,
-				bD: node.scrollTop,
-				dX: node.clientWidth,
-				cg: node.clientHeight
+			bF: {
+				bI: node.scrollLeft,
+				bJ: node.scrollTop,
+				d_: node.clientWidth,
+				cj: node.clientHeight
 			}
 		};
 	});
@@ -4309,18 +4309,18 @@ function _Browser_getElement(id)
 		var x = _Browser_window.pageXOffset;
 		var y = _Browser_window.pageYOffset;
 		return {
-			bj: _Browser_getScene(),
-			bz: {
-				bC: x,
-				bD: y,
-				dX: _Browser_doc.documentElement.clientWidth,
-				cg: _Browser_doc.documentElement.clientHeight
+			bo: _Browser_getScene(),
+			bF: {
+				bI: x,
+				bJ: y,
+				d_: _Browser_doc.documentElement.clientWidth,
+				cj: _Browser_doc.documentElement.clientHeight
 			},
-			b4: {
-				bC: x + rect.left,
-				bD: y + rect.top,
-				dX: rect.width,
-				cg: rect.height
+			b8: {
+				bI: x + rect.left,
+				bJ: y + rect.top,
+				d_: rect.width,
+				cj: rect.height
 			}
 		};
 	});
@@ -4410,8 +4410,8 @@ var _Regex_never = /.^/;
 var _Regex_fromStringWith = F2(function(options, string)
 {
 	var flags = 'g';
-	if (options.cN) { flags += 'm'; }
-	if (options.bN) { flags += 'i'; }
+	if (options.cP) { flags += 'm'; }
+	if (options.bS) { flags += 'i'; }
 
 	try
 	{
@@ -4512,25 +4512,25 @@ var _Http_toTask = F3(function(router, toTask, request)
 	return _Scheduler_binding(function(callback)
 	{
 		function done(response) {
-			callback(toTask(request.ad.a(response)));
+			callback(toTask(request.al.a(response)));
 		}
 
 		var xhr = new XMLHttpRequest();
 		xhr.addEventListener('error', function() { done($elm$http$Http$NetworkError_); });
 		xhr.addEventListener('timeout', function() { done($elm$http$Http$Timeout_); });
-		xhr.addEventListener('load', function() { done(_Http_toResponse(request.ad.b, xhr)); });
-		$elm$core$Maybe$isJust(request.by) && _Http_track(router, xhr, request.by.a);
+		xhr.addEventListener('load', function() { done(_Http_toResponse(request.al.b, xhr)); });
+		$elm$core$Maybe$isJust(request.bE) && _Http_track(router, xhr, request.bE.a);
 
 		try {
-			xhr.open(request.cH, request.dV, true);
+			xhr.open(request.cJ, request.dY, true);
 		} catch (e) {
-			return done($elm$http$Http$BadUrl_(request.dV));
+			return done($elm$http$Http$BadUrl_(request.dY));
 		}
 
 		_Http_configureRequest(xhr, request);
 
-		request.bI.a && xhr.setRequestHeader('Content-Type', request.bI.a);
-		xhr.send(request.bI.b);
+		request.bN.a && xhr.setRequestHeader('Content-Type', request.bN.a);
+		xhr.send(request.bN.b);
 
 		return function() { xhr.c = true; xhr.abort(); };
 	});
@@ -4541,13 +4541,13 @@ var _Http_toTask = F3(function(router, toTask, request)
 
 function _Http_configureRequest(xhr, request)
 {
-	for (var headers = request.cf; headers.b; headers = headers.b) // WHILE_CONS
+	for (var headers = request.ci; headers.b; headers = headers.b) // WHILE_CONS
 	{
 		xhr.setRequestHeader(headers.a.a, headers.a.b);
 	}
-	xhr.timeout = request.dP.a || 0;
-	xhr.responseType = request.ad.d;
-	xhr.withCredentials = request.bF;
+	xhr.timeout = request.dS.a || 0;
+	xhr.responseType = request.al.d;
+	xhr.withCredentials = request.bL;
 }
 
 
@@ -4568,10 +4568,10 @@ function _Http_toResponse(toBody, xhr)
 function _Http_toMetadata(xhr)
 {
 	return {
-		dV: xhr.responseURL,
-		dE: xhr.status,
-		dF: xhr.statusText,
-		cf: _Http_parseHeaders(xhr.getAllResponseHeaders())
+		dY: xhr.responseURL,
+		dI: xhr.status,
+		dJ: xhr.statusText,
+		ci: _Http_parseHeaders(xhr.getAllResponseHeaders())
 	};
 }
 
@@ -4666,15 +4666,15 @@ function _Http_track(router, xhr, tracker)
 	xhr.upload.addEventListener('progress', function(event) {
 		if (xhr.c) { return; }
 		_Scheduler_rawSpawn(A2($elm$core$Platform$sendToSelf, router, _Utils_Tuple2(tracker, $elm$http$Http$Sending({
-			dx: event.loaded,
-			dA: event.total
+			dB: event.loaded,
+			dE: event.total
 		}))));
 	});
 	xhr.addEventListener('progress', function(event) {
 		if (xhr.c) { return; }
 		_Scheduler_rawSpawn(A2($elm$core$Platform$sendToSelf, router, _Utils_Tuple2(tracker, $elm$http$Http$Receiving({
-			dl: event.loaded,
-			dA: event.lengthComputable ? $elm$core$Maybe$Just(event.total) : $elm$core$Maybe$Nothing
+			dp: event.loaded,
+			dE: event.lengthComputable ? $elm$core$Maybe$Just(event.total) : $elm$core$Maybe$Nothing
 		}))));
 	});
 }
@@ -5123,22 +5123,22 @@ var $elm$core$Array$builderToArray = F2(
 		if (!builder.e) {
 			return A4(
 				$elm$core$Array$Array_elm_builtin,
-				$elm$core$Elm$JsArray$length(builder.dK),
+				$elm$core$Elm$JsArray$length(builder.y),
 				$elm$core$Array$shiftStep,
 				$elm$core$Elm$JsArray$empty,
-				builder.dK);
+				builder.y);
 		} else {
 			var treeLen = builder.e * $elm$core$Array$branchFactor;
 			var depth = $elm$core$Basics$floor(
 				A2($elm$core$Basics$logBase, $elm$core$Array$branchFactor, treeLen - 1));
-			var correctNodeList = reverseNodeList ? $elm$core$List$reverse(builder.f) : builder.f;
+			var correctNodeList = reverseNodeList ? $elm$core$List$reverse(builder.g) : builder.g;
 			var tree = A2($elm$core$Array$treeFromBuilder, correctNodeList, builder.e);
 			return A4(
 				$elm$core$Array$Array_elm_builtin,
-				$elm$core$Elm$JsArray$length(builder.dK) + treeLen,
+				$elm$core$Elm$JsArray$length(builder.y) + treeLen,
 				A2($elm$core$Basics$max, 5, depth * $elm$core$Array$shiftStep),
 				tree,
-				builder.dK);
+				builder.y);
 		}
 	});
 var $elm$core$Basics$idiv = _Basics_idiv;
@@ -5151,7 +5151,7 @@ var $elm$core$Array$initializeHelp = F5(
 				return A2(
 					$elm$core$Array$builderToArray,
 					false,
-					{f: nodeList, e: (len / $elm$core$Array$branchFactor) | 0, dK: tail});
+					{g: nodeList, e: (len / $elm$core$Array$branchFactor) | 0, y: tail});
 			} else {
 				var leaf = $elm$core$Array$Leaf(
 					A3($elm$core$Elm$JsArray$initialize, $elm$core$Array$branchFactor, fromIndex, fn));
@@ -5218,7 +5218,7 @@ var $elm$url$Url$Http = 0;
 var $elm$url$Url$Https = 1;
 var $elm$url$Url$Url = F6(
 	function (protocol, host, port_, path, query, fragment) {
-		return {aL: fragment, aO: host, a3: path, a5: port_, bb: protocol, bc: query};
+		return {aQ: fragment, aT: host, ba: path, bc: port_, bh: protocol, bi: query};
 	});
 var $elm$core$String$contains = _String_contains;
 var $elm$core$String$length = _String_length;
@@ -5498,107 +5498,6 @@ var $elm$core$Task$perform = F2(
 	});
 var $elm$browser$Browser$document = _Browser_document;
 var $elm$core$Platform$Cmd$batch = _Platform_batch;
-var $author$project$Conf$conf = {
-	bT: _List_fromArray(
-		['red', 'yellow', 'green', 'blue', 'indigo', 'purple', 'pink']),
-	b_: {bS: 'gray', dr: 'public'},
-	cm: {bU: 'confirm-modal', b5: 'erd', ch: 'help-modal', cF: 'menu', cP: 'new-layout-modal', ds: 'schema-switch-modal', dv: 'search'},
-	cC: {dz: 20},
-	d$: {cE: 5, cI: 0.1, dD: 0.001}
-};
-var $author$project$Models$TimeChanged = function (a) {
-	return {$: 0, a: a};
-};
-var $elm$time$Time$Name = function (a) {
-	return {$: 0, a: a};
-};
-var $elm$time$Time$Offset = function (a) {
-	return {$: 1, a: a};
-};
-var $elm$time$Time$Zone = F2(
-	function (a, b) {
-		return {$: 0, a: a, b: b};
-	});
-var $elm$time$Time$customZone = $elm$time$Time$Zone;
-var $elm$time$Time$Posix = $elm$core$Basics$identity;
-var $elm$time$Time$millisToPosix = $elm$core$Basics$identity;
-var $elm$time$Time$now = _Time_now($elm$time$Time$millisToPosix);
-var $author$project$Main$getTime = A2($elm$core$Task$perform, $author$project$Models$TimeChanged, $elm$time$Time$now);
-var $author$project$Models$ZoneChanged = function (a) {
-	return {$: 1, a: a};
-};
-var $elm$time$Time$here = _Time_here(0);
-var $author$project$Main$getZone = A2($elm$core$Task$perform, $author$project$Models$ZoneChanged, $elm$time$Time$here);
-var $pzp1997$assoc_list$AssocList$D = $elm$core$Basics$identity;
-var $pzp1997$assoc_list$AssocList$empty = _List_Nil;
-var $zaboco$elm_draggable$Internal$NotDragging = {$: 0};
-var $zaboco$elm_draggable$Draggable$State = $elm$core$Basics$identity;
-var $zaboco$elm_draggable$Draggable$init = $zaboco$elm_draggable$Internal$NotDragging;
-var $author$project$Models$Noop = {$: 33};
-var $author$project$Libs$Task$send = function (msg) {
-	return A2(
-		$elm$core$Task$perform,
-		$elm$core$Basics$identity,
-		$elm$core$Task$succeed(msg));
-};
-var $elm$virtual_dom$VirtualDom$text = _VirtualDom_text;
-var $elm$html$Html$text = $elm$virtual_dom$VirtualDom$text;
-var $author$project$Models$initConfirm = {
-	az: $author$project$Libs$Task$send($author$project$Models$Noop),
-	aB: $elm$html$Html$text('No text')
-};
-var $author$project$Models$initSwitch = {cC: false};
-var $elm$time$Time$utc = A2($elm$time$Time$Zone, 0, _List_Nil);
-var $author$project$Models$initTimeInfo = {
-	cY: $elm$time$Time$millisToPosix(0),
-	d_: $elm$time$Time$utc
-};
-var $author$project$Models$initModel = {bU: $author$project$Models$initConfirm, b3: $zaboco$elm_draggable$Draggable$init, aF: $elm$core$Maybe$Nothing, aZ: $elm$core$Maybe$Nothing, dr: $elm$core$Maybe$Nothing, du: '', bm: $pzp1997$assoc_list$AssocList$empty, at: _List_Nil, bs: $author$project$Models$initSwitch, bw: $author$project$Models$initTimeInfo};
-var $author$project$Ports$LoadSchemas = {$: 6};
-var $mpizenberg$elm_file$FileValue$encode = function (file) {
-	return file.t;
-};
-var $elm$core$Dict$foldl = F3(
-	function (func, acc, dict) {
-		foldl:
-		while (true) {
-			if (dict.$ === -2) {
-				return acc;
-			} else {
-				var key = dict.b;
-				var value = dict.c;
-				var left = dict.d;
-				var right = dict.e;
-				var $temp$func = func,
-					$temp$acc = A3(
-					func,
-					key,
-					value,
-					A3($elm$core$Dict$foldl, func, acc, left)),
-					$temp$dict = right;
-				func = $temp$func;
-				acc = $temp$acc;
-				dict = $temp$dict;
-				continue foldl;
-			}
-		}
-	});
-var $elm$json$Json$Encode$dict = F3(
-	function (toKey, toValue, dictionary) {
-		return _Json_wrap(
-			A3(
-				$elm$core$Dict$foldl,
-				F3(
-					function (key, value, obj) {
-						return A3(
-							_Json_addField,
-							toKey(key),
-							toValue(value),
-							obj);
-					}),
-				_Json_emptyObject(0),
-				dictionary));
-	});
 var $elm$core$Dict$RBEmpty_elm_builtin = {$: -2};
 var $elm$core$Dict$empty = $elm$core$Dict$RBEmpty_elm_builtin;
 var $elm$core$Dict$Black = 1;
@@ -5722,29 +5621,183 @@ var $elm$core$Dict$fromList = function (assocs) {
 		$elm$core$Dict$empty,
 		assocs);
 };
-var $pzp1997$assoc_list$AssocList$toList = function (_v0) {
-	var alist = _v0;
-	return alist;
+var $author$project$Libs$Hotkey$hotkey = {ae: false, ah: false, B: $elm$core$Maybe$Nothing, ao: false, c7: false, dm: false, dC: false, bB: $elm$core$Maybe$Nothing};
+var $author$project$Libs$Hotkey$target = {af: $elm$core$Maybe$Nothing, aV: $elm$core$Maybe$Nothing, bz: $elm$core$Maybe$Nothing};
+var $author$project$Conf$conf = {
+	bY: _List_fromArray(
+		['red', 'orange', 'amber', 'yellow', 'lime', 'green', 'emerald', 'teal', 'cyan', 'sky', 'blue', 'indigo', 'violet', 'purple', 'fuchsia', 'pink', 'rose']),
+	b2: {bX: 'gray', dv: 'public'},
+	cn: $elm$core$Dict$fromList(
+		_List_fromArray(
+			[
+				_Utils_Tuple2(
+				'save',
+				_Utils_update(
+					$author$project$Libs$Hotkey$hotkey,
+					{
+						ah: true,
+						B: $elm$core$Maybe$Just('s'),
+						c7: true,
+						dm: true
+					})),
+				_Utils_Tuple2(
+				'undo',
+				_Utils_update(
+					$author$project$Libs$Hotkey$hotkey,
+					{
+						ah: true,
+						B: $elm$core$Maybe$Just('z')
+					})),
+				_Utils_Tuple2(
+				'redo',
+				_Utils_update(
+					$author$project$Libs$Hotkey$hotkey,
+					{
+						ah: true,
+						B: $elm$core$Maybe$Just('Z'),
+						dC: true
+					})),
+				_Utils_Tuple2(
+				'focus-search',
+				_Utils_update(
+					$author$project$Libs$Hotkey$hotkey,
+					{
+						B: $elm$core$Maybe$Just('/')
+					})),
+				_Utils_Tuple2(
+				'autocomplete-down',
+				_Utils_update(
+					$author$project$Libs$Hotkey$hotkey,
+					{
+						B: $elm$core$Maybe$Just('ArrowDown'),
+						bB: $elm$core$Maybe$Just(
+							_Utils_update(
+								$author$project$Libs$Hotkey$target,
+								{
+									aV: $elm$core$Maybe$Just('search'),
+									bz: $elm$core$Maybe$Just('input')
+								}))
+					})),
+				_Utils_Tuple2(
+				'autocomplete-up',
+				_Utils_update(
+					$author$project$Libs$Hotkey$hotkey,
+					{
+						B: $elm$core$Maybe$Just('ArrowUp'),
+						bB: $elm$core$Maybe$Just(
+							_Utils_update(
+								$author$project$Libs$Hotkey$target,
+								{
+									aV: $elm$core$Maybe$Just('search'),
+									bz: $elm$core$Maybe$Just('input')
+								}))
+					})),
+				_Utils_Tuple2(
+				'help',
+				_Utils_update(
+					$author$project$Libs$Hotkey$hotkey,
+					{
+						B: $elm$core$Maybe$Just('?')
+					}))
+			])),
+	cp: {bZ: 'confirm-modal', b9: 'erd', ck: 'help-modal', cI: 'menu', cR: 'new-layout-modal', dw: 'schema-switch-modal', dz: 'search'},
+	cF: {dD: 20},
+	d2: {cH: 5, cK: 0.05, dH: 0.001}
 };
-var $author$project$Libs$Json$Encode$dict = F3(
-	function (encodeKey, encodeValue, d) {
-		return A3(
-			$elm$json$Json$Encode$dict,
-			$elm$core$Basics$identity,
-			$elm$core$Basics$identity,
-			$elm$core$Dict$fromList(
-				A2(
-					$elm$core$List$map,
-					function (_v0) {
-						var k = _v0.a;
-						var a = _v0.b;
-						return _Utils_Tuple2(
-							encodeKey(k),
-							encodeValue(a));
-					},
-					$pzp1997$assoc_list$AssocList$toList(d))));
+var $author$project$Models$TimeChanged = function (a) {
+	return {$: 0, a: a};
+};
+var $elm$time$Time$Name = function (a) {
+	return {$: 0, a: a};
+};
+var $elm$time$Time$Offset = function (a) {
+	return {$: 1, a: a};
+};
+var $elm$time$Time$Zone = F2(
+	function (a, b) {
+		return {$: 0, a: a, b: b};
 	});
-var $elm$json$Json$Encode$int = _Json_wrap;
+var $elm$time$Time$customZone = $elm$time$Time$Zone;
+var $elm$time$Time$Posix = $elm$core$Basics$identity;
+var $elm$time$Time$millisToPosix = $elm$core$Basics$identity;
+var $elm$time$Time$now = _Time_now($elm$time$Time$millisToPosix);
+var $author$project$Main$getTime = A2($elm$core$Task$perform, $author$project$Models$TimeChanged, $elm$time$Time$now);
+var $author$project$Models$ZoneChanged = function (a) {
+	return {$: 1, a: a};
+};
+var $elm$time$Time$here = _Time_here(0);
+var $author$project$Main$getZone = A2($elm$core$Task$perform, $author$project$Models$ZoneChanged, $elm$time$Time$here);
+var $zaboco$elm_draggable$Internal$NotDragging = {$: 0};
+var $zaboco$elm_draggable$Draggable$State = $elm$core$Basics$identity;
+var $zaboco$elm_draggable$Draggable$init = $zaboco$elm_draggable$Internal$NotDragging;
+var $author$project$Models$Noop = {$: 37};
+var $author$project$Libs$Task$send = function (msg) {
+	return A2(
+		$elm$core$Task$perform,
+		$elm$core$Basics$identity,
+		$elm$core$Task$succeed(msg));
+};
+var $elm$virtual_dom$VirtualDom$text = _VirtualDom_text;
+var $elm$html$Html$text = $elm$virtual_dom$VirtualDom$text;
+var $author$project$Models$initConfirm = {
+	aE: $author$project$Libs$Task$send($author$project$Models$Noop),
+	aG: $elm$html$Html$text('No text')
+};
+var $author$project$Models$initSwitch = {cF: false};
+var $elm$time$Time$utc = A2($elm$time$Time$Zone, 0, _List_Nil);
+var $author$project$Models$initTimeInfo = {
+	c_: $elm$time$Time$millisToPosix(0),
+	d1: $elm$time$Time$utc
+};
+var $author$project$Models$initModel = {bZ: $author$project$Models$initConfirm, b7: $zaboco$elm_draggable$Draggable$init, aK: $elm$core$Maybe$Nothing, a4: $elm$core$Maybe$Nothing, dv: $elm$core$Maybe$Nothing, dy: '', bq: $elm$core$Dict$empty, az: _List_Nil, bw: $author$project$Models$initSwitch, bC: $author$project$Models$initTimeInfo};
+var $author$project$Ports$ListenKeys = function (a) {
+	return {$: 11, a: a};
+};
+var $elm$core$Dict$foldl = F3(
+	function (func, acc, dict) {
+		foldl:
+		while (true) {
+			if (dict.$ === -2) {
+				return acc;
+			} else {
+				var key = dict.b;
+				var value = dict.c;
+				var left = dict.d;
+				var right = dict.e;
+				var $temp$func = func,
+					$temp$acc = A3(
+					func,
+					key,
+					value,
+					A3($elm$core$Dict$foldl, func, acc, left)),
+					$temp$dict = right;
+				func = $temp$func;
+				acc = $temp$acc;
+				dict = $temp$dict;
+				continue foldl;
+			}
+		}
+	});
+var $elm$json$Json$Encode$dict = F3(
+	function (toKey, toValue, dictionary) {
+		return _Json_wrap(
+			A3(
+				$elm$core$Dict$foldl,
+				F3(
+					function (key, value, obj) {
+						return A3(
+							_Json_addField,
+							toKey(key),
+							toValue(value),
+							obj);
+					}),
+				_Json_emptyObject(0),
+				dictionary));
+	});
+var $mpizenberg$elm_file$FileValue$encode = function (file) {
+	return file.v;
+};
+var $elm$json$Json$Encode$float = _Json_wrap;
 var $elm$core$List$filter = F2(
 	function (isGood, list) {
 		return A3(
@@ -5781,79 +5834,20 @@ var $author$project$Libs$Json$Encode$object = function (attrs) {
 			},
 			attrs));
 };
-var $elm$time$Time$posixToMillis = function (_v0) {
-	var millis = _v0;
-	return millis;
-};
-var $elm$json$Json$Encode$string = _Json_wrap;
-var $author$project$JsonFormats$SchemaFormat$encodeFileInfo = function (value) {
-	return $author$project$Libs$Json$Encode$object(
-		_List_fromArray(
-			[
-				_Utils_Tuple2(
-				'name',
-				$elm$json$Json$Encode$string(value.J)),
-				_Utils_Tuple2(
-				'lastModified',
-				$elm$json$Json$Encode$int(
-					$elm$time$Time$posixToMillis(value.cw)))
-			]));
-};
-var $elm$core$Maybe$map = F2(
-	function (f, maybe) {
-		if (!maybe.$) {
-			var value = maybe.a;
-			return $elm$core$Maybe$Just(
-				f(value));
-		} else {
-			return $elm$core$Maybe$Nothing;
-		}
-	});
-var $elm$core$Maybe$withDefault = F2(
-	function (_default, maybe) {
-		if (!maybe.$) {
-			var value = maybe.a;
-			return value;
-		} else {
-			return _default;
-		}
-	});
-var $author$project$JsonFormats$SchemaFormat$encodeMaybe = F2(
-	function (encoder, maybe) {
-		return A2(
-			$elm$core$Maybe$withDefault,
-			$elm$json$Json$Encode$null,
-			A2($elm$core$Maybe$map, encoder, maybe));
-	});
-var $author$project$JsonFormats$SchemaFormat$encodeInfo = function (value) {
-	return $author$project$Libs$Json$Encode$object(
-		_List_fromArray(
-			[
-				_Utils_Tuple2(
-				'created',
-				$elm$json$Json$Encode$int(
-					$elm$time$Time$posixToMillis(value.bW))),
-				_Utils_Tuple2(
-				'updated',
-				$elm$json$Json$Encode$int(
-					$elm$time$Time$posixToMillis(value.dU))),
-				_Utils_Tuple2(
-				'file',
-				A2($author$project$JsonFormats$SchemaFormat$encodeMaybe, $author$project$JsonFormats$SchemaFormat$encodeFileInfo, value.aJ))
-			]));
-};
-var $elm$json$Json$Encode$float = _Json_wrap;
 var $author$project$JsonFormats$SchemaFormat$encodePosition = function (value) {
 	return $author$project$Libs$Json$Encode$object(
 		_List_fromArray(
 			[
 				_Utils_Tuple2(
 				'left',
-				$elm$json$Json$Encode$float(value.aT)),
+				$elm$json$Json$Encode$float(value.a_)),
 				_Utils_Tuple2(
 				'top',
-				$elm$json$Json$Encode$float(value.bx))
+				$elm$json$Json$Encode$float(value.bD))
 			]));
+};
+var $author$project$JsonFormats$SchemaFormat$encodeZoomLevel = function (value) {
+	return $elm$json$Json$Encode$float(value);
 };
 var $author$project$JsonFormats$SchemaFormat$encodeCanvasProps = function (value) {
 	return $author$project$Libs$Json$Encode$object(
@@ -5861,62 +5855,10 @@ var $author$project$JsonFormats$SchemaFormat$encodeCanvasProps = function (value
 			[
 				_Utils_Tuple2(
 				'position',
-				$author$project$JsonFormats$SchemaFormat$encodePosition(value.a6)),
+				$author$project$JsonFormats$SchemaFormat$encodePosition(value.bd)),
 				_Utils_Tuple2(
 				'zoom',
-				$elm$json$Json$Encode$float(value.d$))
-			]));
-};
-var $elm$json$Json$Encode$bool = _Json_wrap;
-var $author$project$JsonFormats$SchemaFormat$encodeColumnName = function (_v0) {
-	var value = _v0;
-	return $elm$json$Json$Encode$string(value);
-};
-var $elm$json$Json$Encode$list = F2(
-	function (func, entries) {
-		return _Json_wrap(
-			A3(
-				$elm$core$List$foldl,
-				_Json_addEntry(func),
-				_Json_emptyArray(0),
-				entries));
-	});
-var $author$project$JsonFormats$SchemaFormat$encodeTableProps = function (value) {
-	return $author$project$Libs$Json$Encode$object(
-		_List_fromArray(
-			[
-				_Utils_Tuple2(
-				'position',
-				$author$project$JsonFormats$SchemaFormat$encodePosition(value.a6)),
-				_Utils_Tuple2(
-				'color',
-				$elm$json$Json$Encode$string(value.bS)),
-				_Utils_Tuple2(
-				'selected',
-				$elm$json$Json$Encode$bool(value.dw)),
-				_Utils_Tuple2(
-				'columns',
-				A2($elm$json$Json$Encode$list, $author$project$JsonFormats$SchemaFormat$encodeColumnName, value.H))
-			]));
-};
-var $author$project$Models$Schema$tableIdAsString = function (_v0) {
-	var schema = _v0.a;
-	var table = _v0.b;
-	return schema + ('.' + table);
-};
-var $author$project$JsonFormats$SchemaFormat$encodeLayout = function (value) {
-	return $author$project$Libs$Json$Encode$object(
-		_List_fromArray(
-			[
-				_Utils_Tuple2(
-				'canvas',
-				$author$project$JsonFormats$SchemaFormat$encodeCanvasProps(value.bM)),
-				_Utils_Tuple2(
-				'tables',
-				A3($author$project$Libs$Json$Encode$dict, $author$project$Models$Schema$tableIdAsString, $author$project$JsonFormats$SchemaFormat$encodeTableProps, value.bu)),
-				_Utils_Tuple2(
-				'hiddenTables',
-				A3($author$project$Libs$Json$Encode$dict, $author$project$Models$Schema$tableIdAsString, $author$project$JsonFormats$SchemaFormat$encodeTableProps, value.cj))
+				$author$project$JsonFormats$SchemaFormat$encodeZoomLevel(value.d2))
 			]));
 };
 var $elm$core$Maybe$andThen = F2(
@@ -5945,10 +5887,36 @@ var $author$project$Libs$Maybe$filter = F2(
 			},
 			maybe);
 	});
+var $elm$core$Maybe$map = F2(
+	function (f, maybe) {
+		if (!maybe.$) {
+			var value = maybe.a;
+			return $elm$core$Maybe$Just(
+				f(value));
+		} else {
+			return $elm$core$Maybe$Nothing;
+		}
+	});
+var $elm$core$Maybe$withDefault = F2(
+	function (_default, maybe) {
+		if (!maybe.$) {
+			var value = maybe.a;
+			return value;
+		} else {
+			return _default;
+		}
+	});
+var $author$project$Libs$Json$Encode$maybe = F2(
+	function (encoder, value) {
+		return A2(
+			$elm$core$Maybe$withDefault,
+			$elm$json$Json$Encode$null,
+			A2($elm$core$Maybe$map, encoder, value));
+	});
 var $author$project$JsonFormats$SchemaFormat$encodeMaybeWithoutDefault = F3(
 	function (encode, _default, value) {
 		return A2(
-			$author$project$JsonFormats$SchemaFormat$encodeMaybe,
+			$author$project$Libs$Json$Encode$maybe,
 			encode(_default),
 			A2(
 				$author$project$Libs$Maybe$filter,
@@ -5957,34 +5925,167 @@ var $author$project$JsonFormats$SchemaFormat$encodeMaybeWithoutDefault = F3(
 				},
 				$elm$core$Maybe$Just(value)));
 	});
+var $elm$json$Json$Encode$bool = _Json_wrap;
+var $elm$json$Json$Encode$string = _Json_wrap;
+var $author$project$JsonFormats$SchemaFormat$encodeColor = function (value) {
+	return $elm$json$Json$Encode$string(value);
+};
+var $author$project$JsonFormats$SchemaFormat$encodeColumnName = function (value) {
+	return $elm$json$Json$Encode$string(value);
+};
+var $elm$json$Json$Encode$list = F2(
+	function (func, entries) {
+		return _Json_wrap(
+			A3(
+				$elm$core$List$foldl,
+				_Json_addEntry(func),
+				_Json_emptyArray(0),
+				entries));
+	});
+var $author$project$JsonFormats$SchemaFormat$encodeTableProps = function (value) {
+	return $author$project$Libs$Json$Encode$object(
+		_List_fromArray(
+			[
+				_Utils_Tuple2(
+				'position',
+				$author$project$JsonFormats$SchemaFormat$encodePosition(value.bd)),
+				_Utils_Tuple2(
+				'color',
+				$author$project$JsonFormats$SchemaFormat$encodeColor(value.bX)),
+				_Utils_Tuple2(
+				'selected',
+				A3(
+					$author$project$JsonFormats$SchemaFormat$encodeMaybeWithoutDefault,
+					function (_v0) {
+						return $elm$json$Json$Encode$bool;
+					},
+					false,
+					value.dA)),
+				_Utils_Tuple2(
+				'columns',
+				A3(
+					$author$project$JsonFormats$SchemaFormat$encodeMaybeWithoutDefault,
+					function (_v1) {
+						return $elm$json$Json$Encode$list($author$project$JsonFormats$SchemaFormat$encodeColumnName);
+					},
+					_List_Nil,
+					value.L))
+			]));
+};
+var $author$project$Models$Schema$tableIdAsString = function (_v0) {
+	var schema = _v0.a;
+	var table = _v0.b;
+	return schema + ('.' + table);
+};
+var $author$project$JsonFormats$SchemaFormat$encodeLayout = function (value) {
+	return $author$project$Libs$Json$Encode$object(
+		_List_fromArray(
+			[
+				_Utils_Tuple2(
+				'canvas',
+				$author$project$JsonFormats$SchemaFormat$encodeCanvasProps(value.bR)),
+				_Utils_Tuple2(
+				'tables',
+				A3(
+					$author$project$JsonFormats$SchemaFormat$encodeMaybeWithoutDefault,
+					function (_v0) {
+						return A2($elm$json$Json$Encode$dict, $author$project$Models$Schema$tableIdAsString, $author$project$JsonFormats$SchemaFormat$encodeTableProps);
+					},
+					$elm$core$Dict$empty,
+					value.by)),
+				_Utils_Tuple2(
+				'hiddenTables',
+				A3(
+					$author$project$JsonFormats$SchemaFormat$encodeMaybeWithoutDefault,
+					function (_v1) {
+						return A2($elm$json$Json$Encode$dict, $author$project$Models$Schema$tableIdAsString, $author$project$JsonFormats$SchemaFormat$encodeTableProps);
+					},
+					$elm$core$Dict$empty,
+					value.cm))
+			]));
+};
+var $elm$json$Json$Encode$int = _Json_wrap;
+var $elm$time$Time$posixToMillis = function (_v0) {
+	var millis = _v0;
+	return millis;
+};
+var $author$project$JsonFormats$SchemaFormat$encodePosix = function (value) {
+	return $elm$json$Json$Encode$int(
+		$elm$time$Time$posixToMillis(value));
+};
+var $author$project$JsonFormats$SchemaFormat$encodeFileInfo = function (value) {
+	return $author$project$Libs$Json$Encode$object(
+		_List_fromArray(
+			[
+				_Utils_Tuple2(
+				'name',
+				$elm$json$Json$Encode$string(value.N)),
+				_Utils_Tuple2(
+				'lastModified',
+				$author$project$JsonFormats$SchemaFormat$encodePosix(value.cz))
+			]));
+};
+var $author$project$JsonFormats$SchemaFormat$encodeSchemaInfo = function (value) {
+	return $author$project$Libs$Json$Encode$object(
+		_List_fromArray(
+			[
+				_Utils_Tuple2(
+				'created',
+				$author$project$JsonFormats$SchemaFormat$encodePosix(value.b$)),
+				_Utils_Tuple2(
+				'updated',
+				$author$project$JsonFormats$SchemaFormat$encodePosix(value.dX)),
+				_Utils_Tuple2(
+				'file',
+				A2($author$project$Libs$Json$Encode$maybe, $author$project$JsonFormats$SchemaFormat$encodeFileInfo, value.aO))
+			]));
+};
+var $author$project$JsonFormats$SchemaFormat$encodeColumnComment = function (_v0) {
+	var value = _v0;
+	return $elm$json$Json$Encode$string(value);
+};
+var $author$project$JsonFormats$SchemaFormat$encodeColumnIndex = function (_v0) {
+	var value = _v0;
+	return $elm$json$Json$Encode$int(value);
+};
+var $author$project$JsonFormats$SchemaFormat$encodeColumnType = function (_v0) {
+	var value = _v0;
+	return $elm$json$Json$Encode$string(value);
+};
+var $author$project$JsonFormats$SchemaFormat$encodeColumnValue = function (_v0) {
+	var value = _v0;
+	return $elm$json$Json$Encode$string(value);
+};
+var $author$project$JsonFormats$SchemaFormat$encodeForeignKeyName = function (_v0) {
+	var value = _v0;
+	return $elm$json$Json$Encode$string(value);
+};
+var $author$project$JsonFormats$SchemaFormat$encodeSchemaName = function (value) {
+	return $elm$json$Json$Encode$string(value);
+};
+var $author$project$JsonFormats$SchemaFormat$encodeTableName = function (value) {
+	return $elm$json$Json$Encode$string(value);
+};
+var $elm$core$Tuple$second = function (_v0) {
+	var y = _v0.b;
+	return y;
+};
 var $author$project$JsonFormats$SchemaFormat$encodeForeignKey = function (value) {
 	return $author$project$Libs$Json$Encode$object(
 		_List_fromArray(
 			[
 				_Utils_Tuple2(
+				'name',
+				$author$project$JsonFormats$SchemaFormat$encodeForeignKeyName(value.N)),
+				_Utils_Tuple2(
 				'schema',
-				$elm$json$Json$Encode$string(
-					function (_v0) {
-						var v = _v0;
-						return v;
-					}(value.dr))),
+				$author$project$JsonFormats$SchemaFormat$encodeSchemaName(value.bx.a)),
 				_Utils_Tuple2(
 				'table',
-				$elm$json$Json$Encode$string(
-					function (_v1) {
-						var v = _v1;
-						return v;
-					}(value.bt))),
+				$author$project$JsonFormats$SchemaFormat$encodeTableName(value.bx.b)),
 				_Utils_Tuple2(
 				'column',
-				$author$project$JsonFormats$SchemaFormat$encodeColumnName(value._)),
-				_Utils_Tuple2(
-				'name',
-				$elm$json$Json$Encode$string(
-					function (_v2) {
-						var v = _v2;
-						return v;
-					}(value.J)))
+				$author$project$JsonFormats$SchemaFormat$encodeColumnName(value.ag))
 			]));
 };
 var $author$project$JsonFormats$SchemaFormat$encodeColumn = function (value) {
@@ -5993,80 +6094,76 @@ var $author$project$JsonFormats$SchemaFormat$encodeColumn = function (value) {
 			[
 				_Utils_Tuple2(
 				'index',
-				$elm$json$Json$Encode$int(
-					function (_v0) {
-						var v = _v0;
-						return v;
-					}(value.co))),
+				$author$project$JsonFormats$SchemaFormat$encodeColumnIndex(value.cr)),
 				_Utils_Tuple2(
-				'column',
-				$author$project$JsonFormats$SchemaFormat$encodeColumnName(value._)),
+				'name',
+				$author$project$JsonFormats$SchemaFormat$encodeColumnName(value.ag)),
 				_Utils_Tuple2(
 				'type',
-				$elm$json$Json$Encode$string(
-					function (_v1) {
-						var v = _v1;
-						return v;
-					}(value.cv))),
+				$author$project$JsonFormats$SchemaFormat$encodeColumnType(value.cy)),
 				_Utils_Tuple2(
 				'nullable',
-				$elm$json$Json$Encode$bool(value.cZ)),
+				A3(
+					$author$project$JsonFormats$SchemaFormat$encodeMaybeWithoutDefault,
+					function (_v0) {
+						return $elm$json$Json$Encode$bool;
+					},
+					true,
+					value.c$)),
 				_Utils_Tuple2(
 				'default',
-				A2(
-					$author$project$JsonFormats$SchemaFormat$encodeMaybe,
-					function (_v2) {
-						var v = _v2;
-						return $elm$json$Json$Encode$string(v);
-					},
-					value.b_)),
+				A2($author$project$Libs$Json$Encode$maybe, $author$project$JsonFormats$SchemaFormat$encodeColumnValue, value.b2)),
 				_Utils_Tuple2(
 				'foreignKey',
-				A2($author$project$JsonFormats$SchemaFormat$encodeMaybe, $author$project$JsonFormats$SchemaFormat$encodeForeignKey, value.cd)),
+				A2($author$project$Libs$Json$Encode$maybe, $author$project$JsonFormats$SchemaFormat$encodeForeignKey, value.ch)),
 				_Utils_Tuple2(
 				'comment',
-				A2(
-					$author$project$JsonFormats$SchemaFormat$encodeMaybe,
-					function (_v3) {
-						var v = _v3;
-						return $elm$json$Json$Encode$string(v);
-					},
-					value.aA))
+				A2($author$project$Libs$Json$Encode$maybe, $author$project$JsonFormats$SchemaFormat$encodeColumnComment, value.aF))
 			]));
 };
+var $author$project$JsonFormats$SchemaFormat$encodeIndexName = function (_v0) {
+	var value = _v0;
+	return $elm$json$Json$Encode$string(value);
+};
+var $author$project$Libs$Nel$toList = function (xs) {
+	return A2($elm$core$List$cons, xs.t, xs.y);
+};
+var $author$project$Libs$Json$Encode$nel = F2(
+	function (encoder, value) {
+		return A2(
+			$elm$json$Json$Encode$list,
+			encoder,
+			$author$project$Libs$Nel$toList(value));
+	});
 var $author$project$JsonFormats$SchemaFormat$encodeIndex = function (value) {
 	return $author$project$Libs$Json$Encode$object(
 		_List_fromArray(
 			[
 				_Utils_Tuple2(
 				'name',
-				$elm$json$Json$Encode$string(
-					function (_v0) {
-						var v = _v0;
-						return v;
-					}(value.J))),
+				$author$project$JsonFormats$SchemaFormat$encodeIndexName(value.N)),
 				_Utils_Tuple2(
 				'columns',
-				A2($elm$json$Json$Encode$list, $author$project$JsonFormats$SchemaFormat$encodeColumnName, value.H)),
+				A2($author$project$Libs$Json$Encode$nel, $author$project$JsonFormats$SchemaFormat$encodeColumnName, value.L)),
 				_Utils_Tuple2(
 				'definition',
-				$elm$json$Json$Encode$string(value.aE))
+				$elm$json$Json$Encode$string(value.aJ))
 			]));
+};
+var $author$project$JsonFormats$SchemaFormat$encodePrimaryKeyName = function (_v0) {
+	var value = _v0;
+	return $elm$json$Json$Encode$string(value);
 };
 var $author$project$JsonFormats$SchemaFormat$encodePrimaryKey = function (value) {
 	return $author$project$Libs$Json$Encode$object(
 		_List_fromArray(
 			[
 				_Utils_Tuple2(
-				'columns',
-				A2($elm$json$Json$Encode$list, $author$project$JsonFormats$SchemaFormat$encodeColumnName, value.H)),
-				_Utils_Tuple2(
 				'name',
-				$elm$json$Json$Encode$string(
-					function (_v0) {
-						var v = _v0;
-						return v;
-					}(value.J)))
+				$author$project$JsonFormats$SchemaFormat$encodePrimaryKeyName(value.N)),
+				_Utils_Tuple2(
+				'columns',
+				A2($author$project$Libs$Json$Encode$nel, $author$project$JsonFormats$SchemaFormat$encodeColumnName, value.L))
 			]));
 };
 var $author$project$JsonFormats$SchemaFormat$encodeSourceLine = function (value) {
@@ -6075,36 +6172,31 @@ var $author$project$JsonFormats$SchemaFormat$encodeSourceLine = function (value)
 			[
 				_Utils_Tuple2(
 				'no',
-				$elm$json$Json$Encode$int(value.cQ)),
+				$elm$json$Json$Encode$int(value.cS)),
 				_Utils_Tuple2(
 				'text',
-				$elm$json$Json$Encode$string(value.dM))
+				$elm$json$Json$Encode$string(value.dP))
 			]));
 };
-var $author$project$Libs$Json$Encode$nel = F2(
-	function (encoder, value) {
-		return $author$project$Libs$Json$Encode$object(
-			_List_fromArray(
-				[
-					_Utils_Tuple2(
-					'head',
-					encoder(value.ce)),
-					_Utils_Tuple2(
-					'tail',
-					A2($elm$json$Json$Encode$list, encoder, value.dK))
-				]));
-	});
 var $author$project$JsonFormats$SchemaFormat$encodeSource = function (value) {
 	return $author$project$Libs$Json$Encode$object(
 		_List_fromArray(
 			[
 				_Utils_Tuple2(
 				'file',
-				$elm$json$Json$Encode$string(value.aJ)),
+				$elm$json$Json$Encode$string(value.aO)),
 				_Utils_Tuple2(
 				'lines',
-				A2($author$project$Libs$Json$Encode$nel, $author$project$JsonFormats$SchemaFormat$encodeSourceLine, value.cB))
+				A2($author$project$Libs$Json$Encode$nel, $author$project$JsonFormats$SchemaFormat$encodeSourceLine, value.cE))
 			]));
+};
+var $author$project$JsonFormats$SchemaFormat$encodeTableComment = function (_v0) {
+	var value = _v0;
+	return $elm$json$Json$Encode$string(value);
+};
+var $author$project$JsonFormats$SchemaFormat$encodeUniqueName = function (_v0) {
+	var value = _v0;
+	return $elm$json$Json$Encode$string(value);
 };
 var $author$project$JsonFormats$SchemaFormat$encodeUnique = function (value) {
 	return $author$project$Libs$Json$Encode$object(
@@ -6112,26 +6204,34 @@ var $author$project$JsonFormats$SchemaFormat$encodeUnique = function (value) {
 			[
 				_Utils_Tuple2(
 				'name',
-				$elm$json$Json$Encode$string(
-					function (_v0) {
-						var v = _v0;
-						return v;
-					}(value.J))),
+				$author$project$JsonFormats$SchemaFormat$encodeUniqueName(value.N)),
 				_Utils_Tuple2(
 				'columns',
-				A2($elm$json$Json$Encode$list, $author$project$JsonFormats$SchemaFormat$encodeColumnName, value.H)),
+				A2($author$project$Libs$Json$Encode$nel, $author$project$JsonFormats$SchemaFormat$encodeColumnName, value.L)),
 				_Utils_Tuple2(
 				'definition',
-				$elm$json$Json$Encode$string(value.aE))
+				$elm$json$Json$Encode$string(value.aJ))
 			]));
 };
-var $elm$core$Tuple$second = function (_v0) {
-	var y = _v0.b;
-	return y;
+var $author$project$Libs$Nel$Nel = F2(
+	function (head, tail) {
+		return {t: head, y: tail};
+	});
+var $elm$core$Dict$values = function (dict) {
+	return A3(
+		$elm$core$Dict$foldr,
+		F3(
+			function (key, value, valueList) {
+				return A2($elm$core$List$cons, value, valueList);
+			}),
+		_List_Nil,
+		dict);
 };
-var $pzp1997$assoc_list$AssocList$values = function (_v0) {
-	var alist = _v0;
-	return A2($elm$core$List$map, $elm$core$Tuple$second, alist);
+var $author$project$Libs$Ned$values = function (ned) {
+	return A2(
+		$author$project$Libs$Nel$Nel,
+		ned.t.b,
+		$elm$core$Dict$values(ned.y));
 };
 var $author$project$JsonFormats$SchemaFormat$encodeTable = function (value) {
 	return $author$project$Libs$Json$Encode$object(
@@ -6139,64 +6239,62 @@ var $author$project$JsonFormats$SchemaFormat$encodeTable = function (value) {
 			[
 				_Utils_Tuple2(
 				'schema',
-				$elm$json$Json$Encode$string(
-					function (_v0) {
-						var v = _v0;
-						return v;
-					}(value.dr))),
+				$author$project$JsonFormats$SchemaFormat$encodeSchemaName(value.dv)),
 				_Utils_Tuple2(
 				'table',
-				$elm$json$Json$Encode$string(
-					function (_v1) {
-						var v = _v1;
-						return v;
-					}(value.bt))),
+				$author$project$JsonFormats$SchemaFormat$encodeTableName(value.dM)),
 				_Utils_Tuple2(
 				'columns',
 				A2(
-					$elm$json$Json$Encode$list,
+					$author$project$Libs$Json$Encode$nel,
 					$author$project$JsonFormats$SchemaFormat$encodeColumn,
-					$pzp1997$assoc_list$AssocList$values(value.H))),
+					$author$project$Libs$Ned$values(value.L))),
 				_Utils_Tuple2(
 				'primaryKey',
-				A2($author$project$JsonFormats$SchemaFormat$encodeMaybe, $author$project$JsonFormats$SchemaFormat$encodePrimaryKey, value.dj)),
+				A2($author$project$Libs$Json$Encode$maybe, $author$project$JsonFormats$SchemaFormat$encodePrimaryKey, value.dn)),
 				_Utils_Tuple2(
 				'uniques',
-				A2($elm$json$Json$Encode$list, $author$project$JsonFormats$SchemaFormat$encodeUnique, value.dS)),
+				A3(
+					$author$project$JsonFormats$SchemaFormat$encodeMaybeWithoutDefault,
+					function (_v0) {
+						return $elm$json$Json$Encode$list($author$project$JsonFormats$SchemaFormat$encodeUnique);
+					},
+					_List_Nil,
+					value.dV)),
 				_Utils_Tuple2(
 				'indexes',
-				A2($elm$json$Json$Encode$list, $author$project$JsonFormats$SchemaFormat$encodeIndex, value.cp)),
+				A3(
+					$author$project$JsonFormats$SchemaFormat$encodeMaybeWithoutDefault,
+					function (_v1) {
+						return $elm$json$Json$Encode$list($author$project$JsonFormats$SchemaFormat$encodeIndex);
+					},
+					_List_Nil,
+					value.cs)),
 				_Utils_Tuple2(
 				'comment',
-				A2(
-					$author$project$JsonFormats$SchemaFormat$encodeMaybe,
-					function (_v2) {
-						var v = _v2;
-						return $elm$json$Json$Encode$string(v);
-					},
-					value.aA)),
+				A2($author$project$Libs$Json$Encode$maybe, $author$project$JsonFormats$SchemaFormat$encodeTableComment, value.aF)),
 				_Utils_Tuple2(
 				'sources',
 				A3(
 					$author$project$JsonFormats$SchemaFormat$encodeMaybeWithoutDefault,
-					function (_v3) {
+					function (_v2) {
 						return $elm$json$Json$Encode$list($author$project$JsonFormats$SchemaFormat$encodeSource);
 					},
 					_List_Nil,
-					value.dC))
+					value.dG))
 			]));
 };
-var $author$project$Models$Utils$Position = F2(
+var $author$project$Libs$Position$Position = F2(
 	function (left, top) {
-		return {aT: left, bx: top};
+		return {a_: left, bD: top};
 	});
 var $author$project$Models$Schema$initLayout = {
-	bM: {
-		a6: A2($author$project$Models$Utils$Position, 0, 0),
-		d$: 1
+	bR: {
+		bd: A2($author$project$Libs$Position$Position, 0, 0),
+		d2: 1
 	},
-	cj: $pzp1997$assoc_list$AssocList$empty,
-	bu: $pzp1997$assoc_list$AssocList$empty
+	cm: $elm$core$Dict$empty,
+	by: $elm$core$Dict$empty
 };
 var $author$project$JsonFormats$SchemaFormat$encodeSchema = function (value) {
 	return $author$project$Libs$Json$Encode$object(
@@ -6204,16 +6302,16 @@ var $author$project$JsonFormats$SchemaFormat$encodeSchema = function (value) {
 			[
 				_Utils_Tuple2(
 				'id',
-				$elm$json$Json$Encode$string(value.ck)),
+				$elm$json$Json$Encode$string(value.aV)),
 				_Utils_Tuple2(
 				'info',
-				$author$project$JsonFormats$SchemaFormat$encodeInfo(value.cq)),
+				$author$project$JsonFormats$SchemaFormat$encodeSchemaInfo(value.ct)),
 				_Utils_Tuple2(
 				'tables',
 				A2(
 					$elm$json$Json$Encode$list,
 					$author$project$JsonFormats$SchemaFormat$encodeTable,
-					$pzp1997$assoc_list$AssocList$values(value.bu))),
+					$elm$core$Dict$values(value.by))),
 				_Utils_Tuple2(
 				'layout',
 				A3(
@@ -6222,19 +6320,64 @@ var $author$project$JsonFormats$SchemaFormat$encodeSchema = function (value) {
 						return $author$project$JsonFormats$SchemaFormat$encodeLayout;
 					},
 					$author$project$Models$Schema$initLayout,
-					value.cx)),
+					value.cA)),
 				_Utils_Tuple2(
 				'layoutName',
-				A2($author$project$JsonFormats$SchemaFormat$encodeMaybe, $elm$json$Json$Encode$string, value.cy)),
+				A2($author$project$Libs$Json$Encode$maybe, $elm$json$Json$Encode$string, value.cB)),
 				_Utils_Tuple2(
 				'layouts',
 				A3(
 					$author$project$JsonFormats$SchemaFormat$encodeMaybeWithoutDefault,
 					function (_v1) {
-						return A2($author$project$Libs$Json$Encode$dict, $elm$core$Basics$identity, $author$project$JsonFormats$SchemaFormat$encodeLayout);
+						return A2($elm$json$Json$Encode$dict, $elm$core$Basics$identity, $author$project$JsonFormats$SchemaFormat$encodeLayout);
 					},
-					$pzp1997$assoc_list$AssocList$empty,
-					value.cz))
+					$elm$core$Dict$empty,
+					value.cC))
+			]));
+};
+var $author$project$Libs$Hotkey$hotkeyTargetEncoder = function (t) {
+	return $elm$json$Json$Encode$object(
+		_List_fromArray(
+			[
+				_Utils_Tuple2(
+				'id',
+				A2($author$project$Libs$Json$Encode$maybe, $elm$json$Json$Encode$string, t.aV)),
+				_Utils_Tuple2(
+				'class',
+				A2($author$project$Libs$Json$Encode$maybe, $elm$json$Json$Encode$string, t.af)),
+				_Utils_Tuple2(
+				'tag',
+				A2($author$project$Libs$Json$Encode$maybe, $elm$json$Json$Encode$string, t.bz))
+			]));
+};
+var $author$project$Libs$Hotkey$hotkeyEncoder = function (key) {
+	return $elm$json$Json$Encode$object(
+		_List_fromArray(
+			[
+				_Utils_Tuple2(
+				'key',
+				A2($author$project$Libs$Json$Encode$maybe, $elm$json$Json$Encode$string, key.B)),
+				_Utils_Tuple2(
+				'ctrl',
+				$elm$json$Json$Encode$bool(key.ah)),
+				_Utils_Tuple2(
+				'shift',
+				$elm$json$Json$Encode$bool(key.dC)),
+				_Utils_Tuple2(
+				'alt',
+				$elm$json$Json$Encode$bool(key.ae)),
+				_Utils_Tuple2(
+				'meta',
+				$elm$json$Json$Encode$bool(key.ao)),
+				_Utils_Tuple2(
+				'target',
+				A2($author$project$Libs$Json$Encode$maybe, $author$project$Libs$Hotkey$hotkeyTargetEncoder, key.bB)),
+				_Utils_Tuple2(
+				'onInput',
+				$elm$json$Json$Encode$bool(key.c7)),
+				_Utils_Tuple2(
+				'preventDefault',
+				$elm$json$Json$Encode$bool(key.dm))
 			]));
 };
 var $author$project$Ports$toastEncoder = function (toast) {
@@ -6243,10 +6386,10 @@ var $author$project$Ports$toastEncoder = function (toast) {
 			[
 				_Utils_Tuple2(
 				'kind',
-				$elm$json$Json$Encode$string(toast.cv)),
+				$elm$json$Json$Encode$string(toast.cy)),
 				_Utils_Tuple2(
 				'message',
-				$elm$json$Json$Encode$string(toast.aW))
+				$elm$json$Json$Encode$string(toast.a1))
 			]));
 };
 var $author$project$Ports$elmEncoder = function (elm) {
@@ -6363,7 +6506,7 @@ var $author$project$Ports$elmEncoder = function (elm) {
 						'file',
 						$mpizenberg$elm_file$FileValue$encode(file))
 					]));
-		default:
+		case 10:
 			var ids = elm.a;
 			return $elm$json$Json$Encode$object(
 				_List_fromArray(
@@ -6375,6 +6518,18 @@ var $author$project$Ports$elmEncoder = function (elm) {
 						'ids',
 						A2($elm$json$Json$Encode$list, $elm$json$Json$Encode$string, ids))
 					]));
+		default:
+			var keys = elm.a;
+			return $elm$json$Json$Encode$object(
+				_List_fromArray(
+					[
+						_Utils_Tuple2(
+						'kind',
+						$elm$json$Json$Encode$string('ListenKeys')),
+						_Utils_Tuple2(
+						'keys',
+						A3($elm$json$Json$Encode$dict, $elm$core$Basics$identity, $author$project$Libs$Hotkey$hotkeyEncoder, keys))
+					]));
 	}
 };
 var $author$project$Ports$elmToJs = _Platform_outgoingPort('elmToJs', $elm$core$Basics$identity);
@@ -6382,6 +6537,11 @@ var $author$project$Ports$messageToJs = function (message) {
 	return $author$project$Ports$elmToJs(
 		$author$project$Ports$elmEncoder(message));
 };
+var $author$project$Ports$listenHotkeys = function (keys) {
+	return $author$project$Ports$messageToJs(
+		$author$project$Ports$ListenKeys(keys));
+};
+var $author$project$Ports$LoadSchemas = {$: 6};
 var $author$project$Ports$loadSchemas = $author$project$Ports$messageToJs($author$project$Ports$LoadSchemas);
 var $author$project$Ports$ObserveSizes = function (a) {
 	return {$: 10, a: a};
@@ -6408,18 +6568,19 @@ var $author$project$Main$init = function (_v0) {
 		$elm$core$Platform$Cmd$batch(
 			_List_fromArray(
 				[
-					$author$project$Ports$observeSize($author$project$Conf$conf.cm.b5),
-					$author$project$Ports$showModal($author$project$Conf$conf.cm.ds),
+					$author$project$Ports$observeSize($author$project$Conf$conf.cp.b9),
+					$author$project$Ports$showModal($author$project$Conf$conf.cp.dw),
 					$author$project$Ports$loadSchemas,
 					$author$project$Main$getZone,
-					$author$project$Main$getTime
+					$author$project$Main$getTime,
+					$author$project$Ports$listenHotkeys($author$project$Conf$conf.cn)
 				])));
 };
 var $author$project$Models$DragMsg = function (a) {
-	return {$: 21, a: a};
+	return {$: 25, a: a};
 };
 var $author$project$Models$JsMessage = function (a) {
-	return {$: 32, a: a};
+	return {$: 36, a: a};
 };
 var $elm$core$Platform$Sub$batch = _Platform_batch;
 var $elm$time$Time$Every = F2(
@@ -6428,7 +6589,7 @@ var $elm$time$Time$Every = F2(
 	});
 var $elm$time$Time$State = F2(
 	function (taggers, processes) {
-		return {ba: processes, bv: taggers};
+		return {bg: processes, bA: taggers};
 	});
 var $elm$time$Time$init = $elm$core$Task$succeed(
 	A2($elm$time$Time$State, $elm$core$Dict$empty, $elm$core$Dict$empty));
@@ -6573,7 +6734,7 @@ var $elm$time$Time$spawnHelp = F3(
 	});
 var $elm$time$Time$onEffects = F3(
 	function (router, subs, _v0) {
-		var processes = _v0.ba;
+		var processes = _v0.bg;
 		var rightStep = F3(
 			function (_v6, id, _v7) {
 				var spawns = _v7.a;
@@ -6639,7 +6800,7 @@ var $elm$time$Time$onEffects = F3(
 	});
 var $elm$time$Time$onSelfMsg = F3(
 	function (router, interval, state) {
-		var _v0 = A2($elm$core$Dict$get, interval, state.bv);
+		var _v0 = A2($elm$core$Dict$get, interval, state.bA);
 		if (_v0.$ === 1) {
 			return $elm$core$Task$succeed(state);
 		} else {
@@ -6686,13 +6847,16 @@ var $elm$time$Time$every = F2(
 			A2($elm$time$Time$Every, interval, tagger));
 	});
 var $author$project$Models$Error = function (a) {
-	return {$: 3, a: a};
+	return {$: 4, a: a};
 };
 var $elm$json$Json$Decode$decodeValue = _Json_run;
 var $author$project$Models$FileRead = F3(
 	function (a, b, c) {
 		return {$: 1, a: a, b: b, c: c};
 	});
+var $author$project$Models$HotkeyUsed = function (a) {
+	return {$: 3, a: a};
+};
 var $author$project$Models$SchemasLoaded = function (a) {
 	return {$: 0, a: a};
 };
@@ -6700,20 +6864,20 @@ var $author$project$Models$SizesChanged = function (a) {
 	return {$: 2, a: a};
 };
 var $elm$json$Json$Decode$andThen = _Json_andThen;
-var $author$project$Models$Utils$Size = F2(
+var $author$project$Libs$Size$Size = F2(
 	function (width, height) {
-		return {cg: height, dX: width};
+		return {cj: height, d_: width};
 	});
 var $elm$json$Json$Decode$field = _Json_decodeField;
 var $elm$json$Json$Decode$float = _Json_decodeFloat;
 var $author$project$JsonFormats$SchemaFormat$decodeSize = A3(
 	$elm$json$Json$Decode$map2,
-	$author$project$Models$Utils$Size,
+	$author$project$Libs$Size$Size,
 	A2($elm$json$Json$Decode$field, 'width', $elm$json$Json$Decode$float),
 	A2($elm$json$Json$Decode$field, 'height', $elm$json$Json$Decode$float));
 var $mpizenberg$elm_file$FileValue$File = F5(
 	function (value, name, mime, size, lastModified) {
-		return {cw: lastModified, aX: mime, J: name, dA: size, t: value};
+		return {cz: lastModified, a2: mime, N: name, dE: size, v: value};
 	});
 var $elm$json$Json$Decode$int = _Json_decodeInt;
 var $elm$json$Json$Decode$map5 = _Json_map5;
@@ -6736,10 +6900,9 @@ var $elm$json$Json$Decode$map3 = _Json_map3;
 var $author$project$Models$Schema$buildRelation = F3(
 	function (table, column, fk) {
 		return {
-			ag: fk.J,
-			am: {_: fk._, bt: fk.dI},
-			aq: {_: column._, bt: table.ck},
-			as: {bl: true}
+			B: fk.N,
+			aa: {ag: fk.ag, dM: fk.bx},
+			ax: {ag: column.ag, dM: table.aV}
 		};
 	});
 var $elm$core$List$maybeCons = F3(
@@ -6760,16 +6923,23 @@ var $elm$core$List$filterMap = F2(
 			_List_Nil,
 			xs);
 	});
-var $author$project$Models$Schema$buildTableRelations = function (table) {
+var $author$project$Libs$Nel$filterMap = F2(
+	function (f, xs) {
+		return A2(
+			$elm$core$List$filterMap,
+			f,
+			$author$project$Libs$Nel$toList(xs));
+	});
+var $author$project$Models$Schema$outgoingRelations = function (table) {
 	return A2(
-		$elm$core$List$filterMap,
+		$author$project$Libs$Nel$filterMap,
 		function (col) {
 			return A2(
 				$elm$core$Maybe$map,
 				A2($author$project$Models$Schema$buildRelation, table, col),
-				col.cd);
+				col.ch);
 		},
-		$pzp1997$assoc_list$AssocList$values(table.H));
+		$author$project$Libs$Ned$values(table.L));
 };
 var $author$project$Models$Schema$buildRelations = function (tables) {
 	return A3(
@@ -6777,3277 +6947,11 @@ var $author$project$Models$Schema$buildRelations = function (tables) {
 		F2(
 			function (table, res) {
 				return _Utils_ap(
-					$author$project$Models$Schema$buildTableRelations(table),
+					$author$project$Models$Schema$outgoingRelations(table),
 					res);
 			}),
 		_List_Nil,
 		tables);
-};
-var $elm$core$Basics$neq = _Utils_notEqual;
-var $pzp1997$assoc_list$AssocList$remove = F2(
-	function (targetKey, _v0) {
-		var alist = _v0;
-		return A2(
-			$elm$core$List$filter,
-			function (_v1) {
-				var key = _v1.a;
-				return !_Utils_eq(key, targetKey);
-			},
-			alist);
-	});
-var $pzp1997$assoc_list$AssocList$insert = F3(
-	function (key, value, dict) {
-		var _v0 = A2($pzp1997$assoc_list$AssocList$remove, key, dict);
-		var alteredAlist = _v0;
-		return A2(
-			$elm$core$List$cons,
-			_Utils_Tuple2(key, value),
-			alteredAlist);
-	});
-var $pzp1997$assoc_list$AssocList$fromList = function (alist) {
-	return A3(
-		$elm$core$List$foldl,
-		F2(
-			function (_v0, result) {
-				var key = _v0.a;
-				var value = _v0.b;
-				return A3($pzp1997$assoc_list$AssocList$insert, key, value, result);
-			}),
-		_List_Nil,
-		alist);
-};
-var $author$project$Libs$Dict$fromList = F2(
-	function (getKey, list) {
-		return $pzp1997$assoc_list$AssocList$fromList(
-			A2(
-				$elm$core$List$map,
-				function (item) {
-					return _Utils_Tuple2(
-						getKey(item),
-						item);
-				},
-				$elm$core$List$reverse(list)));
-	});
-var $elm$core$List$any = F2(
-	function (isOkay, list) {
-		any:
-		while (true) {
-			if (!list.b) {
-				return false;
-			} else {
-				var x = list.a;
-				var xs = list.b;
-				if (isOkay(x)) {
-					return true;
-				} else {
-					var $temp$isOkay = isOkay,
-						$temp$list = xs;
-					isOkay = $temp$isOkay;
-					list = $temp$list;
-					continue any;
-				}
-			}
-		}
-	});
-var $elm$core$List$append = F2(
-	function (xs, ys) {
-		if (!ys.b) {
-			return xs;
-		} else {
-			return A3($elm$core$List$foldr, $elm$core$List$cons, ys, xs);
-		}
-	});
-var $elm$core$List$concat = function (lists) {
-	return A3($elm$core$List$foldr, $elm$core$List$append, _List_Nil, lists);
-};
-var $elm$core$List$concatMap = F2(
-	function (f, list) {
-		return $elm$core$List$concat(
-			A2($elm$core$List$map, f, list));
-	});
-var $elm$regex$Regex$Match = F4(
-	function (match, index, number, submatches) {
-		return {co: index, cD: match, c_: number, dG: submatches};
-	});
-var $elm$regex$Regex$find = _Regex_findAtMost(_Regex_infinity);
-var $elm$regex$Regex$fromStringWith = _Regex_fromStringWith;
-var $elm$regex$Regex$never = _Regex_never;
-var $author$project$Libs$Regex$matches = F2(
-	function (regex, text) {
-		return A2(
-			$elm$core$List$concatMap,
-			function ($) {
-				return $.dG;
-			},
-			function (r) {
-				return A2($elm$regex$Regex$find, r, text);
-			}(
-				A2(
-					$elm$core$Maybe$withDefault,
-					$elm$regex$Regex$never,
-					A2(
-						$elm$regex$Regex$fromStringWith,
-						{bN: true, cN: false},
-						regex))));
-	});
-var $author$project$Libs$String$uniqueId = F2(
-	function (takenIds, id) {
-		uniqueId:
-		while (true) {
-			if (A2(
-				$elm$core$List$any,
-				function (taken) {
-					return _Utils_eq(taken, id);
-				},
-				takenIds)) {
-				var _v0 = A2($author$project$Libs$Regex$matches, '^(.*?)([0-9]+)?(\\.[a-z]+)?$', id);
-				if ((((_v0.b && (!_v0.a.$)) && _v0.b.b) && _v0.b.b.b) && (!_v0.b.b.b.b)) {
-					var prefix = _v0.a.a;
-					var _v1 = _v0.b;
-					var num = _v1.a;
-					var _v2 = _v1.b;
-					var extension = _v2.a;
-					var $temp$takenIds = takenIds,
-						$temp$id = _Utils_ap(
-						prefix,
-						_Utils_ap(
-							$elm$core$String$fromInt(
-								A2(
-									$elm$core$Maybe$withDefault,
-									2,
-									A2(
-										$elm$core$Maybe$map,
-										function (n) {
-											return n + 1;
-										},
-										A2($elm$core$Maybe$andThen, $elm$core$String$toInt, num)))),
-							A2($elm$core$Maybe$withDefault, '', extension)));
-					takenIds = $temp$takenIds;
-					id = $temp$id;
-					continue uniqueId;
-				} else {
-					return id + '-err';
-				}
-			} else {
-				return id;
-			}
-		}
-	});
-var $author$project$Models$Schema$buildSchema = F7(
-	function (takenIds, id, info, tables, layout, layoutName, layouts) {
-		return {
-			ck: A2($author$project$Libs$String$uniqueId, takenIds, id),
-			cq: info,
-			cx: layout,
-			cy: layoutName,
-			cz: layouts,
-			bd: $author$project$Models$Schema$buildRelations(tables),
-			bu: A2(
-				$author$project$Libs$Dict$fromList,
-				function ($) {
-					return $.ck;
-				},
-				tables)
-		};
-	});
-var $author$project$Models$Schema$SchemaInfo = F3(
-	function (created, updated, file) {
-		return {bW: created, aJ: file, dU: updated};
-	});
-var $author$project$Models$Schema$FileInfo = F2(
-	function (name, lastModified) {
-		return {cw: lastModified, J: name};
-	});
-var $author$project$JsonFormats$SchemaFormat$decodeFileInfo = A3(
-	$elm$json$Json$Decode$map2,
-	$author$project$Models$Schema$FileInfo,
-	A2($elm$json$Json$Decode$field, 'name', $elm$json$Json$Decode$string),
-	A2(
-		$elm$json$Json$Decode$map,
-		$elm$time$Time$millisToPosix,
-		A2($elm$json$Json$Decode$field, 'lastModified', $elm$json$Json$Decode$int)));
-var $elm$json$Json$Decode$oneOf = _Json_oneOf;
-var $elm$json$Json$Decode$maybe = function (decoder) {
-	return $elm$json$Json$Decode$oneOf(
-		_List_fromArray(
-			[
-				A2($elm$json$Json$Decode$map, $elm$core$Maybe$Just, decoder),
-				$elm$json$Json$Decode$succeed($elm$core$Maybe$Nothing)
-			]));
-};
-var $author$project$JsonFormats$SchemaFormat$decodeInfo = A4(
-	$elm$json$Json$Decode$map3,
-	$author$project$Models$Schema$SchemaInfo,
-	A2(
-		$elm$json$Json$Decode$map,
-		$elm$time$Time$millisToPosix,
-		A2($elm$json$Json$Decode$field, 'created', $elm$json$Json$Decode$int)),
-	A2(
-		$elm$json$Json$Decode$map,
-		$elm$time$Time$millisToPosix,
-		A2($elm$json$Json$Decode$field, 'updated', $elm$json$Json$Decode$int)),
-	$elm$json$Json$Decode$maybe(
-		A2($elm$json$Json$Decode$field, 'file', $author$project$JsonFormats$SchemaFormat$decodeFileInfo)));
-var $author$project$Models$Schema$Layout = F3(
-	function (canvas, tables, hiddenTables) {
-		return {bM: canvas, cj: hiddenTables, bu: tables};
-	});
-var $author$project$Models$Schema$CanvasProps = F2(
-	function (position, zoom) {
-		return {a6: position, d$: zoom};
-	});
-var $author$project$JsonFormats$SchemaFormat$decodePosition = A3(
-	$elm$json$Json$Decode$map2,
-	$author$project$Models$Utils$Position,
-	A2($elm$json$Json$Decode$field, 'left', $elm$json$Json$Decode$float),
-	A2($elm$json$Json$Decode$field, 'top', $elm$json$Json$Decode$float));
-var $author$project$JsonFormats$SchemaFormat$decodeCanvasProps = A3(
-	$elm$json$Json$Decode$map2,
-	$author$project$Models$Schema$CanvasProps,
-	A2($elm$json$Json$Decode$field, 'position', $author$project$JsonFormats$SchemaFormat$decodePosition),
-	A2($elm$json$Json$Decode$field, 'zoom', $elm$json$Json$Decode$float));
-var $author$project$Models$Schema$TableProps = F4(
-	function (position, color, selected, columns) {
-		return {bS: color, H: columns, a6: position, dw: selected};
-	});
-var $elm$json$Json$Decode$bool = _Json_decodeBool;
-var $author$project$Models$Schema$ColumnName = $elm$core$Basics$identity;
-var $author$project$JsonFormats$SchemaFormat$decodeColumnName = A2($elm$json$Json$Decode$map, $elm$core$Basics$identity, $elm$json$Json$Decode$string);
-var $elm$json$Json$Decode$map4 = _Json_map4;
-var $author$project$JsonFormats$SchemaFormat$decodeTableProps = A5(
-	$elm$json$Json$Decode$map4,
-	$author$project$Models$Schema$TableProps,
-	A2($elm$json$Json$Decode$field, 'position', $author$project$JsonFormats$SchemaFormat$decodePosition),
-	A2($elm$json$Json$Decode$field, 'color', $elm$json$Json$Decode$string),
-	A2($elm$json$Json$Decode$field, 'selected', $elm$json$Json$Decode$bool),
-	A2(
-		$elm$json$Json$Decode$field,
-		'columns',
-		$elm$json$Json$Decode$list($author$project$JsonFormats$SchemaFormat$decodeColumnName)));
-var $elm$json$Json$Decode$keyValuePairs = _Json_decodeKeyValuePairs;
-var $elm$json$Json$Decode$dict = function (decoder) {
-	return A2(
-		$elm$json$Json$Decode$map,
-		$elm$core$Dict$fromList,
-		$elm$json$Json$Decode$keyValuePairs(decoder));
-};
-var $author$project$Libs$Json$Decode$dict = F2(
-	function (buildKey, decoder) {
-		return A2(
-			$elm$json$Json$Decode$map,
-			function (d) {
-				return $pzp1997$assoc_list$AssocList$fromList(
-					A2(
-						$elm$core$List$map,
-						function (_v0) {
-							var k = _v0.a;
-							var a = _v0.b;
-							return _Utils_Tuple2(
-								buildKey(k),
-								a);
-						},
-						$elm$core$Dict$toList(d)));
-			},
-			$elm$json$Json$Decode$dict(decoder));
-	});
-var $author$project$Models$Schema$SchemaName = $elm$core$Basics$identity;
-var $author$project$Models$Schema$TableId = F2(
-	function (a, b) {
-		return {$: 0, a: a, b: b};
-	});
-var $author$project$Models$Schema$TableName = $elm$core$Basics$identity;
-var $author$project$Models$Schema$stringAsTableId = function (id) {
-	var _v0 = A2($elm$core$String$split, '.', id);
-	if ((_v0.b && _v0.b.b) && (!_v0.b.b.b)) {
-		var schema = _v0.a;
-		var _v1 = _v0.b;
-		var table = _v1.a;
-		return A2($author$project$Models$Schema$TableId, schema, table);
-	} else {
-		return A2($author$project$Models$Schema$TableId, $author$project$Conf$conf.b_.dr, id);
-	}
-};
-var $author$project$JsonFormats$SchemaFormat$decodeLayout = A4(
-	$elm$json$Json$Decode$map3,
-	$author$project$Models$Schema$Layout,
-	A2($elm$json$Json$Decode$field, 'canvas', $author$project$JsonFormats$SchemaFormat$decodeCanvasProps),
-	A2(
-		$elm$json$Json$Decode$field,
-		'tables',
-		A2($author$project$Libs$Json$Decode$dict, $author$project$Models$Schema$stringAsTableId, $author$project$JsonFormats$SchemaFormat$decodeTableProps)),
-	A2(
-		$elm$json$Json$Decode$field,
-		'hiddenTables',
-		A2($author$project$Libs$Json$Decode$dict, $author$project$Models$Schema$stringAsTableId, $author$project$JsonFormats$SchemaFormat$decodeTableProps)));
-var $author$project$JsonFormats$SchemaFormat$decodeMaybeWithDefault = F2(
-	function (decoder, a) {
-		return A2(
-			$elm$json$Json$Decode$map,
-			$elm$core$Maybe$withDefault(a),
-			$elm$json$Json$Decode$maybe(
-				decoder(a)));
-	});
-var $author$project$Models$Schema$Table = F9(
-	function (id, schema, table, columns, primaryKey, uniques, indexes, comment, sources) {
-		return {H: columns, aA: comment, ck: id, cp: indexes, dj: primaryKey, dr: schema, dC: sources, bt: table, dS: uniques};
-	});
-var $author$project$Models$Schema$TableComment = $elm$core$Basics$identity;
-var $author$project$Models$Schema$Column = F7(
-	function (index, column, kind, nullable, _default, foreignKey, comment) {
-		return {_: column, aA: comment, b_: _default, cd: foreignKey, co: index, cv: kind, cZ: nullable};
-	});
-var $author$project$Models$Schema$ColumnComment = $elm$core$Basics$identity;
-var $author$project$Models$Schema$ColumnIndex = $elm$core$Basics$identity;
-var $author$project$Models$Schema$ColumnType = $elm$core$Basics$identity;
-var $author$project$Models$Schema$ColumnValue = $elm$core$Basics$identity;
-var $author$project$Models$Schema$ForeignKey = F5(
-	function (tableId, schema, table, column, name) {
-		return {_: column, J: name, dr: schema, bt: table, dI: tableId};
-	});
-var $author$project$Models$Schema$ForeignKeyName = $elm$core$Basics$identity;
-var $author$project$JsonFormats$SchemaFormat$decodeForeignKey = A6(
-	$elm$json$Json$Decode$map5,
-	$author$project$Models$Schema$ForeignKey,
-	A3(
-		$elm$json$Json$Decode$map2,
-		F2(
-			function (schema, table) {
-				return A2($author$project$Models$Schema$TableId, schema, table);
-			}),
-		A2($elm$json$Json$Decode$field, 'schema', $elm$json$Json$Decode$string),
-		A2($elm$json$Json$Decode$field, 'table', $elm$json$Json$Decode$string)),
-	A2(
-		$elm$json$Json$Decode$map,
-		$elm$core$Basics$identity,
-		A2($elm$json$Json$Decode$field, 'schema', $elm$json$Json$Decode$string)),
-	A2(
-		$elm$json$Json$Decode$map,
-		$elm$core$Basics$identity,
-		A2($elm$json$Json$Decode$field, 'table', $elm$json$Json$Decode$string)),
-	A2($elm$json$Json$Decode$field, 'column', $author$project$JsonFormats$SchemaFormat$decodeColumnName),
-	A2(
-		$elm$json$Json$Decode$map,
-		$elm$core$Basics$identity,
-		A2($elm$json$Json$Decode$field, 'name', $elm$json$Json$Decode$string)));
-var $elm$json$Json$Decode$map7 = _Json_map7;
-var $author$project$JsonFormats$SchemaFormat$decodeColumn = A8(
-	$elm$json$Json$Decode$map7,
-	$author$project$Models$Schema$Column,
-	A2(
-		$elm$json$Json$Decode$map,
-		$elm$core$Basics$identity,
-		A2($elm$json$Json$Decode$field, 'index', $elm$json$Json$Decode$int)),
-	A2($elm$json$Json$Decode$field, 'column', $author$project$JsonFormats$SchemaFormat$decodeColumnName),
-	A2(
-		$elm$json$Json$Decode$map,
-		$elm$core$Basics$identity,
-		A2($elm$json$Json$Decode$field, 'type', $elm$json$Json$Decode$string)),
-	A2($elm$json$Json$Decode$field, 'nullable', $elm$json$Json$Decode$bool),
-	$elm$json$Json$Decode$maybe(
-		A2(
-			$elm$json$Json$Decode$field,
-			'default',
-			A2($elm$json$Json$Decode$map, $elm$core$Basics$identity, $elm$json$Json$Decode$string))),
-	$elm$json$Json$Decode$maybe(
-		A2($elm$json$Json$Decode$field, 'foreignKey', $author$project$JsonFormats$SchemaFormat$decodeForeignKey)),
-	$elm$json$Json$Decode$maybe(
-		A2(
-			$elm$json$Json$Decode$field,
-			'comment',
-			A2($elm$json$Json$Decode$map, $elm$core$Basics$identity, $elm$json$Json$Decode$string))));
-var $author$project$Models$Schema$Index = F3(
-	function (name, columns, definition) {
-		return {H: columns, aE: definition, J: name};
-	});
-var $author$project$Models$Schema$IndexName = $elm$core$Basics$identity;
-var $author$project$JsonFormats$SchemaFormat$decodeIndex = A4(
-	$elm$json$Json$Decode$map3,
-	$author$project$Models$Schema$Index,
-	A2(
-		$elm$json$Json$Decode$map,
-		$elm$core$Basics$identity,
-		A2($elm$json$Json$Decode$field, 'name', $elm$json$Json$Decode$string)),
-	A2(
-		$elm$json$Json$Decode$field,
-		'columns',
-		$elm$json$Json$Decode$list($author$project$JsonFormats$SchemaFormat$decodeColumnName)),
-	A2($elm$json$Json$Decode$field, 'definition', $elm$json$Json$Decode$string));
-var $author$project$Models$Schema$PrimaryKey = F2(
-	function (columns, name) {
-		return {H: columns, J: name};
-	});
-var $author$project$Models$Schema$PrimaryKeyName = $elm$core$Basics$identity;
-var $author$project$JsonFormats$SchemaFormat$decodePrimaryKey = A3(
-	$elm$json$Json$Decode$map2,
-	$author$project$Models$Schema$PrimaryKey,
-	A2(
-		$elm$json$Json$Decode$field,
-		'columns',
-		$elm$json$Json$Decode$list($author$project$JsonFormats$SchemaFormat$decodeColumnName)),
-	A2(
-		$elm$json$Json$Decode$map,
-		$elm$core$Basics$identity,
-		A2($elm$json$Json$Decode$field, 'name', $elm$json$Json$Decode$string)));
-var $author$project$Models$Schema$Source = F2(
-	function (file, lines) {
-		return {aJ: file, cB: lines};
-	});
-var $author$project$Models$Schema$SourceLine = F2(
-	function (no, text) {
-		return {cQ: no, dM: text};
-	});
-var $author$project$JsonFormats$SchemaFormat$decodeSourceLine = A3(
-	$elm$json$Json$Decode$map2,
-	$author$project$Models$Schema$SourceLine,
-	A2($elm$json$Json$Decode$field, 'no', $elm$json$Json$Decode$int),
-	A2($elm$json$Json$Decode$field, 'text', $elm$json$Json$Decode$string));
-var $author$project$Libs$Nel$Nel = F2(
-	function (head, tail) {
-		return {ce: head, dK: tail};
-	});
-var $author$project$Libs$Json$Decode$nel = function (decoder) {
-	return A3(
-		$elm$json$Json$Decode$map2,
-		$author$project$Libs$Nel$Nel,
-		A2($elm$json$Json$Decode$field, 'head', decoder),
-		A2(
-			$elm$json$Json$Decode$field,
-			'tail',
-			$elm$json$Json$Decode$list(decoder)));
-};
-var $author$project$JsonFormats$SchemaFormat$decodeSource = A3(
-	$elm$json$Json$Decode$map2,
-	$author$project$Models$Schema$Source,
-	A2($elm$json$Json$Decode$field, 'file', $elm$json$Json$Decode$string),
-	A2(
-		$elm$json$Json$Decode$field,
-		'lines',
-		$author$project$Libs$Json$Decode$nel($author$project$JsonFormats$SchemaFormat$decodeSourceLine)));
-var $author$project$Models$Schema$Unique = F3(
-	function (name, columns, definition) {
-		return {H: columns, aE: definition, J: name};
-	});
-var $author$project$Models$Schema$UniqueName = $elm$core$Basics$identity;
-var $author$project$JsonFormats$SchemaFormat$decodeUnique = A4(
-	$elm$json$Json$Decode$map3,
-	$author$project$Models$Schema$Unique,
-	A2(
-		$elm$json$Json$Decode$map,
-		$elm$core$Basics$identity,
-		A2($elm$json$Json$Decode$field, 'name', $elm$json$Json$Decode$string)),
-	A2(
-		$elm$json$Json$Decode$field,
-		'columns',
-		$elm$json$Json$Decode$list($author$project$JsonFormats$SchemaFormat$decodeColumnName)),
-	A2($elm$json$Json$Decode$field, 'definition', $elm$json$Json$Decode$string));
-var $elm$json$Json$Decode$map6 = _Json_map6;
-var $author$project$Libs$Json$Decode$map9 = function (callback) {
-	return function (da) {
-		return function (db) {
-			return function (dc) {
-				return function (dd) {
-					return function (de) {
-						return function (df) {
-							return function (dg) {
-								return function (dh) {
-									return function (di) {
-										return A3(
-											$elm$json$Json$Decode$map2,
-											F2(
-												function (_v0, _v3) {
-													var _v1 = _v0.a;
-													var a = _v1.a;
-													var b = _v1.b;
-													var c = _v1.c;
-													var _v2 = _v0.b;
-													var d = _v2.a;
-													var e = _v2.b;
-													var f = _v2.c;
-													var g = _v3.a;
-													var h = _v3.b;
-													var i = _v3.c;
-													return A9(callback, a, b, c, d, e, f, g, h, i);
-												}),
-											A7(
-												$elm$json$Json$Decode$map6,
-												F6(
-													function (a, b, c, d, e, f) {
-														return _Utils_Tuple2(
-															_Utils_Tuple3(a, b, c),
-															_Utils_Tuple3(d, e, f));
-													}),
-												da,
-												db,
-												dc,
-												dd,
-												de,
-												df),
-											A4(
-												$elm$json$Json$Decode$map3,
-												F3(
-													function (g, h, i) {
-														return _Utils_Tuple3(g, h, i);
-													}),
-												dg,
-												dh,
-												di));
-									};
-								};
-							};
-						};
-					};
-				};
-			};
-		};
-	};
-};
-var $author$project$JsonFormats$SchemaFormat$decodeTable = A2(
-	$elm$json$Json$Decode$andThen,
-	function (_v0) {
-		var tableId = _v0.a;
-		var schema = _v0.b;
-		var table = _v0.c;
-		return $author$project$Libs$Json$Decode$map9($author$project$Models$Schema$Table)(
-			$elm$json$Json$Decode$succeed(tableId))(
-			$elm$json$Json$Decode$succeed(schema))(
-			$elm$json$Json$Decode$succeed(table))(
-			A2(
-				$elm$json$Json$Decode$field,
-				'columns',
-				A2(
-					$elm$json$Json$Decode$map,
-					$author$project$Libs$Dict$fromList(
-						function ($) {
-							return $._;
-						}),
-					$elm$json$Json$Decode$list($author$project$JsonFormats$SchemaFormat$decodeColumn))))(
-			$elm$json$Json$Decode$maybe(
-				A2($elm$json$Json$Decode$field, 'primaryKey', $author$project$JsonFormats$SchemaFormat$decodePrimaryKey)))(
-			A2(
-				$elm$json$Json$Decode$field,
-				'uniques',
-				$elm$json$Json$Decode$list($author$project$JsonFormats$SchemaFormat$decodeUnique)))(
-			A2(
-				$elm$json$Json$Decode$field,
-				'indexes',
-				$elm$json$Json$Decode$list($author$project$JsonFormats$SchemaFormat$decodeIndex)))(
-			$elm$json$Json$Decode$maybe(
-				A2(
-					$elm$json$Json$Decode$field,
-					'comment',
-					A2($elm$json$Json$Decode$map, $elm$core$Basics$identity, $elm$json$Json$Decode$string))))(
-			A2(
-				$author$project$JsonFormats$SchemaFormat$decodeMaybeWithDefault,
-				function (_v1) {
-					return A2(
-						$elm$json$Json$Decode$field,
-						'sources',
-						$elm$json$Json$Decode$list($author$project$JsonFormats$SchemaFormat$decodeSource));
-				},
-				_List_Nil));
-	},
-	A3(
-		$elm$json$Json$Decode$map2,
-		F2(
-			function (schema, table) {
-				return _Utils_Tuple3(
-					A2($author$project$Models$Schema$TableId, schema, table),
-					schema,
-					table);
-			}),
-		A2(
-			$elm$json$Json$Decode$map,
-			$elm$core$Basics$identity,
-			A2($elm$json$Json$Decode$field, 'schema', $elm$json$Json$Decode$string)),
-		A2(
-			$elm$json$Json$Decode$map,
-			$elm$core$Basics$identity,
-			A2($elm$json$Json$Decode$field, 'table', $elm$json$Json$Decode$string))));
-var $author$project$JsonFormats$SchemaFormat$decodeSchema = function (takenNames) {
-	return A7(
-		$elm$json$Json$Decode$map6,
-		$author$project$Models$Schema$buildSchema(takenNames),
-		A2($elm$json$Json$Decode$field, 'id', $elm$json$Json$Decode$string),
-		A2($elm$json$Json$Decode$field, 'info', $author$project$JsonFormats$SchemaFormat$decodeInfo),
-		A2(
-			$elm$json$Json$Decode$field,
-			'tables',
-			$elm$json$Json$Decode$list($author$project$JsonFormats$SchemaFormat$decodeTable)),
-		A2(
-			$author$project$JsonFormats$SchemaFormat$decodeMaybeWithDefault,
-			function (_v0) {
-				return A2($elm$json$Json$Decode$field, 'layout', $author$project$JsonFormats$SchemaFormat$decodeLayout);
-			},
-			$author$project$Models$Schema$initLayout),
-		$elm$json$Json$Decode$maybe(
-			A2($elm$json$Json$Decode$field, 'layoutName', $elm$json$Json$Decode$string)),
-		A2(
-			$author$project$JsonFormats$SchemaFormat$decodeMaybeWithDefault,
-			function (_v1) {
-				return A2(
-					$elm$json$Json$Decode$field,
-					'layouts',
-					A2($author$project$Libs$Json$Decode$dict, $elm$core$Basics$identity, $author$project$JsonFormats$SchemaFormat$decodeLayout));
-			},
-			$pzp1997$assoc_list$AssocList$empty));
-};
-var $elm$core$Result$mapError = F2(
-	function (f, result) {
-		if (!result.$) {
-			var v = result.a;
-			return $elm$core$Result$Ok(v);
-		} else {
-			var e = result.a;
-			return $elm$core$Result$Err(
-				f(e));
-		}
-	});
-var $author$project$Libs$List$resultCollect = function (list) {
-	return A3(
-		$elm$core$List$foldr,
-		F2(
-			function (r, _v0) {
-				var errs = _v0.a;
-				var res = _v0.b;
-				if (!r.$) {
-					var a = r.a;
-					return _Utils_Tuple2(
-						errs,
-						A2($elm$core$List$cons, a, res));
-				} else {
-					var e = r.a;
-					return _Utils_Tuple2(
-						A2($elm$core$List$cons, e, errs),
-						res);
-				}
-			}),
-		_Utils_Tuple2(_List_Nil, _List_Nil),
-		list);
-};
-var $elm$json$Json$Decode$index = _Json_decodeIndex;
-var $elm$core$Tuple$pair = F2(
-	function (a, b) {
-		return _Utils_Tuple2(a, b);
-	});
-var $author$project$Libs$Json$Decode$tuple = F2(
-	function (aDecoder, bDecoder) {
-		return A3(
-			$elm$json$Json$Decode$map2,
-			$elm$core$Tuple$pair,
-			A2($elm$json$Json$Decode$index, 0, aDecoder),
-			A2($elm$json$Json$Decode$index, 1, bDecoder));
-	});
-var $author$project$Ports$schemasDecoder = A2(
-	$elm$json$Json$Decode$map,
-	function (list) {
-		return $author$project$Libs$List$resultCollect(
-			A2(
-				$elm$core$List$map,
-				function (_v0) {
-					var k = _v0.a;
-					var v = _v0.b;
-					return A2(
-						$elm$core$Result$mapError,
-						function (e) {
-							return _Utils_Tuple2(k, e);
-						},
-						A2(
-							$elm$json$Json$Decode$decodeValue,
-							$author$project$JsonFormats$SchemaFormat$decodeSchema(_List_Nil),
-							v));
-				},
-				list));
-	},
-	$elm$json$Json$Decode$list(
-		A2($author$project$Libs$Json$Decode$tuple, $elm$json$Json$Decode$string, $elm$json$Json$Decode$value)));
-var $author$project$Ports$jsDecoder = A2(
-	$elm$json$Json$Decode$andThen,
-	function (kind) {
-		switch (kind) {
-			case 'SchemasLoaded':
-				return A2(
-					$elm$json$Json$Decode$map,
-					$author$project$Models$SchemasLoaded,
-					A2($elm$json$Json$Decode$field, 'schemas', $author$project$Ports$schemasDecoder));
-			case 'FileRead':
-				return A4(
-					$elm$json$Json$Decode$map3,
-					$author$project$Models$FileRead,
-					A2(
-						$elm$json$Json$Decode$map,
-						$elm$time$Time$millisToPosix,
-						A2($elm$json$Json$Decode$field, 'now', $elm$json$Json$Decode$int)),
-					A2($elm$json$Json$Decode$field, 'file', $mpizenberg$elm_file$FileValue$decoder),
-					A2($elm$json$Json$Decode$field, 'content', $elm$json$Json$Decode$string));
-			case 'SizesChanged':
-				return A2(
-					$elm$json$Json$Decode$map,
-					$author$project$Models$SizesChanged,
-					A2(
-						$elm$json$Json$Decode$field,
-						'sizes',
-						$elm$json$Json$Decode$list(
-							A3(
-								$elm$json$Json$Decode$map2,
-								F2(
-									function (id, size) {
-										return {ck: id, dA: size};
-									}),
-								A2($elm$json$Json$Decode$field, 'id', $elm$json$Json$Decode$string),
-								A2($elm$json$Json$Decode$field, 'size', $author$project$JsonFormats$SchemaFormat$decodeSize)))));
-			default:
-				var other = kind;
-				return $elm$json$Json$Decode$fail('Not supported kind of JsMsg \'' + (other + '\''));
-		}
-	},
-	A2($elm$json$Json$Decode$field, 'kind', $elm$json$Json$Decode$string));
-var $author$project$Ports$jsToElm = _Platform_incomingPort('jsToElm', $elm$json$Json$Decode$value);
-var $author$project$Ports$onJsMessage = function (callback) {
-	return $author$project$Ports$jsToElm(
-		function (value) {
-			var _v0 = A2($elm$json$Json$Decode$decodeValue, $author$project$Ports$jsDecoder, value);
-			if (!_v0.$) {
-				var message = _v0.a;
-				return callback(message);
-			} else {
-				var error = _v0.a;
-				return callback(
-					$author$project$Models$Error(error));
-			}
-		});
-};
-var $zaboco$elm_draggable$Internal$DragAt = function (a) {
-	return {$: 1, a: a};
-};
-var $zaboco$elm_draggable$Draggable$Msg = $elm$core$Basics$identity;
-var $zaboco$elm_draggable$Internal$StopDragging = {$: 2};
-var $elm$core$Platform$Sub$map = _Platform_map;
-var $elm$core$Platform$Sub$none = $elm$core$Platform$Sub$batch(_List_Nil);
-var $elm$browser$Browser$Events$Document = 0;
-var $elm$browser$Browser$Events$MySub = F3(
-	function (a, b, c) {
-		return {$: 0, a: a, b: b, c: c};
-	});
-var $elm$browser$Browser$Events$State = F2(
-	function (subs, pids) {
-		return {a4: pids, br: subs};
-	});
-var $elm$browser$Browser$Events$init = $elm$core$Task$succeed(
-	A2($elm$browser$Browser$Events$State, _List_Nil, $elm$core$Dict$empty));
-var $elm$browser$Browser$Events$nodeToKey = function (node) {
-	if (!node) {
-		return 'd_';
-	} else {
-		return 'w_';
-	}
-};
-var $elm$browser$Browser$Events$addKey = function (sub) {
-	var node = sub.a;
-	var name = sub.b;
-	return _Utils_Tuple2(
-		_Utils_ap(
-			$elm$browser$Browser$Events$nodeToKey(node),
-			name),
-		sub);
-};
-var $elm$browser$Browser$Events$Event = F2(
-	function (key, event) {
-		return {aH: event, ag: key};
-	});
-var $elm$browser$Browser$Events$spawn = F3(
-	function (router, key, _v0) {
-		var node = _v0.a;
-		var name = _v0.b;
-		var actualNode = function () {
-			if (!node) {
-				return _Browser_doc;
-			} else {
-				return _Browser_window;
-			}
-		}();
-		return A2(
-			$elm$core$Task$map,
-			function (value) {
-				return _Utils_Tuple2(key, value);
-			},
-			A3(
-				_Browser_on,
-				actualNode,
-				name,
-				function (event) {
-					return A2(
-						$elm$core$Platform$sendToSelf,
-						router,
-						A2($elm$browser$Browser$Events$Event, key, event));
-				}));
-	});
-var $elm$core$Dict$union = F2(
-	function (t1, t2) {
-		return A3($elm$core$Dict$foldl, $elm$core$Dict$insert, t2, t1);
-	});
-var $elm$browser$Browser$Events$onEffects = F3(
-	function (router, subs, state) {
-		var stepRight = F3(
-			function (key, sub, _v6) {
-				var deads = _v6.a;
-				var lives = _v6.b;
-				var news = _v6.c;
-				return _Utils_Tuple3(
-					deads,
-					lives,
-					A2(
-						$elm$core$List$cons,
-						A3($elm$browser$Browser$Events$spawn, router, key, sub),
-						news));
-			});
-		var stepLeft = F3(
-			function (_v4, pid, _v5) {
-				var deads = _v5.a;
-				var lives = _v5.b;
-				var news = _v5.c;
-				return _Utils_Tuple3(
-					A2($elm$core$List$cons, pid, deads),
-					lives,
-					news);
-			});
-		var stepBoth = F4(
-			function (key, pid, _v2, _v3) {
-				var deads = _v3.a;
-				var lives = _v3.b;
-				var news = _v3.c;
-				return _Utils_Tuple3(
-					deads,
-					A3($elm$core$Dict$insert, key, pid, lives),
-					news);
-			});
-		var newSubs = A2($elm$core$List$map, $elm$browser$Browser$Events$addKey, subs);
-		var _v0 = A6(
-			$elm$core$Dict$merge,
-			stepLeft,
-			stepBoth,
-			stepRight,
-			state.a4,
-			$elm$core$Dict$fromList(newSubs),
-			_Utils_Tuple3(_List_Nil, $elm$core$Dict$empty, _List_Nil));
-		var deadPids = _v0.a;
-		var livePids = _v0.b;
-		var makeNewPids = _v0.c;
-		return A2(
-			$elm$core$Task$andThen,
-			function (pids) {
-				return $elm$core$Task$succeed(
-					A2(
-						$elm$browser$Browser$Events$State,
-						newSubs,
-						A2(
-							$elm$core$Dict$union,
-							livePids,
-							$elm$core$Dict$fromList(pids))));
-			},
-			A2(
-				$elm$core$Task$andThen,
-				function (_v1) {
-					return $elm$core$Task$sequence(makeNewPids);
-				},
-				$elm$core$Task$sequence(
-					A2($elm$core$List$map, $elm$core$Process$kill, deadPids))));
-	});
-var $elm$browser$Browser$Events$onSelfMsg = F3(
-	function (router, _v0, state) {
-		var key = _v0.ag;
-		var event = _v0.aH;
-		var toMessage = function (_v2) {
-			var subKey = _v2.a;
-			var _v3 = _v2.b;
-			var node = _v3.a;
-			var name = _v3.b;
-			var decoder = _v3.c;
-			return _Utils_eq(subKey, key) ? A2(_Browser_decodeEvent, decoder, event) : $elm$core$Maybe$Nothing;
-		};
-		var messages = A2($elm$core$List$filterMap, toMessage, state.br);
-		return A2(
-			$elm$core$Task$andThen,
-			function (_v1) {
-				return $elm$core$Task$succeed(state);
-			},
-			$elm$core$Task$sequence(
-				A2(
-					$elm$core$List$map,
-					$elm$core$Platform$sendToApp(router),
-					messages)));
-	});
-var $elm$browser$Browser$Events$subMap = F2(
-	function (func, _v0) {
-		var node = _v0.a;
-		var name = _v0.b;
-		var decoder = _v0.c;
-		return A3(
-			$elm$browser$Browser$Events$MySub,
-			node,
-			name,
-			A2($elm$json$Json$Decode$map, func, decoder));
-	});
-_Platform_effectManagers['Browser.Events'] = _Platform_createManager($elm$browser$Browser$Events$init, $elm$browser$Browser$Events$onEffects, $elm$browser$Browser$Events$onSelfMsg, 0, $elm$browser$Browser$Events$subMap);
-var $elm$browser$Browser$Events$subscription = _Platform_leaf('Browser.Events');
-var $elm$browser$Browser$Events$on = F3(
-	function (node, name, decoder) {
-		return $elm$browser$Browser$Events$subscription(
-			A3($elm$browser$Browser$Events$MySub, node, name, decoder));
-	});
-var $elm$browser$Browser$Events$onMouseMove = A2($elm$browser$Browser$Events$on, 0, 'mousemove');
-var $elm$browser$Browser$Events$onMouseUp = A2($elm$browser$Browser$Events$on, 0, 'mouseup');
-var $zaboco$elm_draggable$Internal$Position = F2(
-	function (x, y) {
-		return {bC: x, bD: y};
-	});
-var $elm$core$Basics$truncate = _Basics_truncate;
-var $zaboco$elm_draggable$Draggable$positionDecoder = A3(
-	$elm$json$Json$Decode$map2,
-	$zaboco$elm_draggable$Internal$Position,
-	A2(
-		$elm$json$Json$Decode$map,
-		$elm$core$Basics$truncate,
-		A2($elm$json$Json$Decode$field, 'pageX', $elm$json$Json$Decode$float)),
-	A2(
-		$elm$json$Json$Decode$map,
-		$elm$core$Basics$truncate,
-		A2($elm$json$Json$Decode$field, 'pageY', $elm$json$Json$Decode$float)));
-var $zaboco$elm_draggable$Draggable$subscriptions = F2(
-	function (envelope, _v0) {
-		var drag = _v0;
-		if (!drag.$) {
-			return $elm$core$Platform$Sub$none;
-		} else {
-			return A2(
-				$elm$core$Platform$Sub$map,
-				A2($elm$core$Basics$composeL, envelope, $elm$core$Basics$identity),
-				$elm$core$Platform$Sub$batch(
-					_List_fromArray(
-						[
-							$elm$browser$Browser$Events$onMouseMove(
-							A2($elm$json$Json$Decode$map, $zaboco$elm_draggable$Internal$DragAt, $zaboco$elm_draggable$Draggable$positionDecoder)),
-							$elm$browser$Browser$Events$onMouseUp(
-							$elm$json$Json$Decode$succeed($zaboco$elm_draggable$Internal$StopDragging))
-						])));
-		}
-	});
-var $author$project$Main$subscriptions = function (model) {
-	return $elm$core$Platform$Sub$batch(
-		_List_fromArray(
-			[
-				A2($zaboco$elm_draggable$Draggable$subscriptions, $author$project$Models$DragMsg, model.b3),
-				A2($elm$time$Time$every, 10 * 1000, $author$project$Models$TimeChanged),
-				$author$project$Ports$onJsMessage($author$project$Models$JsMessage)
-			]));
-};
-var $author$project$Ports$ActivateTooltipsAndPopovers = {$: 4};
-var $author$project$Ports$activateTooltipsAndPopovers = $author$project$Ports$messageToJs($author$project$Ports$ActivateTooltipsAndPopovers);
-var $author$project$Updates$Helpers$map = F2(
-	function (transform, item) {
-		return transform(item);
-	});
-var $author$project$Ports$SaveSchema = function (a) {
-	return {$: 7, a: a};
-};
-var $author$project$Ports$saveSchema = function (schema) {
-	return $author$project$Ports$messageToJs(
-		$author$project$Ports$SaveSchema(schema));
-};
-var $author$project$Updates$Helpers$setLayouts = F2(
-	function (transform, item) {
-		return _Utils_update(
-			item,
-			{
-				cz: transform(item.cz)
-			});
-	});
-var $pzp1997$assoc_list$AssocList$get = F2(
-	function (targetKey, _v0) {
-		get:
-		while (true) {
-			var alist = _v0;
-			if (!alist.b) {
-				return $elm$core$Maybe$Nothing;
-			} else {
-				var _v2 = alist.a;
-				var key = _v2.a;
-				var value = _v2.b;
-				var rest = alist.b;
-				if (_Utils_eq(key, targetKey)) {
-					return $elm$core$Maybe$Just(value);
-				} else {
-					var $temp$targetKey = targetKey,
-						$temp$_v0 = rest;
-					targetKey = $temp$targetKey;
-					_v0 = $temp$_v0;
-					continue get;
-				}
-			}
-		}
-	});
-var $pzp1997$assoc_list$AssocList$update = F3(
-	function (targetKey, alter, dict) {
-		var alist = dict;
-		var maybeValue = A2($pzp1997$assoc_list$AssocList$get, targetKey, dict);
-		if (!maybeValue.$) {
-			var _v1 = alter(maybeValue);
-			if (!_v1.$) {
-				var alteredValue = _v1.a;
-				return A2(
-					$elm$core$List$map,
-					function (entry) {
-						var key = entry.a;
-						return _Utils_eq(key, targetKey) ? _Utils_Tuple2(targetKey, alteredValue) : entry;
-					},
-					alist);
-			} else {
-				return A2($pzp1997$assoc_list$AssocList$remove, targetKey, dict);
-			}
-		} else {
-			var _v2 = alter($elm$core$Maybe$Nothing);
-			if (!_v2.$) {
-				var alteredValue = _v2.a;
-				return A2(
-					$elm$core$List$cons,
-					_Utils_Tuple2(targetKey, alteredValue),
-					alist);
-			} else {
-				return dict;
-			}
-		}
-	});
-var $author$project$Updates$Layout$createLayout = F2(
-	function (name, schema) {
-		return A2(
-			$author$project$Updates$Helpers$map,
-			function (newSchema) {
-				return _Utils_Tuple2(
-					newSchema,
-					$author$project$Ports$saveSchema(newSchema));
-			},
-			A2(
-				$author$project$Updates$Helpers$setLayouts,
-				A2(
-					$pzp1997$assoc_list$AssocList$update,
-					name,
-					function (_v0) {
-						return $elm$core$Maybe$Just(schema.cx);
-					}),
-				_Utils_update(
-					schema,
-					{
-						cy: $elm$core$Maybe$Just(name)
-					})));
-	});
-var $author$project$Mappers$SchemaMapper$tableIdFromSqlForeignKey = function (fk) {
-	return A2($author$project$Models$Schema$TableId, fk.dr, fk.bt);
-};
-var $author$project$Mappers$SchemaMapper$buildSqlForeignKey = function (fk) {
-	return {
-		_: fk._,
-		J: fk.J,
-		dr: fk.dr,
-		bt: fk.bt,
-		dI: $author$project$Mappers$SchemaMapper$tableIdFromSqlForeignKey(fk)
-	};
-};
-var $author$project$Mappers$SchemaMapper$buildSqlColumn = F2(
-	function (index, column) {
-		return {
-			_: column.J,
-			aA: A2($elm$core$Maybe$map, $elm$core$Basics$identity, column.aA),
-			b_: A2($elm$core$Maybe$map, $elm$core$Basics$identity, column.b_),
-			cd: A2($elm$core$Maybe$map, $author$project$Mappers$SchemaMapper$buildSqlForeignKey, column.cd),
-			co: index,
-			cv: column.cv,
-			cZ: column.cZ
-		};
-	});
-var $author$project$Mappers$SchemaMapper$buildSqlIndex = function (index) {
-	return {
-		H: A2($elm$core$List$map, $elm$core$Basics$identity, index.H),
-		aE: index.aE,
-		J: index.J
-	};
-};
-var $author$project$Mappers$SchemaMapper$buildSqlPrimaryKey = function (pk) {
-	return {
-		H: A2($elm$core$List$map, $elm$core$Basics$identity, pk.H),
-		J: pk.J
-	};
-};
-var $author$project$Mappers$SchemaMapper$buildSqlUnique = function (unique) {
-	return {
-		H: A2($elm$core$List$map, $elm$core$Basics$identity, unique.H),
-		aE: unique.aE,
-		J: unique.J
-	};
-};
-var $author$project$Libs$Nel$map = F2(
-	function (f, xs) {
-		return {
-			ce: f(xs.ce),
-			dK: A2($elm$core$List$map, f, xs.dK)
-		};
-	});
-var $author$project$Mappers$SchemaMapper$statementAsSource = function (statement) {
-	return {
-		aJ: statement.ce.aJ,
-		cB: A2(
-			$author$project$Libs$Nel$map,
-			function (l) {
-				return {cQ: l.cA, dM: l.dM};
-			},
-			statement)
-	};
-};
-var $author$project$Mappers$SchemaMapper$tableIdFromSqlTable = function (table) {
-	return A2($author$project$Models$Schema$TableId, table.dr, table.bt);
-};
-var $author$project$Mappers$SchemaMapper$buildSqlTable = function (table) {
-	return {
-		H: A2(
-			$author$project$Libs$Dict$fromList,
-			function ($) {
-				return $._;
-			},
-			A2($elm$core$List$indexedMap, $author$project$Mappers$SchemaMapper$buildSqlColumn, table.H)),
-		aA: A2($elm$core$Maybe$map, $elm$core$Basics$identity, table.aA),
-		ck: $author$project$Mappers$SchemaMapper$tableIdFromSqlTable(table),
-		cp: A2($elm$core$List$map, $author$project$Mappers$SchemaMapper$buildSqlIndex, table.cp),
-		dj: A2($elm$core$Maybe$map, $author$project$Mappers$SchemaMapper$buildSqlPrimaryKey, table.dj),
-		dr: table.dr,
-		dC: _List_fromArray(
-			[
-				$author$project$Mappers$SchemaMapper$statementAsSource(table.dB)
-			]),
-		bt: table.bt,
-		dS: A2($elm$core$List$map, $author$project$Mappers$SchemaMapper$buildSqlUnique, table.dS)
-	};
-};
-var $author$project$Mappers$SchemaMapper$buildSqlTables = function (schema) {
-	return A2(
-		$elm$core$List$map,
-		$author$project$Mappers$SchemaMapper$buildSqlTable,
-		$pzp1997$assoc_list$AssocList$values(schema));
-};
-var $author$project$Mappers$SchemaMapper$buildSchemaFromSql = F4(
-	function (takenNames, name, info, schema) {
-		return function (tables) {
-			return A7($author$project$Models$Schema$buildSchema, takenNames, name, info, tables, $author$project$Models$Schema$initLayout, $elm$core$Maybe$Nothing, $pzp1997$assoc_list$AssocList$empty);
-		}(
-			$author$project$Mappers$SchemaMapper$buildSqlTables(schema));
-	});
-var $author$project$Updates$Helpers$decodeErrorToHtml = function (error) {
-	return '<pre>' + ($elm$json$Json$Decode$errorToString(error) + '</pre>');
-};
-var $elm$json$Json$Decode$decodeString = _Json_runOnString;
-var $elm$core$String$endsWith = _String_endsWith;
-var $author$project$Libs$Result$fold = F3(
-	function (onError, onSuccess, result) {
-		if (!result.$) {
-			var a = result.a;
-			return onSuccess(a);
-		} else {
-			var x = result.a;
-			return onError(x);
-		}
-	});
-var $elm$core$Tuple$mapSecond = F2(
-	function (func, _v0) {
-		var x = _v0.a;
-		var y = _v0.b;
-		return _Utils_Tuple2(
-			x,
-			func(y));
-	});
-var $elm$core$Result$andThen = F2(
-	function (callback, result) {
-		if (!result.$) {
-			var value = result.a;
-			return callback(value);
-		} else {
-			var msg = result.a;
-			return $elm$core$Result$Err(msg);
-		}
-	});
-var $author$project$SqlParser$SchemaParser$addStatement = F2(
-	function (lines, statements) {
-		if (!lines.b) {
-			return statements;
-		} else {
-			var head = lines.a;
-			var tail = lines.b;
-			return A2(
-				$elm$core$List$cons,
-				{ce: head, dK: tail},
-				statements);
-		}
-	});
-var $author$project$SqlParser$SchemaParser$statementIsEmpty = function (statement) {
-	return statement.ce.dM === ';';
-};
-var $elm$core$String$toUpper = _String_toUpper;
-var $elm$core$String$trim = _String_trim;
-var $author$project$SqlParser$SchemaParser$buildStatements = function (lines) {
-	return A2(
-		$elm$core$List$filter,
-		function (s) {
-			return !$author$project$SqlParser$SchemaParser$statementIsEmpty(s);
-		},
-		function (_v1) {
-			var cur = _v1.a;
-			var res = _v1.b;
-			return A2($author$project$SqlParser$SchemaParser$addStatement, cur, res);
-		}(
-			A3(
-				$elm$core$List$foldr,
-				F2(
-					function (line, _v0) {
-						var currentStatementLines = _v0.a;
-						var statements = _v0.b;
-						var nestedBlock = _v0.c;
-						return ($elm$core$String$toUpper(
-							$elm$core$String$trim(line.dM)) === 'BEGIN') ? _Utils_Tuple3(
-							A2($elm$core$List$cons, line, currentStatementLines),
-							statements,
-							nestedBlock + 1) : ((($elm$core$String$toUpper(
-							$elm$core$String$trim(line.dM)) === 'END') || ($elm$core$String$toUpper(
-							$elm$core$String$trim(line.dM)) === 'END;')) ? _Utils_Tuple3(
-							A2($elm$core$List$cons, line, currentStatementLines),
-							statements,
-							nestedBlock - 1) : ((A2($elm$core$String$endsWith, ';', line.dM) && (!nestedBlock)) ? _Utils_Tuple3(
-							A2($elm$core$List$cons, line, _List_Nil),
-							A2($author$project$SqlParser$SchemaParser$addStatement, currentStatementLines, statements),
-							nestedBlock) : _Utils_Tuple3(
-							A2($elm$core$List$cons, line, currentStatementLines),
-							statements,
-							nestedBlock)));
-					}),
-				_Utils_Tuple3(_List_Nil, _List_Nil, 0),
-				A2(
-					$elm$core$List$filter,
-					function (line) {
-						return !($elm$core$String$isEmpty(
-							$elm$core$String$trim(line.dM)) || A2($elm$core$String$startsWith, '--', line.dM));
-					},
-					lines))));
-};
-var $elm$core$Result$map = F2(
-	function (func, ra) {
-		if (!ra.$) {
-			var a = ra.a;
-			return $elm$core$Result$Ok(
-				func(a));
-		} else {
-			var e = ra.a;
-			return $elm$core$Result$Err(e);
-		}
-	});
-var $author$project$SqlParser$SchemaParser$withDefaultSchema = function (schema) {
-	return A2($elm$core$Maybe$withDefault, $author$project$Conf$conf.b_.dr, schema);
-};
-var $author$project$SqlParser$SchemaParser$buildId = F2(
-	function (schema, table) {
-		return $author$project$SqlParser$SchemaParser$withDefaultSchema(schema) + ('.' + table);
-	});
-var $author$project$SqlParser$SchemaParser$withPkColumn = F4(
-	function (tables, schema, table, name) {
-		if (!name.$) {
-			var n = name.a;
-			return $elm$core$Result$Ok(n);
-		} else {
-			return A2(
-				$elm$core$Maybe$withDefault,
-				$elm$core$Result$Err(
-					'Table ' + (A2($author$project$SqlParser$SchemaParser$buildId, schema, table) + ' does not exist (yet)')),
-				A2(
-					$elm$core$Maybe$map,
-					function (t) {
-						var _v1 = A2(
-							$elm$core$Maybe$map,
-							function ($) {
-								return $.H;
-							},
-							t.dj);
-						if (!_v1.$) {
-							if (!_v1.a.b) {
-								return $elm$core$Result$Err(
-									'Table ' + (A2($author$project$SqlParser$SchemaParser$buildId, schema, table) + ' has a primary key with no column...'));
-							} else {
-								if (!_v1.a.b.b) {
-									var _v2 = _v1.a;
-									var pk = _v2.a;
-									return $elm$core$Result$Ok(pk);
-								} else {
-									var cols = _v1.a;
-									return $elm$core$Result$Err(
-										'Table ' + (A2($author$project$SqlParser$SchemaParser$buildId, schema, table) + (' has a primary key with more than one column (' + (A2($elm$core$String$join, ', ', cols) + ')'))));
-								}
-							}
-						} else {
-							return $elm$core$Result$Err(
-								'No primary key on table ' + A2($author$project$SqlParser$SchemaParser$buildId, schema, table));
-						}
-					},
-					A2(
-						$pzp1997$assoc_list$AssocList$get,
-						A2($author$project$SqlParser$SchemaParser$buildId, schema, table),
-						tables)));
-		}
-	});
-var $author$project$SqlParser$SchemaParser$buildFk = F5(
-	function (tables, constraint, schema, table, column) {
-		return A2(
-			$elm$core$Result$map,
-			function (col) {
-				return {
-					_: col,
-					J: constraint,
-					dr: $author$project$SqlParser$SchemaParser$withDefaultSchema(schema),
-					bt: table
-				};
-			},
-			A4($author$project$SqlParser$SchemaParser$withPkColumn, tables, schema, table, column));
-	});
-var $author$project$Libs$Maybe$resultSeq = function (maybe) {
-	if (!maybe.$) {
-		var r = maybe.a;
-		return A2(
-			$elm$core$Result$map,
-			function (a) {
-				return $elm$core$Maybe$Just(a);
-			},
-			r);
-	} else {
-		return $elm$core$Result$Ok($elm$core$Maybe$Nothing);
-	}
-};
-var $author$project$SqlParser$SchemaParser$buildColumn = F2(
-	function (tables, column) {
-		return A2(
-			$elm$core$Result$map,
-			function (fk) {
-				return {aA: $elm$core$Maybe$Nothing, b_: column.b_, cd: fk, cv: column.cv, J: column.J, cZ: column.cZ};
-			},
-			$author$project$Libs$Maybe$resultSeq(
-				A2(
-					$elm$core$Maybe$map,
-					function (_v0) {
-						var fk = _v0.a;
-						var ref = _v0.b;
-						return A5($author$project$SqlParser$SchemaParser$buildFk, tables, fk, ref.dr, ref.bt, ref._);
-					},
-					column.cd)));
-	});
-var $elm$core$List$head = function (list) {
-	if (list.b) {
-		var x = list.a;
-		var xs = list.b;
-		return $elm$core$Maybe$Just(x);
-	} else {
-		return $elm$core$Maybe$Nothing;
-	}
-};
-var $author$project$Libs$List$resultSeq = function (list) {
-	var _v0 = $author$project$Libs$List$resultCollect(list);
-	if (!_v0.a.b) {
-		var res = _v0.b;
-		return $elm$core$Result$Ok(res);
-	} else {
-		var errs = _v0.a;
-		return $elm$core$Result$Err(errs);
-	}
-};
-var $author$project$SqlParser$SchemaParser$buildTable = F2(
-	function (tables, table) {
-		return A2(
-			$elm$core$Result$map,
-			function (cols) {
-				return {
-					G: _List_Nil,
-					H: cols,
-					aA: $elm$core$Maybe$Nothing,
-					cp: _List_Nil,
-					dj: $elm$core$List$head(
-						A2(
-							$elm$core$List$filterMap,
-							function (c) {
-								return A2(
-									$elm$core$Maybe$map,
-									function (pk) {
-										return {
-											H: _List_fromArray(
-												[c.J]),
-											J: pk
-										};
-									},
-									c.dj);
-							},
-							table.H)),
-					dr: $author$project$SqlParser$SchemaParser$withDefaultSchema(table.dr),
-					dB: table.dB,
-					bt: table.bt,
-					dS: _List_Nil
-				};
-			},
-			$author$project$Libs$List$resultSeq(
-				A2(
-					$elm$core$List$map,
-					$author$project$SqlParser$SchemaParser$buildColumn(tables),
-					table.H)));
-	});
-var $author$project$SqlParser$SchemaParser$buildViewColumn = function (column) {
-	if (!column.$) {
-		var c = column.a;
-		return {
-			aA: $elm$core$Maybe$Nothing,
-			b_: $elm$core$Maybe$Nothing,
-			cd: $elm$core$Maybe$Nothing,
-			cv: 'unknown',
-			J: A2($elm$core$Maybe$withDefault, c._, c.B),
-			cZ: false
-		};
-	} else {
-		var c = column.a;
-		return {aA: $elm$core$Maybe$Nothing, b_: $elm$core$Maybe$Nothing, cd: $elm$core$Maybe$Nothing, cv: 'unknown', J: c.B, cZ: false};
-	}
-};
-var $author$project$SqlParser$SchemaParser$buildView = function (view) {
-	return {
-		G: _List_Nil,
-		H: A2($elm$core$List$map, $author$project$SqlParser$SchemaParser$buildViewColumn, view.bk.H),
-		aA: $elm$core$Maybe$Nothing,
-		cp: _List_Nil,
-		dj: $elm$core$Maybe$Nothing,
-		dr: $author$project$SqlParser$SchemaParser$withDefaultSchema(view.dr),
-		dB: view.dB,
-		bt: view.bt,
-		dS: _List_Nil
-	};
-};
-var $author$project$Libs$List$find = F2(
-	function (predicate, list) {
-		find:
-		while (true) {
-			if (!list.b) {
-				return $elm$core$Maybe$Nothing;
-			} else {
-				var first = list.a;
-				var rest = list.b;
-				if (predicate(first)) {
-					return $elm$core$Maybe$Just(first);
-				} else {
-					var $temp$predicate = predicate,
-						$temp$list = rest;
-					predicate = $temp$predicate;
-					list = $temp$list;
-					continue find;
-				}
-			}
-		}
-	});
-var $author$project$SqlParser$SchemaParser$updateTable = F3(
-	function (id, transform, tables) {
-		return A2(
-			$elm$core$Maybe$withDefault,
-			$elm$core$Result$Err(
-				_List_fromArray(
-					['Table ' + (id + ' does not exist')])),
-			A2(
-				$elm$core$Maybe$map,
-				function (table) {
-					return A2(
-						$elm$core$Result$map,
-						function (newTable) {
-							return A3(
-								$pzp1997$assoc_list$AssocList$update,
-								id,
-								$elm$core$Maybe$map(
-									function (_v0) {
-										return newTable;
-									}),
-								tables);
-						},
-						transform(table));
-				},
-				A2($pzp1997$assoc_list$AssocList$get, id, tables)));
-	});
-var $author$project$SqlParser$SchemaParser$updateTableColumn = F3(
-	function (column, transform, table) {
-		return _Utils_update(
-			table,
-			{
-				H: A2(
-					$elm$core$List$map,
-					function (c) {
-						return _Utils_eq(c.J, column) ? transform(c) : c;
-					},
-					table.H)
-			});
-	});
-var $author$project$SqlParser$SchemaParser$updateColumn = F4(
-	function (id, name, transform, tables) {
-		return A3(
-			$author$project$SqlParser$SchemaParser$updateTable,
-			id,
-			function (table) {
-				return A2(
-					$elm$core$Maybe$withDefault,
-					$elm$core$Result$Err(
-						_List_fromArray(
-							['Column ' + (name + (' does not exist in table ' + id))])),
-					A2(
-						$elm$core$Maybe$map,
-						function (column) {
-							return A2(
-								$elm$core$Result$map,
-								function (newColumn) {
-									return A3(
-										$author$project$SqlParser$SchemaParser$updateTableColumn,
-										name,
-										function (_v0) {
-											return newColumn;
-										},
-										table);
-								},
-								transform(column));
-						},
-						A2(
-							$author$project$Libs$List$find,
-							function (column) {
-								return _Utils_eq(column.J, name);
-							},
-							table.H)));
-			},
-			tables);
-	});
-var $author$project$SqlParser$SchemaParser$evolve = F2(
-	function (command, tables) {
-		switch (command.$) {
-			case 0:
-				var table = command.a;
-				var id = A2($author$project$SqlParser$SchemaParser$buildId, table.dr, table.bt);
-				return A2(
-					$elm$core$Maybe$withDefault,
-					A2(
-						$elm$core$Result$map,
-						function (sqlTable) {
-							return A3($pzp1997$assoc_list$AssocList$insert, id, sqlTable, tables);
-						},
-						A2($author$project$SqlParser$SchemaParser$buildTable, tables, table)),
-					A2(
-						$elm$core$Maybe$map,
-						function (_v1) {
-							return $elm$core$Result$Err(
-								_List_fromArray(
-									['Table ' + (id + ' already exists')]));
-						},
-						A2($pzp1997$assoc_list$AssocList$get, id, tables)));
-			case 1:
-				var view = command.a;
-				var id = A2($author$project$SqlParser$SchemaParser$buildId, view.dr, view.bt);
-				return A2(
-					$elm$core$Maybe$withDefault,
-					$elm$core$Result$Ok(
-						A3(
-							$pzp1997$assoc_list$AssocList$insert,
-							id,
-							$author$project$SqlParser$SchemaParser$buildView(view),
-							tables)),
-					A2(
-						$elm$core$Maybe$map,
-						function (_v2) {
-							return $elm$core$Result$Err(
-								_List_fromArray(
-									['View ' + (id + ' already exists')]));
-						},
-						A2($pzp1997$assoc_list$AssocList$get, id, tables)));
-			case 2:
-				switch (command.a.$) {
-					case 0:
-						switch (command.a.c.$) {
-							case 0:
-								var _v3 = command.a;
-								var schema = _v3.a;
-								var table = _v3.b;
-								var _v4 = _v3.c;
-								var constraint = _v4.a;
-								var pk = _v4.b;
-								return A3(
-									$author$project$SqlParser$SchemaParser$updateTable,
-									A2($author$project$SqlParser$SchemaParser$buildId, schema, table),
-									function (t) {
-										return $elm$core$Result$Ok(
-											_Utils_update(
-												t,
-												{
-													dj: $elm$core$Maybe$Just(
-														{H: pk, J: constraint})
-												}));
-									},
-									tables);
-							case 1:
-								var _v5 = command.a;
-								var schema = _v5.a;
-								var table = _v5.b;
-								var _v6 = _v5.c;
-								var constraint = _v6.a;
-								var fk = _v6.b;
-								return A4(
-									$author$project$SqlParser$SchemaParser$updateColumn,
-									A2($author$project$SqlParser$SchemaParser$buildId, schema, table),
-									fk._,
-									function (c) {
-										return A2(
-											$elm$core$Result$mapError,
-											function (e) {
-												return _List_fromArray(
-													[e]);
-											},
-											A2(
-												$elm$core$Result$map,
-												function (r) {
-													return _Utils_update(
-														c,
-														{
-															cd: $elm$core$Maybe$Just(r)
-														});
-												},
-												A5($author$project$SqlParser$SchemaParser$buildFk, tables, constraint, fk.am.dr, fk.am.bt, fk.am._)));
-									},
-									tables);
-							case 2:
-								var _v7 = command.a;
-								var schema = _v7.a;
-								var table = _v7.b;
-								var _v8 = _v7.c;
-								var constraint = _v8.a;
-								var unique = _v8.b;
-								return A3(
-									$author$project$SqlParser$SchemaParser$updateTable,
-									A2($author$project$SqlParser$SchemaParser$buildId, schema, table),
-									function (t) {
-										return $elm$core$Result$Ok(
-											_Utils_update(
-												t,
-												{
-													dS: _Utils_ap(
-														t.dS,
-														_List_fromArray(
-															[
-																{H: unique.H, aE: unique.aE, J: constraint}
-															]))
-												}));
-									},
-									tables);
-							default:
-								var _v9 = command.a;
-								var schema = _v9.a;
-								var table = _v9.b;
-								var _v10 = _v9.c;
-								var constraint = _v10.a;
-								var check = _v10.b;
-								return A3(
-									$author$project$SqlParser$SchemaParser$updateTable,
-									A2($author$project$SqlParser$SchemaParser$buildId, schema, table),
-									function (t) {
-										return $elm$core$Result$Ok(
-											_Utils_update(
-												t,
-												{
-													G: _Utils_ap(
-														t.G,
-														_List_fromArray(
-															[
-																{J: constraint, a7: check}
-															]))
-												}));
-									},
-									tables);
-						}
-					case 1:
-						if (!command.a.c.$) {
-							var _v11 = command.a;
-							var schema = _v11.a;
-							var table = _v11.b;
-							var _v12 = _v11.c;
-							var column = _v12.a;
-							var _default = _v12.b;
-							return A4(
-								$author$project$SqlParser$SchemaParser$updateColumn,
-								A2($author$project$SqlParser$SchemaParser$buildId, schema, table),
-								column,
-								function (c) {
-									return $elm$core$Result$Ok(
-										_Utils_update(
-											c,
-											{
-												b_: $elm$core$Maybe$Just(_default)
-											}));
-								},
-								tables);
-						} else {
-							var _v13 = command.a;
-							var _v14 = _v13.c;
-							return $elm$core$Result$Ok(tables);
-						}
-					default:
-						var _v15 = command.a;
-						return $elm$core$Result$Ok(tables);
-				}
-			case 3:
-				var index = command.a;
-				return A3(
-					$author$project$SqlParser$SchemaParser$updateTable,
-					A2($author$project$SqlParser$SchemaParser$buildId, index.bt.dr, index.bt.bt),
-					function (t) {
-						return $elm$core$Result$Ok(
-							_Utils_update(
-								t,
-								{
-									cp: _Utils_ap(
-										t.cp,
-										_List_fromArray(
-											[
-												{H: index.H, aE: index.aE, J: index.J}
-											]))
-								}));
-					},
-					tables);
-			case 4:
-				var unique = command.a;
-				return A3(
-					$author$project$SqlParser$SchemaParser$updateTable,
-					A2($author$project$SqlParser$SchemaParser$buildId, unique.bt.dr, unique.bt.bt),
-					function (t) {
-						return $elm$core$Result$Ok(
-							_Utils_update(
-								t,
-								{
-									dS: _Utils_ap(
-										t.dS,
-										_List_fromArray(
-											[
-												{H: unique.H, aE: unique.aE, J: unique.J}
-											]))
-								}));
-					},
-					tables);
-			case 5:
-				var comment = command.a;
-				return A3(
-					$author$project$SqlParser$SchemaParser$updateTable,
-					A2($author$project$SqlParser$SchemaParser$buildId, comment.dr, comment.bt),
-					function (table) {
-						return $elm$core$Result$Ok(
-							_Utils_update(
-								table,
-								{
-									aA: $elm$core$Maybe$Just(comment.aA)
-								}));
-					},
-					tables);
-			case 6:
-				var comment = command.a;
-				return A4(
-					$author$project$SqlParser$SchemaParser$updateColumn,
-					A2($author$project$SqlParser$SchemaParser$buildId, comment.dr, comment.bt),
-					comment._,
-					function (column) {
-						return $elm$core$Result$Ok(
-							_Utils_update(
-								column,
-								{
-									aA: $elm$core$Maybe$Just(comment.aA)
-								}));
-					},
-					tables);
-			default:
-				return $elm$core$Result$Ok(tables);
-		}
-	});
-var $author$project$SqlParser$SqlParser$AlterTable = function (a) {
-	return {$: 2, a: a};
-};
-var $author$project$SqlParser$SqlParser$ColumnComment = function (a) {
-	return {$: 6, a: a};
-};
-var $author$project$SqlParser$SqlParser$CreateIndex = function (a) {
-	return {$: 3, a: a};
-};
-var $author$project$SqlParser$SqlParser$CreateTable = function (a) {
-	return {$: 0, a: a};
-};
-var $author$project$SqlParser$SqlParser$CreateUnique = function (a) {
-	return {$: 4, a: a};
-};
-var $author$project$SqlParser$SqlParser$CreateView = function (a) {
-	return {$: 1, a: a};
-};
-var $author$project$SqlParser$SqlParser$Ignored = function (a) {
-	return {$: 7, a: a};
-};
-var $author$project$SqlParser$SqlParser$TableComment = function (a) {
-	return {$: 5, a: a};
-};
-var $author$project$Libs$Nel$toList = function (xs) {
-	return A2($elm$core$List$cons, xs.ce, xs.dK);
-};
-var $author$project$SqlParser$Utils$Helpers$buildRawSql = function (statement) {
-	return A2(
-		$elm$core$String$join,
-		' ',
-		A2(
-			$elm$core$List$map,
-			function ($) {
-				return $.dM;
-			},
-			$author$project$Libs$Nel$toList(statement)));
-};
-var $author$project$SqlParser$Parsers$AlterTable$AddTableConstraint = F3(
-	function (a, b, c) {
-		return {$: 0, a: a, b: b, c: c};
-	});
-var $author$project$SqlParser$Parsers$AlterTable$AddTableOwner = F3(
-	function (a, b, c) {
-		return {$: 2, a: a, b: b, c: c};
-	});
-var $author$project$SqlParser$Parsers$AlterTable$AlterColumn = F3(
-	function (a, b, c) {
-		return {$: 1, a: a, b: b, c: c};
-	});
-var $author$project$SqlParser$Parsers$AlterTable$ParsedCheck = F2(
-	function (a, b) {
-		return {$: 3, a: a, b: b};
-	});
-var $author$project$SqlParser$Parsers$AlterTable$ParsedForeignKey = F2(
-	function (a, b) {
-		return {$: 1, a: a, b: b};
-	});
-var $author$project$SqlParser$Parsers$AlterTable$ParsedPrimaryKey = F2(
-	function (a, b) {
-		return {$: 0, a: a, b: b};
-	});
-var $author$project$SqlParser$Parsers$AlterTable$ParsedUnique = F2(
-	function (a, b) {
-		return {$: 2, a: a, b: b};
-	});
-var $author$project$SqlParser$Parsers$AlterTable$parseAlterTableAddConstraintCheck = function (constraint) {
-	var _v0 = A2($author$project$Libs$Regex$matches, '^CHECK[ \t]+(?<predicate>.*)$', constraint);
-	if ((_v0.b && (!_v0.a.$)) && (!_v0.b.b)) {
-		var predicate = _v0.a.a;
-		return $elm$core$Result$Ok(predicate);
-	} else {
-		return $elm$core$Result$Err(
-			_List_fromArray(
-				['Can\'t parse check constraint: \'' + (constraint + '\'')]));
-	}
-};
-var $author$project$SqlParser$Parsers$AlterTable$parseAlterTableAddConstraintForeignKey = function (constraint) {
-	var _v0 = A2($author$project$Libs$Regex$matches, '^FOREIGN KEY[ \t]+\\((?<column>[^)]+)\\)[ \t]+REFERENCES[ \t]+(?:(?<schema_b>[^ .]+)\\.)?(?<table_b>[^ .(]+)(?:[ \t]*\\((?<column_b>[^)]+)\\))?(?:[ \t]+NOT VALID)?$', constraint);
-	if ((((((_v0.b && (!_v0.a.$)) && _v0.b.b) && _v0.b.b.b) && (!_v0.b.b.a.$)) && _v0.b.b.b.b) && (!_v0.b.b.b.b.b)) {
-		var column = _v0.a.a;
-		var _v1 = _v0.b;
-		var schemaDest = _v1.a;
-		var _v2 = _v1.b;
-		var tableDest = _v2.a.a;
-		var _v3 = _v2.b;
-		var columnDest = _v3.a;
-		return $elm$core$Result$Ok(
-			{
-				_: column,
-				am: {_: columnDest, dr: schemaDest, bt: tableDest}
-			});
-	} else {
-		return $elm$core$Result$Err(
-			_List_fromArray(
-				['Can\'t parse foreign key: \'' + (constraint + '\'')]));
-	}
-};
-var $author$project$SqlParser$Parsers$AlterTable$parseAlterTableAddConstraintPrimaryKey = function (constraint) {
-	var _v0 = A2($author$project$Libs$Regex$matches, '^PRIMARY KEY[ \t]+\\((?<columns>[^)]+)\\)$', constraint);
-	if ((_v0.b && (!_v0.a.$)) && (!_v0.b.b)) {
-		var columns = _v0.a.a;
-		return $elm$core$Result$Ok(
-			A2(
-				$elm$core$List$map,
-				$elm$core$String$trim,
-				A2($elm$core$String$split, ',', columns)));
-	} else {
-		return $elm$core$Result$Err(
-			_List_fromArray(
-				['Can\'t parse primary key: \'' + (constraint + '\'')]));
-	}
-};
-var $author$project$SqlParser$Utils$Helpers$parseIndexDefinition = function (definition) {
-	var _v0 = A2($author$project$Libs$Regex$matches, '^\\((?<columns>[^)]+)\\)$', definition);
-	if ((_v0.b && (!_v0.a.$)) && (!_v0.b.b)) {
-		var columns = _v0.a.a;
-		return $elm$core$Result$Ok(
-			A2(
-				$elm$core$List$map,
-				$elm$core$String$trim,
-				A2($elm$core$String$split, ',', columns)));
-	} else {
-		var _v1 = A2($author$project$Libs$Regex$matches, '^USING[ \t]+[^ ]+[ \t]+\\((?<columns>[^)]+)\\).*$', definition);
-		if ((_v1.b && (!_v1.a.$)) && (!_v1.b.b)) {
-			var columns = _v1.a.a;
-			return $elm$core$Result$Ok(
-				A2(
-					$elm$core$List$map,
-					$elm$core$String$trim,
-					A2($elm$core$String$split, ',', columns)));
-		} else {
-			return $elm$core$Result$Err(
-				_List_fromArray(
-					['Can\'t parse definition: \'' + (definition + '\' in create index')]));
-		}
-	}
-};
-var $author$project$SqlParser$Parsers$AlterTable$parseAlterTableAddConstraintUnique = function (constraint) {
-	var _v0 = A2($author$project$Libs$Regex$matches, '^UNIQUE[ \t]+(?<definition>.+)$', constraint);
-	if ((_v0.b && (!_v0.a.$)) && (!_v0.b.b)) {
-		var definition = _v0.a.a;
-		return A2(
-			$elm$core$Result$map,
-			function (columns) {
-				return {H: columns, aE: definition};
-			},
-			$author$project$SqlParser$Utils$Helpers$parseIndexDefinition(definition));
-	} else {
-		return $elm$core$Result$Err(
-			_List_fromArray(
-				['Can\'t parse unique constraint: \'' + (constraint + '\'')]));
-	}
-};
-var $author$project$SqlParser$Parsers$AlterTable$parseAlterTableAddConstraint = function (command) {
-	var _v0 = A2($author$project$Libs$Regex$matches, '^ADD CONSTRAINT[ \t]+(?<name>[^ .]+)[ \t]+(?<constraint>.*)$', command);
-	if ((((_v0.b && (!_v0.a.$)) && _v0.b.b) && (!_v0.b.a.$)) && (!_v0.b.b.b)) {
-		var name = _v0.a.a;
-		var _v1 = _v0.b;
-		var constraint = _v1.a.a;
-		return A2(
-			$elm$core$String$startsWith,
-			'PRIMARY KEY',
-			$elm$core$String$toUpper(constraint)) ? A2(
-			$elm$core$Result$map,
-			$author$project$SqlParser$Parsers$AlterTable$ParsedPrimaryKey(name),
-			$author$project$SqlParser$Parsers$AlterTable$parseAlterTableAddConstraintPrimaryKey(constraint)) : (A2(
-			$elm$core$String$startsWith,
-			'FOREIGN KEY',
-			$elm$core$String$toUpper(constraint)) ? A2(
-			$elm$core$Result$map,
-			$author$project$SqlParser$Parsers$AlterTable$ParsedForeignKey(name),
-			$author$project$SqlParser$Parsers$AlterTable$parseAlterTableAddConstraintForeignKey(constraint)) : (A2(
-			$elm$core$String$startsWith,
-			'UNIQUE',
-			$elm$core$String$toUpper(constraint)) ? A2(
-			$elm$core$Result$map,
-			$author$project$SqlParser$Parsers$AlterTable$ParsedUnique(name),
-			$author$project$SqlParser$Parsers$AlterTable$parseAlterTableAddConstraintUnique(constraint)) : (A2(
-			$elm$core$String$startsWith,
-			'CHECK',
-			$elm$core$String$toUpper(constraint)) ? A2(
-			$elm$core$Result$map,
-			$author$project$SqlParser$Parsers$AlterTable$ParsedCheck(name),
-			$author$project$SqlParser$Parsers$AlterTable$parseAlterTableAddConstraintCheck(constraint)) : $elm$core$Result$Err(
-			_List_fromArray(
-				['Constraint not handled: \'' + (constraint + '\'')])))));
-	} else {
-		return $elm$core$Result$Err(
-			_List_fromArray(
-				['Can\'t parse add constraint: \'' + (command + '\'')]));
-	}
-};
-var $author$project$SqlParser$Parsers$AlterTable$ColumnDefault = F2(
-	function (a, b) {
-		return {$: 0, a: a, b: b};
-	});
-var $author$project$SqlParser$Parsers$AlterTable$ColumnStatistics = F2(
-	function (a, b) {
-		return {$: 1, a: a, b: b};
-	});
-var $author$project$SqlParser$Parsers$AlterTable$parseAlterTableAlterColumnDefault = function (property) {
-	var _v0 = A2($author$project$Libs$Regex$matches, '^DEFAULT[ \t]+(?<value>.+)$', property);
-	if ((_v0.b && (!_v0.a.$)) && (!_v0.b.b)) {
-		var value = _v0.a.a;
-		return $elm$core$Result$Ok(value);
-	} else {
-		return $elm$core$Result$Err(
-			_List_fromArray(
-				['Can\'t parse default value: \'' + (property + '\'')]));
-	}
-};
-var $elm$core$Result$fromMaybe = F2(
-	function (err, maybe) {
-		if (!maybe.$) {
-			var v = maybe.a;
-			return $elm$core$Result$Ok(v);
-		} else {
-			return $elm$core$Result$Err(err);
-		}
-	});
-var $author$project$SqlParser$Parsers$AlterTable$parseAlterTableAlterColumnStatistics = function (property) {
-	var _v0 = A2($author$project$Libs$Regex$matches, '^STATISTICS[ \t]+(?<value>[0-9]+)$', property);
-	if ((_v0.b && (!_v0.a.$)) && (!_v0.b.b)) {
-		var value = _v0.a.a;
-		return A2(
-			$elm$core$Result$fromMaybe,
-			_List_fromArray(
-				['Statistics value is not a number: \'' + (value + '\'')]),
-			$elm$core$String$toInt(value));
-	} else {
-		return $elm$core$Result$Err(
-			_List_fromArray(
-				['Can\'t parse statistics: \'' + (property + '\'')]));
-	}
-};
-var $author$project$SqlParser$Parsers$AlterTable$parseAlterTableAlterColumn = function (command) {
-	var _v0 = A2($author$project$Libs$Regex$matches, '^ALTER COLUMN[ \t]+(?<column>[^ .]+)[ \t]+SET[ \t]+(?<property>.+)$', command);
-	if ((((_v0.b && (!_v0.a.$)) && _v0.b.b) && (!_v0.b.a.$)) && (!_v0.b.b.b)) {
-		var column = _v0.a.a;
-		var _v1 = _v0.b;
-		var property = _v1.a.a;
-		return A2(
-			$elm$core$String$startsWith,
-			'DEFAULT',
-			$elm$core$String$toUpper(property)) ? A2(
-			$elm$core$Result$map,
-			$author$project$SqlParser$Parsers$AlterTable$ColumnDefault(column),
-			$author$project$SqlParser$Parsers$AlterTable$parseAlterTableAlterColumnDefault(property)) : (A2(
-			$elm$core$String$startsWith,
-			'STATISTICS',
-			$elm$core$String$toUpper(property)) ? A2(
-			$elm$core$Result$map,
-			$author$project$SqlParser$Parsers$AlterTable$ColumnStatistics(column),
-			$author$project$SqlParser$Parsers$AlterTable$parseAlterTableAlterColumnStatistics(property)) : $elm$core$Result$Err(
-			_List_fromArray(
-				['Column update not handled: \'' + (property + '\'')])));
-	} else {
-		return $elm$core$Result$Err(
-			_List_fromArray(
-				['Can\'t parse alter column: \'' + (command + '\'')]));
-	}
-};
-var $author$project$SqlParser$Parsers$AlterTable$parseAlterTableOwnerTo = function (command) {
-	var _v0 = A2($author$project$Libs$Regex$matches, '^OWNER TO[ \t]+(?<user>.+)$', command);
-	if ((_v0.b && (!_v0.a.$)) && (!_v0.b.b)) {
-		var user = _v0.a.a;
-		return $elm$core$Result$Ok(user);
-	} else {
-		return $elm$core$Result$Err(
-			_List_fromArray(
-				['Can\'t parse alter column: \'' + (command + '\'')]));
-	}
-};
-var $author$project$SqlParser$Parsers$AlterTable$parseAlterTable = function (statement) {
-	var _v0 = A2(
-		$author$project$Libs$Regex$matches,
-		'^ALTER TABLE(?:[ \t]+ONLY)?[ \t]+(?:(?<schema>[^ .]+)\\.)?(?<table>[^ .]+)[ \t]+(?<command>.*);$',
-		$author$project$SqlParser$Utils$Helpers$buildRawSql(statement));
-	if (((((_v0.b && _v0.b.b) && (!_v0.b.a.$)) && _v0.b.b.b) && (!_v0.b.b.a.$)) && (!_v0.b.b.b.b)) {
-		var schema = _v0.a;
-		var _v1 = _v0.b;
-		var table = _v1.a.a;
-		var _v2 = _v1.b;
-		var command = _v2.a.a;
-		return A2(
-			$elm$core$String$startsWith,
-			'ADD CONSTRAINT',
-			$elm$core$String$toUpper(command)) ? A2(
-			$elm$core$Result$map,
-			A2($author$project$SqlParser$Parsers$AlterTable$AddTableConstraint, schema, table),
-			$author$project$SqlParser$Parsers$AlterTable$parseAlterTableAddConstraint(command)) : (A2(
-			$elm$core$String$startsWith,
-			'ALTER COLUMN',
-			$elm$core$String$toUpper(command)) ? A2(
-			$elm$core$Result$map,
-			A2($author$project$SqlParser$Parsers$AlterTable$AlterColumn, schema, table),
-			$author$project$SqlParser$Parsers$AlterTable$parseAlterTableAlterColumn(command)) : (A2(
-			$elm$core$String$startsWith,
-			'OWNER TO',
-			$elm$core$String$toUpper(command)) ? A2(
-			$elm$core$Result$map,
-			A2($author$project$SqlParser$Parsers$AlterTable$AddTableOwner, schema, table),
-			$author$project$SqlParser$Parsers$AlterTable$parseAlterTableOwnerTo(command)) : $elm$core$Result$Err(
-			_List_fromArray(
-				['Command not handled: \'' + (command + '\'')]))));
-	} else {
-		return $elm$core$Result$Err(
-			_List_fromArray(
-				[
-					'Can\'t parse alter table: \'' + ($author$project$SqlParser$Utils$Helpers$buildRawSql(statement) + '\'')
-				]));
-	}
-};
-var $elm$core$String$replace = F3(
-	function (before, after, string) {
-		return A2(
-			$elm$core$String$join,
-			after,
-			A2($elm$core$String$split, before, string));
-	});
-var $author$project$SqlParser$Parsers$Comment$parseColumnComment = function (statement) {
-	var _v0 = A2(
-		$author$project$Libs$Regex$matches,
-		'^COMMENT ON COLUMN[ \t]+(?:(?<schema>[^ .]+)\\.)?(?<table>[^ .]+)\\.(?<column>[^ .]+)[ \t]+IS[ \t]+\'(?<comment>(?:[^\']|\'\')+)\';$',
-		$author$project$SqlParser$Utils$Helpers$buildRawSql(statement));
-	if (((((((_v0.b && _v0.b.b) && (!_v0.b.a.$)) && _v0.b.b.b) && (!_v0.b.b.a.$)) && _v0.b.b.b.b) && (!_v0.b.b.b.a.$)) && (!_v0.b.b.b.b.b)) {
-		var schema = _v0.a;
-		var _v1 = _v0.b;
-		var table = _v1.a.a;
-		var _v2 = _v1.b;
-		var column = _v2.a.a;
-		var _v3 = _v2.b;
-		var comment = _v3.a.a;
-		return $elm$core$Result$Ok(
-			{
-				_: column,
-				aA: A3($elm$core$String$replace, '\'\'', '\'', comment),
-				dr: schema,
-				bt: table
-			});
-	} else {
-		return $elm$core$Result$Err(
-			_List_fromArray(
-				[
-					'Can\'t parse column comment: \'' + ($author$project$SqlParser$Utils$Helpers$buildRawSql(statement) + '\'')
-				]));
-	}
-};
-var $author$project$SqlParser$Parsers$CreateIndex$parseCreateIndex = function (statement) {
-	var _v0 = A2(
-		$author$project$Libs$Regex$matches,
-		'^CREATE INDEX[ \t]+(?<name>[^ ]+)[ \t]+ON[ \t]+(?:(?<schema>[^ .]+)\\.)?(?<table>[^ (]+)[ \t]*(?<definition>.+);$',
-		$author$project$SqlParser$Utils$Helpers$buildRawSql(statement));
-	if (((((((_v0.b && (!_v0.a.$)) && _v0.b.b) && _v0.b.b.b) && (!_v0.b.b.a.$)) && _v0.b.b.b.b) && (!_v0.b.b.b.a.$)) && (!_v0.b.b.b.b.b)) {
-		var name = _v0.a.a;
-		var _v1 = _v0.b;
-		var schema = _v1.a;
-		var _v2 = _v1.b;
-		var table = _v2.a.a;
-		var _v3 = _v2.b;
-		var definition = _v3.a.a;
-		return A2(
-			$elm$core$Result$map,
-			function (columns) {
-				return {
-					H: columns,
-					aE: definition,
-					J: name,
-					bt: {dr: schema, bt: table}
-				};
-			},
-			$author$project$SqlParser$Utils$Helpers$parseIndexDefinition(definition));
-	} else {
-		return $elm$core$Result$Err(
-			_List_fromArray(
-				[
-					'Can\'t parse create index: \'' + ($author$project$SqlParser$Utils$Helpers$buildRawSql(statement) + '\'')
-				]));
-	}
-};
-var $elm$core$String$foldr = _String_foldr;
-var $elm$core$String$fromList = _String_fromList;
-var $author$project$SqlParser$Utils$Helpers$commaSplit = function (text) {
-	return function (_v1) {
-		var res = _v1.a;
-		var end = _v1.b;
-		return A2(
-			$elm$core$List$cons,
-			$elm$core$String$fromList(end),
-			res);
-	}(
-		A3(
-			$elm$core$String$foldr,
-			F2(
-				function (_char, _v0) {
-					var res = _v0.a;
-					var cur = _v0.b;
-					var open = _v0.c;
-					return ((_char === ',') && (!open)) ? _Utils_Tuple3(
-						A2(
-							$elm$core$List$cons,
-							$elm$core$String$fromList(cur),
-							res),
-						_List_Nil,
-						open) : ((_char === '(') ? _Utils_Tuple3(
-						res,
-						A2($elm$core$List$cons, _char, cur),
-						open + 1) : ((_char === ')') ? _Utils_Tuple3(
-						res,
-						A2($elm$core$List$cons, _char, cur),
-						open - 1) : _Utils_Tuple3(
-						res,
-						A2($elm$core$List$cons, _char, cur),
-						open)));
-				}),
-			_Utils_Tuple3(_List_Nil, _List_Nil, 0),
-			text));
-};
-var $author$project$SqlParser$Utils$Helpers$noEnclosingQuotes = function (text) {
-	var _v0 = A2($author$project$Libs$Regex$matches, '\"(.*)\"', text);
-	if ((_v0.b && (!_v0.a.$)) && (!_v0.b.b)) {
-		var res = _v0.a.a;
-		return res;
-	} else {
-		return text;
-	}
-};
-var $author$project$SqlParser$Parsers$CreateTable$parseCreateTableColumnForeignKey = function (constraint) {
-	var _v0 = A2($author$project$Libs$Regex$matches, '^(?<constraint>[^ ]+)[ \t]+REFERENCES[ \t]+(?:(?<schema>[^ .]+)\\.)?(?<table>[^ .]+)(?:\\.(?<column>[^ .]+))?$', constraint);
-	if ((((((_v0.b && (!_v0.a.$)) && _v0.b.b) && _v0.b.b.b) && (!_v0.b.b.a.$)) && _v0.b.b.b.b) && (!_v0.b.b.b.b.b)) {
-		if ((!_v0.b.a.$) && (_v0.b.b.b.a.$ === 1)) {
-			var constraintName = _v0.a.a;
-			var _v1 = _v0.b;
-			var table = _v1.a.a;
-			var _v2 = _v1.b;
-			var column = _v2.a.a;
-			var _v3 = _v2.b;
-			var _v4 = _v3.a;
-			return $elm$core$Result$Ok(
-				_Utils_Tuple2(
-					constraintName,
-					{
-						_: $elm$core$Maybe$Just(column),
-						dr: $elm$core$Maybe$Nothing,
-						bt: table
-					}));
-		} else {
-			var constraintName = _v0.a.a;
-			var _v5 = _v0.b;
-			var schema = _v5.a;
-			var _v6 = _v5.b;
-			var table = _v6.a.a;
-			var _v7 = _v6.b;
-			var column = _v7.a;
-			return $elm$core$Result$Ok(
-				_Utils_Tuple2(
-					constraintName,
-					{_: column, dr: schema, bt: table}));
-		}
-	} else {
-		return $elm$core$Result$Err('Can\'t parse foreign key: \'' + (constraint + '\' in create table'));
-	}
-};
-var $author$project$SqlParser$Parsers$CreateTable$parseCreateTableColumnPrimaryKey = function (constraint) {
-	var _v0 = A2($author$project$Libs$Regex$matches, '^(?<constraint>[^ ]+)[ \t]+PRIMARY KEY$', constraint);
-	if ((_v0.b && (!_v0.a.$)) && (!_v0.b.b)) {
-		var constraintName = _v0.a.a;
-		return $elm$core$Result$Ok(constraintName);
-	} else {
-		return $elm$core$Result$Err('Can\'t parse primary key: \'' + (constraint + '\' in create table'));
-	}
-};
-var $author$project$SqlParser$Parsers$CreateTable$parseCreateTableColumn = function (sql) {
-	var _v0 = A2($author$project$Libs$Regex$matches, '^(?<name>[^ ]+)[ \t]+(?<type>.*?)(?:[ \t]+DEFAULT[ \t]+(?<default>.*?))?(?<nullable>[ \t]+NOT NULL)?(?:[ \t]+CONSTRAINT[ \t]+(?<constraint>.*))?$', sql);
-	if (((((((_v0.b && (!_v0.a.$)) && _v0.b.b) && (!_v0.b.a.$)) && _v0.b.b.b) && _v0.b.b.b.b) && _v0.b.b.b.b.b) && (!_v0.b.b.b.b.b.b)) {
-		var name = _v0.a.a;
-		var _v1 = _v0.b;
-		var kind = _v1.a.a;
-		var _v2 = _v1.b;
-		var _default = _v2.a;
-		var _v3 = _v2.b;
-		var nullable = _v3.a;
-		var _v4 = _v3.b;
-		var maybeConstraint = _v4.a;
-		return A2(
-			$elm$core$Result$map,
-			function (_v5) {
-				var pk = _v5.a;
-				var fk = _v5.b;
-				return {
-					b_: _default,
-					cd: fk,
-					cv: kind,
-					J: $author$project$SqlParser$Utils$Helpers$noEnclosingQuotes(name),
-					cZ: _Utils_eq(nullable, $elm$core$Maybe$Nothing),
-					dj: pk
-				};
-			},
-			A2(
-				$elm$core$Maybe$withDefault,
-				$elm$core$Result$Ok(
-					_Utils_Tuple2($elm$core$Maybe$Nothing, $elm$core$Maybe$Nothing)),
-				A2(
-					$elm$core$Maybe$map,
-					function (constraint) {
-						return A2(
-							$elm$core$String$contains,
-							'PRIMARY KEY',
-							$elm$core$String$toUpper(constraint)) ? A2(
-							$elm$core$Result$map,
-							function (pk) {
-								return _Utils_Tuple2(
-									$elm$core$Maybe$Just(pk),
-									$elm$core$Maybe$Nothing);
-							},
-							$author$project$SqlParser$Parsers$CreateTable$parseCreateTableColumnPrimaryKey(constraint)) : (A2(
-							$elm$core$String$contains,
-							'REFERENCES',
-							$elm$core$String$toUpper(constraint)) ? A2(
-							$elm$core$Result$map,
-							function (fk) {
-								return _Utils_Tuple2(
-									$elm$core$Maybe$Nothing,
-									$elm$core$Maybe$Just(fk));
-							},
-							$author$project$SqlParser$Parsers$CreateTable$parseCreateTableColumnForeignKey(constraint)) : $elm$core$Result$Err('Constraint not handled: \'' + (constraint + '\' in create table')));
-					},
-					maybeConstraint)));
-	} else {
-		return $elm$core$Result$Err('Can\'t parse column: \'' + (sql + '\''));
-	}
-};
-var $author$project$SqlParser$Parsers$CreateTable$parseCreateTable = function (statement) {
-	var _v0 = A2(
-		$author$project$Libs$Regex$matches,
-		'^CREATE TABLE[ \t]+(?:(?<schema>[^ .]+)\\.)?(?<table>[^ .]+)[ \t]*\\((?<body>[^;]+?)\\)(?:[ \t]+WITH[ \t]+\\((?<options>.*?)\\))?;$',
-		$author$project$SqlParser$Utils$Helpers$buildRawSql(statement));
-	if ((((((_v0.b && _v0.b.b) && (!_v0.b.a.$)) && _v0.b.b.b) && (!_v0.b.b.a.$)) && _v0.b.b.b.b) && (!_v0.b.b.b.b.b)) {
-		var schema = _v0.a;
-		var _v1 = _v0.b;
-		var table = _v1.a.a;
-		var _v2 = _v1.b;
-		var columns = _v2.a.a;
-		var _v3 = _v2.b;
-		return A2(
-			$elm$core$Result$map,
-			function (c) {
-				return {H: c, dr: schema, dB: statement, bt: table};
-			},
-			$author$project$Libs$List$resultSeq(
-				A2(
-					$elm$core$List$map,
-					$author$project$SqlParser$Parsers$CreateTable$parseCreateTableColumn,
-					A2(
-						$elm$core$List$filter,
-						function (c) {
-							return !A2(
-								$elm$core$String$startsWith,
-								'CONSTRAINT',
-								$elm$core$String$toUpper(c));
-						},
-						A2(
-							$elm$core$List$map,
-							$elm$core$String$trim,
-							$author$project$SqlParser$Utils$Helpers$commaSplit(columns))))));
-	} else {
-		return $elm$core$Result$Err(
-			_List_fromArray(
-				[
-					'Can\'t parse table: \'' + ($author$project$SqlParser$Utils$Helpers$buildRawSql(statement) + '\'')
-				]));
-	}
-};
-var $author$project$SqlParser$Parsers$CreateUnique$parseCreateUniqueIndex = function (statement) {
-	var _v0 = A2(
-		$author$project$Libs$Regex$matches,
-		'^CREATE UNIQUE INDEX[ \t]+(?<name>[^ ]+)[ \t]+ON[ \t]+(?:(?<schema>[^ .]+)\\.)?(?<table>[^ (]+)[ \t]*(?<definition>.+);$',
-		$author$project$SqlParser$Utils$Helpers$buildRawSql(statement));
-	if (((((((_v0.b && (!_v0.a.$)) && _v0.b.b) && _v0.b.b.b) && (!_v0.b.b.a.$)) && _v0.b.b.b.b) && (!_v0.b.b.b.a.$)) && (!_v0.b.b.b.b.b)) {
-		var name = _v0.a.a;
-		var _v1 = _v0.b;
-		var schema = _v1.a;
-		var _v2 = _v1.b;
-		var table = _v2.a.a;
-		var _v3 = _v2.b;
-		var definition = _v3.a.a;
-		return A2(
-			$elm$core$Result$map,
-			function (columns) {
-				return {
-					H: columns,
-					aE: definition,
-					J: name,
-					bt: {dr: schema, bt: table}
-				};
-			},
-			$author$project$SqlParser$Utils$Helpers$parseIndexDefinition(definition));
-	} else {
-		return $elm$core$Result$Err(
-			_List_fromArray(
-				[
-					'Can\'t parse create unique index: \'' + ($author$project$SqlParser$Utils$Helpers$buildRawSql(statement) + '\'')
-				]));
-	}
-};
-var $author$project$SqlParser$Parsers$Comment$parseTableComment = function (statement) {
-	var _v0 = A2(
-		$author$project$Libs$Regex$matches,
-		'^COMMENT ON TABLE[ \t]+(?:(?<schema>[^ .]+)\\.)?(?<table>[^ .]+)[ \t]+IS[ \t]+\'(?<comment>(?:[^\']|\'\')+)\';$',
-		$author$project$SqlParser$Utils$Helpers$buildRawSql(statement));
-	if (((((_v0.b && _v0.b.b) && (!_v0.b.a.$)) && _v0.b.b.b) && (!_v0.b.b.a.$)) && (!_v0.b.b.b.b)) {
-		var schema = _v0.a;
-		var _v1 = _v0.b;
-		var table = _v1.a.a;
-		var _v2 = _v1.b;
-		var comment = _v2.a.a;
-		return $elm$core$Result$Ok(
-			{
-				aA: A3($elm$core$String$replace, '\'\'', '\'', comment),
-				dr: schema,
-				bt: table
-			});
-	} else {
-		return $elm$core$Result$Err(
-			_List_fromArray(
-				[
-					'Can\'t parse table comment: \'' + ($author$project$SqlParser$Utils$Helpers$buildRawSql(statement) + '\'')
-				]));
-	}
-};
-var $elm$core$Result$map2 = F3(
-	function (func, ra, rb) {
-		if (ra.$ === 1) {
-			var x = ra.a;
-			return $elm$core$Result$Err(x);
-		} else {
-			var a = ra.a;
-			if (rb.$ === 1) {
-				var x = rb.a;
-				return $elm$core$Result$Err(x);
-			} else {
-				var b = rb.a;
-				return $elm$core$Result$Ok(
-					A2(func, a, b));
-			}
-		}
-	});
-var $author$project$SqlParser$Parsers$Select$BasicColumn = function (a) {
-	return {$: 0, a: a};
-};
-var $author$project$SqlParser$Parsers$Select$ComplexColumn = function (a) {
-	return {$: 1, a: a};
-};
-var $author$project$SqlParser$Parsers$Select$parseSelectColumn = function (column) {
-	var _v0 = A2($author$project$Libs$Regex$matches, '^(?:(?<table>[^ .]+)\\.)?(?<column>[^ :]+)(?:[ \t]+AS[ \t]+(?<alias>[^ ]+))?$', column);
-	if ((((_v0.b && _v0.b.b) && (!_v0.b.a.$)) && _v0.b.b.b) && (!_v0.b.b.b.b)) {
-		var table = _v0.a;
-		var _v1 = _v0.b;
-		var columnName = _v1.a.a;
-		var _v2 = _v1.b;
-		var alias = _v2.a;
-		return $elm$core$Result$Ok(
-			$author$project$SqlParser$Parsers$Select$BasicColumn(
-				{
-					B: alias,
-					_: $author$project$SqlParser$Utils$Helpers$noEnclosingQuotes(columnName),
-					bt: table
-				}));
-	} else {
-		var _v3 = A2($author$project$Libs$Regex$matches, '^(?<formula>.+?)[ \t]+AS[ \t]+(?<alias>[^ ]+)$', column);
-		if ((((_v3.b && (!_v3.a.$)) && _v3.b.b) && (!_v3.b.a.$)) && (!_v3.b.b.b)) {
-			var formula = _v3.a.a;
-			var _v4 = _v3.b;
-			var alias = _v4.a.a;
-			return $elm$core$Result$Ok(
-				$author$project$SqlParser$Parsers$Select$ComplexColumn(
-					{B: alias, aK: formula}));
-		} else {
-			return $elm$core$Result$Err('Can\'t parse select column \'' + (column + '\''));
-		}
-	}
-};
-var $author$project$SqlParser$Parsers$Select$BasicTable = function (a) {
-	return {$: 0, a: a};
-};
-var $author$project$SqlParser$Parsers$Select$ComplexTable = function (a) {
-	return {$: 1, a: a};
-};
-var $author$project$SqlParser$Parsers$Select$parseSelectTable = function (table) {
-	var _v0 = A2($author$project$Libs$Regex$matches, '^(?:(?<schema>[^ .]+)\\.)?(?<table>[^ ]+)(?:[ \t]+(?<alias>[^ ]+))?$', table);
-	if ((((_v0.b && _v0.b.b) && (!_v0.b.a.$)) && _v0.b.b.b) && (!_v0.b.b.b.b)) {
-		var schema = _v0.a;
-		var _v1 = _v0.b;
-		var tableName = _v1.a.a;
-		var _v2 = _v1.b;
-		var alias = _v2.a;
-		return $elm$core$Result$Ok(
-			$author$project$SqlParser$Parsers$Select$BasicTable(
-				{B: alias, dr: schema, bt: tableName}));
-	} else {
-		return $elm$core$Result$Ok(
-			$author$project$SqlParser$Parsers$Select$ComplexTable(
-				{aE: table}));
-	}
-};
-var $author$project$Libs$Maybe$toList = function (maybe) {
-	if (!maybe.$) {
-		var a = maybe.a;
-		return _List_fromArray(
-			[a]);
-	} else {
-		return _List_Nil;
-	}
-};
-var $author$project$SqlParser$Parsers$Select$parseSelect = function (select) {
-	var _v0 = A2($author$project$Libs$Regex$matches, '^SELECT(?:[ \t]+DISTINCT ON \\([^)]+\\))?[ \t]+(?<columns>.+?)(?:[ \t]+FROM[ \t]+(?<tables>.+?))?(?:[ \t]+WHERE[ \t]+(?<where>.+?))?$', select);
-	if ((((_v0.b && (!_v0.a.$)) && _v0.b.b) && _v0.b.b.b) && (!_v0.b.b.b.b)) {
-		var columnsStr = _v0.a.a;
-		var _v1 = _v0.b;
-		var tablesStr = _v1.a;
-		var _v2 = _v1.b;
-		var whereClause = _v2.a;
-		return A3(
-			$elm$core$Result$map2,
-			F2(
-				function (columns, tables) {
-					return {H: columns, bu: tables, bB: whereClause};
-				}),
-			$author$project$Libs$List$resultSeq(
-				A2(
-					$elm$core$List$map,
-					$author$project$SqlParser$Parsers$Select$parseSelectColumn,
-					A2(
-						$elm$core$List$map,
-						$elm$core$String$trim,
-						$author$project$SqlParser$Utils$Helpers$commaSplit(columnsStr)))),
-			$author$project$Libs$List$resultSeq(
-				A2(
-					$elm$core$List$map,
-					$author$project$SqlParser$Parsers$Select$parseSelectTable,
-					$author$project$Libs$Maybe$toList(tablesStr))));
-	} else {
-		return $elm$core$Result$Err(
-			_List_fromArray(
-				['Can\'t parse select: \'' + (select + '\'')]));
-	}
-};
-var $author$project$SqlParser$Parsers$CreateView$parseView = function (statement) {
-	var _v0 = A2(
-		$author$project$Libs$Regex$matches,
-		'^CREATE (MATERIALIZED )?VIEW[ \t]+(?:(?<schema>[^ .]+)\\.)?(?<table>[^ ]+)[ \t]+AS[ \t]+(?<select>.+?)(?:[ \t]+(?<extra>WITH (?:NO )?DATA))?;$',
-		$author$project$SqlParser$Utils$Helpers$buildRawSql(statement));
-	if (((((((_v0.b && _v0.b.b) && _v0.b.b.b) && (!_v0.b.b.a.$)) && _v0.b.b.b.b) && (!_v0.b.b.b.a.$)) && _v0.b.b.b.b.b) && (!_v0.b.b.b.b.b.b)) {
-		var materialized = _v0.a;
-		var _v1 = _v0.b;
-		var schema = _v1.a;
-		var _v2 = _v1.b;
-		var table = _v2.a.a;
-		var _v3 = _v2.b;
-		var select = _v3.a.a;
-		var _v4 = _v3.b;
-		var extra = _v4.a;
-		return A2(
-			$elm$core$Result$map,
-			function (parsedSelect) {
-				return {
-					aI: extra,
-					aV: !_Utils_eq(materialized, $elm$core$Maybe$Nothing),
-					dr: schema,
-					bk: parsedSelect,
-					dB: statement,
-					bt: table
-				};
-			},
-			$author$project$SqlParser$Parsers$Select$parseSelect(select));
-	} else {
-		return $elm$core$Result$Err(
-			_List_fromArray(
-				[
-					'Can\'t parse create view: \'' + ($author$project$SqlParser$Utils$Helpers$buildRawSql(statement) + '\'')
-				]));
-	}
-};
-var $author$project$SqlParser$SqlParser$parseCommand = function (statement) {
-	return A2(
-		$elm$core$String$startsWith,
-		'CREATE TABLE ',
-		$elm$core$String$toUpper(statement.ce.dM)) ? A2(
-		$elm$core$Result$map,
-		$author$project$SqlParser$SqlParser$CreateTable,
-		$author$project$SqlParser$Parsers$CreateTable$parseCreateTable(statement)) : (A2(
-		$elm$core$String$startsWith,
-		'CREATE VIEW ',
-		$elm$core$String$toUpper(statement.ce.dM)) ? A2(
-		$elm$core$Result$map,
-		$author$project$SqlParser$SqlParser$CreateView,
-		$author$project$SqlParser$Parsers$CreateView$parseView(statement)) : (A2(
-		$elm$core$String$startsWith,
-		'CREATE MATERIALIZED VIEW ',
-		$elm$core$String$toUpper(statement.ce.dM)) ? A2(
-		$elm$core$Result$map,
-		$author$project$SqlParser$SqlParser$CreateView,
-		$author$project$SqlParser$Parsers$CreateView$parseView(statement)) : (A2(
-		$elm$core$String$startsWith,
-		'ALTER TABLE ',
-		$elm$core$String$toUpper(statement.ce.dM)) ? A2(
-		$elm$core$Result$map,
-		$author$project$SqlParser$SqlParser$AlterTable,
-		$author$project$SqlParser$Parsers$AlterTable$parseAlterTable(statement)) : (A2(
-		$elm$core$String$startsWith,
-		'CREATE INDEX ',
-		$elm$core$String$toUpper(statement.ce.dM)) ? A2(
-		$elm$core$Result$map,
-		$author$project$SqlParser$SqlParser$CreateIndex,
-		$author$project$SqlParser$Parsers$CreateIndex$parseCreateIndex(statement)) : (A2(
-		$elm$core$String$startsWith,
-		'CREATE UNIQUE INDEX ',
-		$elm$core$String$toUpper(statement.ce.dM)) ? A2(
-		$elm$core$Result$map,
-		$author$project$SqlParser$SqlParser$CreateUnique,
-		$author$project$SqlParser$Parsers$CreateUnique$parseCreateUniqueIndex(statement)) : (A2(
-		$elm$core$String$startsWith,
-		'COMMENT ON TABLE ',
-		$elm$core$String$toUpper(statement.ce.dM)) ? A2(
-		$elm$core$Result$map,
-		$author$project$SqlParser$SqlParser$TableComment,
-		$author$project$SqlParser$Parsers$Comment$parseTableComment(statement)) : (A2(
-		$elm$core$String$startsWith,
-		'COMMENT ON COLUMN ',
-		$elm$core$String$toUpper(statement.ce.dM)) ? A2(
-		$elm$core$Result$map,
-		$author$project$SqlParser$SqlParser$ColumnComment,
-		$author$project$SqlParser$Parsers$Comment$parseColumnComment(statement)) : (A2(
-		$elm$core$String$startsWith,
-		'CREATE OR REPLACE VIEW ',
-		$elm$core$String$toUpper(statement.ce.dM)) ? $elm$core$Result$Ok(
-		$author$project$SqlParser$SqlParser$Ignored(statement)) : (A2(
-		$elm$core$String$startsWith,
-		'COMMENT ON VIEW ',
-		$elm$core$String$toUpper(statement.ce.dM)) ? $elm$core$Result$Ok(
-		$author$project$SqlParser$SqlParser$Ignored(statement)) : (A2(
-		$elm$core$String$startsWith,
-		'COMMENT ON INDEX ',
-		$elm$core$String$toUpper(statement.ce.dM)) ? $elm$core$Result$Ok(
-		$author$project$SqlParser$SqlParser$Ignored(statement)) : (A2(
-		$elm$core$String$startsWith,
-		'CREATE TYPE ',
-		$elm$core$String$toUpper(statement.ce.dM)) ? $elm$core$Result$Ok(
-		$author$project$SqlParser$SqlParser$Ignored(statement)) : (A2(
-		$elm$core$String$startsWith,
-		'ALTER TYPE ',
-		$elm$core$String$toUpper(statement.ce.dM)) ? $elm$core$Result$Ok(
-		$author$project$SqlParser$SqlParser$Ignored(statement)) : (A2(
-		$elm$core$String$startsWith,
-		'CREATE FUNCTION ',
-		$elm$core$String$toUpper(statement.ce.dM)) ? $elm$core$Result$Ok(
-		$author$project$SqlParser$SqlParser$Ignored(statement)) : (A2(
-		$elm$core$String$startsWith,
-		'ALTER FUNCTION ',
-		$elm$core$String$toUpper(statement.ce.dM)) ? $elm$core$Result$Ok(
-		$author$project$SqlParser$SqlParser$Ignored(statement)) : (A2(
-		$elm$core$String$startsWith,
-		'CREATE OPERATOR ',
-		$elm$core$String$toUpper(statement.ce.dM)) ? $elm$core$Result$Ok(
-		$author$project$SqlParser$SqlParser$Ignored(statement)) : (A2(
-		$elm$core$String$startsWith,
-		'ALTER OPERATOR ',
-		$elm$core$String$toUpper(statement.ce.dM)) ? $elm$core$Result$Ok(
-		$author$project$SqlParser$SqlParser$Ignored(statement)) : (A2(
-		$elm$core$String$startsWith,
-		'CREATE SCHEMA ',
-		$elm$core$String$toUpper(statement.ce.dM)) ? $elm$core$Result$Ok(
-		$author$project$SqlParser$SqlParser$Ignored(statement)) : (A2(
-		$elm$core$String$startsWith,
-		'CREATE EXTENSION ',
-		$elm$core$String$toUpper(statement.ce.dM)) ? $elm$core$Result$Ok(
-		$author$project$SqlParser$SqlParser$Ignored(statement)) : (A2(
-		$elm$core$String$startsWith,
-		'COMMENT ON EXTENSION ',
-		$elm$core$String$toUpper(statement.ce.dM)) ? $elm$core$Result$Ok(
-		$author$project$SqlParser$SqlParser$Ignored(statement)) : (A2(
-		$elm$core$String$startsWith,
-		'CREATE TEXT SEARCH CONFIGURATION ',
-		$elm$core$String$toUpper(statement.ce.dM)) ? $elm$core$Result$Ok(
-		$author$project$SqlParser$SqlParser$Ignored(statement)) : (A2(
-		$elm$core$String$startsWith,
-		'ALTER TEXT SEARCH CONFIGURATION ',
-		$elm$core$String$toUpper(statement.ce.dM)) ? $elm$core$Result$Ok(
-		$author$project$SqlParser$SqlParser$Ignored(statement)) : (A2(
-		$elm$core$String$startsWith,
-		'CREATE SEQUENCE ',
-		$elm$core$String$toUpper(statement.ce.dM)) ? $elm$core$Result$Ok(
-		$author$project$SqlParser$SqlParser$Ignored(statement)) : (A2(
-		$elm$core$String$startsWith,
-		'ALTER SEQUENCE ',
-		$elm$core$String$toUpper(statement.ce.dM)) ? $elm$core$Result$Ok(
-		$author$project$SqlParser$SqlParser$Ignored(statement)) : (A2(
-		$elm$core$String$startsWith,
-		'SELECT ',
-		$elm$core$String$toUpper(statement.ce.dM)) ? $elm$core$Result$Ok(
-		$author$project$SqlParser$SqlParser$Ignored(statement)) : (A2(
-		$elm$core$String$startsWith,
-		'INSERT INTO ',
-		$elm$core$String$toUpper(statement.ce.dM)) ? $elm$core$Result$Ok(
-		$author$project$SqlParser$SqlParser$Ignored(statement)) : (A2(
-		$elm$core$String$startsWith,
-		'SET ',
-		$elm$core$String$toUpper(statement.ce.dM)) ? $elm$core$Result$Ok(
-		$author$project$SqlParser$SqlParser$Ignored(statement)) : $elm$core$Result$Err(
-		_List_fromArray(
-			[
-				'Statement not handled: \'' + ($author$project$SqlParser$Utils$Helpers$buildRawSql(statement) + '\'')
-			]))))))))))))))))))))))))))));
-};
-var $author$project$SqlParser$SchemaParser$parseLines = F2(
-	function (fileName, fileContent) {
-		return A2(
-			$elm$core$List$indexedMap,
-			F2(
-				function (i, line) {
-					return {aJ: fileName, cA: i + 1, dM: line};
-				}),
-			A2($elm$core$String$split, '\n', fileContent));
-	});
-var $author$project$SqlParser$SchemaParser$parseSchema = F2(
-	function (fileName, fileContent) {
-		return A3(
-			$elm$core$List$foldl,
-			F2(
-				function (statement, _v0) {
-					var errs = _v0.a;
-					var schema = _v0.b;
-					var _v1 = A2(
-						$elm$core$Result$andThen,
-						function (command) {
-							return A2($author$project$SqlParser$SchemaParser$evolve, command, schema);
-						},
-						$author$project$SqlParser$SqlParser$parseCommand(statement));
-					if (!_v1.$) {
-						var newSchema = _v1.a;
-						return _Utils_Tuple2(errs, newSchema);
-					} else {
-						var e = _v1.a;
-						return _Utils_Tuple2(
-							_Utils_ap(errs, e),
-							schema);
-					}
-				}),
-			_Utils_Tuple2(_List_Nil, $pzp1997$assoc_list$AssocList$empty),
-			$author$project$SqlParser$SchemaParser$buildStatements(
-				A2($author$project$SqlParser$SchemaParser$parseLines, fileName, fileContent)));
-	});
-var $author$project$Updates$Schema$buildSchema = F6(
-	function (now, takenIds, id, path, file, content) {
-		return A2($elm$core$String$endsWith, '.sql', path) ? A2(
-			$elm$core$Tuple$mapSecond,
-			function (s) {
-				return $elm$core$Maybe$Just(
-					A4(
-						$author$project$Mappers$SchemaMapper$buildSchemaFromSql,
-						takenIds,
-						id,
-						{bW: now, aJ: file, dU: now},
-						s));
-			},
-			A2($author$project$SqlParser$SchemaParser$parseSchema, path, content)) : (A2($elm$core$String$endsWith, '.json', path) ? A3(
-			$author$project$Libs$Result$fold,
-			function (e) {
-				return _Utils_Tuple2(
-					_List_fromArray(
-						[
-							'⚠️ Error in <b>' + (path + ('</b> ⚠️<br>' + $author$project$Updates$Helpers$decodeErrorToHtml(e)))
-						]),
-					$elm$core$Maybe$Nothing);
-			},
-			function (schema) {
-				return _Utils_Tuple2(
-					_List_Nil,
-					$elm$core$Maybe$Just(schema));
-			},
-			A2(
-				$elm$json$Json$Decode$decodeString,
-				$author$project$JsonFormats$SchemaFormat$decodeSchema(takenIds),
-				content)) : _Utils_Tuple2(
-			_List_fromArray(
-				['Invalid file (' + (path + '), expected .sql or .json one')]),
-			$elm$core$Maybe$Nothing));
-	});
-var $author$project$Updates$Schema$formatHttpError = function (error) {
-	switch (error.$) {
-		case 0:
-			var url = error.a;
-			return 'the URL ' + (url + ' was invalid');
-		case 1:
-			return 'unable to reach the server, try again';
-		case 2:
-			return 'unable to reach the server, check your network connection';
-		case 3:
-			switch (error.a) {
-				case 500:
-					return 'the server had a problem, try again later';
-				case 400:
-					return 'verify your information and try again';
-				case 404:
-					return 'file does not exist';
-				default:
-					var status = error.a;
-					return 'network error (' + ($elm$core$String$fromInt(status) + ')');
-			}
-		default:
-			var errorMessage = error.a;
-			return errorMessage;
-	}
-};
-var $author$project$Models$ShowAllTables = {$: 17};
-var $author$project$Ports$Click = function (a) {
-	return {$: 0, a: a};
-};
-var $author$project$Ports$click = function (id) {
-	return $author$project$Ports$messageToJs(
-		$author$project$Ports$Click(id));
-};
-var $pzp1997$assoc_list$AssocList$filter = F2(
-	function (isGood, _v0) {
-		var alist = _v0;
-		return A2(
-			$elm$core$List$filter,
-			function (_v1) {
-				var key = _v1.a;
-				var value = _v1.b;
-				return A2(isGood, key, value);
-			},
-			alist);
-	});
-var $author$project$Ports$HideModal = function (a) {
-	return {$: 2, a: a};
-};
-var $author$project$Ports$hideModal = function (id) {
-	return $author$project$Ports$messageToJs(
-		$author$project$Ports$HideModal(id));
-};
-var $pzp1997$assoc_list$AssocList$size = function (_v0) {
-	var alist = _v0;
-	return $elm$core$List$length(alist);
-};
-var $author$project$Ports$ShowToast = function (a) {
-	return {$: 5, a: a};
-};
-var $author$project$Ports$showToast = function (toast) {
-	return $author$project$Ports$messageToJs(
-		$author$project$Ports$ShowToast(toast));
-};
-var $author$project$Ports$toastError = function (message) {
-	return $author$project$Ports$showToast(
-		{cv: 'error', aW: message});
-};
-var $author$project$Ports$toastInfo = function (message) {
-	return $author$project$Ports$showToast(
-		{cv: 'info', aW: message});
-};
-var $author$project$Updates$Schema$loadSchema = F2(
-	function (model, _v0) {
-		var errs = _v0.a;
-		var schema = _v0.b;
-		return _Utils_Tuple2(
-			_Utils_update(
-				model,
-				{
-					dr: schema,
-					bm: A2(
-						$pzp1997$assoc_list$AssocList$filter,
-						F2(
-							function (id, _v1) {
-								return !A2($elm$core$String$startsWith, 'table-', id);
-							}),
-						model.bm),
-					bs: $author$project$Models$initSwitch
-				}),
-			$elm$core$Platform$Cmd$batch(
-				_Utils_ap(
-					A2($elm$core$List$map, $author$project$Ports$toastError, errs),
-					A2(
-						$elm$core$Maybe$withDefault,
-						_List_Nil,
-						A2(
-							$elm$core$Maybe$map,
-							function (s) {
-								return A2(
-									$elm$core$List$cons,
-									A3(
-										$author$project$Libs$Bool$cond,
-										$pzp1997$assoc_list$AssocList$size(s.bu) < 10,
-										$author$project$Libs$Task$send($author$project$Models$ShowAllTables),
-										$author$project$Ports$click($author$project$Conf$conf.cm.dv)),
-									_List_fromArray(
-										[
-											$author$project$Ports$toastInfo('<b>' + (s.ck + '</b> loaded.<br>Use the search bar to explore it')),
-											$author$project$Ports$hideModal($author$project$Conf$conf.cm.ds),
-											$author$project$Ports$saveSchema(s)
-										]));
-							},
-							schema)))));
-	});
-var $author$project$Updates$Schema$createSampleSchema = F5(
-	function (now, id, path, response, model) {
-		return A2(
-			$author$project$Updates$Schema$loadSchema,
-			model,
-			A3(
-				$author$project$Libs$Result$fold,
-				function (err) {
-					return _Utils_Tuple2(
-						_List_fromArray(
-							[
-								'Can\'t load \'' + (id + ('\': ' + $author$project$Updates$Schema$formatHttpError(err)))
-							]),
-						$elm$core$Maybe$Nothing);
-				},
-				A5(
-					$author$project$Updates$Schema$buildSchema,
-					now,
-					A2(
-						$elm$core$List$map,
-						function ($) {
-							return $.ck;
-						},
-						model.at),
-					id,
-					path,
-					$elm$core$Maybe$Nothing),
-				response));
-	});
-var $author$project$Updates$Schema$createSchema = F4(
-	function (now, file, content, model) {
-		return A2(
-			$author$project$Updates$Schema$loadSchema,
-			model,
-			A6(
-				$author$project$Updates$Schema$buildSchema,
-				now,
-				A2(
-					$elm$core$List$map,
-					function ($) {
-						return $.ck;
-					},
-					model.at),
-				file.J,
-				file.J,
-				$elm$core$Maybe$Just(
-					{cw: file.cw, J: file.J}),
-				content));
-	});
-var $author$project$Updates$Layout$deleteLayout = F2(
-	function (name, schema) {
-		return A2(
-			$author$project$Updates$Helpers$map,
-			function (newSchema) {
-				return _Utils_Tuple2(
-					newSchema,
-					$author$project$Ports$saveSchema(newSchema));
-			},
-			A2(
-				$author$project$Updates$Helpers$setLayouts,
-				A2(
-					$pzp1997$assoc_list$AssocList$update,
-					name,
-					function (_v0) {
-						return $elm$core$Maybe$Nothing;
-					}),
-				_Utils_update(
-					schema,
-					{
-						cy: A3(
-							$author$project$Libs$Bool$cond,
-							_Utils_eq(
-								schema.cy,
-								$elm$core$Maybe$Just(name)),
-							$elm$core$Maybe$Nothing,
-							$elm$core$Maybe$Just(name))
-					})));
-	});
-var $author$project$Models$OnDragBy = function (a) {
-	return {$: 24, a: a};
-};
-var $author$project$Models$StartDragging = function (a) {
-	return {$: 22, a: a};
-};
-var $author$project$Models$StopDragging = {$: 23};
-var $zaboco$elm_draggable$Draggable$Config = $elm$core$Basics$identity;
-var $zaboco$elm_draggable$Internal$defaultConfig = {
-	c0: function (_v0) {
-		return $elm$core$Maybe$Nothing;
-	},
-	c1: function (_v1) {
-		return $elm$core$Maybe$Nothing;
-	},
-	c2: $elm$core$Maybe$Nothing,
-	c3: function (_v2) {
-		return $elm$core$Maybe$Nothing;
-	},
-	c6: function (_v3) {
-		return $elm$core$Maybe$Nothing;
-	}
-};
-var $zaboco$elm_draggable$Draggable$customConfig = function (events) {
-	return A3($elm$core$List$foldl, $elm$core$Basics$apL, $zaboco$elm_draggable$Internal$defaultConfig, events);
-};
-var $zaboco$elm_draggable$Draggable$Events$onDragBy = F2(
-	function (toMsg, config) {
-		return _Utils_update(
-			config,
-			{
-				c1: A2($elm$core$Basics$composeL, $elm$core$Maybe$Just, toMsg)
-			});
-	});
-var $zaboco$elm_draggable$Draggable$Events$onDragEnd = F2(
-	function (toMsg, config) {
-		return _Utils_update(
-			config,
-			{
-				c2: $elm$core$Maybe$Just(toMsg)
-			});
-	});
-var $zaboco$elm_draggable$Draggable$Events$onDragStart = F2(
-	function (toMsg, config) {
-		return _Utils_update(
-			config,
-			{
-				c3: A2($elm$core$Basics$composeL, $elm$core$Maybe$Just, toMsg)
-			});
-	});
-var $author$project$Update$dragConfig = $zaboco$elm_draggable$Draggable$customConfig(
-	_List_fromArray(
-		[
-			$zaboco$elm_draggable$Draggable$Events$onDragStart($author$project$Models$StartDragging),
-			$zaboco$elm_draggable$Draggable$Events$onDragEnd($author$project$Models$StopDragging),
-			$zaboco$elm_draggable$Draggable$Events$onDragBy($author$project$Models$OnDragBy)
-		]));
-var $author$project$Models$Schema$htmlIdAsTableId = function (id) {
-	var _v0 = A2($elm$core$String$split, '-', id);
-	if ((((_v0.b && (_v0.a === 'table')) && _v0.b.b) && _v0.b.b.b) && (!_v0.b.b.b.b)) {
-		var _v1 = _v0.b;
-		var schema = _v1.a;
-		var _v2 = _v1.b;
-		var table = _v2.a;
-		return A2($author$project$Models$Schema$TableId, schema, table);
-	} else {
-		return A2($author$project$Models$Schema$TableId, $author$project$Conf$conf.b_.dr, id);
-	}
-};
-var $elm$core$Platform$Cmd$none = $elm$core$Platform$Cmd$batch(_List_Nil);
-var $author$project$Updates$Helpers$setCanvas = F2(
-	function (transform, item) {
-		return _Utils_update(
-			item,
-			{
-				bM: transform(item.bM)
-			});
-	});
-var $author$project$Updates$Helpers$setDictTable = F3(
-	function (id, transform, item) {
-		return _Utils_update(
-			item,
-			{
-				bu: A3(
-					$pzp1997$assoc_list$AssocList$update,
-					id,
-					$elm$core$Maybe$map(transform),
-					item.bu)
-			});
-	});
-var $author$project$Updates$Helpers$setLayout = F2(
-	function (transform, item) {
-		return _Utils_update(
-			item,
-			{
-				cx: transform(item.cx)
-			});
-	});
-var $author$project$Updates$Helpers$setPosition = F3(
-	function (_v0, zoom, item) {
-		var dx = _v0.a;
-		var dy = _v0.b;
-		return _Utils_update(
-			item,
-			{
-				a6: A2($author$project$Models$Utils$Position, item.a6.aT + (dx / zoom), item.a6.bx + (dy / zoom))
-			});
-	});
-var $author$project$Updates$Helpers$setSchema = F2(
-	function (transform, item) {
-		return _Utils_update(
-			item,
-			{
-				dr: A2($elm$core$Maybe$map, transform, item.dr)
-			});
-	});
-var $author$project$Update$dragItem = F2(
-	function (model, delta) {
-		var _v0 = model.aF;
-		if (!_v0.$) {
-			var id = _v0.a;
-			return _Utils_eq(id, $author$project$Conf$conf.cm.b5) ? _Utils_Tuple2(
-				A2(
-					$author$project$Updates$Helpers$setSchema,
-					$author$project$Updates$Helpers$setLayout(
-						$author$project$Updates$Helpers$setCanvas(
-							A2($author$project$Updates$Helpers$setPosition, delta, 1))),
-					model),
-				$elm$core$Platform$Cmd$none) : _Utils_Tuple2(
-				A2(
-					$author$project$Updates$Helpers$setSchema,
-					$author$project$Updates$Helpers$setLayout(
-						function (l) {
-							return A3(
-								$author$project$Updates$Helpers$setDictTable,
-								$author$project$Models$Schema$htmlIdAsTableId(id),
-								A2($author$project$Updates$Helpers$setPosition, delta, l.bM.d$),
-								l);
-						}),
-					model),
-				$elm$core$Platform$Cmd$none);
-		} else {
-			return _Utils_Tuple2(
-				model,
-				$author$project$Ports$toastError('Can\'t dragItem when no drag id'));
-		}
-	});
-var $author$project$Ports$DropSchema = function (a) {
-	return {$: 8, a: a};
-};
-var $author$project$Ports$dropSchema = function (schema) {
-	return $author$project$Ports$messageToJs(
-		$author$project$Ports$DropSchema(schema));
-};
-var $pzp1997$assoc_list$AssocList$union = F2(
-	function (_v0, rightDict) {
-		var leftAlist = _v0;
-		return A3(
-			$elm$core$List$foldr,
-			F2(
-				function (_v1, result) {
-					var lKey = _v1.a;
-					var lValue = _v1.b;
-					return A3($pzp1997$assoc_list$AssocList$insert, lKey, lValue, result);
-				}),
-			rightDict,
-			leftAlist);
-	});
-var $author$project$Updates$Table$hideAllTables = function (layout) {
-	return _Utils_update(
-		layout,
-		{
-			cj: A2($pzp1997$assoc_list$AssocList$union, layout.bu, layout.cj),
-			bu: $pzp1997$assoc_list$AssocList$empty
-		});
-};
-var $author$project$Updates$Table$hideColumn = F3(
-	function (table, column, layout) {
-		return _Utils_update(
-			layout,
-			{
-				bu: A3(
-					$pzp1997$assoc_list$AssocList$update,
-					table,
-					$elm$core$Maybe$map(
-						function (t) {
-							return _Utils_update(
-								t,
-								{
-									H: A2(
-										$elm$core$List$filter,
-										function (c) {
-											return !_Utils_eq(c, column);
-										},
-										t.H)
-								});
-						}),
-					layout.bu)
-			});
-	});
-var $author$project$Ports$HideOffcanvas = function (a) {
-	return {$: 3, a: a};
-};
-var $author$project$Ports$hideOffcanvas = function (id) {
-	return $author$project$Ports$messageToJs(
-		$author$project$Ports$HideOffcanvas(id));
-};
-var $author$project$Updates$Table$hideTable = F2(
-	function (id, layout) {
-		return _Utils_update(
-			layout,
-			{
-				cj: A3(
-					$pzp1997$assoc_list$AssocList$update,
-					id,
-					function (_v0) {
-						return A2($pzp1997$assoc_list$AssocList$get, id, layout.bu);
-					},
-					layout.cj),
-				bu: A3(
-					$pzp1997$assoc_list$AssocList$update,
-					id,
-					function (_v1) {
-						return $elm$core$Maybe$Nothing;
-					},
-					layout.bu)
-			});
-	});
-var $pzp1997$assoc_list$AssocList$keys = function (_v0) {
-	var alist = _v0;
-	return A2($elm$core$List$map, $elm$core$Tuple$first, alist);
-};
-var $author$project$Models$Schema$tableIdAsHtmlId = function (_v0) {
-	var schema = _v0.a;
-	var table = _v0.b;
-	return 'table-' + (schema + ('-' + table));
-};
-var $author$project$Ports$observeTablesSize = function (ids) {
-	return $author$project$Ports$observeSizes(
-		A2($elm$core$List$map, $author$project$Models$Schema$tableIdAsHtmlId, ids));
-};
-var $author$project$Updates$Layout$loadLayout = F2(
-	function (name, schema) {
-		return A2(
-			$elm$core$Maybe$withDefault,
-			_Utils_Tuple2(schema, $elm$core$Platform$Cmd$none),
-			A2(
-				$elm$core$Maybe$map,
-				function (layout) {
-					return _Utils_Tuple2(
-						A2(
-							$author$project$Updates$Helpers$setLayout,
-							function (_v0) {
-								return layout;
-							},
-							_Utils_update(
-								schema,
-								{
-									cy: $elm$core$Maybe$Just(name)
-								})),
-						$elm$core$Platform$Cmd$batch(
-							_List_fromArray(
-								[
-									$author$project$Ports$observeTablesSize(
-									$pzp1997$assoc_list$AssocList$keys(layout.bu)),
-									$author$project$Ports$activateTooltipsAndPopovers
-								])));
-				},
-				A2($pzp1997$assoc_list$AssocList$get, name, schema.cz)));
-	});
-var $author$project$Models$GotSampleData = F4(
-	function (a, b, c, d) {
-		return {$: 8, a: a, b: b, c: c, d: d};
-	});
-var $elm$http$Http$BadStatus_ = F2(
-	function (a, b) {
-		return {$: 3, a: a, b: b};
-	});
-var $elm$http$Http$BadUrl_ = function (a) {
-	return {$: 0, a: a};
-};
-var $elm$http$Http$GoodStatus_ = F2(
-	function (a, b) {
-		return {$: 4, a: a, b: b};
-	});
-var $elm$http$Http$NetworkError_ = {$: 2};
-var $elm$http$Http$Receiving = function (a) {
-	return {$: 1, a: a};
-};
-var $elm$http$Http$Sending = function (a) {
-	return {$: 0, a: a};
-};
-var $elm$http$Http$Timeout_ = {$: 1};
-var $elm$core$Maybe$isJust = function (maybe) {
-	if (!maybe.$) {
-		return true;
-	} else {
-		return false;
-	}
 };
 var $elm$core$Dict$getMin = function (dict) {
 	getMin:
@@ -10422,6 +7326,3511 @@ var $elm$core$Dict$update = F3(
 			return A2($elm$core$Dict$remove, targetKey, dictionary);
 		}
 	});
+var $author$project$Libs$Dict$groupBy = F2(
+	function (key, list) {
+		return A3(
+			$elm$core$List$foldr,
+			F2(
+				function (a, dict) {
+					return A3(
+						$elm$core$Dict$update,
+						key(a),
+						function (v) {
+							return $elm$core$Maybe$Just(
+								A2(
+									$elm$core$Maybe$withDefault,
+									_List_fromArray(
+										[a]),
+									A2(
+										$elm$core$Maybe$map,
+										$elm$core$List$cons(a),
+										v)));
+						},
+						dict);
+				}),
+			$elm$core$Dict$empty,
+			list);
+	});
+var $author$project$Models$Schema$buildIncomingRelations = function (tables) {
+	return A2(
+		$author$project$Libs$Dict$groupBy,
+		function (r) {
+			return r.aa.dM;
+		},
+		$author$project$Models$Schema$buildRelations(tables));
+};
+var $author$project$Libs$Dict$fromListMap = F2(
+	function (getKey, list) {
+		return $elm$core$Dict$fromList(
+			A2(
+				$elm$core$List$map,
+				function (item) {
+					return _Utils_Tuple2(
+						getKey(item),
+						item);
+				},
+				list));
+	});
+var $elm$core$List$any = F2(
+	function (isOkay, list) {
+		any:
+		while (true) {
+			if (!list.b) {
+				return false;
+			} else {
+				var x = list.a;
+				var xs = list.b;
+				if (isOkay(x)) {
+					return true;
+				} else {
+					var $temp$isOkay = isOkay,
+						$temp$list = xs;
+					isOkay = $temp$isOkay;
+					list = $temp$list;
+					continue any;
+				}
+			}
+		}
+	});
+var $elm$core$List$append = F2(
+	function (xs, ys) {
+		if (!ys.b) {
+			return xs;
+		} else {
+			return A3($elm$core$List$foldr, $elm$core$List$cons, ys, xs);
+		}
+	});
+var $elm$core$List$concat = function (lists) {
+	return A3($elm$core$List$foldr, $elm$core$List$append, _List_Nil, lists);
+};
+var $elm$core$List$concatMap = F2(
+	function (f, list) {
+		return $elm$core$List$concat(
+			A2($elm$core$List$map, f, list));
+	});
+var $elm$regex$Regex$Match = F4(
+	function (match, index, number, submatches) {
+		return {cr: index, cG: match, c0: number, dK: submatches};
+	});
+var $elm$regex$Regex$find = _Regex_findAtMost(_Regex_infinity);
+var $elm$regex$Regex$fromStringWith = _Regex_fromStringWith;
+var $elm$regex$Regex$never = _Regex_never;
+var $author$project$Libs$Regex$matches = F2(
+	function (regex, text) {
+		return A2(
+			$elm$core$List$concatMap,
+			function ($) {
+				return $.dK;
+			},
+			function (r) {
+				return A2($elm$regex$Regex$find, r, text);
+			}(
+				A2(
+					$elm$core$Maybe$withDefault,
+					$elm$regex$Regex$never,
+					A2(
+						$elm$regex$Regex$fromStringWith,
+						{bS: true, cP: false},
+						regex))));
+	});
+var $author$project$Libs$String$uniqueId = F2(
+	function (takenIds, id) {
+		uniqueId:
+		while (true) {
+			if (A2(
+				$elm$core$List$any,
+				function (taken) {
+					return _Utils_eq(taken, id);
+				},
+				takenIds)) {
+				var _v0 = A2($author$project$Libs$Regex$matches, '^(.*?)([0-9]+)?(\\.[a-z]+)?$', id);
+				if ((((_v0.b && (!_v0.a.$)) && _v0.b.b) && _v0.b.b.b) && (!_v0.b.b.b.b)) {
+					var prefix = _v0.a.a;
+					var _v1 = _v0.b;
+					var num = _v1.a;
+					var _v2 = _v1.b;
+					var extension = _v2.a;
+					var $temp$takenIds = takenIds,
+						$temp$id = _Utils_ap(
+						prefix,
+						_Utils_ap(
+							$elm$core$String$fromInt(
+								A2(
+									$elm$core$Maybe$withDefault,
+									2,
+									A2(
+										$elm$core$Maybe$map,
+										function (n) {
+											return n + 1;
+										},
+										A2($elm$core$Maybe$andThen, $elm$core$String$toInt, num)))),
+							A2($elm$core$Maybe$withDefault, '', extension)));
+					takenIds = $temp$takenIds;
+					id = $temp$id;
+					continue uniqueId;
+				} else {
+					return id + '-err';
+				}
+			} else {
+				return id;
+			}
+		}
+	});
+var $author$project$Models$Schema$buildSchema = F7(
+	function (takenIds, id, info, tables, layout, layoutName, layouts) {
+		return {
+			aV: A2($author$project$Libs$String$uniqueId, takenIds, id),
+			aW: $author$project$Models$Schema$buildIncomingRelations(tables),
+			ct: info,
+			cA: layout,
+			cB: layoutName,
+			cC: layouts,
+			by: A2(
+				$author$project$Libs$Dict$fromListMap,
+				function ($) {
+					return $.aV;
+				},
+				tables)
+		};
+	});
+var $author$project$Models$Schema$Layout = F3(
+	function (canvas, tables, hiddenTables) {
+		return {bR: canvas, cm: hiddenTables, by: tables};
+	});
+var $author$project$Models$Schema$CanvasProps = F2(
+	function (position, zoom) {
+		return {bd: position, d2: zoom};
+	});
+var $author$project$JsonFormats$SchemaFormat$decodePosition = A3(
+	$elm$json$Json$Decode$map2,
+	$author$project$Libs$Position$Position,
+	A2($elm$json$Json$Decode$field, 'left', $elm$json$Json$Decode$float),
+	A2($elm$json$Json$Decode$field, 'top', $elm$json$Json$Decode$float));
+var $author$project$JsonFormats$SchemaFormat$decodeZoomLevel = $elm$json$Json$Decode$float;
+var $author$project$JsonFormats$SchemaFormat$decodeCanvasProps = A3(
+	$elm$json$Json$Decode$map2,
+	$author$project$Models$Schema$CanvasProps,
+	A2($elm$json$Json$Decode$field, 'position', $author$project$JsonFormats$SchemaFormat$decodePosition),
+	A2($elm$json$Json$Decode$field, 'zoom', $author$project$JsonFormats$SchemaFormat$decodeZoomLevel));
+var $elm$json$Json$Decode$oneOf = _Json_oneOf;
+var $elm$json$Json$Decode$maybe = function (decoder) {
+	return $elm$json$Json$Decode$oneOf(
+		_List_fromArray(
+			[
+				A2($elm$json$Json$Decode$map, $elm$core$Maybe$Just, decoder),
+				$elm$json$Json$Decode$succeed($elm$core$Maybe$Nothing)
+			]));
+};
+var $author$project$JsonFormats$SchemaFormat$decodeMaybeWithDefault = F2(
+	function (decoder, a) {
+		return A2(
+			$elm$json$Json$Decode$map,
+			$elm$core$Maybe$withDefault(a),
+			$elm$json$Json$Decode$maybe(
+				decoder(a)));
+	});
+var $author$project$Models$Schema$TableProps = F4(
+	function (position, color, selected, columns) {
+		return {bX: color, L: columns, bd: position, dA: selected};
+	});
+var $elm$json$Json$Decode$bool = _Json_decodeBool;
+var $author$project$JsonFormats$SchemaFormat$decodeColor = $elm$json$Json$Decode$string;
+var $author$project$JsonFormats$SchemaFormat$decodeColumnName = $elm$json$Json$Decode$string;
+var $elm$json$Json$Decode$map4 = _Json_map4;
+var $author$project$JsonFormats$SchemaFormat$decodeTableProps = A5(
+	$elm$json$Json$Decode$map4,
+	$author$project$Models$Schema$TableProps,
+	A2($elm$json$Json$Decode$field, 'position', $author$project$JsonFormats$SchemaFormat$decodePosition),
+	A2($elm$json$Json$Decode$field, 'color', $author$project$JsonFormats$SchemaFormat$decodeColor),
+	A2(
+		$author$project$JsonFormats$SchemaFormat$decodeMaybeWithDefault,
+		function (_v0) {
+			return A2($elm$json$Json$Decode$field, 'selected', $elm$json$Json$Decode$bool);
+		},
+		false),
+	A2(
+		$author$project$JsonFormats$SchemaFormat$decodeMaybeWithDefault,
+		function (_v1) {
+			return A2(
+				$elm$json$Json$Decode$field,
+				'columns',
+				$elm$json$Json$Decode$list($author$project$JsonFormats$SchemaFormat$decodeColumnName));
+		},
+		_List_Nil));
+var $elm$json$Json$Decode$keyValuePairs = _Json_decodeKeyValuePairs;
+var $elm$json$Json$Decode$dict = function (decoder) {
+	return A2(
+		$elm$json$Json$Decode$map,
+		$elm$core$Dict$fromList,
+		$elm$json$Json$Decode$keyValuePairs(decoder));
+};
+var $author$project$Libs$Json$Decode$dict = F2(
+	function (buildKey, decoder) {
+		return A2(
+			$elm$json$Json$Decode$map,
+			function (d) {
+				return $elm$core$Dict$fromList(
+					A2(
+						$elm$core$List$map,
+						function (_v0) {
+							var k = _v0.a;
+							var a = _v0.b;
+							return _Utils_Tuple2(
+								buildKey(k),
+								a);
+						},
+						$elm$core$Dict$toList(d)));
+			},
+			$elm$json$Json$Decode$dict(decoder));
+	});
+var $author$project$Models$Schema$stringAsTableId = function (id) {
+	var _v0 = A2($elm$core$String$split, '.', id);
+	if ((_v0.b && _v0.b.b) && (!_v0.b.b.b)) {
+		var schema = _v0.a;
+		var _v1 = _v0.b;
+		var table = _v1.a;
+		return _Utils_Tuple2(schema, table);
+	} else {
+		return _Utils_Tuple2($author$project$Conf$conf.b2.dv, id);
+	}
+};
+var $author$project$JsonFormats$SchemaFormat$decodeLayout = A4(
+	$elm$json$Json$Decode$map3,
+	$author$project$Models$Schema$Layout,
+	A2($elm$json$Json$Decode$field, 'canvas', $author$project$JsonFormats$SchemaFormat$decodeCanvasProps),
+	A2(
+		$author$project$JsonFormats$SchemaFormat$decodeMaybeWithDefault,
+		function (_v0) {
+			return A2(
+				$elm$json$Json$Decode$field,
+				'tables',
+				A2($author$project$Libs$Json$Decode$dict, $author$project$Models$Schema$stringAsTableId, $author$project$JsonFormats$SchemaFormat$decodeTableProps));
+		},
+		$elm$core$Dict$empty),
+	A2(
+		$author$project$JsonFormats$SchemaFormat$decodeMaybeWithDefault,
+		function (_v1) {
+			return A2(
+				$elm$json$Json$Decode$field,
+				'hiddenTables',
+				A2($author$project$Libs$Json$Decode$dict, $author$project$Models$Schema$stringAsTableId, $author$project$JsonFormats$SchemaFormat$decodeTableProps));
+		},
+		$elm$core$Dict$empty));
+var $author$project$Models$Schema$SchemaInfo = F3(
+	function (created, updated, file) {
+		return {b$: created, aO: file, dX: updated};
+	});
+var $author$project$Models$Schema$FileInfo = F2(
+	function (name, lastModified) {
+		return {cz: lastModified, N: name};
+	});
+var $author$project$JsonFormats$SchemaFormat$decodePosix = A2($elm$json$Json$Decode$map, $elm$time$Time$millisToPosix, $elm$json$Json$Decode$int);
+var $author$project$JsonFormats$SchemaFormat$decodeFileInfo = A3(
+	$elm$json$Json$Decode$map2,
+	$author$project$Models$Schema$FileInfo,
+	A2($elm$json$Json$Decode$field, 'name', $elm$json$Json$Decode$string),
+	A2($elm$json$Json$Decode$field, 'lastModified', $author$project$JsonFormats$SchemaFormat$decodePosix));
+var $author$project$JsonFormats$SchemaFormat$decodeSchemaInfo = A4(
+	$elm$json$Json$Decode$map3,
+	$author$project$Models$Schema$SchemaInfo,
+	A2($elm$json$Json$Decode$field, 'created', $author$project$JsonFormats$SchemaFormat$decodePosix),
+	A2($elm$json$Json$Decode$field, 'updated', $author$project$JsonFormats$SchemaFormat$decodePosix),
+	$elm$json$Json$Decode$maybe(
+		A2($elm$json$Json$Decode$field, 'file', $author$project$JsonFormats$SchemaFormat$decodeFileInfo)));
+var $author$project$Models$Schema$Table = F9(
+	function (id, schema, table, columns, primaryKey, uniques, indexes, comment, sources) {
+		return {L: columns, aF: comment, aV: id, cs: indexes, dn: primaryKey, dv: schema, dG: sources, dM: table, dV: uniques};
+	});
+var $author$project$Models$Schema$Column = F7(
+	function (index, column, kind, nullable, _default, foreignKey, comment) {
+		return {ag: column, aF: comment, b2: _default, ch: foreignKey, cr: index, cy: kind, c$: nullable};
+	});
+var $author$project$Models$Schema$ColumnComment = $elm$core$Basics$identity;
+var $author$project$JsonFormats$SchemaFormat$decodeColumnComment = A2($elm$json$Json$Decode$map, $elm$core$Basics$identity, $elm$json$Json$Decode$string);
+var $author$project$Models$Schema$ColumnIndex = $elm$core$Basics$identity;
+var $author$project$JsonFormats$SchemaFormat$decodeColumnIndex = A2($elm$json$Json$Decode$map, $elm$core$Basics$identity, $elm$json$Json$Decode$int);
+var $author$project$Models$Schema$ColumnType = $elm$core$Basics$identity;
+var $author$project$JsonFormats$SchemaFormat$decodeColumnType = A2($elm$json$Json$Decode$map, $elm$core$Basics$identity, $elm$json$Json$Decode$string);
+var $author$project$Models$Schema$ColumnValue = $elm$core$Basics$identity;
+var $author$project$JsonFormats$SchemaFormat$decodeColumnValue = A2($elm$json$Json$Decode$map, $elm$core$Basics$identity, $elm$json$Json$Decode$string);
+var $author$project$Models$Schema$ForeignKey = F3(
+	function (name, tableId, column) {
+		return {ag: column, N: name, bx: tableId};
+	});
+var $author$project$Models$Schema$ForeignKeyName = $elm$core$Basics$identity;
+var $author$project$JsonFormats$SchemaFormat$decodeForeignKeyName = A2($elm$json$Json$Decode$map, $elm$core$Basics$identity, $elm$json$Json$Decode$string);
+var $author$project$JsonFormats$SchemaFormat$decodeSchemaName = $elm$json$Json$Decode$string;
+var $author$project$JsonFormats$SchemaFormat$decodeTableName = $elm$json$Json$Decode$string;
+var $author$project$JsonFormats$SchemaFormat$decodeForeignKey = A5(
+	$elm$json$Json$Decode$map4,
+	F4(
+		function (name, schema, table, column) {
+			return A3(
+				$author$project$Models$Schema$ForeignKey,
+				name,
+				_Utils_Tuple2(schema, table),
+				column);
+		}),
+	A2($elm$json$Json$Decode$field, 'name', $author$project$JsonFormats$SchemaFormat$decodeForeignKeyName),
+	A2($elm$json$Json$Decode$field, 'schema', $author$project$JsonFormats$SchemaFormat$decodeSchemaName),
+	A2($elm$json$Json$Decode$field, 'table', $author$project$JsonFormats$SchemaFormat$decodeTableName),
+	A2($elm$json$Json$Decode$field, 'column', $author$project$JsonFormats$SchemaFormat$decodeColumnName));
+var $elm$json$Json$Decode$map7 = _Json_map7;
+var $author$project$JsonFormats$SchemaFormat$decodeColumn = A8(
+	$elm$json$Json$Decode$map7,
+	$author$project$Models$Schema$Column,
+	A2($elm$json$Json$Decode$field, 'index', $author$project$JsonFormats$SchemaFormat$decodeColumnIndex),
+	A2($elm$json$Json$Decode$field, 'name', $author$project$JsonFormats$SchemaFormat$decodeColumnName),
+	A2($elm$json$Json$Decode$field, 'type', $author$project$JsonFormats$SchemaFormat$decodeColumnType),
+	A2(
+		$author$project$JsonFormats$SchemaFormat$decodeMaybeWithDefault,
+		function (_v0) {
+			return A2($elm$json$Json$Decode$field, 'nullable', $elm$json$Json$Decode$bool);
+		},
+		true),
+	$elm$json$Json$Decode$maybe(
+		A2($elm$json$Json$Decode$field, 'default', $author$project$JsonFormats$SchemaFormat$decodeColumnValue)),
+	$elm$json$Json$Decode$maybe(
+		A2($elm$json$Json$Decode$field, 'foreignKey', $author$project$JsonFormats$SchemaFormat$decodeForeignKey)),
+	$elm$json$Json$Decode$maybe(
+		A2($elm$json$Json$Decode$field, 'comment', $author$project$JsonFormats$SchemaFormat$decodeColumnComment)));
+var $author$project$Models$Schema$Index = F3(
+	function (name, columns, definition) {
+		return {L: columns, aJ: definition, N: name};
+	});
+var $author$project$Models$Schema$IndexName = $elm$core$Basics$identity;
+var $author$project$JsonFormats$SchemaFormat$decodeIndexName = A2($elm$json$Json$Decode$map, $elm$core$Basics$identity, $elm$json$Json$Decode$string);
+var $author$project$Libs$Nel$fromList = function (list) {
+	if (list.b) {
+		var head = list.a;
+		var tail = list.b;
+		return $elm$core$Maybe$Just(
+			A2($author$project$Libs$Nel$Nel, head, tail));
+	} else {
+		return $elm$core$Maybe$Nothing;
+	}
+};
+var $author$project$Libs$Json$Decode$nel = function (decoder) {
+	return A2(
+		$elm$json$Json$Decode$andThen,
+		function (l) {
+			return A2(
+				$elm$core$Maybe$withDefault,
+				$elm$json$Json$Decode$fail('Non empty list can\'t be empty'),
+				A2(
+					$elm$core$Maybe$map,
+					$elm$json$Json$Decode$succeed,
+					$author$project$Libs$Nel$fromList(l)));
+		},
+		$elm$json$Json$Decode$list(decoder));
+};
+var $author$project$JsonFormats$SchemaFormat$decodeIndex = A4(
+	$elm$json$Json$Decode$map3,
+	$author$project$Models$Schema$Index,
+	A2($elm$json$Json$Decode$field, 'name', $author$project$JsonFormats$SchemaFormat$decodeIndexName),
+	A2(
+		$elm$json$Json$Decode$field,
+		'columns',
+		$author$project$Libs$Json$Decode$nel($author$project$JsonFormats$SchemaFormat$decodeColumnName)),
+	A2($elm$json$Json$Decode$field, 'definition', $elm$json$Json$Decode$string));
+var $author$project$Models$Schema$PrimaryKey = F2(
+	function (name, columns) {
+		return {L: columns, N: name};
+	});
+var $author$project$Models$Schema$PrimaryKeyName = $elm$core$Basics$identity;
+var $author$project$JsonFormats$SchemaFormat$decodePrimaryKeyName = A2($elm$json$Json$Decode$map, $elm$core$Basics$identity, $elm$json$Json$Decode$string);
+var $author$project$JsonFormats$SchemaFormat$decodePrimaryKey = A3(
+	$elm$json$Json$Decode$map2,
+	$author$project$Models$Schema$PrimaryKey,
+	A2($elm$json$Json$Decode$field, 'name', $author$project$JsonFormats$SchemaFormat$decodePrimaryKeyName),
+	A2(
+		$elm$json$Json$Decode$field,
+		'columns',
+		$author$project$Libs$Json$Decode$nel($author$project$JsonFormats$SchemaFormat$decodeColumnName)));
+var $author$project$Models$Schema$Source = F2(
+	function (file, lines) {
+		return {aO: file, cE: lines};
+	});
+var $author$project$Models$Schema$SourceLine = F2(
+	function (no, text) {
+		return {cS: no, dP: text};
+	});
+var $author$project$JsonFormats$SchemaFormat$decodeSourceLine = A3(
+	$elm$json$Json$Decode$map2,
+	$author$project$Models$Schema$SourceLine,
+	A2($elm$json$Json$Decode$field, 'no', $elm$json$Json$Decode$int),
+	A2($elm$json$Json$Decode$field, 'text', $elm$json$Json$Decode$string));
+var $author$project$JsonFormats$SchemaFormat$decodeSource = A3(
+	$elm$json$Json$Decode$map2,
+	$author$project$Models$Schema$Source,
+	A2($elm$json$Json$Decode$field, 'file', $elm$json$Json$Decode$string),
+	A2(
+		$elm$json$Json$Decode$field,
+		'lines',
+		$author$project$Libs$Json$Decode$nel($author$project$JsonFormats$SchemaFormat$decodeSourceLine)));
+var $author$project$Models$Schema$TableComment = $elm$core$Basics$identity;
+var $author$project$JsonFormats$SchemaFormat$decodeTableComment = A2($elm$json$Json$Decode$map, $elm$core$Basics$identity, $elm$json$Json$Decode$string);
+var $author$project$Models$Schema$Unique = F3(
+	function (name, columns, definition) {
+		return {L: columns, aJ: definition, N: name};
+	});
+var $author$project$Models$Schema$UniqueName = $elm$core$Basics$identity;
+var $author$project$JsonFormats$SchemaFormat$decodeUniqueName = A2($elm$json$Json$Decode$map, $elm$core$Basics$identity, $elm$json$Json$Decode$string);
+var $author$project$JsonFormats$SchemaFormat$decodeUnique = A4(
+	$elm$json$Json$Decode$map3,
+	$author$project$Models$Schema$Unique,
+	A2($elm$json$Json$Decode$field, 'name', $author$project$JsonFormats$SchemaFormat$decodeUniqueName),
+	A2(
+		$elm$json$Json$Decode$field,
+		'columns',
+		$author$project$Libs$Json$Decode$nel($author$project$JsonFormats$SchemaFormat$decodeColumnName)),
+	A2($elm$json$Json$Decode$field, 'definition', $elm$json$Json$Decode$string));
+var $author$project$Libs$Ned$Ned = F2(
+	function (head, tail) {
+		return {t: head, y: tail};
+	});
+var $author$project$Libs$Ned$fromNel = function (nel) {
+	return A2(
+		$author$project$Libs$Ned$Ned,
+		nel.t,
+		$elm$core$Dict$fromList(nel.y));
+};
+var $author$project$Libs$Nel$map = F2(
+	function (f, xs) {
+		return {
+			t: f(xs.t),
+			y: A2($elm$core$List$map, f, xs.y)
+		};
+	});
+var $author$project$Libs$Ned$fromNelMap = F2(
+	function (getKey, nel) {
+		return $author$project$Libs$Ned$fromNel(
+			A2(
+				$author$project$Libs$Nel$map,
+				function (item) {
+					return _Utils_Tuple2(
+						getKey(item),
+						item);
+				},
+				nel));
+	});
+var $elm$json$Json$Decode$map8 = _Json_map8;
+var $author$project$JsonFormats$SchemaFormat$decodeTable = A9(
+	$elm$json$Json$Decode$map8,
+	F8(
+		function (schema, table, columns, primaryKey, uniques, indexes, comment, sources) {
+			return A9(
+				$author$project$Models$Schema$Table,
+				_Utils_Tuple2(schema, table),
+				schema,
+				table,
+				columns,
+				primaryKey,
+				uniques,
+				indexes,
+				comment,
+				sources);
+		}),
+	A2($elm$json$Json$Decode$field, 'schema', $author$project$JsonFormats$SchemaFormat$decodeSchemaName),
+	A2($elm$json$Json$Decode$field, 'table', $author$project$JsonFormats$SchemaFormat$decodeTableName),
+	A2(
+		$elm$json$Json$Decode$field,
+		'columns',
+		A2(
+			$elm$json$Json$Decode$map,
+			$author$project$Libs$Ned$fromNelMap(
+				function ($) {
+					return $.ag;
+				}),
+			$author$project$Libs$Json$Decode$nel($author$project$JsonFormats$SchemaFormat$decodeColumn))),
+	$elm$json$Json$Decode$maybe(
+		A2($elm$json$Json$Decode$field, 'primaryKey', $author$project$JsonFormats$SchemaFormat$decodePrimaryKey)),
+	A2(
+		$author$project$JsonFormats$SchemaFormat$decodeMaybeWithDefault,
+		function (_v0) {
+			return A2(
+				$elm$json$Json$Decode$field,
+				'uniques',
+				$elm$json$Json$Decode$list($author$project$JsonFormats$SchemaFormat$decodeUnique));
+		},
+		_List_Nil),
+	A2(
+		$author$project$JsonFormats$SchemaFormat$decodeMaybeWithDefault,
+		function (_v1) {
+			return A2(
+				$elm$json$Json$Decode$field,
+				'indexes',
+				$elm$json$Json$Decode$list($author$project$JsonFormats$SchemaFormat$decodeIndex));
+		},
+		_List_Nil),
+	$elm$json$Json$Decode$maybe(
+		A2($elm$json$Json$Decode$field, 'comment', $author$project$JsonFormats$SchemaFormat$decodeTableComment)),
+	A2(
+		$author$project$JsonFormats$SchemaFormat$decodeMaybeWithDefault,
+		function (_v2) {
+			return A2(
+				$elm$json$Json$Decode$field,
+				'sources',
+				$elm$json$Json$Decode$list($author$project$JsonFormats$SchemaFormat$decodeSource));
+		},
+		_List_Nil));
+var $elm$json$Json$Decode$map6 = _Json_map6;
+var $author$project$JsonFormats$SchemaFormat$decodeSchema = function (takenNames) {
+	return A7(
+		$elm$json$Json$Decode$map6,
+		$author$project$Models$Schema$buildSchema(takenNames),
+		A2($elm$json$Json$Decode$field, 'id', $elm$json$Json$Decode$string),
+		A2($elm$json$Json$Decode$field, 'info', $author$project$JsonFormats$SchemaFormat$decodeSchemaInfo),
+		A2(
+			$elm$json$Json$Decode$field,
+			'tables',
+			$elm$json$Json$Decode$list($author$project$JsonFormats$SchemaFormat$decodeTable)),
+		A2(
+			$author$project$JsonFormats$SchemaFormat$decodeMaybeWithDefault,
+			function (_v0) {
+				return A2($elm$json$Json$Decode$field, 'layout', $author$project$JsonFormats$SchemaFormat$decodeLayout);
+			},
+			$author$project$Models$Schema$initLayout),
+		$elm$json$Json$Decode$maybe(
+			A2($elm$json$Json$Decode$field, 'layoutName', $elm$json$Json$Decode$string)),
+		A2(
+			$author$project$JsonFormats$SchemaFormat$decodeMaybeWithDefault,
+			function (_v1) {
+				return A2(
+					$elm$json$Json$Decode$field,
+					'layouts',
+					$elm$json$Json$Decode$dict($author$project$JsonFormats$SchemaFormat$decodeLayout));
+			},
+			$elm$core$Dict$empty));
+};
+var $elm$core$Result$mapError = F2(
+	function (f, result) {
+		if (!result.$) {
+			var v = result.a;
+			return $elm$core$Result$Ok(v);
+		} else {
+			var e = result.a;
+			return $elm$core$Result$Err(
+				f(e));
+		}
+	});
+var $author$project$Libs$List$resultCollect = function (list) {
+	return A3(
+		$elm$core$List$foldr,
+		F2(
+			function (r, _v0) {
+				var errs = _v0.a;
+				var res = _v0.b;
+				if (!r.$) {
+					var a = r.a;
+					return _Utils_Tuple2(
+						errs,
+						A2($elm$core$List$cons, a, res));
+				} else {
+					var e = r.a;
+					return _Utils_Tuple2(
+						A2($elm$core$List$cons, e, errs),
+						res);
+				}
+			}),
+		_Utils_Tuple2(_List_Nil, _List_Nil),
+		list);
+};
+var $elm$json$Json$Decode$index = _Json_decodeIndex;
+var $elm$core$Tuple$pair = F2(
+	function (a, b) {
+		return _Utils_Tuple2(a, b);
+	});
+var $author$project$Libs$Json$Decode$tuple = F2(
+	function (aDecoder, bDecoder) {
+		return A3(
+			$elm$json$Json$Decode$map2,
+			$elm$core$Tuple$pair,
+			A2($elm$json$Json$Decode$index, 0, aDecoder),
+			A2($elm$json$Json$Decode$index, 1, bDecoder));
+	});
+var $author$project$Ports$schemasDecoder = A2(
+	$elm$json$Json$Decode$map,
+	function (list) {
+		return $author$project$Libs$List$resultCollect(
+			A2(
+				$elm$core$List$map,
+				function (_v0) {
+					var k = _v0.a;
+					var v = _v0.b;
+					return A2(
+						$elm$core$Result$mapError,
+						function (e) {
+							return _Utils_Tuple2(k, e);
+						},
+						A2(
+							$elm$json$Json$Decode$decodeValue,
+							$author$project$JsonFormats$SchemaFormat$decodeSchema(_List_Nil),
+							v));
+				},
+				list));
+	},
+	$elm$json$Json$Decode$list(
+		A2($author$project$Libs$Json$Decode$tuple, $elm$json$Json$Decode$string, $elm$json$Json$Decode$value)));
+var $author$project$Ports$jsDecoder = A2(
+	$elm$json$Json$Decode$andThen,
+	function (kind) {
+		switch (kind) {
+			case 'SchemasLoaded':
+				return A2(
+					$elm$json$Json$Decode$map,
+					$author$project$Models$SchemasLoaded,
+					A2($elm$json$Json$Decode$field, 'schemas', $author$project$Ports$schemasDecoder));
+			case 'FileRead':
+				return A4(
+					$elm$json$Json$Decode$map3,
+					$author$project$Models$FileRead,
+					A2(
+						$elm$json$Json$Decode$map,
+						$elm$time$Time$millisToPosix,
+						A2($elm$json$Json$Decode$field, 'now', $elm$json$Json$Decode$int)),
+					A2($elm$json$Json$Decode$field, 'file', $mpizenberg$elm_file$FileValue$decoder),
+					A2($elm$json$Json$Decode$field, 'content', $elm$json$Json$Decode$string));
+			case 'SizesChanged':
+				return A2(
+					$elm$json$Json$Decode$map,
+					$author$project$Models$SizesChanged,
+					A2(
+						$elm$json$Json$Decode$field,
+						'sizes',
+						$elm$json$Json$Decode$list(
+							A3(
+								$elm$json$Json$Decode$map2,
+								F2(
+									function (id, size) {
+										return {aV: id, dE: size};
+									}),
+								A2($elm$json$Json$Decode$field, 'id', $elm$json$Json$Decode$string),
+								A2($elm$json$Json$Decode$field, 'size', $author$project$JsonFormats$SchemaFormat$decodeSize)))));
+			case 'HotkeyUsed':
+				return A2(
+					$elm$json$Json$Decode$map,
+					$author$project$Models$HotkeyUsed,
+					A2($elm$json$Json$Decode$field, 'id', $elm$json$Json$Decode$string));
+			default:
+				var other = kind;
+				return $elm$json$Json$Decode$fail('Not supported kind of JsMsg \'' + (other + '\''));
+		}
+	},
+	A2($elm$json$Json$Decode$field, 'kind', $elm$json$Json$Decode$string));
+var $author$project$Ports$jsToElm = _Platform_incomingPort('jsToElm', $elm$json$Json$Decode$value);
+var $author$project$Ports$onJsMessage = function (callback) {
+	return $author$project$Ports$jsToElm(
+		function (value) {
+			var _v0 = A2($elm$json$Json$Decode$decodeValue, $author$project$Ports$jsDecoder, value);
+			if (!_v0.$) {
+				var message = _v0.a;
+				return callback(message);
+			} else {
+				var error = _v0.a;
+				return callback(
+					$author$project$Models$Error(error));
+			}
+		});
+};
+var $zaboco$elm_draggable$Internal$DragAt = function (a) {
+	return {$: 1, a: a};
+};
+var $zaboco$elm_draggable$Draggable$Msg = $elm$core$Basics$identity;
+var $zaboco$elm_draggable$Internal$StopDragging = {$: 2};
+var $elm$core$Platform$Sub$map = _Platform_map;
+var $elm$core$Platform$Sub$none = $elm$core$Platform$Sub$batch(_List_Nil);
+var $elm$browser$Browser$Events$Document = 0;
+var $elm$browser$Browser$Events$MySub = F3(
+	function (a, b, c) {
+		return {$: 0, a: a, b: b, c: c};
+	});
+var $elm$browser$Browser$Events$State = F2(
+	function (subs, pids) {
+		return {bb: pids, bv: subs};
+	});
+var $elm$browser$Browser$Events$init = $elm$core$Task$succeed(
+	A2($elm$browser$Browser$Events$State, _List_Nil, $elm$core$Dict$empty));
+var $elm$browser$Browser$Events$nodeToKey = function (node) {
+	if (!node) {
+		return 'd_';
+	} else {
+		return 'w_';
+	}
+};
+var $elm$browser$Browser$Events$addKey = function (sub) {
+	var node = sub.a;
+	var name = sub.b;
+	return _Utils_Tuple2(
+		_Utils_ap(
+			$elm$browser$Browser$Events$nodeToKey(node),
+			name),
+		sub);
+};
+var $elm$browser$Browser$Events$Event = F2(
+	function (key, event) {
+		return {aM: event, B: key};
+	});
+var $elm$browser$Browser$Events$spawn = F3(
+	function (router, key, _v0) {
+		var node = _v0.a;
+		var name = _v0.b;
+		var actualNode = function () {
+			if (!node) {
+				return _Browser_doc;
+			} else {
+				return _Browser_window;
+			}
+		}();
+		return A2(
+			$elm$core$Task$map,
+			function (value) {
+				return _Utils_Tuple2(key, value);
+			},
+			A3(
+				_Browser_on,
+				actualNode,
+				name,
+				function (event) {
+					return A2(
+						$elm$core$Platform$sendToSelf,
+						router,
+						A2($elm$browser$Browser$Events$Event, key, event));
+				}));
+	});
+var $elm$core$Dict$union = F2(
+	function (t1, t2) {
+		return A3($elm$core$Dict$foldl, $elm$core$Dict$insert, t2, t1);
+	});
+var $elm$browser$Browser$Events$onEffects = F3(
+	function (router, subs, state) {
+		var stepRight = F3(
+			function (key, sub, _v6) {
+				var deads = _v6.a;
+				var lives = _v6.b;
+				var news = _v6.c;
+				return _Utils_Tuple3(
+					deads,
+					lives,
+					A2(
+						$elm$core$List$cons,
+						A3($elm$browser$Browser$Events$spawn, router, key, sub),
+						news));
+			});
+		var stepLeft = F3(
+			function (_v4, pid, _v5) {
+				var deads = _v5.a;
+				var lives = _v5.b;
+				var news = _v5.c;
+				return _Utils_Tuple3(
+					A2($elm$core$List$cons, pid, deads),
+					lives,
+					news);
+			});
+		var stepBoth = F4(
+			function (key, pid, _v2, _v3) {
+				var deads = _v3.a;
+				var lives = _v3.b;
+				var news = _v3.c;
+				return _Utils_Tuple3(
+					deads,
+					A3($elm$core$Dict$insert, key, pid, lives),
+					news);
+			});
+		var newSubs = A2($elm$core$List$map, $elm$browser$Browser$Events$addKey, subs);
+		var _v0 = A6(
+			$elm$core$Dict$merge,
+			stepLeft,
+			stepBoth,
+			stepRight,
+			state.bb,
+			$elm$core$Dict$fromList(newSubs),
+			_Utils_Tuple3(_List_Nil, $elm$core$Dict$empty, _List_Nil));
+		var deadPids = _v0.a;
+		var livePids = _v0.b;
+		var makeNewPids = _v0.c;
+		return A2(
+			$elm$core$Task$andThen,
+			function (pids) {
+				return $elm$core$Task$succeed(
+					A2(
+						$elm$browser$Browser$Events$State,
+						newSubs,
+						A2(
+							$elm$core$Dict$union,
+							livePids,
+							$elm$core$Dict$fromList(pids))));
+			},
+			A2(
+				$elm$core$Task$andThen,
+				function (_v1) {
+					return $elm$core$Task$sequence(makeNewPids);
+				},
+				$elm$core$Task$sequence(
+					A2($elm$core$List$map, $elm$core$Process$kill, deadPids))));
+	});
+var $elm$browser$Browser$Events$onSelfMsg = F3(
+	function (router, _v0, state) {
+		var key = _v0.B;
+		var event = _v0.aM;
+		var toMessage = function (_v2) {
+			var subKey = _v2.a;
+			var _v3 = _v2.b;
+			var node = _v3.a;
+			var name = _v3.b;
+			var decoder = _v3.c;
+			return _Utils_eq(subKey, key) ? A2(_Browser_decodeEvent, decoder, event) : $elm$core$Maybe$Nothing;
+		};
+		var messages = A2($elm$core$List$filterMap, toMessage, state.bv);
+		return A2(
+			$elm$core$Task$andThen,
+			function (_v1) {
+				return $elm$core$Task$succeed(state);
+			},
+			$elm$core$Task$sequence(
+				A2(
+					$elm$core$List$map,
+					$elm$core$Platform$sendToApp(router),
+					messages)));
+	});
+var $elm$browser$Browser$Events$subMap = F2(
+	function (func, _v0) {
+		var node = _v0.a;
+		var name = _v0.b;
+		var decoder = _v0.c;
+		return A3(
+			$elm$browser$Browser$Events$MySub,
+			node,
+			name,
+			A2($elm$json$Json$Decode$map, func, decoder));
+	});
+_Platform_effectManagers['Browser.Events'] = _Platform_createManager($elm$browser$Browser$Events$init, $elm$browser$Browser$Events$onEffects, $elm$browser$Browser$Events$onSelfMsg, 0, $elm$browser$Browser$Events$subMap);
+var $elm$browser$Browser$Events$subscription = _Platform_leaf('Browser.Events');
+var $elm$browser$Browser$Events$on = F3(
+	function (node, name, decoder) {
+		return $elm$browser$Browser$Events$subscription(
+			A3($elm$browser$Browser$Events$MySub, node, name, decoder));
+	});
+var $elm$browser$Browser$Events$onMouseMove = A2($elm$browser$Browser$Events$on, 0, 'mousemove');
+var $elm$browser$Browser$Events$onMouseUp = A2($elm$browser$Browser$Events$on, 0, 'mouseup');
+var $zaboco$elm_draggable$Internal$Position = F2(
+	function (x, y) {
+		return {bI: x, bJ: y};
+	});
+var $elm$core$Basics$truncate = _Basics_truncate;
+var $zaboco$elm_draggable$Draggable$positionDecoder = A3(
+	$elm$json$Json$Decode$map2,
+	$zaboco$elm_draggable$Internal$Position,
+	A2(
+		$elm$json$Json$Decode$map,
+		$elm$core$Basics$truncate,
+		A2($elm$json$Json$Decode$field, 'pageX', $elm$json$Json$Decode$float)),
+	A2(
+		$elm$json$Json$Decode$map,
+		$elm$core$Basics$truncate,
+		A2($elm$json$Json$Decode$field, 'pageY', $elm$json$Json$Decode$float)));
+var $zaboco$elm_draggable$Draggable$subscriptions = F2(
+	function (envelope, _v0) {
+		var drag = _v0;
+		if (!drag.$) {
+			return $elm$core$Platform$Sub$none;
+		} else {
+			return A2(
+				$elm$core$Platform$Sub$map,
+				A2($elm$core$Basics$composeL, envelope, $elm$core$Basics$identity),
+				$elm$core$Platform$Sub$batch(
+					_List_fromArray(
+						[
+							$elm$browser$Browser$Events$onMouseMove(
+							A2($elm$json$Json$Decode$map, $zaboco$elm_draggable$Internal$DragAt, $zaboco$elm_draggable$Draggable$positionDecoder)),
+							$elm$browser$Browser$Events$onMouseUp(
+							$elm$json$Json$Decode$succeed($zaboco$elm_draggable$Internal$StopDragging))
+						])));
+		}
+	});
+var $author$project$Main$subscriptions = function (model) {
+	return $elm$core$Platform$Sub$batch(
+		_List_fromArray(
+			[
+				A2($zaboco$elm_draggable$Draggable$subscriptions, $author$project$Models$DragMsg, model.b7),
+				A2($elm$time$Time$every, 10 * 1000, $author$project$Models$TimeChanged),
+				$author$project$Ports$onJsMessage($author$project$Models$JsMessage)
+			]));
+};
+var $author$project$Ports$ActivateTooltipsAndPopovers = {$: 4};
+var $author$project$Ports$activateTooltipsAndPopovers = $author$project$Ports$messageToJs($author$project$Ports$ActivateTooltipsAndPopovers);
+var $author$project$Ports$Click = function (a) {
+	return {$: 0, a: a};
+};
+var $author$project$Ports$click = function (id) {
+	return $author$project$Ports$messageToJs(
+		$author$project$Ports$Click(id));
+};
+var $author$project$Ports$SaveSchema = function (a) {
+	return {$: 7, a: a};
+};
+var $author$project$Ports$saveSchema = function (schema) {
+	return $author$project$Ports$messageToJs(
+		$author$project$Ports$SaveSchema(schema));
+};
+var $author$project$Updates$Helpers$setLayouts = F2(
+	function (transform, item) {
+		return _Utils_update(
+			item,
+			{
+				cC: transform(item.cC)
+			});
+	});
+var $author$project$Updates$Layout$createLayout = F2(
+	function (name, schema) {
+		return function (newSchema) {
+			return _Utils_Tuple2(
+				newSchema,
+				$author$project$Ports$saveSchema(newSchema));
+		}(
+			A2(
+				$author$project$Updates$Helpers$setLayouts,
+				A2(
+					$elm$core$Dict$update,
+					name,
+					function (_v0) {
+						return $elm$core$Maybe$Just(schema.cA);
+					}),
+				_Utils_update(
+					schema,
+					{
+						cB: $elm$core$Maybe$Just(name)
+					})));
+	});
+var $author$project$Mappers$SchemaMapper$buildSqlForeignKey = function (fk) {
+	return {
+		ag: fk.ag,
+		N: fk.N,
+		bx: _Utils_Tuple2(fk.dv, fk.dM)
+	};
+};
+var $author$project$Mappers$SchemaMapper$buildSqlColumn = F2(
+	function (index, column) {
+		return {
+			ag: column.N,
+			aF: A2($elm$core$Maybe$map, $elm$core$Basics$identity, column.aF),
+			b2: A2($elm$core$Maybe$map, $elm$core$Basics$identity, column.b2),
+			ch: A2($elm$core$Maybe$map, $author$project$Mappers$SchemaMapper$buildSqlForeignKey, column.ch),
+			cr: index,
+			cy: column.cy,
+			c$: column.c$
+		};
+	});
+var $author$project$Mappers$SchemaMapper$buildSqlIndex = function (index) {
+	return {L: index.L, aJ: index.aJ, N: index.N};
+};
+var $author$project$Mappers$SchemaMapper$buildSqlPrimaryKey = function (pk) {
+	return {L: pk.L, N: pk.N};
+};
+var $author$project$Mappers$SchemaMapper$buildSqlUnique = function (unique) {
+	return {L: unique.L, aJ: unique.aJ, N: unique.N};
+};
+var $author$project$Libs$Nel$indexedMap = F2(
+	function (f, xs) {
+		return {
+			t: A2(f, 0, xs.t),
+			y: A2(
+				$elm$core$List$indexedMap,
+				F2(
+					function (i, a) {
+						return A2(f, i + 1, a);
+					}),
+				xs.y)
+		};
+	});
+var $author$project$Mappers$SchemaMapper$statementAsSource = function (statement) {
+	return {
+		aO: statement.t.aO,
+		cE: A2(
+			$author$project$Libs$Nel$map,
+			function (l) {
+				return {cS: l.cD, dP: l.dP};
+			},
+			statement)
+	};
+};
+var $author$project$Mappers$SchemaMapper$tableIdFromSqlTable = function (table) {
+	return _Utils_Tuple2(table.dv, table.dM);
+};
+var $author$project$Mappers$SchemaMapper$buildSqlTable = function (table) {
+	return {
+		L: A2(
+			$author$project$Libs$Ned$fromNelMap,
+			function ($) {
+				return $.ag;
+			},
+			A2($author$project$Libs$Nel$indexedMap, $author$project$Mappers$SchemaMapper$buildSqlColumn, table.L)),
+		aF: A2($elm$core$Maybe$map, $elm$core$Basics$identity, table.aF),
+		aV: $author$project$Mappers$SchemaMapper$tableIdFromSqlTable(table),
+		cs: A2($elm$core$List$map, $author$project$Mappers$SchemaMapper$buildSqlIndex, table.cs),
+		dn: A2($elm$core$Maybe$map, $author$project$Mappers$SchemaMapper$buildSqlPrimaryKey, table.dn),
+		dv: table.dv,
+		dG: _List_fromArray(
+			[
+				$author$project$Mappers$SchemaMapper$statementAsSource(table.dF)
+			]),
+		dM: table.dM,
+		dV: A2($elm$core$List$map, $author$project$Mappers$SchemaMapper$buildSqlUnique, table.dV)
+	};
+};
+var $author$project$Mappers$SchemaMapper$buildSqlTables = function (schema) {
+	return A2(
+		$elm$core$List$map,
+		$author$project$Mappers$SchemaMapper$buildSqlTable,
+		$elm$core$Dict$values(schema));
+};
+var $author$project$Mappers$SchemaMapper$buildSchemaFromSql = F4(
+	function (takenNames, name, info, schema) {
+		return function (tables) {
+			return A7($author$project$Models$Schema$buildSchema, takenNames, name, info, tables, $author$project$Models$Schema$initLayout, $elm$core$Maybe$Nothing, $elm$core$Dict$empty);
+		}(
+			$author$project$Mappers$SchemaMapper$buildSqlTables(schema));
+	});
+var $author$project$Updates$Helpers$decodeErrorToHtml = function (error) {
+	return '<pre>' + ($elm$json$Json$Decode$errorToString(error) + '</pre>');
+};
+var $elm$json$Json$Decode$decodeString = _Json_runOnString;
+var $elm$core$String$endsWith = _String_endsWith;
+var $author$project$Libs$Result$fold = F3(
+	function (onError, onSuccess, result) {
+		if (!result.$) {
+			var a = result.a;
+			return onSuccess(a);
+		} else {
+			var x = result.a;
+			return onError(x);
+		}
+	});
+var $elm$core$Tuple$mapSecond = F2(
+	function (func, _v0) {
+		var x = _v0.a;
+		var y = _v0.b;
+		return _Utils_Tuple2(
+			x,
+			func(y));
+	});
+var $elm$core$Result$andThen = F2(
+	function (callback, result) {
+		if (!result.$) {
+			var value = result.a;
+			return callback(value);
+		} else {
+			var msg = result.a;
+			return $elm$core$Result$Err(msg);
+		}
+	});
+var $author$project$SqlParser$SchemaParser$addStatement = F2(
+	function (lines, statements) {
+		if (!lines.b) {
+			return statements;
+		} else {
+			var head = lines.a;
+			var tail = lines.b;
+			return A2(
+				$elm$core$List$cons,
+				{t: head, y: tail},
+				statements);
+		}
+	});
+var $author$project$SqlParser$SchemaParser$statementIsEmpty = function (statement) {
+	return statement.t.dP === ';';
+};
+var $elm$core$String$toUpper = _String_toUpper;
+var $elm$core$String$trim = _String_trim;
+var $author$project$SqlParser$SchemaParser$buildStatements = function (lines) {
+	return A2(
+		$elm$core$List$filter,
+		function (s) {
+			return !$author$project$SqlParser$SchemaParser$statementIsEmpty(s);
+		},
+		function (_v1) {
+			var cur = _v1.a;
+			var res = _v1.b;
+			return A2($author$project$SqlParser$SchemaParser$addStatement, cur, res);
+		}(
+			A3(
+				$elm$core$List$foldr,
+				F2(
+					function (line, _v0) {
+						var currentStatementLines = _v0.a;
+						var statements = _v0.b;
+						var nestedBlock = _v0.c;
+						return ($elm$core$String$toUpper(
+							$elm$core$String$trim(line.dP)) === 'BEGIN') ? _Utils_Tuple3(
+							A2($elm$core$List$cons, line, currentStatementLines),
+							statements,
+							nestedBlock + 1) : ((($elm$core$String$toUpper(
+							$elm$core$String$trim(line.dP)) === 'END') || ($elm$core$String$toUpper(
+							$elm$core$String$trim(line.dP)) === 'END;')) ? _Utils_Tuple3(
+							A2($elm$core$List$cons, line, currentStatementLines),
+							statements,
+							nestedBlock - 1) : ((A2($elm$core$String$endsWith, ';', line.dP) && (!nestedBlock)) ? _Utils_Tuple3(
+							A2($elm$core$List$cons, line, _List_Nil),
+							A2($author$project$SqlParser$SchemaParser$addStatement, currentStatementLines, statements),
+							nestedBlock) : _Utils_Tuple3(
+							A2($elm$core$List$cons, line, currentStatementLines),
+							statements,
+							nestedBlock)));
+					}),
+				_Utils_Tuple3(_List_Nil, _List_Nil, 0),
+				A2(
+					$elm$core$List$filter,
+					function (line) {
+						return !($elm$core$String$isEmpty(
+							$elm$core$String$trim(line.dP)) || A2($elm$core$String$startsWith, '--', line.dP));
+					},
+					lines))));
+};
+var $elm$core$Result$map = F2(
+	function (func, ra) {
+		if (!ra.$) {
+			var a = ra.a;
+			return $elm$core$Result$Ok(
+				func(a));
+		} else {
+			var e = ra.a;
+			return $elm$core$Result$Err(e);
+		}
+	});
+var $author$project$SqlParser$SchemaParser$withDefaultSchema = function (schema) {
+	return A2($elm$core$Maybe$withDefault, $author$project$Conf$conf.b2.dv, schema);
+};
+var $author$project$SqlParser$SchemaParser$buildId = F2(
+	function (schema, table) {
+		return $author$project$SqlParser$SchemaParser$withDefaultSchema(schema) + ('.' + table);
+	});
+var $elm$core$List$isEmpty = function (xs) {
+	if (!xs.b) {
+		return true;
+	} else {
+		return false;
+	}
+};
+var $author$project$SqlParser$SchemaParser$withPkColumn = F4(
+	function (tables, schema, table, name) {
+		if (!name.$) {
+			var n = name.a;
+			return $elm$core$Result$Ok(n);
+		} else {
+			return A2(
+				$elm$core$Maybe$withDefault,
+				$elm$core$Result$Err(
+					'Table ' + (A2($author$project$SqlParser$SchemaParser$buildId, schema, table) + ' does not exist (yet)')),
+				A2(
+					$elm$core$Maybe$map,
+					function (t) {
+						var _v1 = A2(
+							$elm$core$Maybe$map,
+							function ($) {
+								return $.L;
+							},
+							t.dn);
+						if (!_v1.$) {
+							var cols = _v1.a;
+							return $elm$core$List$isEmpty(cols.y) ? $elm$core$Result$Ok(cols.t) : $elm$core$Result$Err(
+								'Table ' + (A2($author$project$SqlParser$SchemaParser$buildId, schema, table) + (' has a primary key with more than one column (' + (A2(
+									$elm$core$String$join,
+									', ',
+									$author$project$Libs$Nel$toList(cols)) + ')'))));
+						} else {
+							return $elm$core$Result$Err(
+								'No primary key on table ' + A2($author$project$SqlParser$SchemaParser$buildId, schema, table));
+						}
+					},
+					A2(
+						$elm$core$Dict$get,
+						A2($author$project$SqlParser$SchemaParser$buildId, schema, table),
+						tables)));
+		}
+	});
+var $author$project$SqlParser$SchemaParser$buildFk = F5(
+	function (tables, constraint, schema, table, column) {
+		return A2(
+			$elm$core$Result$map,
+			function (col) {
+				return {
+					ag: col,
+					N: constraint,
+					dv: $author$project$SqlParser$SchemaParser$withDefaultSchema(schema),
+					dM: table
+				};
+			},
+			A4($author$project$SqlParser$SchemaParser$withPkColumn, tables, schema, table, column));
+	});
+var $author$project$Libs$Maybe$resultSeq = function (maybe) {
+	if (!maybe.$) {
+		var r = maybe.a;
+		return A2(
+			$elm$core$Result$map,
+			function (a) {
+				return $elm$core$Maybe$Just(a);
+			},
+			r);
+	} else {
+		return $elm$core$Result$Ok($elm$core$Maybe$Nothing);
+	}
+};
+var $author$project$SqlParser$SchemaParser$buildColumn = F2(
+	function (tables, column) {
+		return A2(
+			$elm$core$Result$map,
+			function (fk) {
+				return {aF: $elm$core$Maybe$Nothing, b2: column.b2, ch: fk, cy: column.cy, N: column.N, c$: column.c$};
+			},
+			$author$project$Libs$Maybe$resultSeq(
+				A2(
+					$elm$core$Maybe$map,
+					function (_v0) {
+						var fk = _v0.a;
+						var ref = _v0.b;
+						return A5($author$project$SqlParser$SchemaParser$buildFk, tables, fk, ref.dv, ref.dM, ref.ag);
+					},
+					column.ch)));
+	});
+var $elm$core$Result$fromMaybe = F2(
+	function (err, maybe) {
+		if (!maybe.$) {
+			var v = maybe.a;
+			return $elm$core$Result$Ok(v);
+		} else {
+			return $elm$core$Result$Err(err);
+		}
+	});
+var $elm$core$List$head = function (list) {
+	if (list.b) {
+		var x = list.a;
+		var xs = list.b;
+		return $elm$core$Maybe$Just(x);
+	} else {
+		return $elm$core$Maybe$Nothing;
+	}
+};
+var $author$project$Libs$List$resultSeq = function (list) {
+	var _v0 = $author$project$Libs$List$resultCollect(list);
+	if (!_v0.a.b) {
+		var res = _v0.b;
+		return $elm$core$Result$Ok(res);
+	} else {
+		var errs = _v0.a;
+		return $elm$core$Result$Err(errs);
+	}
+};
+var $author$project$SqlParser$SchemaParser$buildTable = F2(
+	function (tables, table) {
+		return A2(
+			$elm$core$Result$map,
+			function (cols) {
+				return {
+					K: _List_Nil,
+					L: cols,
+					aF: $elm$core$Maybe$Nothing,
+					cs: _List_Nil,
+					dn: $elm$core$List$head(
+						A2(
+							$author$project$Libs$Nel$filterMap,
+							function (c) {
+								return A2(
+									$elm$core$Maybe$map,
+									function (pk) {
+										return {
+											L: A2($author$project$Libs$Nel$Nel, c.N, _List_Nil),
+											N: pk
+										};
+									},
+									c.dn);
+							},
+							table.L)),
+					dv: $author$project$SqlParser$SchemaParser$withDefaultSchema(table.dv),
+					dF: table.dF,
+					dM: table.dM,
+					dV: _List_Nil
+				};
+			},
+			A2(
+				$elm$core$Result$andThen,
+				function (cols) {
+					return A2(
+						$elm$core$Result$fromMaybe,
+						_List_fromArray(
+							[
+								'No valid column for table ' + A2($author$project$SqlParser$SchemaParser$buildId, table.dv, table.dM)
+							]),
+						$author$project$Libs$Nel$fromList(cols));
+				},
+				$author$project$Libs$List$resultSeq(
+					A2(
+						$elm$core$List$map,
+						$author$project$SqlParser$SchemaParser$buildColumn(tables),
+						$author$project$Libs$Nel$toList(table.L)))));
+	});
+var $author$project$SqlParser$SchemaParser$buildViewColumn = function (column) {
+	if (!column.$) {
+		var c = column.a;
+		return {
+			aF: $elm$core$Maybe$Nothing,
+			b2: $elm$core$Maybe$Nothing,
+			ch: $elm$core$Maybe$Nothing,
+			cy: 'unknown',
+			N: A2($elm$core$Maybe$withDefault, c.ag, c.F),
+			c$: false
+		};
+	} else {
+		var c = column.a;
+		return {aF: $elm$core$Maybe$Nothing, b2: $elm$core$Maybe$Nothing, ch: $elm$core$Maybe$Nothing, cy: 'unknown', N: c.F, c$: false};
+	}
+};
+var $author$project$SqlParser$SchemaParser$buildView = function (view) {
+	return {
+		K: _List_Nil,
+		L: A2($author$project$Libs$Nel$map, $author$project$SqlParser$SchemaParser$buildViewColumn, view.bp.L),
+		aF: $elm$core$Maybe$Nothing,
+		cs: _List_Nil,
+		dn: $elm$core$Maybe$Nothing,
+		dv: $author$project$SqlParser$SchemaParser$withDefaultSchema(view.dv),
+		dF: view.dF,
+		dM: view.dM,
+		dV: _List_Nil
+	};
+};
+var $author$project$Libs$List$find = F2(
+	function (predicate, list) {
+		find:
+		while (true) {
+			if (!list.b) {
+				return $elm$core$Maybe$Nothing;
+			} else {
+				var first = list.a;
+				var rest = list.b;
+				if (predicate(first)) {
+					return $elm$core$Maybe$Just(first);
+				} else {
+					var $temp$predicate = predicate,
+						$temp$list = rest;
+					predicate = $temp$predicate;
+					list = $temp$list;
+					continue find;
+				}
+			}
+		}
+	});
+var $author$project$Libs$Nel$find = F2(
+	function (predicate, nel) {
+		return A2(
+			$author$project$Libs$List$find,
+			predicate,
+			$author$project$Libs$Nel$toList(nel));
+	});
+var $author$project$SqlParser$SchemaParser$updateTable = F3(
+	function (id, transform, tables) {
+		return A2(
+			$elm$core$Maybe$withDefault,
+			$elm$core$Result$Err(
+				_List_fromArray(
+					['Table ' + (id + ' does not exist')])),
+			A2(
+				$elm$core$Maybe$map,
+				function (table) {
+					return A2(
+						$elm$core$Result$map,
+						function (newTable) {
+							return A3(
+								$elm$core$Dict$update,
+								id,
+								$elm$core$Maybe$map(
+									function (_v0) {
+										return newTable;
+									}),
+								tables);
+						},
+						transform(table));
+				},
+				A2($elm$core$Dict$get, id, tables)));
+	});
+var $author$project$SqlParser$SchemaParser$updateTableColumn = F3(
+	function (column, transform, table) {
+		return _Utils_update(
+			table,
+			{
+				L: A2(
+					$author$project$Libs$Nel$map,
+					function (c) {
+						return _Utils_eq(c.N, column) ? transform(c) : c;
+					},
+					table.L)
+			});
+	});
+var $author$project$SqlParser$SchemaParser$updateColumn = F4(
+	function (id, name, transform, tables) {
+		return A3(
+			$author$project$SqlParser$SchemaParser$updateTable,
+			id,
+			function (table) {
+				return A2(
+					$elm$core$Maybe$withDefault,
+					$elm$core$Result$Err(
+						_List_fromArray(
+							['Column ' + (name + (' does not exist in table ' + id))])),
+					A2(
+						$elm$core$Maybe$map,
+						function (column) {
+							return A2(
+								$elm$core$Result$map,
+								function (newColumn) {
+									return A3(
+										$author$project$SqlParser$SchemaParser$updateTableColumn,
+										name,
+										function (_v0) {
+											return newColumn;
+										},
+										table);
+								},
+								transform(column));
+						},
+						A2(
+							$author$project$Libs$Nel$find,
+							function (column) {
+								return _Utils_eq(column.N, name);
+							},
+							table.L)));
+			},
+			tables);
+	});
+var $author$project$SqlParser$SchemaParser$evolve = F2(
+	function (command, tables) {
+		switch (command.$) {
+			case 0:
+				var table = command.a;
+				var id = A2($author$project$SqlParser$SchemaParser$buildId, table.dv, table.dM);
+				return A2(
+					$elm$core$Maybe$withDefault,
+					A2(
+						$elm$core$Result$map,
+						function (sqlTable) {
+							return A3($elm$core$Dict$insert, id, sqlTable, tables);
+						},
+						A2($author$project$SqlParser$SchemaParser$buildTable, tables, table)),
+					A2(
+						$elm$core$Maybe$map,
+						function (_v1) {
+							return $elm$core$Result$Err(
+								_List_fromArray(
+									['Table ' + (id + ' already exists')]));
+						},
+						A2($elm$core$Dict$get, id, tables)));
+			case 1:
+				var view = command.a;
+				var id = A2($author$project$SqlParser$SchemaParser$buildId, view.dv, view.dM);
+				return A2(
+					$elm$core$Maybe$withDefault,
+					$elm$core$Result$Ok(
+						A3(
+							$elm$core$Dict$insert,
+							id,
+							$author$project$SqlParser$SchemaParser$buildView(view),
+							tables)),
+					A2(
+						$elm$core$Maybe$map,
+						function (_v2) {
+							return $elm$core$Result$Err(
+								_List_fromArray(
+									['View ' + (id + ' already exists')]));
+						},
+						A2($elm$core$Dict$get, id, tables)));
+			case 2:
+				switch (command.a.$) {
+					case 0:
+						switch (command.a.c.$) {
+							case 0:
+								var _v3 = command.a;
+								var schema = _v3.a;
+								var table = _v3.b;
+								var _v4 = _v3.c;
+								var constraint = _v4.a;
+								var pk = _v4.b;
+								return A3(
+									$author$project$SqlParser$SchemaParser$updateTable,
+									A2($author$project$SqlParser$SchemaParser$buildId, schema, table),
+									function (t) {
+										return $elm$core$Result$Ok(
+											_Utils_update(
+												t,
+												{
+													dn: $elm$core$Maybe$Just(
+														{L: pk, N: constraint})
+												}));
+									},
+									tables);
+							case 1:
+								var _v5 = command.a;
+								var schema = _v5.a;
+								var table = _v5.b;
+								var _v6 = _v5.c;
+								var constraint = _v6.a;
+								var fk = _v6.b;
+								return A4(
+									$author$project$SqlParser$SchemaParser$updateColumn,
+									A2($author$project$SqlParser$SchemaParser$buildId, schema, table),
+									fk.ag,
+									function (c) {
+										return A2(
+											$elm$core$Result$mapError,
+											function (e) {
+												return _List_fromArray(
+													[e]);
+											},
+											A2(
+												$elm$core$Result$map,
+												function (r) {
+													return _Utils_update(
+														c,
+														{
+															ch: $elm$core$Maybe$Just(r)
+														});
+												},
+												A5($author$project$SqlParser$SchemaParser$buildFk, tables, constraint, fk.aa.dv, fk.aa.dM, fk.aa.ag)));
+									},
+									tables);
+							case 2:
+								var _v7 = command.a;
+								var schema = _v7.a;
+								var table = _v7.b;
+								var _v8 = _v7.c;
+								var constraint = _v8.a;
+								var unique = _v8.b;
+								return A3(
+									$author$project$SqlParser$SchemaParser$updateTable,
+									A2($author$project$SqlParser$SchemaParser$buildId, schema, table),
+									function (t) {
+										return $elm$core$Result$Ok(
+											_Utils_update(
+												t,
+												{
+													dV: _Utils_ap(
+														t.dV,
+														_List_fromArray(
+															[
+																{L: unique.L, aJ: unique.aJ, N: constraint}
+															]))
+												}));
+									},
+									tables);
+							default:
+								var _v9 = command.a;
+								var schema = _v9.a;
+								var table = _v9.b;
+								var _v10 = _v9.c;
+								var constraint = _v10.a;
+								var check = _v10.b;
+								return A3(
+									$author$project$SqlParser$SchemaParser$updateTable,
+									A2($author$project$SqlParser$SchemaParser$buildId, schema, table),
+									function (t) {
+										return $elm$core$Result$Ok(
+											_Utils_update(
+												t,
+												{
+													K: _Utils_ap(
+														t.K,
+														_List_fromArray(
+															[
+																{N: constraint, be: check}
+															]))
+												}));
+									},
+									tables);
+						}
+					case 1:
+						if (!command.a.c.$) {
+							var _v11 = command.a;
+							var schema = _v11.a;
+							var table = _v11.b;
+							var _v12 = _v11.c;
+							var column = _v12.a;
+							var _default = _v12.b;
+							return A4(
+								$author$project$SqlParser$SchemaParser$updateColumn,
+								A2($author$project$SqlParser$SchemaParser$buildId, schema, table),
+								column,
+								function (c) {
+									return $elm$core$Result$Ok(
+										_Utils_update(
+											c,
+											{
+												b2: $elm$core$Maybe$Just(_default)
+											}));
+								},
+								tables);
+						} else {
+							var _v13 = command.a;
+							var _v14 = _v13.c;
+							return $elm$core$Result$Ok(tables);
+						}
+					default:
+						var _v15 = command.a;
+						return $elm$core$Result$Ok(tables);
+				}
+			case 3:
+				var index = command.a;
+				return A3(
+					$author$project$SqlParser$SchemaParser$updateTable,
+					A2($author$project$SqlParser$SchemaParser$buildId, index.dM.dv, index.dM.dM),
+					function (t) {
+						return $elm$core$Result$Ok(
+							_Utils_update(
+								t,
+								{
+									cs: _Utils_ap(
+										t.cs,
+										_List_fromArray(
+											[
+												{L: index.L, aJ: index.aJ, N: index.N}
+											]))
+								}));
+					},
+					tables);
+			case 4:
+				var unique = command.a;
+				return A3(
+					$author$project$SqlParser$SchemaParser$updateTable,
+					A2($author$project$SqlParser$SchemaParser$buildId, unique.dM.dv, unique.dM.dM),
+					function (t) {
+						return $elm$core$Result$Ok(
+							_Utils_update(
+								t,
+								{
+									dV: _Utils_ap(
+										t.dV,
+										_List_fromArray(
+											[
+												{L: unique.L, aJ: unique.aJ, N: unique.N}
+											]))
+								}));
+					},
+					tables);
+			case 5:
+				var comment = command.a;
+				return A3(
+					$author$project$SqlParser$SchemaParser$updateTable,
+					A2($author$project$SqlParser$SchemaParser$buildId, comment.dv, comment.dM),
+					function (table) {
+						return $elm$core$Result$Ok(
+							_Utils_update(
+								table,
+								{
+									aF: $elm$core$Maybe$Just(comment.aF)
+								}));
+					},
+					tables);
+			case 6:
+				var comment = command.a;
+				return A4(
+					$author$project$SqlParser$SchemaParser$updateColumn,
+					A2($author$project$SqlParser$SchemaParser$buildId, comment.dv, comment.dM),
+					comment.ag,
+					function (column) {
+						return $elm$core$Result$Ok(
+							_Utils_update(
+								column,
+								{
+									aF: $elm$core$Maybe$Just(comment.aF)
+								}));
+					},
+					tables);
+			default:
+				return $elm$core$Result$Ok(tables);
+		}
+	});
+var $author$project$SqlParser$SqlParser$AlterTable = function (a) {
+	return {$: 2, a: a};
+};
+var $author$project$SqlParser$SqlParser$ColumnComment = function (a) {
+	return {$: 6, a: a};
+};
+var $author$project$SqlParser$SqlParser$CreateIndex = function (a) {
+	return {$: 3, a: a};
+};
+var $author$project$SqlParser$SqlParser$CreateTable = function (a) {
+	return {$: 0, a: a};
+};
+var $author$project$SqlParser$SqlParser$CreateUnique = function (a) {
+	return {$: 4, a: a};
+};
+var $author$project$SqlParser$SqlParser$CreateView = function (a) {
+	return {$: 1, a: a};
+};
+var $author$project$SqlParser$SqlParser$Ignored = function (a) {
+	return {$: 7, a: a};
+};
+var $author$project$SqlParser$SqlParser$TableComment = function (a) {
+	return {$: 5, a: a};
+};
+var $author$project$SqlParser$Utils$Helpers$buildRawSql = function (statement) {
+	return A2(
+		$elm$core$String$join,
+		' ',
+		A2(
+			$elm$core$List$map,
+			function ($) {
+				return $.dP;
+			},
+			$author$project$Libs$Nel$toList(statement)));
+};
+var $author$project$SqlParser$Parsers$AlterTable$AddTableConstraint = F3(
+	function (a, b, c) {
+		return {$: 0, a: a, b: b, c: c};
+	});
+var $author$project$SqlParser$Parsers$AlterTable$AddTableOwner = F3(
+	function (a, b, c) {
+		return {$: 2, a: a, b: b, c: c};
+	});
+var $author$project$SqlParser$Parsers$AlterTable$AlterColumn = F3(
+	function (a, b, c) {
+		return {$: 1, a: a, b: b, c: c};
+	});
+var $author$project$SqlParser$Parsers$AlterTable$ParsedCheck = F2(
+	function (a, b) {
+		return {$: 3, a: a, b: b};
+	});
+var $author$project$SqlParser$Parsers$AlterTable$ParsedForeignKey = F2(
+	function (a, b) {
+		return {$: 1, a: a, b: b};
+	});
+var $author$project$SqlParser$Parsers$AlterTable$ParsedPrimaryKey = F2(
+	function (a, b) {
+		return {$: 0, a: a, b: b};
+	});
+var $author$project$SqlParser$Parsers$AlterTable$ParsedUnique = F2(
+	function (a, b) {
+		return {$: 2, a: a, b: b};
+	});
+var $author$project$SqlParser$Parsers$AlterTable$parseAlterTableAddConstraintCheck = function (constraint) {
+	var _v0 = A2($author$project$Libs$Regex$matches, '^CHECK[ \t]+(?<predicate>.*)$', constraint);
+	if ((_v0.b && (!_v0.a.$)) && (!_v0.b.b)) {
+		var predicate = _v0.a.a;
+		return $elm$core$Result$Ok(predicate);
+	} else {
+		return $elm$core$Result$Err(
+			_List_fromArray(
+				['Can\'t parse check constraint: \'' + (constraint + '\'')]));
+	}
+};
+var $author$project$SqlParser$Parsers$AlterTable$parseAlterTableAddConstraintForeignKey = function (constraint) {
+	var _v0 = A2($author$project$Libs$Regex$matches, '^FOREIGN KEY[ \t]+\\((?<column>[^)]+)\\)[ \t]+REFERENCES[ \t]+(?:(?<schema_b>[^ .]+)\\.)?(?<table_b>[^ .(]+)(?:[ \t]*\\((?<column_b>[^)]+)\\))?(?:[ \t]+NOT VALID)?$', constraint);
+	if ((((((_v0.b && (!_v0.a.$)) && _v0.b.b) && _v0.b.b.b) && (!_v0.b.b.a.$)) && _v0.b.b.b.b) && (!_v0.b.b.b.b.b)) {
+		var column = _v0.a.a;
+		var _v1 = _v0.b;
+		var schemaDest = _v1.a;
+		var _v2 = _v1.b;
+		var tableDest = _v2.a.a;
+		var _v3 = _v2.b;
+		var columnDest = _v3.a;
+		return $elm$core$Result$Ok(
+			{
+				ag: column,
+				aa: {ag: columnDest, dv: schemaDest, dM: tableDest}
+			});
+	} else {
+		return $elm$core$Result$Err(
+			_List_fromArray(
+				['Can\'t parse foreign key: \'' + (constraint + '\'')]));
+	}
+};
+var $author$project$SqlParser$Parsers$AlterTable$parseAlterTableAddConstraintPrimaryKey = function (constraint) {
+	var _v0 = A2($author$project$Libs$Regex$matches, '^PRIMARY KEY[ \t]+\\((?<columns>[^)]+)\\)$', constraint);
+	if ((_v0.b && (!_v0.a.$)) && (!_v0.b.b)) {
+		var columns = _v0.a.a;
+		return A2(
+			$elm$core$Result$fromMaybe,
+			_List_fromArray(
+				['Primary key can\'t have empty columns']),
+			$author$project$Libs$Nel$fromList(
+				A2(
+					$elm$core$List$map,
+					$elm$core$String$trim,
+					A2($elm$core$String$split, ',', columns))));
+	} else {
+		return $elm$core$Result$Err(
+			_List_fromArray(
+				['Can\'t parse primary key: \'' + (constraint + '\'')]));
+	}
+};
+var $author$project$SqlParser$Utils$Helpers$parseIndexDefinition = function (definition) {
+	var _v0 = A2($author$project$Libs$Regex$matches, '^\\((?<columns>[^)]+)\\)$', definition);
+	if ((_v0.b && (!_v0.a.$)) && (!_v0.b.b)) {
+		var columns = _v0.a.a;
+		return $elm$core$Result$Ok(
+			A2(
+				$elm$core$List$map,
+				$elm$core$String$trim,
+				A2($elm$core$String$split, ',', columns)));
+	} else {
+		var _v1 = A2($author$project$Libs$Regex$matches, '^USING[ \t]+[^ ]+[ \t]+\\((?<columns>[^)]+)\\).*$', definition);
+		if ((_v1.b && (!_v1.a.$)) && (!_v1.b.b)) {
+			var columns = _v1.a.a;
+			return $elm$core$Result$Ok(
+				A2(
+					$elm$core$List$map,
+					$elm$core$String$trim,
+					A2($elm$core$String$split, ',', columns)));
+		} else {
+			return $elm$core$Result$Err(
+				_List_fromArray(
+					['Can\'t parse definition: \'' + (definition + '\' in create index')]));
+		}
+	}
+};
+var $author$project$SqlParser$Parsers$AlterTable$parseAlterTableAddConstraintUnique = function (constraint) {
+	var _v0 = A2($author$project$Libs$Regex$matches, '^UNIQUE[ \t]+(?<definition>.+)$', constraint);
+	if ((_v0.b && (!_v0.a.$)) && (!_v0.b.b)) {
+		var definition = _v0.a.a;
+		return A2(
+			$elm$core$Result$map,
+			function (columns) {
+				return {L: columns, aJ: definition};
+			},
+			A2(
+				$elm$core$Result$andThen,
+				function (columns) {
+					return A2(
+						$elm$core$Result$fromMaybe,
+						_List_fromArray(
+							['Unique index can\'t have empty columns']),
+						$author$project$Libs$Nel$fromList(columns));
+				},
+				$author$project$SqlParser$Utils$Helpers$parseIndexDefinition(definition)));
+	} else {
+		return $elm$core$Result$Err(
+			_List_fromArray(
+				['Can\'t parse unique constraint: \'' + (constraint + '\'')]));
+	}
+};
+var $author$project$SqlParser$Parsers$AlterTable$parseAlterTableAddConstraint = function (command) {
+	var _v0 = A2($author$project$Libs$Regex$matches, '^ADD CONSTRAINT[ \t]+(?<name>[^ .]+)[ \t]+(?<constraint>.*)$', command);
+	if ((((_v0.b && (!_v0.a.$)) && _v0.b.b) && (!_v0.b.a.$)) && (!_v0.b.b.b)) {
+		var name = _v0.a.a;
+		var _v1 = _v0.b;
+		var constraint = _v1.a.a;
+		return A2(
+			$elm$core$String$startsWith,
+			'PRIMARY KEY',
+			$elm$core$String$toUpper(constraint)) ? A2(
+			$elm$core$Result$map,
+			$author$project$SqlParser$Parsers$AlterTable$ParsedPrimaryKey(name),
+			$author$project$SqlParser$Parsers$AlterTable$parseAlterTableAddConstraintPrimaryKey(constraint)) : (A2(
+			$elm$core$String$startsWith,
+			'FOREIGN KEY',
+			$elm$core$String$toUpper(constraint)) ? A2(
+			$elm$core$Result$map,
+			$author$project$SqlParser$Parsers$AlterTable$ParsedForeignKey(name),
+			$author$project$SqlParser$Parsers$AlterTable$parseAlterTableAddConstraintForeignKey(constraint)) : (A2(
+			$elm$core$String$startsWith,
+			'UNIQUE',
+			$elm$core$String$toUpper(constraint)) ? A2(
+			$elm$core$Result$map,
+			$author$project$SqlParser$Parsers$AlterTable$ParsedUnique(name),
+			$author$project$SqlParser$Parsers$AlterTable$parseAlterTableAddConstraintUnique(constraint)) : (A2(
+			$elm$core$String$startsWith,
+			'CHECK',
+			$elm$core$String$toUpper(constraint)) ? A2(
+			$elm$core$Result$map,
+			$author$project$SqlParser$Parsers$AlterTable$ParsedCheck(name),
+			$author$project$SqlParser$Parsers$AlterTable$parseAlterTableAddConstraintCheck(constraint)) : $elm$core$Result$Err(
+			_List_fromArray(
+				['Constraint not handled: \'' + (constraint + '\'')])))));
+	} else {
+		return $elm$core$Result$Err(
+			_List_fromArray(
+				['Can\'t parse add constraint: \'' + (command + '\'')]));
+	}
+};
+var $author$project$SqlParser$Parsers$AlterTable$ColumnDefault = F2(
+	function (a, b) {
+		return {$: 0, a: a, b: b};
+	});
+var $author$project$SqlParser$Parsers$AlterTable$ColumnStatistics = F2(
+	function (a, b) {
+		return {$: 1, a: a, b: b};
+	});
+var $author$project$SqlParser$Parsers$AlterTable$parseAlterTableAlterColumnDefault = function (property) {
+	var _v0 = A2($author$project$Libs$Regex$matches, '^DEFAULT[ \t]+(?<value>.+)$', property);
+	if ((_v0.b && (!_v0.a.$)) && (!_v0.b.b)) {
+		var value = _v0.a.a;
+		return $elm$core$Result$Ok(value);
+	} else {
+		return $elm$core$Result$Err(
+			_List_fromArray(
+				['Can\'t parse default value: \'' + (property + '\'')]));
+	}
+};
+var $author$project$SqlParser$Parsers$AlterTable$parseAlterTableAlterColumnStatistics = function (property) {
+	var _v0 = A2($author$project$Libs$Regex$matches, '^STATISTICS[ \t]+(?<value>[0-9]+)$', property);
+	if ((_v0.b && (!_v0.a.$)) && (!_v0.b.b)) {
+		var value = _v0.a.a;
+		return A2(
+			$elm$core$Result$fromMaybe,
+			_List_fromArray(
+				['Statistics value is not a number: \'' + (value + '\'')]),
+			$elm$core$String$toInt(value));
+	} else {
+		return $elm$core$Result$Err(
+			_List_fromArray(
+				['Can\'t parse statistics: \'' + (property + '\'')]));
+	}
+};
+var $author$project$SqlParser$Parsers$AlterTable$parseAlterTableAlterColumn = function (command) {
+	var _v0 = A2($author$project$Libs$Regex$matches, '^ALTER COLUMN[ \t]+(?<column>[^ .]+)[ \t]+SET[ \t]+(?<property>.+)$', command);
+	if ((((_v0.b && (!_v0.a.$)) && _v0.b.b) && (!_v0.b.a.$)) && (!_v0.b.b.b)) {
+		var column = _v0.a.a;
+		var _v1 = _v0.b;
+		var property = _v1.a.a;
+		return A2(
+			$elm$core$String$startsWith,
+			'DEFAULT',
+			$elm$core$String$toUpper(property)) ? A2(
+			$elm$core$Result$map,
+			$author$project$SqlParser$Parsers$AlterTable$ColumnDefault(column),
+			$author$project$SqlParser$Parsers$AlterTable$parseAlterTableAlterColumnDefault(property)) : (A2(
+			$elm$core$String$startsWith,
+			'STATISTICS',
+			$elm$core$String$toUpper(property)) ? A2(
+			$elm$core$Result$map,
+			$author$project$SqlParser$Parsers$AlterTable$ColumnStatistics(column),
+			$author$project$SqlParser$Parsers$AlterTable$parseAlterTableAlterColumnStatistics(property)) : $elm$core$Result$Err(
+			_List_fromArray(
+				['Column update not handled: \'' + (property + '\'')])));
+	} else {
+		return $elm$core$Result$Err(
+			_List_fromArray(
+				['Can\'t parse alter column: \'' + (command + '\'')]));
+	}
+};
+var $author$project$SqlParser$Parsers$AlterTable$parseAlterTableOwnerTo = function (command) {
+	var _v0 = A2($author$project$Libs$Regex$matches, '^OWNER TO[ \t]+(?<user>.+)$', command);
+	if ((_v0.b && (!_v0.a.$)) && (!_v0.b.b)) {
+		var user = _v0.a.a;
+		return $elm$core$Result$Ok(user);
+	} else {
+		return $elm$core$Result$Err(
+			_List_fromArray(
+				['Can\'t parse alter column: \'' + (command + '\'')]));
+	}
+};
+var $author$project$SqlParser$Parsers$AlterTable$parseAlterTable = function (statement) {
+	var _v0 = A2(
+		$author$project$Libs$Regex$matches,
+		'^ALTER TABLE(?:[ \t]+ONLY)?[ \t]+(?:(?<schema>[^ .]+)\\.)?(?<table>[^ .]+)[ \t]+(?<command>.*);$',
+		$author$project$SqlParser$Utils$Helpers$buildRawSql(statement));
+	if (((((_v0.b && _v0.b.b) && (!_v0.b.a.$)) && _v0.b.b.b) && (!_v0.b.b.a.$)) && (!_v0.b.b.b.b)) {
+		var schema = _v0.a;
+		var _v1 = _v0.b;
+		var table = _v1.a.a;
+		var _v2 = _v1.b;
+		var command = _v2.a.a;
+		return A2(
+			$elm$core$String$startsWith,
+			'ADD CONSTRAINT',
+			$elm$core$String$toUpper(command)) ? A2(
+			$elm$core$Result$map,
+			A2($author$project$SqlParser$Parsers$AlterTable$AddTableConstraint, schema, table),
+			$author$project$SqlParser$Parsers$AlterTable$parseAlterTableAddConstraint(command)) : (A2(
+			$elm$core$String$startsWith,
+			'ALTER COLUMN',
+			$elm$core$String$toUpper(command)) ? A2(
+			$elm$core$Result$map,
+			A2($author$project$SqlParser$Parsers$AlterTable$AlterColumn, schema, table),
+			$author$project$SqlParser$Parsers$AlterTable$parseAlterTableAlterColumn(command)) : (A2(
+			$elm$core$String$startsWith,
+			'OWNER TO',
+			$elm$core$String$toUpper(command)) ? A2(
+			$elm$core$Result$map,
+			A2($author$project$SqlParser$Parsers$AlterTable$AddTableOwner, schema, table),
+			$author$project$SqlParser$Parsers$AlterTable$parseAlterTableOwnerTo(command)) : $elm$core$Result$Err(
+			_List_fromArray(
+				['Command not handled: \'' + (command + '\'')]))));
+	} else {
+		return $elm$core$Result$Err(
+			_List_fromArray(
+				[
+					'Can\'t parse alter table: \'' + ($author$project$SqlParser$Utils$Helpers$buildRawSql(statement) + '\'')
+				]));
+	}
+};
+var $elm$core$String$replace = F3(
+	function (before, after, string) {
+		return A2(
+			$elm$core$String$join,
+			after,
+			A2($elm$core$String$split, before, string));
+	});
+var $author$project$SqlParser$Parsers$Comment$parseColumnComment = function (statement) {
+	var _v0 = A2(
+		$author$project$Libs$Regex$matches,
+		'^COMMENT ON COLUMN[ \t]+(?:(?<schema>[^ .]+)\\.)?(?<table>[^ .]+)\\.(?<column>[^ .]+)[ \t]+IS[ \t]+\'(?<comment>(?:[^\']|\'\')+)\';$',
+		$author$project$SqlParser$Utils$Helpers$buildRawSql(statement));
+	if (((((((_v0.b && _v0.b.b) && (!_v0.b.a.$)) && _v0.b.b.b) && (!_v0.b.b.a.$)) && _v0.b.b.b.b) && (!_v0.b.b.b.a.$)) && (!_v0.b.b.b.b.b)) {
+		var schema = _v0.a;
+		var _v1 = _v0.b;
+		var table = _v1.a.a;
+		var _v2 = _v1.b;
+		var column = _v2.a.a;
+		var _v3 = _v2.b;
+		var comment = _v3.a.a;
+		return $elm$core$Result$Ok(
+			{
+				ag: column,
+				aF: A3($elm$core$String$replace, '\'\'', '\'', comment),
+				dv: schema,
+				dM: table
+			});
+	} else {
+		return $elm$core$Result$Err(
+			_List_fromArray(
+				[
+					'Can\'t parse column comment: \'' + ($author$project$SqlParser$Utils$Helpers$buildRawSql(statement) + '\'')
+				]));
+	}
+};
+var $author$project$SqlParser$Parsers$CreateIndex$parseCreateIndex = function (statement) {
+	var _v0 = A2(
+		$author$project$Libs$Regex$matches,
+		'^CREATE INDEX[ \t]+(?<name>[^ ]+)[ \t]+ON[ \t]+(?:(?<schema>[^ .]+)\\.)?(?<table>[^ (]+)[ \t]*(?<definition>.+);$',
+		$author$project$SqlParser$Utils$Helpers$buildRawSql(statement));
+	if (((((((_v0.b && (!_v0.a.$)) && _v0.b.b) && _v0.b.b.b) && (!_v0.b.b.a.$)) && _v0.b.b.b.b) && (!_v0.b.b.b.a.$)) && (!_v0.b.b.b.b.b)) {
+		var name = _v0.a.a;
+		var _v1 = _v0.b;
+		var schema = _v1.a;
+		var _v2 = _v1.b;
+		var table = _v2.a.a;
+		var _v3 = _v2.b;
+		var definition = _v3.a.a;
+		return A2(
+			$elm$core$Result$map,
+			function (columns) {
+				return {
+					L: columns,
+					aJ: definition,
+					N: name,
+					dM: {dv: schema, dM: table}
+				};
+			},
+			A2(
+				$elm$core$Result$andThen,
+				function (columns) {
+					return A2(
+						$elm$core$Result$fromMaybe,
+						_List_fromArray(
+							['Index can\'t have empty columns']),
+						$author$project$Libs$Nel$fromList(columns));
+				},
+				$author$project$SqlParser$Utils$Helpers$parseIndexDefinition(definition)));
+	} else {
+		return $elm$core$Result$Err(
+			_List_fromArray(
+				[
+					'Can\'t parse create index: \'' + ($author$project$SqlParser$Utils$Helpers$buildRawSql(statement) + '\'')
+				]));
+	}
+};
+var $elm$core$String$foldr = _String_foldr;
+var $elm$core$String$fromList = _String_fromList;
+var $author$project$SqlParser$Utils$Helpers$commaSplit = function (text) {
+	return function (_v1) {
+		var res = _v1.a;
+		var end = _v1.b;
+		return A2(
+			$elm$core$List$cons,
+			$elm$core$String$fromList(end),
+			res);
+	}(
+		A3(
+			$elm$core$String$foldr,
+			F2(
+				function (_char, _v0) {
+					var res = _v0.a;
+					var cur = _v0.b;
+					var open = _v0.c;
+					return ((_char === ',') && (!open)) ? _Utils_Tuple3(
+						A2(
+							$elm$core$List$cons,
+							$elm$core$String$fromList(cur),
+							res),
+						_List_Nil,
+						open) : ((_char === '(') ? _Utils_Tuple3(
+						res,
+						A2($elm$core$List$cons, _char, cur),
+						open + 1) : ((_char === ')') ? _Utils_Tuple3(
+						res,
+						A2($elm$core$List$cons, _char, cur),
+						open - 1) : _Utils_Tuple3(
+						res,
+						A2($elm$core$List$cons, _char, cur),
+						open)));
+				}),
+			_Utils_Tuple3(_List_Nil, _List_Nil, 0),
+			text));
+};
+var $author$project$SqlParser$Utils$Helpers$noEnclosingQuotes = function (text) {
+	var _v0 = A2($author$project$Libs$Regex$matches, '\"(.*)\"', text);
+	if ((_v0.b && (!_v0.a.$)) && (!_v0.b.b)) {
+		var res = _v0.a.a;
+		return res;
+	} else {
+		return text;
+	}
+};
+var $author$project$SqlParser$Parsers$CreateTable$parseCreateTableColumnForeignKey = function (constraint) {
+	var _v0 = A2($author$project$Libs$Regex$matches, '^(?<constraint>[^ ]+)[ \t]+REFERENCES[ \t]+(?:(?<schema>[^ .]+)\\.)?(?<table>[^ .]+)(?:\\.(?<column>[^ .]+))?$', constraint);
+	if ((((((_v0.b && (!_v0.a.$)) && _v0.b.b) && _v0.b.b.b) && (!_v0.b.b.a.$)) && _v0.b.b.b.b) && (!_v0.b.b.b.b.b)) {
+		if ((!_v0.b.a.$) && (_v0.b.b.b.a.$ === 1)) {
+			var constraintName = _v0.a.a;
+			var _v1 = _v0.b;
+			var table = _v1.a.a;
+			var _v2 = _v1.b;
+			var column = _v2.a.a;
+			var _v3 = _v2.b;
+			var _v4 = _v3.a;
+			return $elm$core$Result$Ok(
+				_Utils_Tuple2(
+					constraintName,
+					{
+						ag: $elm$core$Maybe$Just(column),
+						dv: $elm$core$Maybe$Nothing,
+						dM: table
+					}));
+		} else {
+			var constraintName = _v0.a.a;
+			var _v5 = _v0.b;
+			var schema = _v5.a;
+			var _v6 = _v5.b;
+			var table = _v6.a.a;
+			var _v7 = _v6.b;
+			var column = _v7.a;
+			return $elm$core$Result$Ok(
+				_Utils_Tuple2(
+					constraintName,
+					{ag: column, dv: schema, dM: table}));
+		}
+	} else {
+		return $elm$core$Result$Err('Can\'t parse foreign key: \'' + (constraint + '\' in create table'));
+	}
+};
+var $author$project$SqlParser$Parsers$CreateTable$parseCreateTableColumnPrimaryKey = function (constraint) {
+	var _v0 = A2($author$project$Libs$Regex$matches, '^(?<constraint>[^ ]+)[ \t]+PRIMARY KEY$', constraint);
+	if ((_v0.b && (!_v0.a.$)) && (!_v0.b.b)) {
+		var constraintName = _v0.a.a;
+		return $elm$core$Result$Ok(constraintName);
+	} else {
+		return $elm$core$Result$Err('Can\'t parse primary key: \'' + (constraint + '\' in create table'));
+	}
+};
+var $author$project$SqlParser$Parsers$CreateTable$parseCreateTableColumn = function (sql) {
+	var _v0 = A2($author$project$Libs$Regex$matches, '^(?<name>[^ ]+)[ \t]+(?<type>.*?)(?:[ \t]+DEFAULT[ \t]+(?<default>.*?))?(?<nullable>[ \t]+NOT NULL)?(?:[ \t]+CONSTRAINT[ \t]+(?<constraint>.*))?$', sql);
+	if (((((((_v0.b && (!_v0.a.$)) && _v0.b.b) && (!_v0.b.a.$)) && _v0.b.b.b) && _v0.b.b.b.b) && _v0.b.b.b.b.b) && (!_v0.b.b.b.b.b.b)) {
+		var name = _v0.a.a;
+		var _v1 = _v0.b;
+		var kind = _v1.a.a;
+		var _v2 = _v1.b;
+		var _default = _v2.a;
+		var _v3 = _v2.b;
+		var nullable = _v3.a;
+		var _v4 = _v3.b;
+		var maybeConstraint = _v4.a;
+		return A2(
+			$elm$core$Result$map,
+			function (_v5) {
+				var pk = _v5.a;
+				var fk = _v5.b;
+				return {
+					b2: _default,
+					ch: fk,
+					cy: kind,
+					N: $author$project$SqlParser$Utils$Helpers$noEnclosingQuotes(name),
+					c$: _Utils_eq(nullable, $elm$core$Maybe$Nothing),
+					dn: pk
+				};
+			},
+			A2(
+				$elm$core$Maybe$withDefault,
+				$elm$core$Result$Ok(
+					_Utils_Tuple2($elm$core$Maybe$Nothing, $elm$core$Maybe$Nothing)),
+				A2(
+					$elm$core$Maybe$map,
+					function (constraint) {
+						return A2(
+							$elm$core$String$contains,
+							'PRIMARY KEY',
+							$elm$core$String$toUpper(constraint)) ? A2(
+							$elm$core$Result$map,
+							function (pk) {
+								return _Utils_Tuple2(
+									$elm$core$Maybe$Just(pk),
+									$elm$core$Maybe$Nothing);
+							},
+							$author$project$SqlParser$Parsers$CreateTable$parseCreateTableColumnPrimaryKey(constraint)) : (A2(
+							$elm$core$String$contains,
+							'REFERENCES',
+							$elm$core$String$toUpper(constraint)) ? A2(
+							$elm$core$Result$map,
+							function (fk) {
+								return _Utils_Tuple2(
+									$elm$core$Maybe$Nothing,
+									$elm$core$Maybe$Just(fk));
+							},
+							$author$project$SqlParser$Parsers$CreateTable$parseCreateTableColumnForeignKey(constraint)) : $elm$core$Result$Err('Constraint not handled: \'' + (constraint + '\' in create table')));
+					},
+					maybeConstraint)));
+	} else {
+		return $elm$core$Result$Err('Can\'t parse column: \'' + (sql + '\''));
+	}
+};
+var $author$project$SqlParser$Parsers$CreateTable$parseCreateTable = function (statement) {
+	var _v0 = A2(
+		$author$project$Libs$Regex$matches,
+		'^CREATE TABLE[ \t]+(?:(?<schema>[^ .]+)\\.)?(?<table>[^ .]+)[ \t]*\\((?<body>[^;]+?)\\)(?:[ \t]+WITH[ \t]+\\((?<options>.*?)\\))?;$',
+		$author$project$SqlParser$Utils$Helpers$buildRawSql(statement));
+	if ((((((_v0.b && _v0.b.b) && (!_v0.b.a.$)) && _v0.b.b.b) && (!_v0.b.b.a.$)) && _v0.b.b.b.b) && (!_v0.b.b.b.b.b)) {
+		var schema = _v0.a;
+		var _v1 = _v0.b;
+		var table = _v1.a.a;
+		var _v2 = _v1.b;
+		var columns = _v2.a.a;
+		var _v3 = _v2.b;
+		return A2(
+			$elm$core$Result$map,
+			function (cols) {
+				return {L: cols, dv: schema, dF: statement, dM: table};
+			},
+			A2(
+				$elm$core$Result$andThen,
+				function (cols) {
+					return A2(
+						$elm$core$Result$fromMaybe,
+						_List_fromArray(
+							['Create table can\'t have empty columns']),
+						$author$project$Libs$Nel$fromList(cols));
+				},
+				$author$project$Libs$List$resultSeq(
+					A2(
+						$elm$core$List$map,
+						$author$project$SqlParser$Parsers$CreateTable$parseCreateTableColumn,
+						A2(
+							$elm$core$List$filter,
+							function (c) {
+								return !A2(
+									$elm$core$String$startsWith,
+									'CONSTRAINT',
+									$elm$core$String$toUpper(c));
+							},
+							A2(
+								$elm$core$List$map,
+								$elm$core$String$trim,
+								$author$project$SqlParser$Utils$Helpers$commaSplit(columns)))))));
+	} else {
+		return $elm$core$Result$Err(
+			_List_fromArray(
+				[
+					'Can\'t parse table: \'' + ($author$project$SqlParser$Utils$Helpers$buildRawSql(statement) + '\'')
+				]));
+	}
+};
+var $author$project$SqlParser$Parsers$CreateUnique$parseCreateUniqueIndex = function (statement) {
+	var _v0 = A2(
+		$author$project$Libs$Regex$matches,
+		'^CREATE UNIQUE INDEX[ \t]+(?<name>[^ ]+)[ \t]+ON[ \t]+(?:(?<schema>[^ .]+)\\.)?(?<table>[^ (]+)[ \t]*(?<definition>.+);$',
+		$author$project$SqlParser$Utils$Helpers$buildRawSql(statement));
+	if (((((((_v0.b && (!_v0.a.$)) && _v0.b.b) && _v0.b.b.b) && (!_v0.b.b.a.$)) && _v0.b.b.b.b) && (!_v0.b.b.b.a.$)) && (!_v0.b.b.b.b.b)) {
+		var name = _v0.a.a;
+		var _v1 = _v0.b;
+		var schema = _v1.a;
+		var _v2 = _v1.b;
+		var table = _v2.a.a;
+		var _v3 = _v2.b;
+		var definition = _v3.a.a;
+		return A2(
+			$elm$core$Result$map,
+			function (columns) {
+				return {
+					L: columns,
+					aJ: definition,
+					N: name,
+					dM: {dv: schema, dM: table}
+				};
+			},
+			A2(
+				$elm$core$Result$andThen,
+				function (columns) {
+					return A2(
+						$elm$core$Result$fromMaybe,
+						_List_fromArray(
+							['Unique index can\'t have empty columns']),
+						$author$project$Libs$Nel$fromList(columns));
+				},
+				$author$project$SqlParser$Utils$Helpers$parseIndexDefinition(definition)));
+	} else {
+		return $elm$core$Result$Err(
+			_List_fromArray(
+				[
+					'Can\'t parse create unique index: \'' + ($author$project$SqlParser$Utils$Helpers$buildRawSql(statement) + '\'')
+				]));
+	}
+};
+var $author$project$SqlParser$Parsers$Comment$parseTableComment = function (statement) {
+	var _v0 = A2(
+		$author$project$Libs$Regex$matches,
+		'^COMMENT ON TABLE[ \t]+(?:(?<schema>[^ .]+)\\.)?(?<table>[^ .]+)[ \t]+IS[ \t]+\'(?<comment>(?:[^\']|\'\')+)\';$',
+		$author$project$SqlParser$Utils$Helpers$buildRawSql(statement));
+	if (((((_v0.b && _v0.b.b) && (!_v0.b.a.$)) && _v0.b.b.b) && (!_v0.b.b.a.$)) && (!_v0.b.b.b.b)) {
+		var schema = _v0.a;
+		var _v1 = _v0.b;
+		var table = _v1.a.a;
+		var _v2 = _v1.b;
+		var comment = _v2.a.a;
+		return $elm$core$Result$Ok(
+			{
+				aF: A3($elm$core$String$replace, '\'\'', '\'', comment),
+				dv: schema,
+				dM: table
+			});
+	} else {
+		return $elm$core$Result$Err(
+			_List_fromArray(
+				[
+					'Can\'t parse table comment: \'' + ($author$project$SqlParser$Utils$Helpers$buildRawSql(statement) + '\'')
+				]));
+	}
+};
+var $elm$core$Result$map2 = F3(
+	function (func, ra, rb) {
+		if (ra.$ === 1) {
+			var x = ra.a;
+			return $elm$core$Result$Err(x);
+		} else {
+			var a = ra.a;
+			if (rb.$ === 1) {
+				var x = rb.a;
+				return $elm$core$Result$Err(x);
+			} else {
+				var b = rb.a;
+				return $elm$core$Result$Ok(
+					A2(func, a, b));
+			}
+		}
+	});
+var $author$project$SqlParser$Parsers$Select$BasicColumn = function (a) {
+	return {$: 0, a: a};
+};
+var $author$project$SqlParser$Parsers$Select$ComplexColumn = function (a) {
+	return {$: 1, a: a};
+};
+var $author$project$SqlParser$Parsers$Select$parseSelectColumn = function (column) {
+	var _v0 = A2($author$project$Libs$Regex$matches, '^(?:(?<table>[^ .]+)\\.)?(?<column>[^ :]+)(?:[ \t]+AS[ \t]+(?<alias>[^ ]+))?$', column);
+	if ((((_v0.b && _v0.b.b) && (!_v0.b.a.$)) && _v0.b.b.b) && (!_v0.b.b.b.b)) {
+		var table = _v0.a;
+		var _v1 = _v0.b;
+		var columnName = _v1.a.a;
+		var _v2 = _v1.b;
+		var alias = _v2.a;
+		return $elm$core$Result$Ok(
+			$author$project$SqlParser$Parsers$Select$BasicColumn(
+				{
+					F: alias,
+					ag: $author$project$SqlParser$Utils$Helpers$noEnclosingQuotes(columnName),
+					dM: table
+				}));
+	} else {
+		var _v3 = A2($author$project$Libs$Regex$matches, '^(?<formula>.+?)[ \t]+AS[ \t]+(?<alias>[^ ]+)$', column);
+		if ((((_v3.b && (!_v3.a.$)) && _v3.b.b) && (!_v3.b.a.$)) && (!_v3.b.b.b)) {
+			var formula = _v3.a.a;
+			var _v4 = _v3.b;
+			var alias = _v4.a.a;
+			return $elm$core$Result$Ok(
+				$author$project$SqlParser$Parsers$Select$ComplexColumn(
+					{F: alias, aP: formula}));
+		} else {
+			return $elm$core$Result$Err('Can\'t parse select column \'' + (column + '\''));
+		}
+	}
+};
+var $author$project$SqlParser$Parsers$Select$BasicTable = function (a) {
+	return {$: 0, a: a};
+};
+var $author$project$SqlParser$Parsers$Select$ComplexTable = function (a) {
+	return {$: 1, a: a};
+};
+var $author$project$SqlParser$Parsers$Select$parseSelectTable = function (table) {
+	var _v0 = A2($author$project$Libs$Regex$matches, '^(?:(?<schema>[^ .]+)\\.)?(?<table>[^ ]+)(?:[ \t]+(?<alias>[^ ]+))?$', table);
+	if ((((_v0.b && _v0.b.b) && (!_v0.b.a.$)) && _v0.b.b.b) && (!_v0.b.b.b.b)) {
+		var schema = _v0.a;
+		var _v1 = _v0.b;
+		var tableName = _v1.a.a;
+		var _v2 = _v1.b;
+		var alias = _v2.a;
+		return $elm$core$Result$Ok(
+			$author$project$SqlParser$Parsers$Select$BasicTable(
+				{F: alias, dv: schema, dM: tableName}));
+	} else {
+		return $elm$core$Result$Ok(
+			$author$project$SqlParser$Parsers$Select$ComplexTable(
+				{aJ: table}));
+	}
+};
+var $author$project$Libs$Maybe$toList = function (maybe) {
+	if (!maybe.$) {
+		var a = maybe.a;
+		return _List_fromArray(
+			[a]);
+	} else {
+		return _List_Nil;
+	}
+};
+var $author$project$SqlParser$Parsers$Select$parseSelect = function (select) {
+	var _v0 = A2($author$project$Libs$Regex$matches, '^SELECT(?:[ \t]+DISTINCT ON \\([^)]+\\))?[ \t]+(?<columns>.+?)(?:[ \t]+FROM[ \t]+(?<tables>.+?))?(?:[ \t]+WHERE[ \t]+(?<where>.+?))?$', select);
+	if ((((_v0.b && (!_v0.a.$)) && _v0.b.b) && _v0.b.b.b) && (!_v0.b.b.b.b)) {
+		var columnsStr = _v0.a.a;
+		var _v1 = _v0.b;
+		var tablesStr = _v1.a;
+		var _v2 = _v1.b;
+		var whereClause = _v2.a;
+		return A3(
+			$elm$core$Result$map2,
+			F2(
+				function (columns, tables) {
+					return {L: columns, by: tables, bH: whereClause};
+				}),
+			A2(
+				$elm$core$Result$andThen,
+				function (cols) {
+					return A2(
+						$elm$core$Result$fromMaybe,
+						_List_fromArray(
+							['Select can\'t have empty columns']),
+						$author$project$Libs$Nel$fromList(cols));
+				},
+				$author$project$Libs$List$resultSeq(
+					A2(
+						$elm$core$List$map,
+						$author$project$SqlParser$Parsers$Select$parseSelectColumn,
+						A2(
+							$elm$core$List$map,
+							$elm$core$String$trim,
+							$author$project$SqlParser$Utils$Helpers$commaSplit(columnsStr))))),
+			$author$project$Libs$List$resultSeq(
+				A2(
+					$elm$core$List$map,
+					$author$project$SqlParser$Parsers$Select$parseSelectTable,
+					$author$project$Libs$Maybe$toList(tablesStr))));
+	} else {
+		return $elm$core$Result$Err(
+			_List_fromArray(
+				['Can\'t parse select: \'' + (select + '\'')]));
+	}
+};
+var $author$project$SqlParser$Parsers$CreateView$parseView = function (statement) {
+	var _v0 = A2(
+		$author$project$Libs$Regex$matches,
+		'^CREATE (MATERIALIZED )?VIEW[ \t]+(?:(?<schema>[^ .]+)\\.)?(?<table>[^ ]+)[ \t]+AS[ \t]+(?<select>.+?)(?:[ \t]+(?<extra>WITH (?:NO )?DATA))?;$',
+		$author$project$SqlParser$Utils$Helpers$buildRawSql(statement));
+	if (((((((_v0.b && _v0.b.b) && _v0.b.b.b) && (!_v0.b.b.a.$)) && _v0.b.b.b.b) && (!_v0.b.b.b.a.$)) && _v0.b.b.b.b.b) && (!_v0.b.b.b.b.b.b)) {
+		var materialized = _v0.a;
+		var _v1 = _v0.b;
+		var schema = _v1.a;
+		var _v2 = _v1.b;
+		var table = _v2.a.a;
+		var _v3 = _v2.b;
+		var select = _v3.a.a;
+		var _v4 = _v3.b;
+		var extra = _v4.a;
+		return A2(
+			$elm$core$Result$map,
+			function (parsedSelect) {
+				return {
+					aN: extra,
+					a0: !_Utils_eq(materialized, $elm$core$Maybe$Nothing),
+					dv: schema,
+					bp: parsedSelect,
+					dF: statement,
+					dM: table
+				};
+			},
+			$author$project$SqlParser$Parsers$Select$parseSelect(select));
+	} else {
+		return $elm$core$Result$Err(
+			_List_fromArray(
+				[
+					'Can\'t parse create view: \'' + ($author$project$SqlParser$Utils$Helpers$buildRawSql(statement) + '\'')
+				]));
+	}
+};
+var $author$project$SqlParser$SqlParser$parseCommand = function (statement) {
+	return A2(
+		$elm$core$String$startsWith,
+		'CREATE TABLE ',
+		$elm$core$String$toUpper(statement.t.dP)) ? A2(
+		$elm$core$Result$map,
+		$author$project$SqlParser$SqlParser$CreateTable,
+		$author$project$SqlParser$Parsers$CreateTable$parseCreateTable(statement)) : (A2(
+		$elm$core$String$startsWith,
+		'CREATE VIEW ',
+		$elm$core$String$toUpper(statement.t.dP)) ? A2(
+		$elm$core$Result$map,
+		$author$project$SqlParser$SqlParser$CreateView,
+		$author$project$SqlParser$Parsers$CreateView$parseView(statement)) : (A2(
+		$elm$core$String$startsWith,
+		'CREATE MATERIALIZED VIEW ',
+		$elm$core$String$toUpper(statement.t.dP)) ? A2(
+		$elm$core$Result$map,
+		$author$project$SqlParser$SqlParser$CreateView,
+		$author$project$SqlParser$Parsers$CreateView$parseView(statement)) : (A2(
+		$elm$core$String$startsWith,
+		'ALTER TABLE ',
+		$elm$core$String$toUpper(statement.t.dP)) ? A2(
+		$elm$core$Result$map,
+		$author$project$SqlParser$SqlParser$AlterTable,
+		$author$project$SqlParser$Parsers$AlterTable$parseAlterTable(statement)) : (A2(
+		$elm$core$String$startsWith,
+		'CREATE INDEX ',
+		$elm$core$String$toUpper(statement.t.dP)) ? A2(
+		$elm$core$Result$map,
+		$author$project$SqlParser$SqlParser$CreateIndex,
+		$author$project$SqlParser$Parsers$CreateIndex$parseCreateIndex(statement)) : (A2(
+		$elm$core$String$startsWith,
+		'CREATE UNIQUE INDEX ',
+		$elm$core$String$toUpper(statement.t.dP)) ? A2(
+		$elm$core$Result$map,
+		$author$project$SqlParser$SqlParser$CreateUnique,
+		$author$project$SqlParser$Parsers$CreateUnique$parseCreateUniqueIndex(statement)) : (A2(
+		$elm$core$String$startsWith,
+		'COMMENT ON TABLE ',
+		$elm$core$String$toUpper(statement.t.dP)) ? A2(
+		$elm$core$Result$map,
+		$author$project$SqlParser$SqlParser$TableComment,
+		$author$project$SqlParser$Parsers$Comment$parseTableComment(statement)) : (A2(
+		$elm$core$String$startsWith,
+		'COMMENT ON COLUMN ',
+		$elm$core$String$toUpper(statement.t.dP)) ? A2(
+		$elm$core$Result$map,
+		$author$project$SqlParser$SqlParser$ColumnComment,
+		$author$project$SqlParser$Parsers$Comment$parseColumnComment(statement)) : (A2(
+		$elm$core$String$startsWith,
+		'CREATE OR REPLACE VIEW ',
+		$elm$core$String$toUpper(statement.t.dP)) ? $elm$core$Result$Ok(
+		$author$project$SqlParser$SqlParser$Ignored(statement)) : (A2(
+		$elm$core$String$startsWith,
+		'COMMENT ON VIEW ',
+		$elm$core$String$toUpper(statement.t.dP)) ? $elm$core$Result$Ok(
+		$author$project$SqlParser$SqlParser$Ignored(statement)) : (A2(
+		$elm$core$String$startsWith,
+		'COMMENT ON INDEX ',
+		$elm$core$String$toUpper(statement.t.dP)) ? $elm$core$Result$Ok(
+		$author$project$SqlParser$SqlParser$Ignored(statement)) : (A2(
+		$elm$core$String$startsWith,
+		'CREATE TYPE ',
+		$elm$core$String$toUpper(statement.t.dP)) ? $elm$core$Result$Ok(
+		$author$project$SqlParser$SqlParser$Ignored(statement)) : (A2(
+		$elm$core$String$startsWith,
+		'ALTER TYPE ',
+		$elm$core$String$toUpper(statement.t.dP)) ? $elm$core$Result$Ok(
+		$author$project$SqlParser$SqlParser$Ignored(statement)) : (A2(
+		$elm$core$String$startsWith,
+		'CREATE FUNCTION ',
+		$elm$core$String$toUpper(statement.t.dP)) ? $elm$core$Result$Ok(
+		$author$project$SqlParser$SqlParser$Ignored(statement)) : (A2(
+		$elm$core$String$startsWith,
+		'ALTER FUNCTION ',
+		$elm$core$String$toUpper(statement.t.dP)) ? $elm$core$Result$Ok(
+		$author$project$SqlParser$SqlParser$Ignored(statement)) : (A2(
+		$elm$core$String$startsWith,
+		'CREATE OPERATOR ',
+		$elm$core$String$toUpper(statement.t.dP)) ? $elm$core$Result$Ok(
+		$author$project$SqlParser$SqlParser$Ignored(statement)) : (A2(
+		$elm$core$String$startsWith,
+		'ALTER OPERATOR ',
+		$elm$core$String$toUpper(statement.t.dP)) ? $elm$core$Result$Ok(
+		$author$project$SqlParser$SqlParser$Ignored(statement)) : (A2(
+		$elm$core$String$startsWith,
+		'CREATE SCHEMA ',
+		$elm$core$String$toUpper(statement.t.dP)) ? $elm$core$Result$Ok(
+		$author$project$SqlParser$SqlParser$Ignored(statement)) : (A2(
+		$elm$core$String$startsWith,
+		'CREATE EXTENSION ',
+		$elm$core$String$toUpper(statement.t.dP)) ? $elm$core$Result$Ok(
+		$author$project$SqlParser$SqlParser$Ignored(statement)) : (A2(
+		$elm$core$String$startsWith,
+		'COMMENT ON EXTENSION ',
+		$elm$core$String$toUpper(statement.t.dP)) ? $elm$core$Result$Ok(
+		$author$project$SqlParser$SqlParser$Ignored(statement)) : (A2(
+		$elm$core$String$startsWith,
+		'CREATE TEXT SEARCH CONFIGURATION ',
+		$elm$core$String$toUpper(statement.t.dP)) ? $elm$core$Result$Ok(
+		$author$project$SqlParser$SqlParser$Ignored(statement)) : (A2(
+		$elm$core$String$startsWith,
+		'ALTER TEXT SEARCH CONFIGURATION ',
+		$elm$core$String$toUpper(statement.t.dP)) ? $elm$core$Result$Ok(
+		$author$project$SqlParser$SqlParser$Ignored(statement)) : (A2(
+		$elm$core$String$startsWith,
+		'CREATE SEQUENCE ',
+		$elm$core$String$toUpper(statement.t.dP)) ? $elm$core$Result$Ok(
+		$author$project$SqlParser$SqlParser$Ignored(statement)) : (A2(
+		$elm$core$String$startsWith,
+		'ALTER SEQUENCE ',
+		$elm$core$String$toUpper(statement.t.dP)) ? $elm$core$Result$Ok(
+		$author$project$SqlParser$SqlParser$Ignored(statement)) : (A2(
+		$elm$core$String$startsWith,
+		'SELECT ',
+		$elm$core$String$toUpper(statement.t.dP)) ? $elm$core$Result$Ok(
+		$author$project$SqlParser$SqlParser$Ignored(statement)) : (A2(
+		$elm$core$String$startsWith,
+		'INSERT INTO ',
+		$elm$core$String$toUpper(statement.t.dP)) ? $elm$core$Result$Ok(
+		$author$project$SqlParser$SqlParser$Ignored(statement)) : (A2(
+		$elm$core$String$startsWith,
+		'SET ',
+		$elm$core$String$toUpper(statement.t.dP)) ? $elm$core$Result$Ok(
+		$author$project$SqlParser$SqlParser$Ignored(statement)) : $elm$core$Result$Err(
+		_List_fromArray(
+			[
+				'Statement not handled: \'' + ($author$project$SqlParser$Utils$Helpers$buildRawSql(statement) + '\'')
+			]))))))))))))))))))))))))))));
+};
+var $author$project$SqlParser$SchemaParser$parseLines = F2(
+	function (fileName, fileContent) {
+		return A2(
+			$elm$core$List$indexedMap,
+			F2(
+				function (i, line) {
+					return {aO: fileName, cD: i + 1, dP: line};
+				}),
+			A2($elm$core$String$split, '\n', fileContent));
+	});
+var $author$project$SqlParser$SchemaParser$parseSchema = F2(
+	function (fileName, fileContent) {
+		return A3(
+			$elm$core$List$foldl,
+			F2(
+				function (statement, _v0) {
+					var errs = _v0.a;
+					var schema = _v0.b;
+					var _v1 = A2(
+						$elm$core$Result$andThen,
+						function (command) {
+							return A2($author$project$SqlParser$SchemaParser$evolve, command, schema);
+						},
+						$author$project$SqlParser$SqlParser$parseCommand(statement));
+					if (!_v1.$) {
+						var newSchema = _v1.a;
+						return _Utils_Tuple2(errs, newSchema);
+					} else {
+						var e = _v1.a;
+						return _Utils_Tuple2(
+							_Utils_ap(errs, e),
+							schema);
+					}
+				}),
+			_Utils_Tuple2(_List_Nil, $elm$core$Dict$empty),
+			$author$project$SqlParser$SchemaParser$buildStatements(
+				A2($author$project$SqlParser$SchemaParser$parseLines, fileName, fileContent)));
+	});
+var $author$project$Updates$Schema$buildSchema = F6(
+	function (now, takenIds, id, path, file, content) {
+		return A2($elm$core$String$endsWith, '.sql', path) ? A2(
+			$elm$core$Tuple$mapSecond,
+			function (s) {
+				return $elm$core$Maybe$Just(
+					A4(
+						$author$project$Mappers$SchemaMapper$buildSchemaFromSql,
+						takenIds,
+						id,
+						{b$: now, aO: file, dX: now},
+						s));
+			},
+			A2($author$project$SqlParser$SchemaParser$parseSchema, path, content)) : (A2($elm$core$String$endsWith, '.json', path) ? A3(
+			$author$project$Libs$Result$fold,
+			function (e) {
+				return _Utils_Tuple2(
+					_List_fromArray(
+						[
+							'⚠️ Error in <b>' + (path + ('</b> ⚠️<br>' + $author$project$Updates$Helpers$decodeErrorToHtml(e)))
+						]),
+					$elm$core$Maybe$Nothing);
+			},
+			function (schema) {
+				return _Utils_Tuple2(
+					_List_Nil,
+					$elm$core$Maybe$Just(schema));
+			},
+			A2(
+				$elm$json$Json$Decode$decodeString,
+				$author$project$JsonFormats$SchemaFormat$decodeSchema(takenIds),
+				content)) : _Utils_Tuple2(
+			_List_fromArray(
+				['Invalid file (' + (path + '), expected .sql or .json one')]),
+			$elm$core$Maybe$Nothing));
+	});
+var $author$project$Updates$Schema$formatHttpError = function (error) {
+	switch (error.$) {
+		case 0:
+			var url = error.a;
+			return 'the URL ' + (url + ' was invalid');
+		case 1:
+			return 'unable to reach the server, try again';
+		case 2:
+			return 'unable to reach the server, check your network connection';
+		case 3:
+			switch (error.a) {
+				case 500:
+					return 'the server had a problem, try again later';
+				case 400:
+					return 'verify your information and try again';
+				case 404:
+					return 'file does not exist';
+				default:
+					var status = error.a;
+					return 'network error (' + ($elm$core$String$fromInt(status) + ')');
+			}
+		default:
+			var errorMessage = error.a;
+			return errorMessage;
+	}
+};
+var $author$project$Models$ShowAllTables = {$: 18};
+var $elm$core$Dict$filter = F2(
+	function (isGood, dict) {
+		return A3(
+			$elm$core$Dict$foldl,
+			F3(
+				function (k, v, d) {
+					return A2(isGood, k, v) ? A3($elm$core$Dict$insert, k, v, d) : d;
+				}),
+			$elm$core$Dict$empty,
+			dict);
+	});
+var $author$project$Ports$HideModal = function (a) {
+	return {$: 2, a: a};
+};
+var $author$project$Ports$hideModal = function (id) {
+	return $author$project$Ports$messageToJs(
+		$author$project$Ports$HideModal(id));
+};
+var $elm$core$Dict$isEmpty = function (dict) {
+	if (dict.$ === -2) {
+		return true;
+	} else {
+		return false;
+	}
+};
+var $author$project$Models$Schema$tableIdAsHtmlId = function (_v0) {
+	var schema = _v0.a;
+	var table = _v0.b;
+	return 'table-' + (schema + ('-' + table));
+};
+var $author$project$Ports$observeTablesSize = function (ids) {
+	return $author$project$Ports$observeSizes(
+		A2($elm$core$List$map, $author$project$Models$Schema$tableIdAsHtmlId, ids));
+};
+var $elm$core$Dict$sizeHelp = F2(
+	function (n, dict) {
+		sizeHelp:
+		while (true) {
+			if (dict.$ === -2) {
+				return n;
+			} else {
+				var left = dict.d;
+				var right = dict.e;
+				var $temp$n = A2($elm$core$Dict$sizeHelp, n + 1, right),
+					$temp$dict = left;
+				n = $temp$n;
+				dict = $temp$dict;
+				continue sizeHelp;
+			}
+		}
+	});
+var $elm$core$Dict$size = function (dict) {
+	return A2($elm$core$Dict$sizeHelp, 0, dict);
+};
+var $author$project$Ports$ShowToast = function (a) {
+	return {$: 5, a: a};
+};
+var $author$project$Ports$showToast = function (toast) {
+	return $author$project$Ports$messageToJs(
+		$author$project$Ports$ShowToast(toast));
+};
+var $author$project$Ports$toastError = function (message) {
+	return $author$project$Ports$showToast(
+		{cy: 'error', a1: message});
+};
+var $author$project$Ports$toastInfo = function (message) {
+	return $author$project$Ports$showToast(
+		{cy: 'info', a1: message});
+};
+var $author$project$Updates$Schema$loadSchema = F2(
+	function (model, _v0) {
+		var errs = _v0.a;
+		var schema = _v0.b;
+		return _Utils_Tuple2(
+			_Utils_update(
+				model,
+				{
+					dv: schema,
+					bq: A2(
+						$elm$core$Dict$filter,
+						F2(
+							function (id, _v1) {
+								return !A2($elm$core$String$startsWith, 'table-', id);
+							}),
+						model.bq),
+					bw: $author$project$Models$initSwitch
+				}),
+			$elm$core$Platform$Cmd$batch(
+				_Utils_ap(
+					A2($elm$core$List$map, $author$project$Ports$toastError, errs),
+					A2(
+						$elm$core$Maybe$withDefault,
+						_List_Nil,
+						A2(
+							$elm$core$Maybe$map,
+							function (s) {
+								return A2(
+									$elm$core$List$cons,
+									(!$elm$core$Dict$isEmpty(s.cA.by)) ? $author$project$Ports$observeTablesSize(
+										$elm$core$Dict$keys(s.cA.by)) : (($elm$core$Dict$size(s.by) < 10) ? $author$project$Libs$Task$send($author$project$Models$ShowAllTables) : $author$project$Ports$click($author$project$Conf$conf.cp.dz)),
+									_List_fromArray(
+										[
+											$author$project$Ports$toastInfo('<b>' + (s.aV + '</b> loaded.<br>Use the search bar to explore it')),
+											$author$project$Ports$hideModal($author$project$Conf$conf.cp.dw),
+											$author$project$Ports$saveSchema(s),
+											$author$project$Ports$activateTooltipsAndPopovers
+										]));
+							},
+							schema)))));
+	});
+var $author$project$Updates$Schema$createSampleSchema = F5(
+	function (now, id, path, response, model) {
+		return A2(
+			$author$project$Updates$Schema$loadSchema,
+			model,
+			A3(
+				$author$project$Libs$Result$fold,
+				function (err) {
+					return _Utils_Tuple2(
+						_List_fromArray(
+							[
+								'Can\'t load \'' + (id + ('\': ' + $author$project$Updates$Schema$formatHttpError(err)))
+							]),
+						$elm$core$Maybe$Nothing);
+				},
+				A5(
+					$author$project$Updates$Schema$buildSchema,
+					now,
+					A2(
+						$elm$core$List$map,
+						function ($) {
+							return $.aV;
+						},
+						model.az),
+					id,
+					path,
+					$elm$core$Maybe$Nothing),
+				response));
+	});
+var $author$project$Updates$Schema$createSchema = F4(
+	function (now, file, content, model) {
+		return A2(
+			$author$project$Updates$Schema$loadSchema,
+			model,
+			A6(
+				$author$project$Updates$Schema$buildSchema,
+				now,
+				A2(
+					$elm$core$List$map,
+					function ($) {
+						return $.aV;
+					},
+					model.az),
+				file.N,
+				file.N,
+				$elm$core$Maybe$Just(
+					{cz: file.cz, N: file.N}),
+				content));
+	});
+var $author$project$Updates$Layout$deleteLayout = F2(
+	function (name, schema) {
+		return function (newSchema) {
+			return _Utils_Tuple2(
+				newSchema,
+				$author$project$Ports$saveSchema(newSchema));
+		}(
+			A2(
+				$author$project$Updates$Helpers$setLayouts,
+				A2(
+					$elm$core$Dict$update,
+					name,
+					function (_v0) {
+						return $elm$core$Maybe$Nothing;
+					}),
+				_Utils_update(
+					schema,
+					{
+						cB: A3(
+							$author$project$Libs$Bool$cond,
+							_Utils_eq(
+								schema.cB,
+								$elm$core$Maybe$Just(name)),
+							$elm$core$Maybe$Nothing,
+							$elm$core$Maybe$Just(name))
+					})));
+	});
+var $author$project$Models$OnDragBy = function (a) {
+	return {$: 28, a: a};
+};
+var $author$project$Models$StartDragging = function (a) {
+	return {$: 26, a: a};
+};
+var $author$project$Models$StopDragging = {$: 27};
+var $zaboco$elm_draggable$Draggable$Config = $elm$core$Basics$identity;
+var $zaboco$elm_draggable$Internal$defaultConfig = {
+	c2: function (_v0) {
+		return $elm$core$Maybe$Nothing;
+	},
+	c3: function (_v1) {
+		return $elm$core$Maybe$Nothing;
+	},
+	c4: $elm$core$Maybe$Nothing,
+	c5: function (_v2) {
+		return $elm$core$Maybe$Nothing;
+	},
+	c9: function (_v3) {
+		return $elm$core$Maybe$Nothing;
+	}
+};
+var $zaboco$elm_draggable$Draggable$customConfig = function (events) {
+	return A3($elm$core$List$foldl, $elm$core$Basics$apL, $zaboco$elm_draggable$Internal$defaultConfig, events);
+};
+var $zaboco$elm_draggable$Draggable$Events$onDragBy = F2(
+	function (toMsg, config) {
+		return _Utils_update(
+			config,
+			{
+				c3: A2($elm$core$Basics$composeL, $elm$core$Maybe$Just, toMsg)
+			});
+	});
+var $zaboco$elm_draggable$Draggable$Events$onDragEnd = F2(
+	function (toMsg, config) {
+		return _Utils_update(
+			config,
+			{
+				c4: $elm$core$Maybe$Just(toMsg)
+			});
+	});
+var $zaboco$elm_draggable$Draggable$Events$onDragStart = F2(
+	function (toMsg, config) {
+		return _Utils_update(
+			config,
+			{
+				c5: A2($elm$core$Basics$composeL, $elm$core$Maybe$Just, toMsg)
+			});
+	});
+var $author$project$Update$dragConfig = $zaboco$elm_draggable$Draggable$customConfig(
+	_List_fromArray(
+		[
+			$zaboco$elm_draggable$Draggable$Events$onDragStart($author$project$Models$StartDragging),
+			$zaboco$elm_draggable$Draggable$Events$onDragEnd($author$project$Models$StopDragging),
+			$zaboco$elm_draggable$Draggable$Events$onDragBy($author$project$Models$OnDragBy)
+		]));
+var $author$project$Models$Schema$htmlIdAsTableId = function (id) {
+	var _v0 = A2($elm$core$String$split, '-', id);
+	if ((((_v0.b && (_v0.a === 'table')) && _v0.b.b) && _v0.b.b.b) && (!_v0.b.b.b.b)) {
+		var _v1 = _v0.b;
+		var schema = _v1.a;
+		var _v2 = _v1.b;
+		var table = _v2.a;
+		return _Utils_Tuple2(schema, table);
+	} else {
+		return _Utils_Tuple2($author$project$Conf$conf.b2.dv, id);
+	}
+};
+var $elm$core$Platform$Cmd$none = $elm$core$Platform$Cmd$batch(_List_Nil);
+var $author$project$Updates$Helpers$setCanvas = F2(
+	function (transform, item) {
+		return _Utils_update(
+			item,
+			{
+				bR: transform(item.bR)
+			});
+	});
+var $author$project$Updates$Helpers$setDictTable = F3(
+	function (id, transform, item) {
+		return _Utils_update(
+			item,
+			{
+				by: A3(
+					$elm$core$Dict$update,
+					id,
+					$elm$core$Maybe$map(transform),
+					item.by)
+			});
+	});
+var $author$project$Updates$Helpers$setLayout = F2(
+	function (transform, item) {
+		return _Utils_update(
+			item,
+			{
+				cA: transform(item.cA)
+			});
+	});
+var $author$project$Updates$Helpers$setPosition = F3(
+	function (_v0, zoom, item) {
+		var dx = _v0.a;
+		var dy = _v0.b;
+		return _Utils_update(
+			item,
+			{
+				bd: A2($author$project$Libs$Position$Position, item.bd.a_ + (dx / zoom), item.bd.bD + (dy / zoom))
+			});
+	});
+var $author$project$Updates$Helpers$setSchema = F2(
+	function (transform, item) {
+		return _Utils_update(
+			item,
+			{
+				dv: A2($elm$core$Maybe$map, transform, item.dv)
+			});
+	});
+var $author$project$Update$dragItem = F2(
+	function (model, delta) {
+		var _v0 = model.aK;
+		if (!_v0.$) {
+			var id = _v0.a;
+			return _Utils_eq(id, $author$project$Conf$conf.cp.b9) ? _Utils_Tuple2(
+				A2(
+					$author$project$Updates$Helpers$setSchema,
+					$author$project$Updates$Helpers$setLayout(
+						$author$project$Updates$Helpers$setCanvas(
+							A2($author$project$Updates$Helpers$setPosition, delta, 1))),
+					model),
+				$elm$core$Platform$Cmd$none) : _Utils_Tuple2(
+				A2(
+					$author$project$Updates$Helpers$setSchema,
+					$author$project$Updates$Helpers$setLayout(
+						function (l) {
+							return A3(
+								$author$project$Updates$Helpers$setDictTable,
+								$author$project$Models$Schema$htmlIdAsTableId(id),
+								A2($author$project$Updates$Helpers$setPosition, delta, l.bR.d2),
+								l);
+						}),
+					model),
+				$elm$core$Platform$Cmd$none);
+		} else {
+			return _Utils_Tuple2(
+				model,
+				$author$project$Ports$toastError('Can\'t dragItem when no drag id'));
+		}
+	});
+var $author$project$Ports$DropSchema = function (a) {
+	return {$: 8, a: a};
+};
+var $author$project$Ports$dropSchema = function (schema) {
+	return $author$project$Ports$messageToJs(
+		$author$project$Ports$DropSchema(schema));
+};
+var $author$project$Libs$Position$add = F2(
+	function (delta, pos) {
+		return A2($author$project$Libs$Position$Position, pos.a_ + delta.a_, pos.bD + delta.bD);
+	});
+var $author$project$Libs$Area$center = function (area) {
+	return A2($author$project$Libs$Position$Position, (area.a_ + area.dt) / 2, (area.bD + area.bO) / 2);
+};
+var $elm$core$Basics$clamp = F3(
+	function (low, high, number) {
+		return (_Utils_cmp(number, low) < 0) ? low : ((_Utils_cmp(number, high) > 0) ? high : number);
+	});
+var $elm$core$Basics$min = F2(
+	function (x, y) {
+		return (_Utils_cmp(x, y) < 0) ? x : y;
+	});
+var $author$project$Libs$Size$ratio = F2(
+	function (a, b) {
+		return A2($author$project$Libs$Size$Size, b.d_ / a.d_, b.cj / a.cj);
+	});
+var $author$project$Libs$Area$Area = F4(
+	function (left, top, right, bottom) {
+		return {bO: bottom, a_: left, dt: right, bD: top};
+	});
+var $author$project$Libs$Area$scale = F2(
+	function (factor, area) {
+		return A4($author$project$Libs$Area$Area, area.a_ * factor, area.bD * factor, area.dt * factor, area.bO * factor);
+	});
+var $author$project$Libs$Area$size = function (area) {
+	return A2($author$project$Libs$Size$Size, area.dt - area.a_, area.bO - area.bD);
+};
+var $author$project$Libs$Position$sub = F2(
+	function (delta, pos) {
+		return A2($author$project$Libs$Position$Position, pos.a_ - delta.a_, pos.bD - delta.bD);
+	});
+var $author$project$Libs$Size$sub = F2(
+	function (amount, size) {
+		return A2($author$project$Libs$Size$Size, size.d_ - amount, size.cj - amount);
+	});
+var $author$project$Updates$Canvas$computeFit = F4(
+	function (viewport, padding, content, zoom) {
+		var viewportSize = A2(
+			$author$project$Libs$Size$sub,
+			(2 * padding) / zoom,
+			$author$project$Libs$Area$size(viewport));
+		var newContentCenter = $author$project$Libs$Area$center(content);
+		var contentSize = $author$project$Libs$Area$size(content);
+		var grow = A2($author$project$Libs$Size$ratio, contentSize, viewportSize);
+		var newZoom = A3(
+			$elm$core$Basics$clamp,
+			$author$project$Conf$conf.d2.cK,
+			$author$project$Conf$conf.d2.cH,
+			zoom * A2($elm$core$Basics$min, grow.d_, grow.cj));
+		var growFactor = newZoom / zoom;
+		var newViewport = A2($author$project$Libs$Area$scale, 1 / growFactor, viewport);
+		var newViewportCenter = A2(
+			$author$project$Libs$Position$sub,
+			A2($author$project$Libs$Position$Position, newViewport.a_, newViewport.bD),
+			$author$project$Libs$Area$center(newViewport));
+		var offset = A2($author$project$Libs$Position$sub, newContentCenter, newViewportCenter);
+		return _Utils_Tuple2(newZoom, offset);
+	});
+var $elm$core$Dict$map = F2(
+	function (func, dict) {
+		if (dict.$ === -2) {
+			return $elm$core$Dict$RBEmpty_elm_builtin;
+		} else {
+			var color = dict.a;
+			var key = dict.b;
+			var value = dict.c;
+			var left = dict.d;
+			var right = dict.e;
+			return A5(
+				$elm$core$Dict$RBNode_elm_builtin,
+				color,
+				key,
+				A2(func, key, value),
+				A2($elm$core$Dict$map, func, left),
+				A2($elm$core$Dict$map, func, right));
+		}
+	});
+var $author$project$Updates$Helpers$setTables = F2(
+	function (transform, item) {
+		return _Utils_update(
+			item,
+			{
+				by: transform(item.by)
+			});
+	});
+var $elm$core$List$maximum = function (list) {
+	if (list.b) {
+		var x = list.a;
+		var xs = list.b;
+		return $elm$core$Maybe$Just(
+			A3($elm$core$List$foldl, $elm$core$Basics$max, x, xs));
+	} else {
+		return $elm$core$Maybe$Nothing;
+	}
+};
+var $elm$core$List$minimum = function (list) {
+	if (list.b) {
+		var x = list.a;
+		var xs = list.b;
+		return $elm$core$Maybe$Just(
+			A3($elm$core$List$foldl, $elm$core$Basics$min, x, xs));
+	} else {
+		return $elm$core$Maybe$Nothing;
+	}
+};
+var $author$project$Libs$List$zipWith = F2(
+	function (transform, list) {
+		return A2(
+			$elm$core$List$map,
+			function (a) {
+				return _Utils_Tuple2(
+					a,
+					transform(a));
+			},
+			list);
+	});
+var $author$project$Models$Schema$tablesArea = F2(
+	function (sizes, tables) {
+		var positions = A2(
+			$author$project$Libs$List$zipWith,
+			function (_v8) {
+				var id = _v8.a;
+				return A2(
+					$elm$core$Maybe$withDefault,
+					A2($author$project$Libs$Size$Size, 0, 0),
+					A2(
+						$elm$core$Dict$get,
+						$author$project$Models$Schema$tableIdAsHtmlId(id),
+						sizes));
+			},
+			$elm$core$Dict$toList(tables));
+		var right = A2(
+			$elm$core$Maybe$withDefault,
+			0,
+			$elm$core$List$maximum(
+				A2(
+					$elm$core$List$map,
+					function (_v6) {
+						var _v7 = _v6.a;
+						var t = _v7.b;
+						var s = _v6.b;
+						return t.bd.a_ + s.d_;
+					},
+					positions)));
+		var top = A2(
+			$elm$core$Maybe$withDefault,
+			0,
+			$elm$core$List$minimum(
+				A2(
+					$elm$core$List$map,
+					function (_v4) {
+						var _v5 = _v4.a;
+						var t = _v5.b;
+						return t.bd.bD;
+					},
+					positions)));
+		var left = A2(
+			$elm$core$Maybe$withDefault,
+			0,
+			$elm$core$List$minimum(
+				A2(
+					$elm$core$List$map,
+					function (_v2) {
+						var _v3 = _v2.a;
+						var t = _v3.b;
+						return t.bd.a_;
+					},
+					positions)));
+		var bottom = A2(
+			$elm$core$Maybe$withDefault,
+			0,
+			$elm$core$List$maximum(
+				A2(
+					$elm$core$List$map,
+					function (_v0) {
+						var _v1 = _v0.a;
+						var t = _v1.b;
+						var s = _v0.b;
+						return t.bd.bD + s.cj;
+					},
+					positions)));
+		return A4($author$project$Libs$Area$Area, left, top, right, bottom);
+	});
+var $elm$core$Basics$negate = function (n) {
+	return -n;
+};
+var $author$project$Models$Schema$viewportArea = F2(
+	function (size, canvas) {
+		var top = (-canvas.bd.bD) / canvas.d2;
+		var right = ((-canvas.bd.a_) + size.d_) / canvas.d2;
+		var left = (-canvas.bd.a_) / canvas.d2;
+		var bottom = ((-canvas.bd.bD) + size.cj) / canvas.d2;
+		return A4($author$project$Libs$Area$Area, left, top, right, bottom);
+	});
+var $author$project$Models$Schema$viewportSize = function (sizes) {
+	return A2($elm$core$Dict$get, $author$project$Conf$conf.cp.b9, sizes);
+};
+var $author$project$Updates$Canvas$fitCanvas = F2(
+	function (sizes, layout) {
+		return A2(
+			$elm$core$Maybe$withDefault,
+			layout,
+			A2(
+				$elm$core$Maybe$map,
+				function (size) {
+					var viewport = A2($author$project$Models$Schema$viewportArea, size, layout.bR);
+					var padding = 20;
+					var contentArea = A2($author$project$Models$Schema$tablesArea, sizes, layout.by);
+					var _v0 = A4($author$project$Updates$Canvas$computeFit, viewport, padding, contentArea, layout.bR.d2);
+					var newZoom = _v0.a;
+					var centerOffset = _v0.b;
+					return A2(
+						$author$project$Updates$Helpers$setTables,
+						function (tables) {
+							return A2(
+								$elm$core$Dict$map,
+								F2(
+									function (_v1, t) {
+										return _Utils_update(
+											t,
+											{
+												bd: A2($author$project$Libs$Position$add, centerOffset, t.bd)
+											});
+									}),
+								tables);
+						},
+						A2(
+							$author$project$Updates$Helpers$setCanvas,
+							function (c) {
+								return _Utils_update(
+									c,
+									{
+										bd: A2($author$project$Libs$Position$Position, 0, 0),
+										d2: newZoom
+									});
+							},
+							layout));
+				},
+				$author$project$Models$Schema$viewportSize(sizes)));
+	});
+var $author$project$Updates$Canvas$performMove = F3(
+	function (left, top, canvas) {
+		var newTop = canvas.bd.bD - (top * canvas.d2);
+		var newLeft = canvas.bd.a_ - (left * canvas.d2);
+		return _Utils_update(
+			canvas,
+			{
+				bd: A2($author$project$Libs$Position$Position, newLeft, newTop)
+			});
+	});
+var $author$project$Updates$Canvas$performZoom = F3(
+	function (delta, center, canvas) {
+		var newZoom = A3($elm$core$Basics$clamp, $author$project$Conf$conf.d2.cK, $author$project$Conf$conf.d2.cH, canvas.d2 + delta);
+		var zoomFactor = newZoom / canvas.d2;
+		var newTop = canvas.bd.bD - ((center.bD - canvas.bd.bD) * (zoomFactor - 1));
+		var newLeft = canvas.bd.a_ - ((center.a_ - canvas.bd.a_) * (zoomFactor - 1));
+		return _Utils_update(
+			canvas,
+			{
+				bd: A2($author$project$Libs$Position$Position, newLeft, newTop),
+				d2: newZoom
+			});
+	});
+var $author$project$Updates$Canvas$handleWheel = F2(
+	function (event, canvas) {
+		return event.cx.ah ? A3(
+			$author$project$Updates$Canvas$performZoom,
+			event.b3.bJ * $author$project$Conf$conf.d2.dH,
+			A2($author$project$Libs$Position$Position, event.cM.bI, event.cM.bJ),
+			canvas) : A3($author$project$Updates$Canvas$performMove, event.b3.bI, event.b3.bJ, canvas);
+	});
+var $author$project$Updates$Table$hideAllTables = function (layout) {
+	return _Utils_update(
+		layout,
+		{
+			cm: A2($elm$core$Dict$union, layout.by, layout.cm),
+			by: $elm$core$Dict$empty
+		});
+};
+var $author$project$Updates$Table$hideColumn = F3(
+	function (table, column, layout) {
+		return _Utils_update(
+			layout,
+			{
+				by: A3(
+					$elm$core$Dict$update,
+					table,
+					$elm$core$Maybe$map(
+						function (t) {
+							return _Utils_update(
+								t,
+								{
+									L: A2(
+										$elm$core$List$filter,
+										function (c) {
+											return !_Utils_eq(c, column);
+										},
+										t.L)
+								});
+						}),
+					layout.by)
+			});
+	});
+var $author$project$Ports$HideOffcanvas = function (a) {
+	return {$: 3, a: a};
+};
+var $author$project$Ports$hideOffcanvas = function (id) {
+	return $author$project$Ports$messageToJs(
+		$author$project$Ports$HideOffcanvas(id));
+};
+var $author$project$Updates$Table$hideTable = F2(
+	function (id, layout) {
+		return _Utils_update(
+			layout,
+			{
+				cm: A3(
+					$elm$core$Dict$update,
+					id,
+					function (_v0) {
+						return A2($elm$core$Dict$get, id, layout.by);
+					},
+					layout.cm),
+				by: A3(
+					$elm$core$Dict$update,
+					id,
+					function (_v1) {
+						return $elm$core$Maybe$Nothing;
+					},
+					layout.by)
+			});
+	});
+var $author$project$Updates$Layout$loadLayout = F2(
+	function (name, schema) {
+		return A2(
+			$elm$core$Maybe$withDefault,
+			_Utils_Tuple2(schema, $elm$core$Platform$Cmd$none),
+			A2(
+				$elm$core$Maybe$map,
+				function (layout) {
+					return _Utils_Tuple2(
+						A2(
+							$author$project$Updates$Helpers$setLayout,
+							function (_v0) {
+								return layout;
+							},
+							_Utils_update(
+								schema,
+								{
+									cB: $elm$core$Maybe$Just(name)
+								})),
+						$elm$core$Platform$Cmd$batch(
+							_List_fromArray(
+								[
+									$author$project$Ports$observeTablesSize(
+									$elm$core$Dict$keys(layout.by)),
+									$author$project$Ports$activateTooltipsAndPopovers
+								])));
+				},
+				A2($elm$core$Dict$get, name, schema.cC)));
+	});
+var $author$project$Models$GotSampleData = F4(
+	function (a, b, c, d) {
+		return {$: 8, a: a, b: b, c: c, d: d};
+	});
+var $elm$http$Http$BadStatus_ = F2(
+	function (a, b) {
+		return {$: 3, a: a, b: b};
+	});
+var $elm$http$Http$BadUrl_ = function (a) {
+	return {$: 0, a: a};
+};
+var $elm$http$Http$GoodStatus_ = F2(
+	function (a, b) {
+		return {$: 4, a: a, b: b};
+	});
+var $elm$http$Http$NetworkError_ = {$: 2};
+var $elm$http$Http$Receiving = function (a) {
+	return {$: 1, a: a};
+};
+var $elm$http$Http$Sending = function (a) {
+	return {$: 0, a: a};
+};
+var $elm$http$Http$Timeout_ = {$: 1};
+var $elm$core$Maybe$isJust = function (maybe) {
+	if (!maybe.$) {
+		return true;
+	} else {
+		return false;
+	}
+};
 var $elm$http$Http$emptyBody = _Http_emptyBody;
 var $elm$http$Http$stringResolver = A2(_Http_expect, '', $elm$core$Basics$identity);
 var $elm$core$Task$fail = _Scheduler_fail;
@@ -10439,7 +10848,7 @@ var $elm$http$Http$task = function (r) {
 		_Http_toTask,
 		0,
 		$elm$http$Http$resultToTask,
-		{bF: false, bI: r.bI, ad: r.dn, cf: r.cf, cH: r.cH, dP: r.dP, by: $elm$core$Maybe$Nothing, dV: r.dV});
+		{bL: false, bN: r.bN, al: r.dr, ci: r.ci, cJ: r.cJ, dS: r.dS, bE: $elm$core$Maybe$Nothing, dY: r.dY});
 };
 var $elm$http$Http$BadStatus = function (a) {
 	return {$: 3, a: a};
@@ -10462,7 +10871,7 @@ var $author$project$Commands$FetchSample$toResult = function (response) {
 		case 3:
 			var metadata = response.a;
 			return $elm$core$Result$Err(
-				$elm$http$Http$BadStatus(metadata.dE));
+				$elm$http$Http$BadStatus(metadata.dI));
 		default:
 			var body = response.b;
 			return $elm$core$Result$Ok(body);
@@ -10474,23 +10883,23 @@ var $author$project$Commands$FetchSample$httpGet = function (path) {
 		function (now) {
 			return $elm$http$Http$task(
 				{
-					bI: $elm$http$Http$emptyBody,
-					cf: _List_Nil,
-					cH: 'GET',
-					dn: $elm$http$Http$stringResolver(
+					bN: $elm$http$Http$emptyBody,
+					ci: _List_Nil,
+					cJ: 'GET',
+					dr: $elm$http$Http$stringResolver(
 						function (res) {
 							return $elm$core$Result$Ok(
 								_Utils_Tuple2(
 									now,
 									$author$project$Commands$FetchSample$toResult(res)));
 						}),
-					dP: $elm$core$Maybe$Nothing,
-					dV: path
+					dS: $elm$core$Maybe$Nothing,
+					dY: path
 				});
 		},
 		$elm$time$Time$now);
 };
-var $author$project$Conf$schemaSamples = $pzp1997$assoc_list$AssocList$fromList(
+var $author$project$Conf$schemaSamples = $elm$core$Dict$fromList(
 	$elm$core$List$reverse(
 		_List_fromArray(
 			[
@@ -10512,22 +10921,8 @@ var $author$project$Commands$FetchSample$loadSample = function (name) {
 					},
 					$author$project$Commands$FetchSample$httpGet(path));
 			},
-			A2($pzp1997$assoc_list$AssocList$get, name, $author$project$Conf$schemaSamples)));
+			A2($elm$core$Dict$get, name, $author$project$Conf$schemaSamples)));
 };
-var $pzp1997$assoc_list$AssocList$map = F2(
-	function (alter, _v0) {
-		var alist = _v0;
-		return A2(
-			$elm$core$List$map,
-			function (_v1) {
-				var key = _v1.a;
-				var value = _v1.b;
-				return _Utils_Tuple2(
-					key,
-					A2(alter, key, value));
-			},
-			alist);
-	});
 var $author$project$Ports$ReadFile = function (a) {
 	return {$: 9, a: a};
 };
@@ -10557,27 +10952,19 @@ var $author$project$Updates$Helpers$setSchemaWithCmd = F2(
 							return _Utils_update(
 								item,
 								{
-									dr: $elm$core$Maybe$Just(schema)
+									dv: $elm$core$Maybe$Just(schema)
 								});
 						},
 						transform(s));
 				},
-				item.dr));
+				item.dv));
 	});
 var $author$project$Updates$Helpers$setSwitch = F2(
 	function (transform, item) {
 		return _Utils_update(
 			item,
 			{
-				bs: transform(item.bs)
-			});
-	});
-var $author$project$Updates$Helpers$setTables = F2(
-	function (transform, item) {
-		return _Utils_update(
-			item,
-			{
-				bu: transform(item.bu)
+				bw: transform(item.bw)
 			});
 	});
 var $author$project$Updates$Helpers$setTime = F2(
@@ -10585,7 +10972,7 @@ var $author$project$Updates$Helpers$setTime = F2(
 		return _Utils_update(
 			item,
 			{
-				bw: transform(item.bw)
+				bC: transform(item.bC)
 			});
 	});
 var $elm$core$List$drop = F2(
@@ -10645,16 +11032,16 @@ var $author$project$Models$Schema$computeColor = function (_v0) {
 	var table = _v0.b;
 	return A2(
 		$elm$core$Maybe$withDefault,
-		$author$project$Conf$conf.b_.bS,
+		$author$project$Conf$conf.b2.bX,
 		A2(
 			$elm$core$Maybe$andThen,
 			function (index) {
-				return A2($author$project$Libs$List$get, index, $author$project$Conf$conf.bT);
+				return A2($author$project$Libs$List$get, index, $author$project$Conf$conf.bY);
 			},
 			A2(
 				$elm$core$Maybe$map,
 				$elm$core$Basics$modBy(
-					$elm$core$List$length($author$project$Conf$conf.bT)),
+					$elm$core$List$length($author$project$Conf$conf.bY)),
 				A2(
 					$elm$core$Maybe$map,
 					$author$project$Libs$String$hashCode,
@@ -10668,25 +11055,26 @@ var $author$project$Models$Schema$extractColumnIndex = function (_v0) {
 var $elm$core$List$sortBy = _List_sortBy;
 var $author$project$Models$Schema$initTableProps = function (table) {
 	return {
-		bS: $author$project$Models$Schema$computeColor(table.ck),
-		H: A2(
+		bX: $author$project$Models$Schema$computeColor(table.aV),
+		L: A2(
 			$elm$core$List$map,
 			function ($) {
-				return $._;
+				return $.ag;
 			},
 			A2(
 				$elm$core$List$sortBy,
 				function (c) {
-					return $author$project$Models$Schema$extractColumnIndex(c.co);
+					return $author$project$Models$Schema$extractColumnIndex(c.cr);
 				},
-				$pzp1997$assoc_list$AssocList$values(table.H))),
-		a6: A2($author$project$Models$Utils$Position, 0, 0),
-		dw: false
+				$author$project$Libs$Nel$toList(
+					$author$project$Libs$Ned$values(table.L)))),
+		bd: A2($author$project$Libs$Position$Position, 0, 0),
+		dA: false
 	};
 };
-var $pzp1997$assoc_list$AssocList$member = F2(
-	function (targetKey, dict) {
-		var _v0 = A2($pzp1997$assoc_list$AssocList$get, targetKey, dict);
+var $elm$core$Dict$member = F2(
+	function (key, dict) {
+		var _v0 = A2($elm$core$Dict$get, key, dict);
 		if (!_v0.$) {
 			return true;
 		} else {
@@ -10713,9 +11101,9 @@ var $author$project$Updates$Table$showAllTables = function (schema) {
 				return _Utils_update(
 					l,
 					{
-						cj: $pzp1997$assoc_list$AssocList$empty,
-						bu: A2(
-							$pzp1997$assoc_list$AssocList$map,
+						cm: $elm$core$Dict$empty,
+						by: A2(
+							$elm$core$Dict$map,
 							F2(
 								function (id, t) {
 									return A2(
@@ -10723,10 +11111,10 @@ var $author$project$Updates$Table$showAllTables = function (schema) {
 										$author$project$Models$Schema$initTableProps(t),
 										A2(
 											$author$project$Libs$Maybe$orElse,
-											A2($pzp1997$assoc_list$AssocList$get, id, l.cj),
-											A2($pzp1997$assoc_list$AssocList$get, id, l.bu)));
+											A2($elm$core$Dict$get, id, l.cm),
+											A2($elm$core$Dict$get, id, l.by)));
 								}),
-							schema.bu)
+							schema.by)
 					});
 			},
 			schema),
@@ -10737,9 +11125,9 @@ var $author$project$Updates$Table$showAllTables = function (schema) {
 					A2(
 						$elm$core$List$filter,
 						function (id) {
-							return !A2($pzp1997$assoc_list$AssocList$member, id, schema.cx.bu);
+							return !A2($elm$core$Dict$member, id, schema.cA.by);
 						},
-						$pzp1997$assoc_list$AssocList$keys(schema.bu))),
+						$elm$core$Dict$keys(schema.by))),
 					$author$project$Ports$activateTooltipsAndPopovers
 				])));
 };
@@ -10781,18 +11169,18 @@ var $author$project$Updates$Table$showColumn = F4(
 		return _Utils_update(
 			layout,
 			{
-				bu: A3(
-					$pzp1997$assoc_list$AssocList$update,
+				by: A3(
+					$elm$core$Dict$update,
 					table,
 					$elm$core$Maybe$map(
 						function (t) {
 							return _Utils_update(
 								t,
 								{
-									H: A3($author$project$Libs$List$addAt, column, index, t.H)
+									L: A3($author$project$Libs$List$addAt, column, index, t.L)
 								});
 						}),
-					layout.bu)
+					layout.by)
 			});
 	});
 var $author$project$Ports$observeTableSize = function (id) {
@@ -10802,11 +11190,32 @@ var $author$project$Ports$observeTableSize = function (id) {
 				$author$project$Models$Schema$tableIdAsHtmlId(id)
 			]));
 };
+var $author$project$Updates$Table$performShowTable = F3(
+	function (id, table, schema) {
+		return A2(
+			$author$project$Updates$Helpers$setLayout,
+			function (l) {
+				return _Utils_update(
+					l,
+					{
+						by: A3(
+							$elm$core$Dict$update,
+							id,
+							function (_v0) {
+								return $elm$core$Maybe$Just(
+									A2(
+										$elm$core$Maybe$withDefault,
+										$author$project$Models$Schema$initTableProps(table),
+										A2($elm$core$Dict$get, id, l.cm)));
+							},
+							l.by)
+					});
+			},
+			schema);
+	});
 var $author$project$Models$Schema$showTableName = F2(
-	function (_v0, _v1) {
-		var schema = _v0;
-		var table = _v1;
-		return _Utils_eq(schema, $author$project$Conf$conf.b_.dr) ? table : (schema + ('.' + table));
+	function (schema, table) {
+		return _Utils_eq(schema, $author$project$Conf$conf.b2.dv) ? table : (schema + ('.' + table));
 	});
 var $author$project$Models$Schema$showTableId = function (_v0) {
 	var schema = _v0.a;
@@ -10815,30 +11224,14 @@ var $author$project$Models$Schema$showTableId = function (_v0) {
 };
 var $author$project$Updates$Table$showTable = F2(
 	function (id, schema) {
-		var _v0 = A2($pzp1997$assoc_list$AssocList$get, id, schema.bu);
+		var _v0 = A2($elm$core$Dict$get, id, schema.by);
 		if (!_v0.$) {
 			var table = _v0.a;
-			return _Utils_Tuple2(
-				A2(
-					$author$project$Updates$Helpers$setLayout,
-					function (l) {
-						return _Utils_update(
-							l,
-							{
-								bu: A3(
-									$pzp1997$assoc_list$AssocList$update,
-									id,
-									function (_v1) {
-										return $elm$core$Maybe$Just(
-											A2(
-												$elm$core$Maybe$withDefault,
-												$author$project$Models$Schema$initTableProps(table),
-												A2($pzp1997$assoc_list$AssocList$get, id, l.cj)));
-									},
-									l.bu)
-							});
-					},
-					schema),
+			return A2($elm$core$Dict$member, id, schema.cA.by) ? _Utils_Tuple2(
+				schema,
+				$author$project$Ports$toastInfo(
+					'Table <b>' + ($author$project$Models$Schema$showTableId(id) + '</b> already shown'))) : _Utils_Tuple2(
+				A3($author$project$Updates$Table$performShowTable, id, table, schema),
 				$elm$core$Platform$Cmd$batch(
 					_List_fromArray(
 						[
@@ -10852,6 +11245,247 @@ var $author$project$Updates$Table$showTable = F2(
 					'Can\'t show table <b>' + ($author$project$Models$Schema$showTableId(id) + '</b>: not found')));
 		}
 	});
+var $author$project$Updates$Table$showTables = F2(
+	function (ids, schema) {
+		return function (_v4) {
+			var s = _v4.a;
+			var _v5 = _v4.b;
+			var found = _v5.a;
+			var shown = _v5.b;
+			var notFound = _v5.c;
+			return _Utils_Tuple2(
+				s,
+				$elm$core$Platform$Cmd$batch(
+					_Utils_ap(
+						A3(
+							$author$project$Libs$Bool$cond,
+							$elm$core$List$isEmpty(found),
+							_List_Nil,
+							_List_fromArray(
+								[
+									$author$project$Ports$observeTablesSize(found),
+									$author$project$Ports$activateTooltipsAndPopovers
+								])),
+						_Utils_ap(
+							A3(
+								$author$project$Libs$Bool$cond,
+								$elm$core$List$isEmpty(shown),
+								_List_Nil,
+								_List_fromArray(
+									[
+										$author$project$Ports$toastInfo(
+										'Tables ' + (A2(
+											$elm$core$String$join,
+											', ',
+											A2($elm$core$List$map, $author$project$Models$Schema$showTableId, shown)) + ' are ealready shown'))
+									])),
+							A3(
+								$author$project$Libs$Bool$cond,
+								$elm$core$List$isEmpty(notFound),
+								_List_Nil,
+								_List_fromArray(
+									[
+										$author$project$Ports$toastInfo(
+										'Can\'t show tables ' + (A2(
+											$elm$core$String$join,
+											', ',
+											A2($elm$core$List$map, $author$project$Models$Schema$showTableId, notFound)) + ': can\'t found them'))
+									]))))));
+		}(
+			A3(
+				$elm$core$List$foldr,
+				F2(
+					function (_v0, _v1) {
+						var id = _v0.a;
+						var maybeTable = _v0.b;
+						var s = _v1.a;
+						var _v2 = _v1.b;
+						var found = _v2.a;
+						var shown = _v2.b;
+						var notFound = _v2.c;
+						if (!maybeTable.$) {
+							var table = maybeTable.a;
+							return A2($elm$core$Dict$member, id, schema.cA.by) ? _Utils_Tuple2(
+								s,
+								_Utils_Tuple3(
+									found,
+									A2($elm$core$List$cons, id, shown),
+									notFound)) : _Utils_Tuple2(
+								A3($author$project$Updates$Table$performShowTable, id, table, s),
+								_Utils_Tuple3(
+									A2($elm$core$List$cons, id, found),
+									shown,
+									notFound));
+						} else {
+							return _Utils_Tuple2(
+								s,
+								_Utils_Tuple3(
+									found,
+									shown,
+									A2($elm$core$List$cons, id, notFound)));
+						}
+					}),
+				_Utils_Tuple2(
+					schema,
+					_Utils_Tuple3(_List_Nil, _List_Nil, _List_Nil)),
+				A2(
+					$author$project$Libs$List$zipWith,
+					function (id) {
+						return A2($elm$core$Dict$get, id, schema.by);
+					},
+					ids)));
+	});
+var $author$project$Views$Helpers$extractColumnType = function (_v0) {
+	var kind = _v0;
+	return kind;
+};
+var $author$project$Libs$Ned$get = F2(
+	function (key, ned) {
+		return _Utils_eq(ned.t.a, key) ? $elm$core$Maybe$Just(ned.t.b) : A2($elm$core$Dict$get, key, ned.y);
+	});
+var $author$project$Libs$Nel$any = F2(
+	function (predicate, nel) {
+		return A2(
+			$elm$core$List$any,
+			predicate,
+			$author$project$Libs$Nel$toList(nel));
+	});
+var $author$project$Models$Schema$hasColumn = F2(
+	function (column, columns) {
+		return A2(
+			$author$project$Libs$Nel$any,
+			function (c) {
+				return _Utils_eq(c, column);
+			},
+			columns);
+	});
+var $author$project$Models$Schema$inIndexes = F2(
+	function (table, column) {
+		return A2(
+			$elm$core$List$filter,
+			function (i) {
+				return A2($author$project$Models$Schema$hasColumn, column, i.L);
+			},
+			table.cs);
+	});
+var $author$project$Models$Schema$inPrimaryKey = F2(
+	function (table, column) {
+		return A2(
+			$author$project$Libs$Maybe$filter,
+			function (_v0) {
+				var columns = _v0.L;
+				return A2($author$project$Models$Schema$hasColumn, column, columns);
+			},
+			table.dn);
+	});
+var $author$project$Models$Schema$inUniques = F2(
+	function (table, column) {
+		return A2(
+			$elm$core$List$filter,
+			function (u) {
+				return A2($author$project$Models$Schema$hasColumn, column, u.L);
+			},
+			table.dV);
+	});
+var $author$project$Libs$Maybe$isNothing = function (maybe) {
+	return _Utils_eq(maybe, $elm$core$Maybe$Nothing);
+};
+var $author$project$Libs$Maybe$isJust = function (maybe) {
+	return !$author$project$Libs$Maybe$isNothing(maybe);
+};
+var $author$project$Libs$List$nonEmpty = function (list) {
+	return !$elm$core$List$isEmpty(list);
+};
+var $author$project$Libs$Ned$size = function (ned) {
+	return 1 + $elm$core$Dict$size(ned.y);
+};
+var $author$project$Updates$Table$sortBy = F3(
+	function (kind, table, columns) {
+		return A2(
+			$elm$core$List$map,
+			$elm$core$Tuple$first,
+			A2(
+				$elm$core$List$sortBy,
+				function (_v0) {
+					var name = _v0.a;
+					var col = _v0.b;
+					var _v1 = _Utils_Tuple2(kind, col);
+					_v1$4:
+					while (true) {
+						if (!_v1.b.$) {
+							switch (_v1.a) {
+								case 'sql':
+									var c = _v1.b.a;
+									return _Utils_Tuple2(
+										$author$project$Models$Schema$extractColumnIndex(c.cr),
+										'');
+								case 'name':
+									return _Utils_Tuple2(0, name);
+								case 'type':
+									var c = _v1.b.a;
+									return _Utils_Tuple2(
+										0,
+										$author$project$Views$Helpers$extractColumnType(c.cy));
+								case 'property':
+									var c = _v1.b.a;
+									return $author$project$Libs$Maybe$isJust(
+										A2($author$project$Models$Schema$inPrimaryKey, table, name)) ? _Utils_Tuple2(0, name) : ($author$project$Libs$Maybe$isJust(c.ch) ? _Utils_Tuple2(1, name) : ($author$project$Libs$List$nonEmpty(
+										A2($author$project$Models$Schema$inUniques, table, name)) ? _Utils_Tuple2(2, name) : ($author$project$Libs$List$nonEmpty(
+										A2($author$project$Models$Schema$inIndexes, table, name)) ? _Utils_Tuple2(3, name) : _Utils_Tuple2(4, name))));
+								default:
+									break _v1$4;
+							}
+						} else {
+							break _v1$4;
+						}
+					}
+					return _Utils_Tuple2(
+						$author$project$Libs$Ned$size(table.L),
+						name);
+				},
+				A2(
+					$author$project$Libs$List$zipWith,
+					function (name) {
+						return A2($author$project$Libs$Ned$get, name, table.L);
+					},
+					columns)));
+	});
+var $author$project$Updates$Table$sortColumns = F3(
+	function (id, kind, schema) {
+		return A2(
+			$elm$core$Maybe$withDefault,
+			schema,
+			A2(
+				$elm$core$Maybe$map,
+				function (table) {
+					return A2(
+						$author$project$Updates$Helpers$setLayout,
+						function (l) {
+							return _Utils_update(
+								l,
+								{
+									by: A3(
+										$elm$core$Dict$update,
+										id,
+										$elm$core$Maybe$map(
+											function (t) {
+												return _Utils_update(
+													t,
+													{
+														L: A3($author$project$Updates$Table$sortBy, kind, table, t.L)
+													});
+											}),
+										l.by)
+								});
+						},
+						schema);
+				},
+				A2($elm$core$Dict$get, id, schema.by)));
+	});
+var $author$project$Ports$toastWarning = function (message) {
+	return $author$project$Ports$showToast(
+		{cy: 'warning', a1: message});
+};
 var $zaboco$elm_draggable$Cmd$Extra$message = function (x) {
 	return A2(
 		$elm$core$Task$perform,
@@ -10873,7 +11507,7 @@ var $zaboco$elm_draggable$Internal$DraggingTentative = F2(
 	});
 var $zaboco$elm_draggable$Internal$distanceTo = F2(
 	function (end, start) {
-		return _Utils_Tuple2(end.bC - start.bC, end.bD - start.bD);
+		return _Utils_Tuple2(end.bI - start.bI, end.bJ - start.bJ);
 	});
 var $zaboco$elm_draggable$Internal$updateAndEmit = F3(
 	function (config, msg, drag) {
@@ -10889,7 +11523,7 @@ var $zaboco$elm_draggable$Internal$updateAndEmit = F3(
 						var initialPosition = _v2.b;
 						return _Utils_Tuple2(
 							A2($zaboco$elm_draggable$Internal$DraggingTentative, key, initialPosition),
-							config.c6(key));
+							config.c9(key));
 					} else {
 						break _v0$5;
 					}
@@ -10901,14 +11535,14 @@ var $zaboco$elm_draggable$Internal$updateAndEmit = F3(
 							var oldPosition = _v3.b;
 							return _Utils_Tuple2(
 								$zaboco$elm_draggable$Internal$Dragging(oldPosition),
-								config.c3(key));
+								config.c5(key));
 						case 2:
 							var _v4 = _v0.a;
 							var key = _v4.a;
 							var _v5 = _v0.b;
 							return _Utils_Tuple2(
 								$zaboco$elm_draggable$Internal$NotDragging,
-								config.c0(key));
+								config.c2(key));
 						default:
 							break _v0$5;
 					}
@@ -10919,11 +11553,11 @@ var $zaboco$elm_draggable$Internal$updateAndEmit = F3(
 							var newPosition = _v0.b.a;
 							return _Utils_Tuple2(
 								$zaboco$elm_draggable$Internal$Dragging(newPosition),
-								config.c1(
+								config.c3(
 									A2($zaboco$elm_draggable$Internal$distanceTo, newPosition, oldPosition)));
 						case 2:
 							var _v6 = _v0.b;
-							return _Utils_Tuple2($zaboco$elm_draggable$Internal$NotDragging, config.c2);
+							return _Utils_Tuple2($zaboco$elm_draggable$Internal$NotDragging, config.c4);
 						default:
 							break _v0$5;
 					}
@@ -10945,45 +11579,43 @@ var $zaboco$elm_draggable$Draggable$updateDraggable = F3(
 	});
 var $zaboco$elm_draggable$Draggable$update = F3(
 	function (config, msg, model) {
-		var _v0 = A3($zaboco$elm_draggable$Draggable$updateDraggable, config, msg, model.b3);
+		var _v0 = A3($zaboco$elm_draggable$Draggable$updateDraggable, config, msg, model.b7);
 		var dragState = _v0.a;
 		var dragCmd = _v0.b;
 		return _Utils_Tuple2(
 			_Utils_update(
 				model,
-				{b3: dragState}),
+				{b7: dragState}),
 			dragCmd);
 	});
 var $author$project$Updates$Layout$updateLayout = F2(
 	function (name, schema) {
-		return A2(
-			$author$project$Updates$Helpers$map,
-			function (newSchema) {
-				return _Utils_Tuple2(
-					newSchema,
-					$author$project$Ports$saveSchema(newSchema));
-			},
+		return function (newSchema) {
+			return _Utils_Tuple2(
+				newSchema,
+				$author$project$Ports$saveSchema(newSchema));
+		}(
 			A2(
 				$author$project$Updates$Helpers$setLayouts,
 				A2(
-					$pzp1997$assoc_list$AssocList$update,
+					$elm$core$Dict$update,
 					name,
 					function (_v0) {
-						return $elm$core$Maybe$Just(schema.cx);
+						return $elm$core$Maybe$Just(schema.cA);
 					}),
 				_Utils_update(
 					schema,
 					{
-						cy: $elm$core$Maybe$Just(name)
+						cB: $elm$core$Maybe$Just(name)
 					})));
 	});
 var $author$project$Update$getArea = F2(
 	function (canvasSize, canvas) {
-		return {bJ: (canvasSize.cg - canvas.a6.bx) / canvas.d$, aT: (0 - canvas.a6.aT) / canvas.d$, dp: (canvasSize.dX - canvas.a6.aT) / canvas.d$, bx: (0 - canvas.a6.bx) / canvas.d$};
+		return {bO: (canvasSize.cj - canvas.bd.bD) / canvas.d2, a_: (0 - canvas.bd.a_) / canvas.d2, dt: (canvasSize.d_ - canvas.bd.a_) / canvas.d2, bD: (0 - canvas.bd.bD) / canvas.d2};
 	});
 var $author$project$Models$InitializedTable = F2(
 	function (a, b) {
-		return {$: 15, a: a, b: b};
+		return {$: 16, a: a, b: b};
 	});
 var $elm$random$Random$Generate = $elm$core$Basics$identity;
 var $elm$random$Random$Seed = F2(
@@ -11065,9 +11697,6 @@ var $elm$random$Random$generate = F2(
 		return $elm$random$Random$command(
 			A2($elm$random$Random$map, tagger, generator));
 	});
-var $elm$core$Basics$negate = function (n) {
-	return -n;
-};
 var $elm$core$Basics$abs = function (n) {
 	return (n < 0) ? (-n) : n;
 };
@@ -11114,15 +11743,15 @@ var $author$project$Commands$InitializeTable$positionGen = F2(
 	function (size, area) {
 		return A3(
 			$elm$random$Random$map2,
-			$author$project$Models$Utils$Position,
+			$author$project$Libs$Position$Position,
 			A2(
 				$elm$random$Random$float,
-				area.aT,
-				A2($elm$core$Basics$max, area.aT, area.dp - size.dX)),
+				area.a_,
+				A2($elm$core$Basics$max, area.a_, area.dt - size.d_)),
 			A2(
 				$elm$random$Random$float,
-				area.bx,
-				A2($elm$core$Basics$max, area.bx, area.bJ - size.cg)));
+				area.bD,
+				A2($elm$core$Basics$max, area.bD, area.bO - size.cj)));
 	});
 var $author$project$Commands$InitializeTable$initializeTable = F3(
 	function (size, area, id) {
@@ -11163,17 +11792,17 @@ var $author$project$Update$initializeTableOnFirstSize = F2(
 						var canvasSize = _v1.c;
 						return A3(
 							$author$project$Commands$InitializeTable$initializeTable,
-							change.dA,
-							A2($author$project$Update$getArea, canvasSize, s.cx.bM),
-							t.ck);
+							change.dE,
+							A2($author$project$Update$getArea, canvasSize, s.cA.bR),
+							t.aV);
 					},
 					A2(
 						$author$project$Libs$Maybe$filter,
 						function (_v0) {
 							var props = _v0.b;
 							return _Utils_eq(
-								props.a6,
-								A2($author$project$Models$Utils$Position, 0, 0)) && (!A2($pzp1997$assoc_list$AssocList$member, change.ck, model.bm));
+								props.bd,
+								A2($author$project$Libs$Position$Position, 0, 0)) && (!A2($elm$core$Dict$member, change.aV, model.bq));
 						},
 						A4(
 							$elm$core$Maybe$map3,
@@ -11182,35 +11811,35 @@ var $author$project$Update$initializeTableOnFirstSize = F2(
 									return _Utils_Tuple3(t, props, canvasSize);
 								}),
 							A2(
-								$pzp1997$assoc_list$AssocList$get,
-								$author$project$Models$Schema$htmlIdAsTableId(change.ck),
-								s.bu),
+								$elm$core$Dict$get,
+								$author$project$Models$Schema$htmlIdAsTableId(change.aV),
+								s.by),
 							A2(
-								$pzp1997$assoc_list$AssocList$get,
-								$author$project$Models$Schema$htmlIdAsTableId(change.ck),
-								s.cx.bu),
-							A2($pzp1997$assoc_list$AssocList$get, $author$project$Conf$conf.cm.b5, model.bm))));
+								$elm$core$Dict$get,
+								$author$project$Models$Schema$htmlIdAsTableId(change.aV),
+								s.cA.by),
+							A2($elm$core$Dict$get, $author$project$Conf$conf.cp.b9, model.bq))));
 			},
-			model.dr);
+			model.dv);
 	});
 var $author$project$Update$updateSize = F2(
 	function (change, model) {
 		return _Utils_update(
 			model,
 			{
-				bm: A3(
-					$pzp1997$assoc_list$AssocList$update,
-					change.ck,
+				bq: A3(
+					$elm$core$Dict$update,
+					change.aV,
 					function (_v0) {
 						return A3(
 							$author$project$Libs$Bool$cond,
 							_Utils_eq(
-								change.dA,
-								A2($author$project$Models$Utils$Size, 0, 0)),
+								change.dE,
+								A2($author$project$Libs$Size$Size, 0, 0)),
 							$elm$core$Maybe$Nothing,
-							$elm$core$Maybe$Just(change.dA));
+							$elm$core$Maybe$Just(change.dE));
 					},
-					model.bm)
+					model.bq)
 			});
 	});
 var $author$project$Update$updateSizes = F2(
@@ -11232,22 +11861,22 @@ var $author$project$Updates$Schema$useSchema = F2(
 				_List_Nil,
 				$elm$core$Maybe$Just(schema)));
 	});
-var $elm$core$Basics$clamp = F3(
-	function (low, high, number) {
-		return (_Utils_cmp(number, low) < 0) ? low : ((_Utils_cmp(number, high) > 0) ? high : number);
-	});
-var $author$project$Update$zoomCanvas = F2(
-	function (wheel, canvas) {
-		var newZoom = A3($elm$core$Basics$clamp, $author$project$Conf$conf.d$.cI, $author$project$Conf$conf.d$.cE, canvas.d$ + (wheel.b$.bD * $author$project$Conf$conf.d$.dD));
-		var zoomFactor = newZoom / canvas.d$;
-		var newTop = canvas.a6.bx - ((wheel.cK.bD - canvas.a6.bx) * (zoomFactor - 1));
-		var newLeft = canvas.a6.aT - ((wheel.cK.bC - canvas.a6.aT) * (zoomFactor - 1));
-		return _Utils_update(
+var $author$project$Updates$Canvas$zoomCanvas = F3(
+	function (sizes, delta, canvas) {
+		return A2(
+			$elm$core$Maybe$withDefault,
 			canvas,
-			{
-				a6: A2($author$project$Models$Utils$Position, newLeft, newTop),
-				d$: newZoom
-			});
+			A2(
+				$elm$core$Maybe$map,
+				function (size) {
+					return A3(
+						$author$project$Updates$Canvas$performZoom,
+						delta,
+						$author$project$Libs$Area$center(
+							A2($author$project$Models$Schema$viewportArea, size, canvas)),
+						canvas);
+				},
+				$author$project$Models$Schema$viewportSize(sizes)));
 	});
 var $author$project$Main$update = F2(
 	function (msg, model) {
@@ -11260,7 +11889,7 @@ var $author$project$Main$update = F2(
 						function (t) {
 							return _Utils_update(
 								t,
-								{cY: time});
+								{c_: time});
 						},
 						model),
 					$elm$core$Platform$Cmd$none);
@@ -11272,7 +11901,7 @@ var $author$project$Main$update = F2(
 						function (t) {
 							return _Utils_update(
 								t,
-								{d_: zone});
+								{d1: zone});
 						},
 						model),
 					$elm$core$Platform$Cmd$none);
@@ -11282,8 +11911,8 @@ var $author$project$Main$update = F2(
 					$elm$core$Platform$Cmd$batch(
 						_List_fromArray(
 							[
-								$author$project$Ports$hideOffcanvas($author$project$Conf$conf.cm.cF),
-								$author$project$Ports$showModal($author$project$Conf$conf.cm.ds),
+								$author$project$Ports$hideOffcanvas($author$project$Conf$conf.cp.cI),
+								$author$project$Ports$showModal($author$project$Conf$conf.cp.dw),
 								$author$project$Ports$loadSchemas
 							])));
 			case 3:
@@ -11298,7 +11927,7 @@ var $author$project$Main$update = F2(
 						function (s) {
 							return _Utils_update(
 								s,
-								{cC: true});
+								{cF: true});
 						},
 						model),
 					$author$project$Ports$readFile(file));
@@ -11310,7 +11939,7 @@ var $author$project$Main$update = F2(
 						function (s) {
 							return _Utils_update(
 								s,
-								{cC: true});
+								{cF: true});
 						},
 						model),
 					$author$project$Ports$readFile(file));
@@ -11331,12 +11960,12 @@ var $author$project$Main$update = F2(
 					_Utils_update(
 						model,
 						{
-							at: A2(
+							az: A2(
 								$elm$core$List$filter,
 								function (s) {
-									return !_Utils_eq(s.ck, schema.ck);
+									return !_Utils_eq(s.aV, schema.aV);
 								},
-								model.at)
+								model.az)
 						}),
 					$author$project$Ports$dropSchema(schema));
 			case 10:
@@ -11347,7 +11976,7 @@ var $author$project$Main$update = F2(
 				return _Utils_Tuple2(
 					_Utils_update(
 						model,
-						{du: search}),
+						{dy: search}),
 					$elm$core$Platform$Cmd$none);
 			case 12:
 				var id = msg.a;
@@ -11356,16 +11985,16 @@ var $author$project$Main$update = F2(
 						$author$project$Updates$Helpers$setSchema,
 						$author$project$Updates$Helpers$setLayout(
 							$author$project$Updates$Helpers$setTables(
-								$pzp1997$assoc_list$AssocList$map(
+								$elm$core$Dict$map(
 									F2(
 										function (i, t) {
 											return _Utils_update(
 												t,
 												{
-													dw: A3(
+													dA: A3(
 														$author$project$Libs$Bool$cond,
 														_Utils_eq(i, id),
-														!t.dw,
+														!t.dA,
 														false)
 												});
 										})))),
@@ -11387,6 +12016,12 @@ var $author$project$Main$update = F2(
 					$author$project$Updates$Table$showTable(id),
 					model);
 			case 15:
+				var ids = msg.a;
+				return A2(
+					$author$project$Updates$Helpers$setSchemaWithCmd,
+					$author$project$Updates$Table$showTables(ids),
+					model);
+			case 16:
 				var id = msg.a;
 				var position = msg.b;
 				return _Utils_Tuple2(
@@ -11399,22 +12034,22 @@ var $author$project$Main$update = F2(
 								function (t) {
 									return _Utils_update(
 										t,
-										{a6: position});
+										{bd: position});
 								})),
 						model),
 					$elm$core$Platform$Cmd$none);
-			case 16:
+			case 17:
 				return _Utils_Tuple2(
 					A2(
 						$author$project$Updates$Helpers$setSchema,
 						$author$project$Updates$Helpers$setLayout($author$project$Updates$Table$hideAllTables),
 						model),
 					$elm$core$Platform$Cmd$none);
-			case 17:
-				return A2($author$project$Updates$Helpers$setSchemaWithCmd, $author$project$Updates$Table$showAllTables, model);
 			case 18:
-				var table = msg.a.bt;
-				var column = msg.a._;
+				return A2($author$project$Updates$Helpers$setSchemaWithCmd, $author$project$Updates$Table$showAllTables, model);
+			case 19:
+				var table = msg.a.dM;
+				var column = msg.a.ag;
 				return _Utils_Tuple2(
 					A2(
 						$author$project$Updates$Helpers$setSchema,
@@ -11422,9 +12057,9 @@ var $author$project$Main$update = F2(
 							A2($author$project$Updates$Table$hideColumn, table, column)),
 						model),
 					$elm$core$Platform$Cmd$none);
-			case 19:
-				var table = msg.a.bt;
-				var column = msg.a._;
+			case 20:
+				var table = msg.a.dM;
+				var column = msg.a.ag;
 				var index = msg.b;
 				return _Utils_Tuple2(
 					A2(
@@ -11433,92 +12068,119 @@ var $author$project$Main$update = F2(
 							A3($author$project$Updates$Table$showColumn, table, column, index)),
 						model),
 					$author$project$Ports$activateTooltipsAndPopovers);
-			case 20:
-				var zoom = msg.a;
+			case 21:
+				var id = msg.a;
+				var kind = msg.b;
+				return _Utils_Tuple2(
+					A2(
+						$author$project$Updates$Helpers$setSchema,
+						A2($author$project$Updates$Table$sortColumns, id, kind),
+						model),
+					$author$project$Ports$activateTooltipsAndPopovers);
+			case 22:
+				var event = msg.a;
 				return _Utils_Tuple2(
 					A2(
 						$author$project$Updates$Helpers$setSchema,
 						$author$project$Updates$Helpers$setLayout(
 							$author$project$Updates$Helpers$setCanvas(
-								$author$project$Update$zoomCanvas(zoom))),
+								$author$project$Updates$Canvas$handleWheel(event))),
 						model),
 					$elm$core$Platform$Cmd$none);
-			case 21:
+			case 23:
+				var delta = msg.a;
+				return _Utils_Tuple2(
+					A2(
+						$author$project$Updates$Helpers$setSchema,
+						$author$project$Updates$Helpers$setLayout(
+							$author$project$Updates$Helpers$setCanvas(
+								A2($author$project$Updates$Canvas$zoomCanvas, model.bq, delta))),
+						model),
+					$elm$core$Platform$Cmd$none);
+			case 24:
+				return _Utils_Tuple2(
+					A2(
+						$author$project$Updates$Helpers$setSchema,
+						$author$project$Updates$Helpers$setLayout(
+							$author$project$Updates$Canvas$fitCanvas(model.bq)),
+						model),
+					$elm$core$Platform$Cmd$none);
+			case 25:
 				var dragMsg = msg.a;
 				return A3($zaboco$elm_draggable$Draggable$update, $author$project$Update$dragConfig, dragMsg, model);
-			case 22:
+			case 26:
 				var id = msg.a;
 				return _Utils_Tuple2(
 					_Utils_update(
 						model,
 						{
-							aF: $elm$core$Maybe$Just(id)
+							aK: $elm$core$Maybe$Just(id)
 						}),
 					$elm$core$Platform$Cmd$none);
-			case 23:
+			case 27:
 				return _Utils_Tuple2(
 					_Utils_update(
 						model,
-						{aF: $elm$core$Maybe$Nothing}),
+						{aK: $elm$core$Maybe$Nothing}),
 					$elm$core$Platform$Cmd$none);
-			case 24:
+			case 28:
 				var delta = msg.a;
 				return A2($author$project$Update$dragItem, model, delta);
-			case 25:
+			case 29:
 				var name = msg.a;
 				return _Utils_Tuple2(
 					_Utils_update(
 						model,
 						{
-							aZ: A3(
+							a4: A3(
 								$author$project$Libs$Bool$cond,
 								!$elm$core$String$length(name),
 								$elm$core$Maybe$Nothing,
 								$elm$core$Maybe$Just(name))
 						}),
 					$elm$core$Platform$Cmd$none);
-			case 26:
+			case 30:
 				var name = msg.a;
 				return A2(
 					$author$project$Updates$Helpers$setSchemaWithCmd,
 					$author$project$Updates$Layout$createLayout(name),
 					_Utils_update(
 						model,
-						{aZ: $elm$core$Maybe$Nothing}));
-			case 27:
+						{a4: $elm$core$Maybe$Nothing}));
+			case 31:
 				var name = msg.a;
 				return A2(
 					$author$project$Updates$Helpers$setSchemaWithCmd,
 					$author$project$Updates$Layout$loadLayout(name),
 					model);
-			case 28:
+			case 32:
 				var name = msg.a;
 				return A2(
 					$author$project$Updates$Helpers$setSchemaWithCmd,
 					$author$project$Updates$Layout$updateLayout(name),
 					model);
-			case 29:
+			case 33:
 				var name = msg.a;
 				return A2(
 					$author$project$Updates$Helpers$setSchemaWithCmd,
 					$author$project$Updates$Layout$deleteLayout(name),
 					model);
-			case 30:
+			case 34:
 				var confirm = msg.a;
 				return _Utils_Tuple2(
 					_Utils_update(
 						model,
-						{bU: confirm}),
-					$author$project$Ports$showModal($author$project$Conf$conf.cm.bU));
-			case 31:
+						{bZ: confirm}),
+					$author$project$Ports$showModal($author$project$Conf$conf.cp.bZ));
+			case 35:
 				var answer = msg.a;
 				var cmd = msg.b;
 				return _Utils_Tuple2(
 					_Utils_update(
 						model,
-						{bU: $author$project$Models$initConfirm}),
+						{bZ: $author$project$Models$initConfirm}),
 					A3($author$project$Libs$Bool$cond, answer, cmd, $elm$core$Platform$Cmd$none));
-			case 32:
+			case 36:
 				switch (msg.a.$) {
 					case 2:
 						var sizes = msg.a.a;
@@ -11530,7 +12192,7 @@ var $author$project$Main$update = F2(
 						return _Utils_Tuple2(
 							_Utils_update(
 								model,
-								{at: schemas}),
+								{az: schemas}),
 							$elm$core$Platform$Cmd$batch(
 								A2(
 									$elm$core$List$map,
@@ -11547,6 +12209,39 @@ var $author$project$Main$update = F2(
 						var file = _v3.b;
 						var content = _v3.c;
 						return A4($author$project$Updates$Schema$createSchema, now, file, content, model);
+					case 3:
+						switch (msg.a.a) {
+							case 'save':
+								return _Utils_Tuple2(
+									model,
+									A2(
+										$elm$core$Maybe$withDefault,
+										$author$project$Ports$toastWarning('No schema to save'),
+										A2(
+											$elm$core$Maybe$map,
+											function (s) {
+												return $elm$core$Platform$Cmd$batch(
+													_List_fromArray(
+														[
+															$author$project$Ports$saveSchema(s),
+															$author$project$Ports$toastInfo('Schema saved')
+														]));
+											},
+											model.dv)));
+							case 'focus-search':
+								return _Utils_Tuple2(
+									model,
+									$author$project$Ports$click($author$project$Conf$conf.cp.dz));
+							case 'help':
+								return _Utils_Tuple2(
+									model,
+									$author$project$Ports$showModal($author$project$Conf$conf.cp.ck));
+							default:
+								var hotkey = msg.a.a;
+								return _Utils_Tuple2(
+									model,
+									$author$project$Ports$toastInfo('Shortcut <b>' + (hotkey + '</b> is not implemented yet :(')));
+						}
 					default:
 						var err = msg.a.a;
 						return _Utils_Tuple2(
@@ -11571,11 +12266,12 @@ var $lattyware$elm_fontawesome$FontAwesome$Styles$css = A3(
 		[
 			$elm$html$Html$text('svg:not(:root).svg-inline--fa {  overflow: visible;}.svg-inline--fa {  display: inline-block;  font-size: inherit;  height: 1em;  overflow: visible;  vertical-align: -0.125em;}.svg-inline--fa.fa-lg {  vertical-align: -0.225em;}.svg-inline--fa.fa-w-1 {  width: 0.0625em;}.svg-inline--fa.fa-w-2 {  width: 0.125em;}.svg-inline--fa.fa-w-3 {  width: 0.1875em;}.svg-inline--fa.fa-w-4 {  width: 0.25em;}.svg-inline--fa.fa-w-5 {  width: 0.3125em;}.svg-inline--fa.fa-w-6 {  width: 0.375em;}.svg-inline--fa.fa-w-7 {  width: 0.4375em;}.svg-inline--fa.fa-w-8 {  width: 0.5em;}.svg-inline--fa.fa-w-9 {  width: 0.5625em;}.svg-inline--fa.fa-w-10 {  width: 0.625em;}.svg-inline--fa.fa-w-11 {  width: 0.6875em;}.svg-inline--fa.fa-w-12 {  width: 0.75em;}.svg-inline--fa.fa-w-13 {  width: 0.8125em;}.svg-inline--fa.fa-w-14 {  width: 0.875em;}.svg-inline--fa.fa-w-15 {  width: 0.9375em;}.svg-inline--fa.fa-w-16 {  width: 1em;}.svg-inline--fa.fa-w-17 {  width: 1.0625em;}.svg-inline--fa.fa-w-18 {  width: 1.125em;}.svg-inline--fa.fa-w-19 {  width: 1.1875em;}.svg-inline--fa.fa-w-20 {  width: 1.25em;}.svg-inline--fa.fa-pull-left {  margin-right: 0.3em;  width: auto;}.svg-inline--fa.fa-pull-right {  margin-left: 0.3em;  width: auto;}.svg-inline--fa.fa-border {  height: 1.5em;}.svg-inline--fa.fa-li {  width: 2em;}.svg-inline--fa.fa-fw {  width: 1.25em;}.fa-layers svg.svg-inline--fa {  bottom: 0;  left: 0;  margin: auto;  position: absolute;  right: 0;  top: 0;}.fa-layers {  display: inline-block;  height: 1em;  position: relative;  text-align: center;  vertical-align: -0.125em;  width: 1em;}.fa-layers svg.svg-inline--fa {  -webkit-transform-origin: center center;          transform-origin: center center;}.fa-layers-counter, .fa-layers-text {  display: inline-block;  position: absolute;  text-align: center;}.fa-layers-text {  left: 50%;  top: 50%;  -webkit-transform: translate(-50%, -50%);          transform: translate(-50%, -50%);  -webkit-transform-origin: center center;          transform-origin: center center;}.fa-layers-counter {  background-color: #ff253a;  border-radius: 1em;  -webkit-box-sizing: border-box;          box-sizing: border-box;  color: #fff;  height: 1.5em;  line-height: 1;  max-width: 5em;  min-width: 1.5em;  overflow: hidden;  padding: 0.25em;  right: 0;  text-overflow: ellipsis;  top: 0;  -webkit-transform: scale(0.25);          transform: scale(0.25);  -webkit-transform-origin: top right;          transform-origin: top right;}.fa-layers-bottom-right {  bottom: 0;  right: 0;  top: auto;  -webkit-transform: scale(0.25);          transform: scale(0.25);  -webkit-transform-origin: bottom right;          transform-origin: bottom right;}.fa-layers-bottom-left {  bottom: 0;  left: 0;  right: auto;  top: auto;  -webkit-transform: scale(0.25);          transform: scale(0.25);  -webkit-transform-origin: bottom left;          transform-origin: bottom left;}.fa-layers-top-right {  right: 0;  top: 0;  -webkit-transform: scale(0.25);          transform: scale(0.25);  -webkit-transform-origin: top right;          transform-origin: top right;}.fa-layers-top-left {  left: 0;  right: auto;  top: 0;  -webkit-transform: scale(0.25);          transform: scale(0.25);  -webkit-transform-origin: top left;          transform-origin: top left;}.fa-lg {  font-size: 1.3333333333em;  line-height: 0.75em;  vertical-align: -0.0667em;}.fa-xs {  font-size: 0.75em;}.fa-sm {  font-size: 0.875em;}.fa-1x {  font-size: 1em;}.fa-2x {  font-size: 2em;}.fa-3x {  font-size: 3em;}.fa-4x {  font-size: 4em;}.fa-5x {  font-size: 5em;}.fa-6x {  font-size: 6em;}.fa-7x {  font-size: 7em;}.fa-8x {  font-size: 8em;}.fa-9x {  font-size: 9em;}.fa-10x {  font-size: 10em;}.fa-fw {  text-align: center;  width: 1.25em;}.fa-ul {  list-style-type: none;  margin-left: 2.5em;  padding-left: 0;}.fa-ul > li {  position: relative;}.fa-li {  left: -2em;  position: absolute;  text-align: center;  width: 2em;  line-height: inherit;}.fa-border {  border: solid 0.08em #eee;  border-radius: 0.1em;  padding: 0.2em 0.25em 0.15em;}.fa-pull-left {  float: left;}.fa-pull-right {  float: right;}.fa.fa-pull-left,.fas.fa-pull-left,.far.fa-pull-left,.fal.fa-pull-left,.fab.fa-pull-left {  margin-right: 0.3em;}.fa.fa-pull-right,.fas.fa-pull-right,.far.fa-pull-right,.fal.fa-pull-right,.fab.fa-pull-right {  margin-left: 0.3em;}.fa-spin {  -webkit-animation: fa-spin 2s infinite linear;          animation: fa-spin 2s infinite linear;}.fa-pulse {  -webkit-animation: fa-spin 1s infinite steps(8);          animation: fa-spin 1s infinite steps(8);}@-webkit-keyframes fa-spin {  0% {    -webkit-transform: rotate(0deg);            transform: rotate(0deg);  }  100% {    -webkit-transform: rotate(360deg);            transform: rotate(360deg);  }}@keyframes fa-spin {  0% {    -webkit-transform: rotate(0deg);            transform: rotate(0deg);  }  100% {    -webkit-transform: rotate(360deg);            transform: rotate(360deg);  }}.fa-rotate-90 {  -ms-filter: \"progid:DXImageTransform.Microsoft.BasicImage(rotation=1)\";  -webkit-transform: rotate(90deg);          transform: rotate(90deg);}.fa-rotate-180 {  -ms-filter: \"progid:DXImageTransform.Microsoft.BasicImage(rotation=2)\";  -webkit-transform: rotate(180deg);          transform: rotate(180deg);}.fa-rotate-270 {  -ms-filter: \"progid:DXImageTransform.Microsoft.BasicImage(rotation=3)\";  -webkit-transform: rotate(270deg);          transform: rotate(270deg);}.fa-flip-horizontal {  -ms-filter: \"progid:DXImageTransform.Microsoft.BasicImage(rotation=0, mirror=1)\";  -webkit-transform: scale(-1, 1);          transform: scale(-1, 1);}.fa-flip-vertical {  -ms-filter: \"progid:DXImageTransform.Microsoft.BasicImage(rotation=2, mirror=1)\";  -webkit-transform: scale(1, -1);          transform: scale(1, -1);}.fa-flip-both, .fa-flip-horizontal.fa-flip-vertical {  -ms-filter: \"progid:DXImageTransform.Microsoft.BasicImage(rotation=2, mirror=1)\";  -webkit-transform: scale(-1, -1);          transform: scale(-1, -1);}:root .fa-rotate-90,:root .fa-rotate-180,:root .fa-rotate-270,:root .fa-flip-horizontal,:root .fa-flip-vertical,:root .fa-flip-both {  -webkit-filter: none;          filter: none;}.fa-stack {  display: inline-block;  height: 2em;  position: relative;  width: 2.5em;}.fa-stack-1x,.fa-stack-2x {  bottom: 0;  left: 0;  margin: auto;  position: absolute;  right: 0;  top: 0;}.svg-inline--fa.fa-stack-1x {  height: 1em;  width: 1.25em;}.svg-inline--fa.fa-stack-2x {  height: 2em;  width: 2.5em;}.fa-inverse {  color: #fff;}.sr-only {  border: 0;  clip: rect(0, 0, 0, 0);  height: 1px;  margin: -1px;  overflow: hidden;  padding: 0;  position: absolute;  width: 1px;}.sr-only-focusable:active, .sr-only-focusable:focus {  clip: auto;  height: auto;  margin: 0;  overflow: visible;  position: static;  width: auto;}.svg-inline--fa .fa-primary {  fill: var(--fa-primary-color, currentColor);  opacity: 1;  opacity: var(--fa-primary-opacity, 1);}.svg-inline--fa .fa-secondary {  fill: var(--fa-secondary-color, currentColor);  opacity: 0.4;  opacity: var(--fa-secondary-opacity, 0.4);}.svg-inline--fa.fa-swap-opacity .fa-primary {  opacity: 0.4;  opacity: var(--fa-secondary-opacity, 0.4);}.svg-inline--fa.fa-swap-opacity .fa-secondary {  opacity: 1;  opacity: var(--fa-primary-opacity, 1);}.svg-inline--fa mask .fa-primary,.svg-inline--fa mask .fa-secondary {  fill: black;}.fad.fa-inverse {  color: #fff;}')
 		]));
-var $author$project$Libs$Bootstrap$Modal = 2;
-var $author$project$Models$OnConfirm = F2(
-	function (a, b) {
-		return {$: 31, a: a, b: b};
-	});
+var $author$project$Libs$Bootstrap$Dropdown = 1;
+var $author$project$Models$FitContent = {$: 24};
+var $author$project$Libs$Bootstrap$Tooltip = 0;
+var $author$project$Models$Zoom = function (a) {
+	return {$: 23, a: a};
+};
 var $elm$virtual_dom$VirtualDom$attribute = F2(
 	function (key, value) {
 		return A2(
@@ -11584,35 +12280,11 @@ var $elm$virtual_dom$VirtualDom$attribute = F2(
 			_VirtualDom_noJavaScriptOrHtmlUri(value));
 	});
 var $elm$html$Html$Attributes$attribute = $elm$virtual_dom$VirtualDom$attribute;
-var $author$project$Libs$Bool$toString = function (bool) {
-	if (bool) {
-		return 'true';
-	} else {
-		return 'false';
-	}
-};
-var $author$project$Libs$Bootstrap$ariaHidden = function (value) {
-	return A2(
-		$elm$html$Html$Attributes$attribute,
-		'aria-hidden',
-		$author$project$Libs$Bool$toString(value));
-};
 var $author$project$Libs$Bootstrap$ariaLabel = function (text) {
 	return A2($elm$html$Html$Attributes$attribute, 'aria-label', text);
 };
 var $author$project$Libs$Bootstrap$ariaLabelledBy = function (targetId) {
 	return A2($elm$html$Html$Attributes$attribute, 'aria-labelledby', targetId);
-};
-var $elm$html$Html$Attributes$boolProperty = F2(
-	function (key, bool) {
-		return A2(
-			_VirtualDom_property,
-			key,
-			$elm$json$Json$Encode$bool(bool));
-	});
-var $elm$html$Html$Attributes$autofocus = $elm$html$Html$Attributes$boolProperty('autofocus');
-var $author$project$Libs$Bootstrap$bsBackdrop = function (value) {
-	return A2($elm$html$Html$Attributes$attribute, 'data-bs-backdrop', value);
 };
 var $author$project$Libs$Bootstrap$toggleName = function (toggle) {
 	switch (toggle) {
@@ -11628,17 +12300,11 @@ var $author$project$Libs$Bootstrap$toggleName = function (toggle) {
 			return 'offcanvas';
 	}
 };
-var $author$project$Libs$Bootstrap$bsDismiss = function (kind) {
+var $author$project$Libs$Bootstrap$bsToggle = function (kind) {
 	return A2(
 		$elm$html$Html$Attributes$attribute,
-		'data-bs-dismiss',
+		'data-bs-toggle',
 		$author$project$Libs$Bootstrap$toggleName(kind));
-};
-var $author$project$Libs$Bootstrap$bsKeyboard = function (value) {
-	return A2(
-		$elm$html$Html$Attributes$attribute,
-		'data-bs-keyboard',
-		$author$project$Libs$Bool$toString(value));
 };
 var $elm$html$Html$button = _VirtualDom_node('button');
 var $elm$html$Html$Attributes$stringProperty = F2(
@@ -11650,8 +12316,29 @@ var $elm$html$Html$Attributes$stringProperty = F2(
 	});
 var $elm$html$Html$Attributes$class = $elm$html$Html$Attributes$stringProperty('className');
 var $elm$html$Html$div = _VirtualDom_node('div');
-var $elm$html$Html$h5 = _VirtualDom_node('h5');
+var $lattyware$elm_fontawesome$FontAwesome$Icon$Icon = F5(
+	function (prefix, name, width, height, paths) {
+		return {cj: height, N: name, dg: paths, dk: prefix, d_: width};
+	});
+var $lattyware$elm_fontawesome$FontAwesome$Solid$expand = A5(
+	$lattyware$elm_fontawesome$FontAwesome$Icon$Icon,
+	'fas',
+	'expand',
+	448,
+	512,
+	_List_fromArray(
+		['M0 180V56c0-13.3 10.7-24 24-24h124c6.6 0 12 5.4 12 12v40c0 6.6-5.4 12-12 12H64v84c0 6.6-5.4 12-12 12H12c-6.6 0-12-5.4-12-12zM288 44v40c0 6.6 5.4 12 12 12h84v84c0 6.6 5.4 12 12 12h40c6.6 0 12-5.4 12-12V56c0-13.3-10.7-24-24-24H300c-6.6 0-12 5.4-12 12zm148 276h-40c-6.6 0-12 5.4-12 12v84h-84c-6.6 0-12 5.4-12 12v40c0 6.6 5.4 12 12 12h124c13.3 0 24-10.7 24-24V332c0-6.6-5.4-12-12-12zM160 468v-40c0-6.6-5.4-12-12-12H64v-84c0-6.6-5.4-12-12-12H12c-6.6 0-12 5.4-12 12v124c0 13.3 10.7 24 24 24h124c6.6 0 12-5.4 12-12z']));
+var $elm$core$String$fromFloat = _String_fromNumber;
 var $elm$html$Html$Attributes$id = $elm$html$Html$Attributes$stringProperty('id');
+var $elm$html$Html$li = _VirtualDom_node('li');
+var $lattyware$elm_fontawesome$FontAwesome$Solid$minus = A5(
+	$lattyware$elm_fontawesome$FontAwesome$Icon$Icon,
+	'fas',
+	'minus',
+	448,
+	512,
+	_List_fromArray(
+		['M416 208H32c-17.67 0-32 14.33-32 32v32c0 17.67 14.33 32 32 32h384c17.67 0 32-14.33 32-32v-32c0-17.67-14.33-32-32-32z']));
 var $elm$virtual_dom$VirtualDom$Normal = function (a) {
 	return {$: 0, a: a};
 };
@@ -11669,24 +12356,724 @@ var $elm$html$Html$Events$onClick = function (msg) {
 		'click',
 		$elm$json$Json$Decode$succeed(msg));
 };
+var $lattyware$elm_fontawesome$FontAwesome$Solid$plus = A5(
+	$lattyware$elm_fontawesome$FontAwesome$Icon$Icon,
+	'fas',
+	'plus',
+	448,
+	512,
+	_List_fromArray(
+		['M416 208H272V64c0-17.67-14.33-32-32-32h-32c-17.67 0-32 14.33-32 32v144H32c-17.67 0-32 14.33-32 32v32c0 17.67 14.33 32 32 32h144v144c0 17.67 14.33 32 32 32h32c17.67 0 32-14.33 32-32V304h144c17.67 0 32-14.33 32-32v-32c0-17.67-14.33-32-32-32z']));
+var $author$project$Libs$Html$Attributes$role = function (text) {
+	return A2($elm$html$Html$Attributes$attribute, 'role', text);
+};
+var $elm$core$Basics$round = _Basics_round;
+var $elm$html$Html$Attributes$title = $elm$html$Html$Attributes$stringProperty('title');
+var $elm$html$Html$Attributes$type_ = $elm$html$Html$Attributes$stringProperty('type');
+var $elm$html$Html$ul = _VirtualDom_node('ul');
+var $elm$core$Basics$composeR = F3(
+	function (f, g, x) {
+		return g(
+			f(x));
+	});
+var $lattyware$elm_fontawesome$FontAwesome$Icon$Presentation = $elm$core$Basics$identity;
+var $lattyware$elm_fontawesome$FontAwesome$Icon$present = function (icon) {
+	return {V: _List_Nil, aU: icon, aV: $elm$core$Maybe$Nothing, Q: $elm$core$Maybe$Nothing, au: 'img', dT: $elm$core$Maybe$Nothing, ac: _List_Nil};
+};
+var $elm$core$Basics$always = F2(
+	function (a, _v0) {
+		return a;
+	});
+var $elm$svg$Svg$Attributes$class = _VirtualDom_attribute('class');
+var $lattyware$elm_fontawesome$FontAwesome$Transforms$Internal$add = F2(
+	function (transform, combined) {
+		switch (transform.$) {
+			case 0:
+				var direction = transform.a;
+				var amount = function () {
+					if (!direction.$) {
+						var by = direction.a;
+						return by;
+					} else {
+						var by = direction.a;
+						return -by;
+					}
+				}();
+				return _Utils_update(
+					combined,
+					{dE: combined.dE + amount});
+			case 1:
+				var direction = transform.a;
+				var _v2 = function () {
+					switch (direction.$) {
+						case 0:
+							var by = direction.a;
+							return _Utils_Tuple2(0, -by);
+						case 1:
+							var by = direction.a;
+							return _Utils_Tuple2(0, by);
+						case 2:
+							var by = direction.a;
+							return _Utils_Tuple2(-by, 0);
+						default:
+							var by = direction.a;
+							return _Utils_Tuple2(by, 0);
+					}
+				}();
+				var x = _v2.a;
+				var y = _v2.b;
+				return _Utils_update(
+					combined,
+					{bI: combined.bI + x, bJ: combined.bJ + y});
+			case 2:
+				var rotation = transform.a;
+				return _Utils_update(
+					combined,
+					{du: combined.du + rotation});
+			default:
+				if (!transform.a) {
+					var _v4 = transform.a;
+					return _Utils_update(
+						combined,
+						{cf: true});
+				} else {
+					var _v5 = transform.a;
+					return _Utils_update(
+						combined,
+						{cg: true});
+				}
+		}
+	});
+var $lattyware$elm_fontawesome$FontAwesome$Transforms$Internal$baseSize = 16;
+var $lattyware$elm_fontawesome$FontAwesome$Transforms$Internal$meaninglessTransform = {cf: false, cg: false, du: 0, dE: $lattyware$elm_fontawesome$FontAwesome$Transforms$Internal$baseSize, bI: 0, bJ: 0};
+var $lattyware$elm_fontawesome$FontAwesome$Transforms$Internal$combine = function (transforms) {
+	return A3($elm$core$List$foldl, $lattyware$elm_fontawesome$FontAwesome$Transforms$Internal$add, $lattyware$elm_fontawesome$FontAwesome$Transforms$Internal$meaninglessTransform, transforms);
+};
+var $lattyware$elm_fontawesome$FontAwesome$Transforms$Internal$meaningfulTransform = function (transforms) {
+	var combined = $lattyware$elm_fontawesome$FontAwesome$Transforms$Internal$combine(transforms);
+	return _Utils_eq(combined, $lattyware$elm_fontawesome$FontAwesome$Transforms$Internal$meaninglessTransform) ? $elm$core$Maybe$Nothing : $elm$core$Maybe$Just(combined);
+};
+var $elm$svg$Svg$trustedNode = _VirtualDom_nodeNS('http://www.w3.org/2000/svg');
+var $elm$svg$Svg$svg = $elm$svg$Svg$trustedNode('svg');
+var $elm$svg$Svg$Attributes$id = _VirtualDom_attribute('id');
+var $elm$svg$Svg$text = $elm$virtual_dom$VirtualDom$text;
+var $elm$svg$Svg$title = $elm$svg$Svg$trustedNode('title');
+var $lattyware$elm_fontawesome$FontAwesome$Icon$titledContents = F3(
+	function (titleId, contents, title) {
+		return A2(
+			$elm$core$List$cons,
+			A2(
+				$elm$svg$Svg$title,
+				_List_fromArray(
+					[
+						$elm$svg$Svg$Attributes$id(titleId)
+					]),
+				_List_fromArray(
+					[
+						$elm$svg$Svg$text(title)
+					])),
+			contents);
+	});
+var $elm$svg$Svg$Attributes$transform = _VirtualDom_attribute('transform');
+var $lattyware$elm_fontawesome$FontAwesome$Transforms$Internal$transformForSvg = F3(
+	function (containerWidth, iconWidth, transform) {
+		var path = 'translate(' + ($elm$core$String$fromFloat((iconWidth / 2) * (-1)) + ' -256)');
+		var outer = 'translate(' + ($elm$core$String$fromFloat(containerWidth / 2) + ' 256)');
+		var innerTranslate = 'translate(' + ($elm$core$String$fromFloat(transform.bI * 32) + (',' + ($elm$core$String$fromFloat(transform.bJ * 32) + ') ')));
+		var innerRotate = 'rotate(' + ($elm$core$String$fromFloat(transform.du) + ' 0 0)');
+		var flipY = transform.cg ? (-1) : 1;
+		var scaleY = (transform.dE / $lattyware$elm_fontawesome$FontAwesome$Transforms$Internal$baseSize) * flipY;
+		var flipX = transform.cf ? (-1) : 1;
+		var scaleX = (transform.dE / $lattyware$elm_fontawesome$FontAwesome$Transforms$Internal$baseSize) * flipX;
+		var innerScale = 'scale(' + ($elm$core$String$fromFloat(scaleX) + (', ' + ($elm$core$String$fromFloat(scaleY) + ') ')));
+		return {
+			aX: $elm$svg$Svg$Attributes$transform(
+				_Utils_ap(
+					innerTranslate,
+					_Utils_ap(innerScale, innerRotate))),
+			Q: $elm$svg$Svg$Attributes$transform(outer),
+			ba: $elm$svg$Svg$Attributes$transform(path)
+		};
+	});
+var $elm$svg$Svg$Attributes$viewBox = _VirtualDom_attribute('viewBox');
+var $elm$svg$Svg$Attributes$height = _VirtualDom_attribute('height');
+var $elm$svg$Svg$Attributes$width = _VirtualDom_attribute('width');
+var $elm$svg$Svg$Attributes$x = _VirtualDom_attribute('x');
+var $elm$svg$Svg$Attributes$y = _VirtualDom_attribute('y');
+var $lattyware$elm_fontawesome$FontAwesome$Icon$allSpace = _List_fromArray(
+	[
+		$elm$svg$Svg$Attributes$x('0'),
+		$elm$svg$Svg$Attributes$y('0'),
+		$elm$svg$Svg$Attributes$width('100%'),
+		$elm$svg$Svg$Attributes$height('100%')
+	]);
+var $elm$svg$Svg$clipPath = $elm$svg$Svg$trustedNode('clipPath');
+var $elm$svg$Svg$Attributes$clipPath = _VirtualDom_attribute('clip-path');
+var $elm$svg$Svg$Attributes$d = _VirtualDom_attribute('d');
+var $elm$svg$Svg$Attributes$fill = _VirtualDom_attribute('fill');
+var $elm$svg$Svg$path = $elm$svg$Svg$trustedNode('path');
+var $lattyware$elm_fontawesome$FontAwesome$Svg$Internal$corePath = F2(
+	function (attrs, d) {
+		return A2(
+			$elm$svg$Svg$path,
+			A2(
+				$elm$core$List$cons,
+				$elm$svg$Svg$Attributes$fill('currentColor'),
+				A2(
+					$elm$core$List$cons,
+					$elm$svg$Svg$Attributes$d(d),
+					attrs)),
+			_List_Nil);
+	});
+var $elm$svg$Svg$g = $elm$svg$Svg$trustedNode('g');
+var $lattyware$elm_fontawesome$FontAwesome$Svg$Internal$corePaths = F2(
+	function (attrs, icon) {
+		var _v0 = icon.dg;
+		if (!_v0.b) {
+			return A2($lattyware$elm_fontawesome$FontAwesome$Svg$Internal$corePath, attrs, '');
+		} else {
+			if (!_v0.b.b) {
+				var only = _v0.a;
+				return A2($lattyware$elm_fontawesome$FontAwesome$Svg$Internal$corePath, attrs, only);
+			} else {
+				var secondary = _v0.a;
+				var _v1 = _v0.b;
+				var primary = _v1.a;
+				return A2(
+					$elm$svg$Svg$g,
+					_List_fromArray(
+						[
+							$elm$svg$Svg$Attributes$class('fa-group')
+						]),
+					_List_fromArray(
+						[
+							A2(
+							$lattyware$elm_fontawesome$FontAwesome$Svg$Internal$corePath,
+							A2(
+								$elm$core$List$cons,
+								$elm$svg$Svg$Attributes$class('fa-secondary'),
+								attrs),
+							secondary),
+							A2(
+							$lattyware$elm_fontawesome$FontAwesome$Svg$Internal$corePath,
+							A2(
+								$elm$core$List$cons,
+								$elm$svg$Svg$Attributes$class('fa-primary'),
+								attrs),
+							primary)
+						]));
+			}
+		}
+	});
+var $elm$svg$Svg$defs = $elm$svg$Svg$trustedNode('defs');
+var $elm$svg$Svg$mask = $elm$svg$Svg$trustedNode('mask');
+var $elm$svg$Svg$Attributes$mask = _VirtualDom_attribute('mask');
+var $elm$svg$Svg$Attributes$maskContentUnits = _VirtualDom_attribute('maskContentUnits');
+var $elm$svg$Svg$Attributes$maskUnits = _VirtualDom_attribute('maskUnits');
+var $elm$svg$Svg$rect = $elm$svg$Svg$trustedNode('rect');
+var $lattyware$elm_fontawesome$FontAwesome$Icon$viewMaskedWithTransform = F4(
+	function (id, transforms, inner, outer) {
+		var maskInnerGroup = A2(
+			$elm$svg$Svg$g,
+			_List_fromArray(
+				[transforms.aX]),
+			_List_fromArray(
+				[
+					A2(
+					$lattyware$elm_fontawesome$FontAwesome$Svg$Internal$corePaths,
+					_List_fromArray(
+						[
+							$elm$svg$Svg$Attributes$fill('black'),
+							transforms.ba
+						]),
+					inner)
+				]));
+		var maskId = 'mask-' + (inner.N + ('-' + id));
+		var maskTag = A2(
+			$elm$svg$Svg$mask,
+			_Utils_ap(
+				_List_fromArray(
+					[
+						$elm$svg$Svg$Attributes$id(maskId),
+						$elm$svg$Svg$Attributes$maskUnits('userSpaceOnUse'),
+						$elm$svg$Svg$Attributes$maskContentUnits('userSpaceOnUse')
+					]),
+				$lattyware$elm_fontawesome$FontAwesome$Icon$allSpace),
+			_List_fromArray(
+				[
+					A2(
+					$elm$svg$Svg$rect,
+					A2(
+						$elm$core$List$cons,
+						$elm$svg$Svg$Attributes$fill('white'),
+						$lattyware$elm_fontawesome$FontAwesome$Icon$allSpace),
+					_List_Nil),
+					A2(
+					$elm$svg$Svg$g,
+					_List_fromArray(
+						[transforms.Q]),
+					_List_fromArray(
+						[maskInnerGroup]))
+				]));
+		var clipId = 'clip-' + (outer.N + ('-' + id));
+		var defs = A2(
+			$elm$svg$Svg$defs,
+			_List_Nil,
+			_List_fromArray(
+				[
+					A2(
+					$elm$svg$Svg$clipPath,
+					_List_fromArray(
+						[
+							$elm$svg$Svg$Attributes$id(clipId)
+						]),
+					_List_fromArray(
+						[
+							A2($lattyware$elm_fontawesome$FontAwesome$Svg$Internal$corePaths, _List_Nil, outer)
+						])),
+					maskTag
+				]));
+		return _List_fromArray(
+			[
+				defs,
+				A2(
+				$elm$svg$Svg$rect,
+				$elm$core$List$concat(
+					_List_fromArray(
+						[
+							_List_fromArray(
+							[
+								$elm$svg$Svg$Attributes$fill('currentColor'),
+								$elm$svg$Svg$Attributes$clipPath('url(#' + (clipId + ')')),
+								$elm$svg$Svg$Attributes$mask('url(#' + (maskId + ')'))
+							]),
+							$lattyware$elm_fontawesome$FontAwesome$Icon$allSpace
+						])),
+				_List_Nil)
+			]);
+	});
+var $lattyware$elm_fontawesome$FontAwesome$Icon$viewWithTransform = F2(
+	function (transforms, icon) {
+		if (!transforms.$) {
+			var ts = transforms.a;
+			return A2(
+				$elm$svg$Svg$g,
+				_List_fromArray(
+					[ts.Q]),
+				_List_fromArray(
+					[
+						A2(
+						$elm$svg$Svg$g,
+						_List_fromArray(
+							[ts.aX]),
+						_List_fromArray(
+							[
+								A2(
+								$lattyware$elm_fontawesome$FontAwesome$Svg$Internal$corePaths,
+								_List_fromArray(
+									[ts.ba]),
+								icon)
+							]))
+					]));
+		} else {
+			return A2($lattyware$elm_fontawesome$FontAwesome$Svg$Internal$corePaths, _List_Nil, icon);
+		}
+	});
+var $lattyware$elm_fontawesome$FontAwesome$Icon$internalView = function (_v0) {
+	var icon = _v0.aU;
+	var attributes = _v0.V;
+	var transforms = _v0.ac;
+	var role = _v0.au;
+	var id = _v0.aV;
+	var title = _v0.dT;
+	var outer = _v0.Q;
+	var alwaysId = A2($elm$core$Maybe$withDefault, icon.N, id);
+	var titleId = alwaysId + '-title';
+	var semantics = A2(
+		$elm$core$Maybe$withDefault,
+		A2($elm$html$Html$Attributes$attribute, 'aria-hidden', 'true'),
+		A2(
+			$elm$core$Maybe$map,
+			$elm$core$Basics$always(
+				A2($elm$html$Html$Attributes$attribute, 'aria-labelledby', titleId)),
+			title));
+	var _v1 = A2(
+		$elm$core$Maybe$withDefault,
+		_Utils_Tuple2(icon.d_, icon.cj),
+		A2(
+			$elm$core$Maybe$map,
+			function (o) {
+				return _Utils_Tuple2(o.d_, o.cj);
+			},
+			outer));
+	var width = _v1.a;
+	var height = _v1.b;
+	var classes = _List_fromArray(
+		[
+			'svg-inline--fa',
+			'fa-' + icon.N,
+			'fa-w-' + $elm$core$String$fromInt(
+			$elm$core$Basics$ceiling((width / height) * 16))
+		]);
+	var svgTransform = A2(
+		$elm$core$Maybe$map,
+		A2($lattyware$elm_fontawesome$FontAwesome$Transforms$Internal$transformForSvg, width, icon.d_),
+		$lattyware$elm_fontawesome$FontAwesome$Transforms$Internal$meaningfulTransform(transforms));
+	var contents = function () {
+		var resolvedSvgTransform = A2(
+			$elm$core$Maybe$withDefault,
+			A3($lattyware$elm_fontawesome$FontAwesome$Transforms$Internal$transformForSvg, width, icon.d_, $lattyware$elm_fontawesome$FontAwesome$Transforms$Internal$meaninglessTransform),
+			svgTransform);
+		return A2(
+			$elm$core$Maybe$withDefault,
+			_List_fromArray(
+				[
+					A2($lattyware$elm_fontawesome$FontAwesome$Icon$viewWithTransform, svgTransform, icon)
+				]),
+			A2(
+				$elm$core$Maybe$map,
+				A3($lattyware$elm_fontawesome$FontAwesome$Icon$viewMaskedWithTransform, alwaysId, resolvedSvgTransform, icon),
+				outer));
+	}();
+	var potentiallyTitledContents = A2(
+		$elm$core$Maybe$withDefault,
+		contents,
+		A2(
+			$elm$core$Maybe$map,
+			A2($lattyware$elm_fontawesome$FontAwesome$Icon$titledContents, titleId, contents),
+			title));
+	return A2(
+		$elm$svg$Svg$svg,
+		$elm$core$List$concat(
+			_List_fromArray(
+				[
+					_List_fromArray(
+					[
+						A2($elm$html$Html$Attributes$attribute, 'role', role),
+						A2($elm$html$Html$Attributes$attribute, 'xmlns', 'http://www.w3.org/2000/svg'),
+						$elm$svg$Svg$Attributes$viewBox(
+						'0 0 ' + ($elm$core$String$fromInt(width) + (' ' + $elm$core$String$fromInt(height)))),
+						semantics
+					]),
+					A2($elm$core$List$map, $elm$svg$Svg$Attributes$class, classes),
+					attributes
+				])),
+		potentiallyTitledContents);
+};
+var $lattyware$elm_fontawesome$FontAwesome$Icon$view = function (presentation) {
+	return $lattyware$elm_fontawesome$FontAwesome$Icon$internalView(presentation);
+};
+var $lattyware$elm_fontawesome$FontAwesome$Icon$viewIcon = A2($elm$core$Basics$composeR, $lattyware$elm_fontawesome$FontAwesome$Icon$present, $lattyware$elm_fontawesome$FontAwesome$Icon$view);
+var $author$project$Views$Command$viewCommands = function (canvas) {
+	return A2(
+		$elm$core$Maybe$withDefault,
+		A2($elm$html$Html$div, _List_Nil, _List_Nil),
+		A2(
+			$elm$core$Maybe$map,
+			function (c) {
+				return A2(
+					$elm$html$Html$div,
+					_List_fromArray(
+						[
+							$elm$html$Html$Attributes$class('commands btn-toolbar'),
+							$author$project$Libs$Html$Attributes$role('toolbar'),
+							$author$project$Libs$Bootstrap$ariaLabel('Diagram commands')
+						]),
+					_List_fromArray(
+						[
+							A2(
+							$elm$html$Html$div,
+							_List_fromArray(
+								[
+									$elm$html$Html$Attributes$class('btn-group me-2'),
+									$author$project$Libs$Html$Attributes$role('group')
+								]),
+							_List_fromArray(
+								[
+									A2(
+									$elm$html$Html$button,
+									_List_fromArray(
+										[
+											$elm$html$Html$Attributes$type_('button'),
+											$elm$html$Html$Attributes$class('btn btn-sm btn-outline-secondary'),
+											$elm$html$Html$Attributes$title('Fit content in view'),
+											$author$project$Libs$Bootstrap$bsToggle(0),
+											$elm$html$Html$Events$onClick($author$project$Models$FitContent)
+										]),
+									_List_fromArray(
+										[
+											$lattyware$elm_fontawesome$FontAwesome$Icon$viewIcon($lattyware$elm_fontawesome$FontAwesome$Solid$expand)
+										]))
+								])),
+							A2(
+							$elm$html$Html$div,
+							_List_fromArray(
+								[
+									$elm$html$Html$Attributes$class('btn-group'),
+									$author$project$Libs$Html$Attributes$role('group')
+								]),
+							_List_fromArray(
+								[
+									A2(
+									$elm$html$Html$button,
+									_List_fromArray(
+										[
+											$elm$html$Html$Attributes$type_('button'),
+											$elm$html$Html$Attributes$class('btn btn-sm btn-outline-secondary'),
+											$elm$html$Html$Events$onClick(
+											$author$project$Models$Zoom((-c.d2) / 10))
+										]),
+									_List_fromArray(
+										[
+											$lattyware$elm_fontawesome$FontAwesome$Icon$viewIcon($lattyware$elm_fontawesome$FontAwesome$Solid$minus)
+										])),
+									A2(
+									$elm$html$Html$div,
+									_List_fromArray(
+										[
+											$elm$html$Html$Attributes$class('btn-group'),
+											$author$project$Libs$Html$Attributes$role('group')
+										]),
+									_List_fromArray(
+										[
+											A2(
+											$elm$html$Html$button,
+											_List_fromArray(
+												[
+													$elm$html$Html$Attributes$type_('button'),
+													$elm$html$Html$Attributes$class('btn btn-sm btn-outline-secondary'),
+													$elm$html$Html$Attributes$id('canvas-zoom'),
+													$author$project$Libs$Bootstrap$bsToggle(1)
+												]),
+											_List_fromArray(
+												[
+													$elm$html$Html$text(
+													$elm$core$String$fromInt(
+														$elm$core$Basics$round(c.d2 * 100)) + ' %')
+												])),
+											A2(
+											$elm$html$Html$ul,
+											_List_fromArray(
+												[
+													$elm$html$Html$Attributes$class('dropdown-menu'),
+													$author$project$Libs$Bootstrap$ariaLabelledBy('canvas-zoom')
+												]),
+											_List_fromArray(
+												[
+													A2(
+													$elm$html$Html$li,
+													_List_Nil,
+													_List_fromArray(
+														[
+															A2(
+															$elm$html$Html$button,
+															_List_fromArray(
+																[
+																	$elm$html$Html$Attributes$type_('button'),
+																	$elm$html$Html$Attributes$class('dropdown-item'),
+																	$elm$html$Html$Events$onClick(
+																	$author$project$Models$Zoom($author$project$Conf$conf.d2.cK - c.d2))
+																]),
+															_List_fromArray(
+																[
+																	$elm$html$Html$text(
+																	$elm$core$String$fromFloat($author$project$Conf$conf.d2.cK * 100) + ' %')
+																]))
+														])),
+													A2(
+													$elm$html$Html$li,
+													_List_Nil,
+													_List_fromArray(
+														[
+															A2(
+															$elm$html$Html$button,
+															_List_fromArray(
+																[
+																	$elm$html$Html$Attributes$type_('button'),
+																	$elm$html$Html$Attributes$class('dropdown-item'),
+																	$elm$html$Html$Events$onClick(
+																	$author$project$Models$Zoom(0.25 - c.d2))
+																]),
+															_List_fromArray(
+																[
+																	$elm$html$Html$text('25 %')
+																]))
+														])),
+													A2(
+													$elm$html$Html$li,
+													_List_Nil,
+													_List_fromArray(
+														[
+															A2(
+															$elm$html$Html$button,
+															_List_fromArray(
+																[
+																	$elm$html$Html$Attributes$type_('button'),
+																	$elm$html$Html$Attributes$class('dropdown-item'),
+																	$elm$html$Html$Events$onClick(
+																	$author$project$Models$Zoom(0.5 - c.d2))
+																]),
+															_List_fromArray(
+																[
+																	$elm$html$Html$text('50 %')
+																]))
+														])),
+													A2(
+													$elm$html$Html$li,
+													_List_Nil,
+													_List_fromArray(
+														[
+															A2(
+															$elm$html$Html$button,
+															_List_fromArray(
+																[
+																	$elm$html$Html$Attributes$type_('button'),
+																	$elm$html$Html$Attributes$class('dropdown-item'),
+																	$elm$html$Html$Events$onClick(
+																	$author$project$Models$Zoom(1 - c.d2))
+																]),
+															_List_fromArray(
+																[
+																	$elm$html$Html$text('100 %')
+																]))
+														])),
+													A2(
+													$elm$html$Html$li,
+													_List_Nil,
+													_List_fromArray(
+														[
+															A2(
+															$elm$html$Html$button,
+															_List_fromArray(
+																[
+																	$elm$html$Html$Attributes$type_('button'),
+																	$elm$html$Html$Attributes$class('dropdown-item'),
+																	$elm$html$Html$Events$onClick(
+																	$author$project$Models$Zoom(1.5 - c.d2))
+																]),
+															_List_fromArray(
+																[
+																	$elm$html$Html$text('150 %')
+																]))
+														])),
+													A2(
+													$elm$html$Html$li,
+													_List_Nil,
+													_List_fromArray(
+														[
+															A2(
+															$elm$html$Html$button,
+															_List_fromArray(
+																[
+																	$elm$html$Html$Attributes$type_('button'),
+																	$elm$html$Html$Attributes$class('dropdown-item'),
+																	$elm$html$Html$Events$onClick(
+																	$author$project$Models$Zoom(2 - c.d2))
+																]),
+															_List_fromArray(
+																[
+																	$elm$html$Html$text('200 %')
+																]))
+														])),
+													A2(
+													$elm$html$Html$li,
+													_List_Nil,
+													_List_fromArray(
+														[
+															A2(
+															$elm$html$Html$button,
+															_List_fromArray(
+																[
+																	$elm$html$Html$Attributes$type_('button'),
+																	$elm$html$Html$Attributes$class('dropdown-item'),
+																	$elm$html$Html$Events$onClick(
+																	$author$project$Models$Zoom($author$project$Conf$conf.d2.cH - c.d2))
+																]),
+															_List_fromArray(
+																[
+																	$elm$html$Html$text(
+																	$elm$core$String$fromFloat($author$project$Conf$conf.d2.cH * 100) + ' %')
+																]))
+														]))
+												]))
+										])),
+									A2(
+									$elm$html$Html$button,
+									_List_fromArray(
+										[
+											$elm$html$Html$Attributes$type_('button'),
+											$elm$html$Html$Attributes$class('btn btn-sm btn-outline-secondary'),
+											$elm$html$Html$Events$onClick(
+											$author$project$Models$Zoom(c.d2 / 10))
+										]),
+									_List_fromArray(
+										[
+											$lattyware$elm_fontawesome$FontAwesome$Icon$viewIcon($lattyware$elm_fontawesome$FontAwesome$Solid$plus)
+										]))
+								]))
+						]));
+			},
+			canvas));
+};
+var $author$project$Libs$Bootstrap$Modal = 2;
+var $author$project$Models$OnConfirm = F2(
+	function (a, b) {
+		return {$: 35, a: a, b: b};
+	});
+var $author$project$Libs$Bool$toString = function (bool) {
+	if (bool) {
+		return 'true';
+	} else {
+		return 'false';
+	}
+};
+var $author$project$Libs$Bootstrap$ariaHidden = function (value) {
+	return A2(
+		$elm$html$Html$Attributes$attribute,
+		'aria-hidden',
+		$author$project$Libs$Bool$toString(value));
+};
+var $elm$html$Html$Attributes$boolProperty = F2(
+	function (key, bool) {
+		return A2(
+			_VirtualDom_property,
+			key,
+			$elm$json$Json$Encode$bool(bool));
+	});
+var $elm$html$Html$Attributes$autofocus = $elm$html$Html$Attributes$boolProperty('autofocus');
+var $author$project$Libs$Bootstrap$bsBackdrop = function (value) {
+	return A2($elm$html$Html$Attributes$attribute, 'data-bs-backdrop', value);
+};
+var $author$project$Libs$Bootstrap$bsDismiss = function (kind) {
+	return A2(
+		$elm$html$Html$Attributes$attribute,
+		'data-bs-dismiss',
+		$author$project$Libs$Bootstrap$toggleName(kind));
+};
+var $author$project$Libs$Bootstrap$bsKeyboard = function (value) {
+	return A2(
+		$elm$html$Html$Attributes$attribute,
+		'data-bs-keyboard',
+		$author$project$Libs$Bool$toString(value));
+};
+var $elm$html$Html$h5 = _VirtualDom_node('h5');
 var $elm$html$Html$Attributes$tabindex = function (n) {
 	return A2(
 		_VirtualDom_attribute,
 		'tabIndex',
 		$elm$core$String$fromInt(n));
 };
-var $elm$html$Html$Attributes$type_ = $elm$html$Html$Attributes$stringProperty('type');
 var $author$project$Views$Modals$Confirm$viewConfirm = function (confirm) {
 	return A2(
 		$elm$html$Html$div,
 		_List_fromArray(
 			[
-				$elm$html$Html$Attributes$id($author$project$Conf$conf.cm.bU),
+				$elm$html$Html$Attributes$id($author$project$Conf$conf.cp.bZ),
 				$elm$html$Html$Attributes$class('modal fade'),
 				$elm$html$Html$Attributes$tabindex(-1),
 				$author$project$Libs$Bootstrap$bsBackdrop('static'),
 				$author$project$Libs$Bootstrap$bsKeyboard(false),
-				$author$project$Libs$Bootstrap$ariaLabelledBy($author$project$Conf$conf.cm.bU + '-label'),
+				$author$project$Libs$Bootstrap$ariaLabelledBy($author$project$Conf$conf.cp.bZ + '-label'),
 				$author$project$Libs$Bootstrap$ariaHidden(true)
 			]),
 		_List_fromArray(
@@ -11720,7 +13107,7 @@ var $author$project$Views$Modals$Confirm$viewConfirm = function (confirm) {
 										_List_fromArray(
 											[
 												$elm$html$Html$Attributes$class('modal-title'),
-												$elm$html$Html$Attributes$id($author$project$Conf$conf.cm.bU + '-label')
+												$elm$html$Html$Attributes$id($author$project$Conf$conf.cp.bZ + '-label')
 											]),
 										_List_fromArray(
 											[
@@ -11735,7 +13122,7 @@ var $author$project$Views$Modals$Confirm$viewConfirm = function (confirm) {
 												$author$project$Libs$Bootstrap$bsDismiss(2),
 												$author$project$Libs$Bootstrap$ariaLabel('Close'),
 												$elm$html$Html$Events$onClick(
-												A2($author$project$Models$OnConfirm, false, confirm.az))
+												A2($author$project$Models$OnConfirm, false, confirm.aE))
 											]),
 										_List_Nil)
 									])),
@@ -11746,7 +13133,7 @@ var $author$project$Views$Modals$Confirm$viewConfirm = function (confirm) {
 										$elm$html$Html$Attributes$class('modal-body')
 									]),
 								_List_fromArray(
-									[confirm.aB])),
+									[confirm.aG])),
 								A2(
 								$elm$html$Html$div,
 								_List_fromArray(
@@ -11762,7 +13149,7 @@ var $author$project$Views$Modals$Confirm$viewConfirm = function (confirm) {
 												$elm$html$Html$Attributes$class('btn btn-secondary'),
 												$author$project$Libs$Bootstrap$bsDismiss(2),
 												$elm$html$Html$Events$onClick(
-												A2($author$project$Models$OnConfirm, false, confirm.az))
+												A2($author$project$Models$OnConfirm, false, confirm.aE))
 											]),
 										_List_fromArray(
 											[
@@ -11775,7 +13162,7 @@ var $author$project$Views$Modals$Confirm$viewConfirm = function (confirm) {
 												$elm$html$Html$Attributes$class('btn btn-primary'),
 												$author$project$Libs$Bootstrap$bsDismiss(2),
 												$elm$html$Html$Events$onClick(
-												A2($author$project$Models$OnConfirm, true, confirm.az)),
+												A2($author$project$Models$OnConfirm, true, confirm.aE)),
 												$elm$html$Html$Attributes$autofocus(true)
 											]),
 										_List_fromArray(
@@ -11788,10 +13175,10 @@ var $author$project$Views$Modals$Confirm$viewConfirm = function (confirm) {
 			]));
 };
 var $author$project$Models$CreateLayout = function (a) {
-	return {$: 26, a: a};
+	return {$: 30, a: a};
 };
 var $author$project$Models$NewLayout = function (a) {
-	return {$: 25, a: a};
+	return {$: 29, a: a};
 };
 var $author$project$Libs$Bootstrap$bsModal = F4(
 	function (modalId, title, body, footer) {
@@ -11910,7 +13297,7 @@ var $elm$html$Html$Attributes$value = $elm$html$Html$Attributes$stringProperty('
 var $author$project$Views$Modals$CreateLayout$viewCreateLayoutModal = function (newLayout) {
 	return A4(
 		$author$project$Libs$Bootstrap$bsModal,
-		$author$project$Conf$conf.cm.cP,
+		$author$project$Conf$conf.cp.cR,
 		'Save layout',
 		_List_fromArray(
 			[
@@ -11999,8 +13386,8 @@ var $author$project$Views$Modals$CreateLayout$viewCreateLayoutModal = function (
 					]))
 			]));
 };
-var $author$project$Models$Zoom = function (a) {
-	return {$: 20, a: a};
+var $author$project$Models$OnWheel = function (a) {
+	return {$: 22, a: a};
 };
 var $author$project$Libs$Maybe$andThenZip = F2(
 	function (f, maybe) {
@@ -12042,7 +13429,7 @@ var $author$project$Libs$Maybe$zip = F2(
 			maybeA,
 			maybeB);
 	});
-var $author$project$View$buildRelationTarget = F4(
+var $author$project$Views$Erd$buildRelationTarget = F4(
 	function (tables, layout, sizes, ref) {
 		return A2(
 			$elm$core$Maybe$map,
@@ -12050,37 +13437,44 @@ var $author$project$View$buildRelationTarget = F4(
 				var table = _v0.a;
 				var column = _v0.b;
 				return {
-					_: column,
-					dk: A2(
+					ag: column,
+					$7: A2(
 						$author$project$Libs$Maybe$zip,
-						A2($pzp1997$assoc_list$AssocList$get, ref.bt, layout.bu),
+						A2($elm$core$Dict$get, ref.dM, layout.by),
 						A2(
-							$pzp1997$assoc_list$AssocList$get,
-							$author$project$Models$Schema$tableIdAsHtmlId(ref.bt),
+							$elm$core$Dict$get,
+							$author$project$Models$Schema$tableIdAsHtmlId(ref.dM),
 							sizes)),
-					bt: table
+					dM: table
 				};
 			},
 			A2(
 				$author$project$Libs$Maybe$andThenZip,
 				function (table) {
-					return A2($pzp1997$assoc_list$AssocList$get, ref._, table.H);
+					return A2($author$project$Libs$Ned$get, ref.ag, table.L);
 				},
-				A2($pzp1997$assoc_list$AssocList$get, ref.bt, tables)));
+				A2($elm$core$Dict$get, ref.dM, tables)));
 	});
-var $author$project$View$buildRelation = F4(
+var $author$project$Views$Erd$buildRelation = F4(
 	function (tables, layout, sizes, rel) {
 		return A3(
 			$elm$core$Maybe$map2,
 			F2(
 				function (src, ref) {
-					return {ag: rel.ag, am: ref, aq: src, as: rel.as};
+					return {B: rel.B, aa: ref, ax: src};
 				}),
-			A4($author$project$View$buildRelationTarget, tables, layout, sizes, rel.aq),
-			A4($author$project$View$buildRelationTarget, tables, layout, sizes, rel.am));
+			A4($author$project$Views$Erd$buildRelationTarget, tables, layout, sizes, rel.ax),
+			A4($author$project$Views$Erd$buildRelationTarget, tables, layout, sizes, rel.aa));
+	});
+var $author$project$Views$Erd$buildRelations = F4(
+	function (tables, layout, sizes, rels) {
+		return A2(
+			$elm$core$List$filterMap,
+			A3($author$project$Views$Erd$buildRelation, tables, layout, sizes),
+			rels);
 	});
 var $zaboco$elm_draggable$Draggable$alwaysPreventDefaultAndStopPropagation = function (msg) {
-	return {aW: msg, a8: true, bo: true};
+	return {a1: msg, dm: true, bs: true};
 };
 var $zaboco$elm_draggable$Internal$StartDragging = F2(
 	function (a, b) {
@@ -12128,19 +13522,14 @@ var $zaboco$elm_draggable$Draggable$mouseTrigger = F2(
 				$zaboco$elm_draggable$Draggable$whenLeftMouseButtonPressed(
 					$zaboco$elm_draggable$Draggable$baseDecoder(key))));
 	});
-var $elm$core$Basics$composeR = F3(
-	function (f, g, x) {
-		return g(
-			f(x));
-	});
-var $mpizenberg$elm_pointer_events$Html$Events$Extra$Touch$defaultOptions = {a8: true, bo: false};
+var $mpizenberg$elm_pointer_events$Html$Events$Extra$Touch$defaultOptions = {dm: true, bs: false};
 var $mpizenberg$elm_pointer_events$Html$Events$Extra$Touch$Event = F4(
 	function (keys, changedTouches, targetTouches, touches) {
-		return {bP: changedTouches, cu: keys, dL: targetTouches, dR: touches};
+		return {bU: changedTouches, cx: keys, dO: targetTouches, dU: touches};
 	});
 var $mpizenberg$elm_pointer_events$Internal$Decode$Keys = F3(
 	function (alt, ctrl, shift) {
-		return {bG: alt, bX: ctrl, dy: shift};
+		return {ae: alt, ah: ctrl, dC: shift};
 	});
 var $mpizenberg$elm_pointer_events$Internal$Decode$keys = A4(
 	$elm$json$Json$Decode$map3,
@@ -12150,7 +13539,7 @@ var $mpizenberg$elm_pointer_events$Internal$Decode$keys = A4(
 	A2($elm$json$Json$Decode$field, 'shiftKey', $elm$json$Json$Decode$bool));
 var $mpizenberg$elm_pointer_events$Html$Events$Extra$Touch$Touch = F4(
 	function (identifier, clientPos, pagePos, screenPos) {
-		return {bR: clientPos, cl: identifier, dc: pagePos, dt: screenPos};
+		return {bW: clientPos, co: identifier, df: pagePos, dx: screenPos};
 	});
 var $mpizenberg$elm_pointer_events$Internal$Decode$clientPos = A3(
 	$elm$json$Json$Decode$map2,
@@ -12232,9 +13621,9 @@ var $mpizenberg$elm_pointer_events$Html$Events$Extra$Touch$onWithOptions = F3(
 				$elm$json$Json$Decode$map,
 				function (ev) {
 					return {
-						aW: tag(ev),
-						a8: options.a8,
-						bo: options.bo
+						a1: tag(ev),
+						dm: options.dm,
+						bs: options.bs
 					};
 				},
 				$mpizenberg$elm_pointer_events$Html$Events$Extra$Touch$eventDecoder));
@@ -12242,7 +13631,6 @@ var $mpizenberg$elm_pointer_events$Html$Events$Extra$Touch$onWithOptions = F3(
 var $mpizenberg$elm_pointer_events$Html$Events$Extra$Touch$onEnd = A2($mpizenberg$elm_pointer_events$Html$Events$Extra$Touch$onWithOptions, 'touchend', $mpizenberg$elm_pointer_events$Html$Events$Extra$Touch$defaultOptions);
 var $mpizenberg$elm_pointer_events$Html$Events$Extra$Touch$onMove = A2($mpizenberg$elm_pointer_events$Html$Events$Extra$Touch$onWithOptions, 'touchmove', $mpizenberg$elm_pointer_events$Html$Events$Extra$Touch$defaultOptions);
 var $mpizenberg$elm_pointer_events$Html$Events$Extra$Touch$onStart = A2($mpizenberg$elm_pointer_events$Html$Events$Extra$Touch$onWithOptions, 'touchstart', $mpizenberg$elm_pointer_events$Html$Events$Extra$Touch$defaultOptions);
-var $elm$core$Basics$round = _Basics_round;
 var $zaboco$elm_draggable$Draggable$touchTriggers = F2(
 	function (key, envelope) {
 		var touchToMouse = function (touchEvent) {
@@ -12260,9 +13648,9 @@ var $zaboco$elm_draggable$Draggable$touchTriggers = F2(
 					A2(
 						$elm$core$Maybe$map,
 						function ($) {
-							return $.bR;
+							return $.bW;
 						},
-						$elm$core$List$head(touchEvent.bP))));
+						$elm$core$List$head(touchEvent.bU))));
 		};
 		var mouseToEnv = function (internal) {
 			return A2(
@@ -12293,32 +13681,6 @@ var $author$project$Views$Helpers$dragAttrs = function (id) {
 		A2($zaboco$elm_draggable$Draggable$mouseTrigger, id, $author$project$Models$DragMsg),
 		A2($zaboco$elm_draggable$Draggable$touchTriggers, id, $author$project$Models$DragMsg));
 };
-var $author$project$Libs$Bool$lazyCond = F3(
-	function (predicate, _true, _false) {
-		return predicate ? _true(0) : _false(0);
-	});
-var $author$project$Libs$List$filterMap = F3(
-	function (predicate, transform, list) {
-		return A3(
-			$elm$core$List$foldr,
-			F2(
-				function (a, res) {
-					return A3(
-						$author$project$Libs$Bool$lazyCond,
-						predicate(a),
-						function (_v0) {
-							return A2(
-								$elm$core$List$cons,
-								transform(a),
-								res);
-						},
-						function (_v1) {
-							return res;
-						});
-				}),
-			_List_Nil,
-			list);
-	});
 var $author$project$Libs$List$filterZip = F2(
 	function (f, xs) {
 		return A2(
@@ -12333,22 +13695,20 @@ var $author$project$Libs$List$filterZip = F2(
 			},
 			xs);
 	});
-var $author$project$View$incomingTableRelations = F2(
-	function (relations, table) {
+var $author$project$Libs$Dict$getOrElse = F3(
+	function (key, _default, dict) {
 		return A2(
-			$elm$core$List$filter,
-			function (r) {
-				return _Utils_eq(r.am.bt.ck, table.ck);
-			},
-			relations);
+			$elm$core$Maybe$withDefault,
+			_default,
+			A2($elm$core$Dict$get, key, dict));
 	});
 var $author$project$Libs$Html$Events$WheelEvent = F3(
 	function (delta, mouse, keys) {
-		return {b$: delta, cu: keys, cK: mouse};
+		return {b3: delta, cx: keys, cM: mouse};
 	});
 var $author$project$Libs$Html$Events$onWheel = function (callback) {
 	var preventDefaultAndStopPropagation = function (msg) {
-		return {aW: msg, a8: true, bo: true};
+		return {a1: msg, dm: true, bs: true};
 	};
 	var decoder = A2(
 		$elm$json$Json$Decode$map,
@@ -12360,7 +13720,7 @@ var $author$project$Libs$Html$Events$onWheel = function (callback) {
 				$elm$json$Json$Decode$map3,
 				F3(
 					function (x, y, z) {
-						return {bC: x, bD: y, dZ: z};
+						return {bI: x, bJ: y, d0: z};
 					}),
 				A2($elm$json$Json$Decode$field, 'deltaX', $elm$json$Json$Decode$float),
 				A2($elm$json$Json$Decode$field, 'deltaY', $elm$json$Json$Decode$float),
@@ -12369,7 +13729,7 @@ var $author$project$Libs$Html$Events$onWheel = function (callback) {
 				$elm$json$Json$Decode$map2,
 				F2(
 					function (x, y) {
-						return {bC: x, bD: y};
+						return {bI: x, bJ: y};
 					}),
 				A2($elm$json$Json$Decode$field, 'pageX', $elm$json$Json$Decode$float),
 				A2($elm$json$Json$Decode$field, 'pageY', $elm$json$Json$Decode$float)),
@@ -12377,7 +13737,7 @@ var $author$project$Libs$Html$Events$onWheel = function (callback) {
 				$elm$json$Json$Decode$map4,
 				F4(
 					function (ctrl, alt, shift, meta) {
-						return {bG: alt, bX: ctrl, cG: meta, dy: shift};
+						return {ae: alt, ah: ctrl, ao: meta, dC: shift};
 					}),
 				A2($elm$json$Json$Decode$field, 'ctrlKey', $elm$json$Json$Decode$bool),
 				A2($elm$json$Json$Decode$field, 'altKey', $elm$json$Json$Decode$bool),
@@ -12388,76 +13748,28 @@ var $author$project$Libs$Html$Events$onWheel = function (callback) {
 		'wheel',
 		A2($elm$json$Json$Decode$map, preventDefaultAndStopPropagation, decoder));
 };
-var $elm$core$String$fromFloat = _String_fromNumber;
 var $elm$virtual_dom$VirtualDom$style = _VirtualDom_style;
 var $elm$html$Html$Attributes$style = $elm$virtual_dom$VirtualDom$style;
-var $author$project$View$placeAndZoom = F2(
+var $author$project$Views$Erd$placeAndZoom = F2(
 	function (zoom, pan) {
 		return A2(
 			$elm$html$Html$Attributes$style,
 			'transform',
-			'translate(' + ($elm$core$String$fromFloat(pan.aT) + ('px, ' + ($elm$core$String$fromFloat(pan.bx) + ('px) scale(' + ($elm$core$String$fromFloat(zoom) + ')'))))));
+			'translate(' + ($elm$core$String$fromFloat(pan.a_) + ('px, ' + ($elm$core$String$fromFloat(pan.bD) + ('px) scale(' + ($elm$core$String$fromFloat(zoom) + ')'))))));
 	});
-var $author$project$View$isColumnShown = F3(
-	function (table, column, layout) {
-		return A2(
-			$elm$core$Maybe$withDefault,
-			false,
-			A2(
-				$elm$core$Maybe$map,
-				function (t) {
-					return A2(
-						$elm$core$List$any,
-						function (c) {
-							return _Utils_eq(c, column);
-						},
-						t.H);
-				},
-				A2($pzp1997$assoc_list$AssocList$get, table, layout.bu)));
-	});
-var $author$project$View$isShown = F2(
-	function (ref, layout) {
-		return A3($author$project$View$isColumnShown, ref.bt.ck, ref._._, layout);
-	});
-var $author$project$View$shouldDrawRelation = F2(
-	function (layout, relation) {
-		return relation.as.bl && (A2($author$project$View$isShown, relation.aq, layout) || A2($author$project$View$isShown, relation.am, layout));
-	});
-var $elm$html$Html$Attributes$height = function (n) {
+var $author$project$Views$Helpers$sizeAttr = function (size) {
 	return A2(
-		_VirtualDom_attribute,
-		'height',
-		$elm$core$String$fromInt(n));
+		$elm$html$Html$Attributes$attribute,
+		'data-size',
+		$elm$core$String$fromInt(
+			$elm$core$Basics$round(size.d_)) + ('x' + $elm$core$String$fromInt(
+			$elm$core$Basics$round(size.cj))));
 };
-var $elm$html$Html$Attributes$width = function (n) {
-	return A2(
-		_VirtualDom_attribute,
-		'width',
-		$elm$core$String$fromInt(n));
-};
-var $author$project$Views$Helpers$sizeAttrs = function (size) {
-	return _List_fromArray(
-		[
-			$elm$html$Html$Attributes$width(
-			$elm$core$Basics$round(size.dX)),
-			$elm$html$Html$Attributes$height(
-			$elm$core$Basics$round(size.cg))
-		]);
-};
-var $elm$svg$Svg$Attributes$class = _VirtualDom_attribute('class');
-var $elm$svg$Svg$Attributes$height = _VirtualDom_attribute('height');
-var $elm$core$Basics$min = F2(
-	function (x, y) {
-		return (_Utils_cmp(x, y) < 0) ? x : y;
-	});
-var $author$project$Views$Relation$minus = F2(
+var $author$project$Views$Erd$Relation$minus = F2(
 	function (p1, p2) {
-		return {bC: p1.bC - p2.bC, bD: p1.bD - p2.bD};
+		return {bI: p1.bI - p2.bI, bJ: p1.bJ - p2.bJ};
 	});
 var $elm$svg$Svg$Attributes$style = _VirtualDom_attribute('style');
-var $elm$svg$Svg$trustedNode = _VirtualDom_nodeNS('http://www.w3.org/2000/svg');
-var $elm$svg$Svg$svg = $elm$svg$Svg$trustedNode('svg');
-var $elm$svg$Svg$text = $elm$virtual_dom$VirtualDom$text;
 var $author$project$Libs$List$addIf = F3(
 	function (predicate, item, list) {
 		return predicate ? A2($elm$core$List$cons, item, list) : list;
@@ -12468,7 +13780,7 @@ var $elm$svg$Svg$Attributes$x1 = _VirtualDom_attribute('x1');
 var $elm$svg$Svg$Attributes$x2 = _VirtualDom_attribute('x2');
 var $elm$svg$Svg$Attributes$y1 = _VirtualDom_attribute('y1');
 var $elm$svg$Svg$Attributes$y2 = _VirtualDom_attribute('y2');
-var $author$project$Views$Relation$viewLine = F4(
+var $author$project$Views$Erd$Relation$viewLine = F4(
 	function (p1, p2, optional, color) {
 		return A2(
 			$elm$svg$Svg$line,
@@ -12479,13 +13791,13 @@ var $author$project$Views$Relation$viewLine = F4(
 				_List_fromArray(
 					[
 						$elm$svg$Svg$Attributes$x1(
-						$elm$core$String$fromFloat(p1.bC)),
+						$elm$core$String$fromFloat(p1.bI)),
 						$elm$svg$Svg$Attributes$y1(
-						$elm$core$String$fromFloat(p1.bD)),
+						$elm$core$String$fromFloat(p1.bJ)),
 						$elm$svg$Svg$Attributes$x2(
-						$elm$core$String$fromFloat(p2.bC)),
+						$elm$core$String$fromFloat(p2.bI)),
 						$elm$svg$Svg$Attributes$y2(
-						$elm$core$String$fromFloat(p2.bD)),
+						$elm$core$String$fromFloat(p2.bJ)),
 						$elm$svg$Svg$Attributes$style(
 						A2(
 							$elm$core$Maybe$withDefault,
@@ -12499,13 +13811,12 @@ var $author$project$Views$Relation$viewLine = F4(
 					])),
 			_List_Nil);
 	});
-var $elm$svg$Svg$Attributes$width = _VirtualDom_attribute('width');
-var $author$project$Views$Relation$drawRelation = F5(
+var $author$project$Views$Erd$Relation$drawRelation = F5(
 	function (src, ref, optional, color, name) {
 		var padding = 10;
 		var origin = {
-			bC: A2($elm$core$Basics$min, src.bC, ref.bC) - padding,
-			bD: A2($elm$core$Basics$min, src.bD, ref.bD) - padding
+			bI: A2($elm$core$Basics$min, src.bI, ref.bI) - padding,
+			bJ: A2($elm$core$Basics$min, src.bJ, ref.bJ) - padding
 		};
 		return A2(
 			$elm$svg$Svg$svg,
@@ -12514,81 +13825,80 @@ var $author$project$Views$Relation$drawRelation = F5(
 					$elm$svg$Svg$Attributes$class('relation'),
 					$elm$svg$Svg$Attributes$width(
 					$elm$core$String$fromFloat(
-						$elm$core$Basics$abs(src.bC - ref.bC) + (padding * 2))),
+						$elm$core$Basics$abs(src.bI - ref.bI) + (padding * 2))),
 					$elm$svg$Svg$Attributes$height(
 					$elm$core$String$fromFloat(
-						$elm$core$Basics$abs(src.bD - ref.bD) + (padding * 2))),
+						$elm$core$Basics$abs(src.bJ - ref.bJ) + (padding * 2))),
 					$elm$svg$Svg$Attributes$style(
-					'position: absolute; left: ' + ($elm$core$String$fromFloat(origin.bC) + ('px; top: ' + ($elm$core$String$fromFloat(origin.bD) + 'px;'))))
+					'position: absolute; left: ' + ($elm$core$String$fromFloat(origin.bI) + ('px; top: ' + ($elm$core$String$fromFloat(origin.bJ) + 'px;'))))
 				]),
 			_List_fromArray(
 				[
 					A4(
-					$author$project$Views$Relation$viewLine,
-					A2($author$project$Views$Relation$minus, src, origin),
-					A2($author$project$Views$Relation$minus, ref, origin),
+					$author$project$Views$Erd$Relation$viewLine,
+					A2($author$project$Views$Erd$Relation$minus, src, origin),
+					A2($author$project$Views$Erd$Relation$minus, ref, origin),
 					optional,
 					color),
 					$elm$svg$Svg$text(name)
 				]));
 	});
-var $author$project$Views$Relation$formatForeignKeyName = function (_v0) {
+var $author$project$Views$Erd$Relation$formatForeignKeyName = function (_v0) {
 	var name = _v0;
 	return name;
 };
 var $author$project$Views$Helpers$withColumnName = F2(
-	function (_v0, table) {
-		var column = _v0;
+	function (column, table) {
 		return table + ('.' + column);
 	});
-var $author$project$Views$Relation$formatRef = F2(
+var $author$project$Views$Erd$Relation$formatRef = F2(
 	function (table, column) {
 		return A2(
 			$author$project$Views$Helpers$withColumnName,
-			column._,
-			$author$project$Models$Schema$showTableId(table.ck));
+			column.ag,
+			$author$project$Models$Schema$showTableId(table.aV));
 	});
-var $author$project$Views$Relation$formatText = F3(
+var $author$project$Views$Erd$Relation$formatText = F3(
 	function (fk, src, ref) {
-		return A2($author$project$Views$Relation$formatRef, src.bt, src._) + (' -> ' + ($author$project$Views$Relation$formatForeignKeyName(fk) + (' -> ' + A2($author$project$Views$Relation$formatRef, ref.bt, ref._))));
+		return A2($author$project$Views$Erd$Relation$formatRef, src.dM, src.ag) + (' -> ' + ($author$project$Views$Erd$Relation$formatForeignKeyName(fk) + (' -> ' + A2($author$project$Views$Erd$Relation$formatRef, ref.dM, ref.ag))));
 	});
-var $author$project$Views$Relation$getColor = F2(
+var $author$project$Views$Erd$Relation$getColor = F2(
 	function (src, ref) {
 		return A2(
 			$author$project$Libs$Maybe$orElse,
 			A2(
 				$elm$core$Maybe$map,
 				function ($) {
-					return $.bS;
+					return $.bX;
 				},
 				A2(
 					$author$project$Libs$Maybe$filter,
 					function ($) {
-						return $.dw;
+						return $.dA;
 					},
-					A2($elm$core$Maybe$map, $elm$core$Tuple$first, ref.dk))),
+					A2($elm$core$Maybe$map, $elm$core$Tuple$first, ref.$7))),
 			A2(
 				$elm$core$Maybe$map,
 				function ($) {
-					return $.bS;
+					return $.bX;
 				},
 				A2(
 					$author$project$Libs$Maybe$filter,
 					function ($) {
-						return $.dw;
+						return $.dA;
 					},
-					A2($elm$core$Maybe$map, $elm$core$Tuple$first, src.dk))));
+					A2($elm$core$Maybe$map, $elm$core$Tuple$first, src.$7))));
 	});
-var $author$project$Views$Relation$tablePositions = function (_v0) {
+var $author$project$Views$Erd$Relation$tablePositions = function (_v0) {
 	var props = _v0.a;
 	var size = _v0.b;
-	return _Utils_Tuple3(props.a6.aT, props.a6.aT + (size.dX / 2), props.a6.aT + size.dX);
+	return _Utils_Tuple3(props.bd.a_, props.bd.a_ + (size.d_ / 2), props.bd.a_ + size.d_);
 };
-var $author$project$Views$Relation$positionX = F2(
+var $author$project$Views$Erd$Relation$positionX = F2(
 	function (srcTable, refTable) {
 		var _v0 = _Utils_Tuple2(
-			$author$project$Views$Relation$tablePositions(srcTable),
-			$author$project$Views$Relation$tablePositions(refTable));
+			$author$project$Views$Erd$Relation$tablePositions(srcTable),
+			$author$project$Views$Erd$Relation$tablePositions(refTable));
 		var _v1 = _v0.a;
 		var srcLeft = _v1.a;
 		var srcCenter = _v1.b;
@@ -12599,8 +13909,8 @@ var $author$project$Views$Relation$positionX = F2(
 		var refRight = _v2.c;
 		return (_Utils_cmp(srcRight, refLeft) < 0) ? _Utils_Tuple2(srcRight, refLeft) : ((_Utils_cmp(srcCenter, refCenter) < 0) ? _Utils_Tuple2(srcRight, refRight) : ((_Utils_cmp(srcLeft, refRight) < 0) ? _Utils_Tuple2(srcLeft, refLeft) : _Utils_Tuple2(srcLeft, refRight)));
 	});
-var $author$project$Views$Relation$columnHeight = 31;
-var $author$project$Views$Relation$headerHeight = 48;
+var $author$project$Views$Erd$Relation$columnHeight = 31;
+var $author$project$Views$Erd$Relation$headerHeight = 48;
 var $author$project$Libs$List$indexOf = F2(
 	function (item, xs) {
 		return A2(
@@ -12620,22 +13930,22 @@ var $author$project$Libs$List$indexOf = F2(
 						}),
 					xs)));
 	});
-var $author$project$Views$Relation$positionY = F2(
+var $author$project$Views$Erd$Relation$positionY = F2(
 	function (props, column) {
-		return (props.a6.bx + $author$project$Views$Relation$headerHeight) + ($author$project$Views$Relation$columnHeight * (0.5 + A2(
+		return (props.bd.bD + $author$project$Views$Erd$Relation$headerHeight) + ($author$project$Views$Erd$Relation$columnHeight * (0.5 + A2(
 			$elm$core$Maybe$withDefault,
 			-1,
-			A2($author$project$Libs$List$indexOf, column._, props.H))));
+			A2($author$project$Libs$List$indexOf, column.ag, props.L))));
 	});
-var $author$project$Views$Relation$viewRelation = function (_v0) {
-	var key = _v0.ag;
-	var src = _v0.aq;
-	var ref = _v0.am;
+var $author$project$Views$Erd$Relation$viewRelation = function (_v0) {
+	var key = _v0.B;
+	var src = _v0.ax;
+	var ref = _v0.aa;
 	var _v1 = _Utils_Tuple2(
-		_Utils_Tuple2(src.dk, ref.dk),
+		_Utils_Tuple2(src.$7, ref.$7),
 		_Utils_Tuple2(
-			A3($author$project$Views$Relation$formatText, key, src, ref),
-			A2($author$project$Views$Relation$getColor, src, ref)));
+			A3($author$project$Views$Erd$Relation$formatText, key, src, ref),
+			A2($author$project$Views$Erd$Relation$getColor, src, ref)));
 	if (_v1.a.a.$ === 1) {
 		if (_v1.a.b.$ === 1) {
 			var _v2 = _v1.a;
@@ -12662,15 +13972,15 @@ var $author$project$Views$Relation$viewRelation = function (_v0) {
 			var name = _v14.a;
 			var color = _v14.b;
 			var _v15 = {
-				bC: rProps.a6.aT,
-				bD: A2($author$project$Views$Relation$positionY, rProps, ref._)
+				bI: rProps.bd.a_,
+				bJ: A2($author$project$Views$Erd$Relation$positionY, rProps, ref.ag)
 			};
 			var refPos = _v15;
 			return A5(
-				$author$project$Views$Relation$drawRelation,
-				{bC: refPos.bC - 20, bD: refPos.bD},
+				$author$project$Views$Erd$Relation$drawRelation,
+				{bI: refPos.bI - 20, bJ: refPos.bJ},
 				refPos,
-				src._.cZ,
+				src.ag.c$,
 				color,
 				name);
 		}
@@ -12685,15 +13995,15 @@ var $author$project$Views$Relation$viewRelation = function (_v0) {
 			var name = _v9.a;
 			var color = _v9.b;
 			var _v10 = {
-				bC: sProps.a6.aT + sSize.dX,
-				bD: A2($author$project$Views$Relation$positionY, sProps, src._)
+				bI: sProps.bd.a_ + sSize.d_,
+				bJ: A2($author$project$Views$Erd$Relation$positionY, sProps, src.ag)
 			};
 			var srcPos = _v10;
 			return A5(
-				$author$project$Views$Relation$drawRelation,
+				$author$project$Views$Erd$Relation$drawRelation,
 				srcPos,
-				{bC: srcPos.bC + 20, bD: srcPos.bD},
-				src._.cZ,
+				{bI: srcPos.bI + 20, bJ: srcPos.bJ},
+				src.ag.c$,
 				color,
 				name);
 		} else {
@@ -12709,12 +14019,12 @@ var $author$project$Views$Relation$viewRelation = function (_v0) {
 			var color = _v19.b;
 			var _v20 = _Utils_Tuple2(
 				A2(
-					$author$project$Views$Relation$positionX,
+					$author$project$Views$Erd$Relation$positionX,
 					_Utils_Tuple2(sProps, sSize),
 					_Utils_Tuple2(rProps, rSize)),
 				_Utils_Tuple2(
-					A2($author$project$Views$Relation$positionY, sProps, src._),
-					A2($author$project$Views$Relation$positionY, rProps, ref._)));
+					A2($author$project$Views$Erd$Relation$positionY, sProps, src.ag),
+					A2($author$project$Views$Erd$Relation$positionY, rProps, ref.ag)));
 			var _v21 = _v20.a;
 			var srcX = _v21.a;
 			var refX = _v21.b;
@@ -12722,10 +14032,10 @@ var $author$project$Views$Relation$viewRelation = function (_v0) {
 			var srcY = _v22.a;
 			var refY = _v22.b;
 			return A5(
-				$author$project$Views$Relation$drawRelation,
-				{bC: srcX, bD: srcY},
-				{bC: refX, bD: refY},
-				src._.cZ,
+				$author$project$Views$Erd$Relation$drawRelation,
+				{bI: srcX, bJ: srcY},
+				{bI: refX, bJ: refY},
+				src.ag.c$,
 				color,
 				name);
 		}
@@ -12743,12 +14053,6 @@ var $author$project$Libs$Bootstrap$ariaExpanded = function (value) {
 };
 var $author$project$Libs$Bootstrap$bsTarget = function (targetId) {
 	return A2($elm$html$Html$Attributes$attribute, 'data-bs-target', '#' + targetId);
-};
-var $author$project$Libs$Bootstrap$bsToggle = function (kind) {
-	return A2(
-		$elm$html$Html$Attributes$attribute,
-		'data-bs-toggle',
-		$author$project$Libs$Bootstrap$toggleName(kind));
 };
 var $author$project$Libs$Bootstrap$bsToggleCollapse = function (targetId) {
 	return _List_fromArray(
@@ -12773,12 +14077,19 @@ var $author$project$Libs$Html$divIf = F3(
 	function (predicate, attrs, children) {
 		return predicate ? A2($elm$html$Html$div, attrs, children) : A2($elm$html$Html$div, _List_Nil, _List_Nil);
 	});
-var $author$project$Views$Table$filterIncomingColumnRelations = F2(
+var $author$project$Libs$Nel$filter = F2(
+	function (predicate, nel) {
+		return A2(
+			$elm$core$List$filter,
+			predicate,
+			$author$project$Libs$Nel$toList(nel));
+	});
+var $author$project$Views$Erd$Table$filterIncomingColumnRelations = F2(
 	function (incomingTableRelations, column) {
 		return A2(
 			$elm$core$List$filter,
 			function (r) {
-				return _Utils_eq(r.am._._, column._);
+				return _Utils_eq(r.aa.ag.ag, column.ag);
 			},
 			incomingTableRelations);
 	});
@@ -12799,14 +14110,14 @@ var $author$project$Views$Helpers$placeAt = function (p) {
 	return A2(
 		$elm$html$Html$Attributes$style,
 		'transform',
-		'translate(' + ($elm$core$String$fromFloat(p.aT) + ('px, ' + ($elm$core$String$fromFloat(p.bx) + 'px)'))));
+		'translate(' + ($elm$core$String$fromFloat(p.a_) + ('px, ' + ($elm$core$String$fromFloat(p.bD) + 'px)'))));
 };
 var $author$project$Libs$String$plural = F4(
 	function (count, none, one, many) {
 		return (!count) ? none : ((count === 1) ? one : ($elm$core$String$fromInt(count) + (' ' + many)));
 	});
 var $author$project$Models$HideColumn = function (a) {
-	return {$: 18, a: a};
+	return {$: 19, a: a};
 };
 var $elm$html$Html$Events$onDoubleClick = function (msg) {
 	return A2(
@@ -12819,7 +14130,6 @@ var $author$project$Models$ShowTable = function (a) {
 };
 var $elm$html$Html$a = _VirtualDom_node('a');
 var $elm$html$Html$b = _VirtualDom_node('b');
-var $author$project$Libs$Bootstrap$Dropdown = 1;
 var $author$project$Libs$Bootstrap$bsToggleDropdown = function (eltId) {
 	return _List_fromArray(
 		[
@@ -12853,13 +14163,9 @@ var $author$project$Libs$Bootstrap$bsDropdown = F4(
 var $author$project$Views$Helpers$columnRefAsHtmlId = function (ref) {
 	return A2(
 		$author$project$Views$Helpers$withColumnName,
-		ref._,
-		$author$project$Models$Schema$tableIdAsHtmlId(ref.bt));
+		ref.ag,
+		$author$project$Models$Schema$tableIdAsHtmlId(ref.dM));
 };
-var $lattyware$elm_fontawesome$FontAwesome$Icon$Icon = F5(
-	function (prefix, name, width, height, paths) {
-		return {cg: height, J: name, dd: paths, dh: prefix, dX: width};
-	});
 var $lattyware$elm_fontawesome$FontAwesome$Solid$externalLinkAlt = A5(
 	$lattyware$elm_fontawesome$FontAwesome$Icon$Icon,
 	'fas',
@@ -12868,395 +14174,54 @@ var $lattyware$elm_fontawesome$FontAwesome$Solid$externalLinkAlt = A5(
 	512,
 	_List_fromArray(
 		['M432,320H400a16,16,0,0,0-16,16V448H64V128H208a16,16,0,0,0,16-16V80a16,16,0,0,0-16-16H48A48,48,0,0,0,0,112V464a48,48,0,0,0,48,48H400a48,48,0,0,0,48-48V336A16,16,0,0,0,432,320ZM488,0h-128c-21.37,0-32.05,25.91-17,41l35.73,35.73L135,320.37a24,24,0,0,0,0,34L157.67,377a24,24,0,0,0,34,0L435.28,133.32,471,169c15,15,41,4.5,41-17V24A24,24,0,0,0,488,0Z']));
-var $elm$html$Html$li = _VirtualDom_node('li');
-var $elm$html$Html$ul = _VirtualDom_node('ul');
-var $lattyware$elm_fontawesome$FontAwesome$Icon$Presentation = $elm$core$Basics$identity;
-var $lattyware$elm_fontawesome$FontAwesome$Icon$present = function (icon) {
-	return {R: _List_Nil, aP: icon, ck: $elm$core$Maybe$Nothing, M: $elm$core$Maybe$Nothing, an: 'img', dQ: $elm$core$Maybe$Nothing, Y: _List_Nil};
+var $author$project$Models$ShowTables = function (a) {
+	return {$: 15, a: a};
 };
-var $elm$core$Basics$always = F2(
-	function (a, _v0) {
-		return a;
-	});
-var $lattyware$elm_fontawesome$FontAwesome$Transforms$Internal$add = F2(
-	function (transform, combined) {
-		switch (transform.$) {
-			case 0:
-				var direction = transform.a;
-				var amount = function () {
-					if (!direction.$) {
-						var by = direction.a;
-						return by;
-					} else {
-						var by = direction.a;
-						return -by;
-					}
-				}();
-				return _Utils_update(
-					combined,
-					{dA: combined.dA + amount});
-			case 1:
-				var direction = transform.a;
-				var _v2 = function () {
-					switch (direction.$) {
-						case 0:
-							var by = direction.a;
-							return _Utils_Tuple2(0, -by);
-						case 1:
-							var by = direction.a;
-							return _Utils_Tuple2(0, by);
-						case 2:
-							var by = direction.a;
-							return _Utils_Tuple2(-by, 0);
-						default:
-							var by = direction.a;
-							return _Utils_Tuple2(by, 0);
-					}
-				}();
-				var x = _v2.a;
-				var y = _v2.b;
-				return _Utils_update(
-					combined,
-					{bC: combined.bC + x, bD: combined.bD + y});
-			case 2:
-				var rotation = transform.a;
-				return _Utils_update(
-					combined,
-					{dq: combined.dq + rotation});
-			default:
-				if (!transform.a) {
-					var _v4 = transform.a;
-					return _Utils_update(
-						combined,
-						{cb: true});
-				} else {
-					var _v5 = transform.a;
-					return _Utils_update(
-						combined,
-						{cc: true});
-				}
-		}
-	});
-var $lattyware$elm_fontawesome$FontAwesome$Transforms$Internal$baseSize = 16;
-var $lattyware$elm_fontawesome$FontAwesome$Transforms$Internal$meaninglessTransform = {cb: false, cc: false, dq: 0, dA: $lattyware$elm_fontawesome$FontAwesome$Transforms$Internal$baseSize, bC: 0, bD: 0};
-var $lattyware$elm_fontawesome$FontAwesome$Transforms$Internal$combine = function (transforms) {
-	return A3($elm$core$List$foldl, $lattyware$elm_fontawesome$FontAwesome$Transforms$Internal$add, $lattyware$elm_fontawesome$FontAwesome$Transforms$Internal$meaninglessTransform, transforms);
-};
-var $lattyware$elm_fontawesome$FontAwesome$Transforms$Internal$meaningfulTransform = function (transforms) {
-	var combined = $lattyware$elm_fontawesome$FontAwesome$Transforms$Internal$combine(transforms);
-	return _Utils_eq(combined, $lattyware$elm_fontawesome$FontAwesome$Transforms$Internal$meaninglessTransform) ? $elm$core$Maybe$Nothing : $elm$core$Maybe$Just(combined);
-};
-var $elm$svg$Svg$Attributes$id = _VirtualDom_attribute('id');
-var $elm$svg$Svg$title = $elm$svg$Svg$trustedNode('title');
-var $lattyware$elm_fontawesome$FontAwesome$Icon$titledContents = F3(
-	function (titleId, contents, title) {
-		return A2(
-			$elm$core$List$cons,
-			A2(
-				$elm$svg$Svg$title,
-				_List_fromArray(
-					[
-						$elm$svg$Svg$Attributes$id(titleId)
-					]),
-				_List_fromArray(
-					[
-						$elm$svg$Svg$text(title)
-					])),
-			contents);
-	});
-var $elm$svg$Svg$Attributes$transform = _VirtualDom_attribute('transform');
-var $lattyware$elm_fontawesome$FontAwesome$Transforms$Internal$transformForSvg = F3(
-	function (containerWidth, iconWidth, transform) {
-		var path = 'translate(' + ($elm$core$String$fromFloat((iconWidth / 2) * (-1)) + ' -256)');
-		var outer = 'translate(' + ($elm$core$String$fromFloat(containerWidth / 2) + ' 256)');
-		var innerTranslate = 'translate(' + ($elm$core$String$fromFloat(transform.bC * 32) + (',' + ($elm$core$String$fromFloat(transform.bD * 32) + ') ')));
-		var innerRotate = 'rotate(' + ($elm$core$String$fromFloat(transform.dq) + ' 0 0)');
-		var flipY = transform.cc ? (-1) : 1;
-		var scaleY = (transform.dA / $lattyware$elm_fontawesome$FontAwesome$Transforms$Internal$baseSize) * flipY;
-		var flipX = transform.cb ? (-1) : 1;
-		var scaleX = (transform.dA / $lattyware$elm_fontawesome$FontAwesome$Transforms$Internal$baseSize) * flipX;
-		var innerScale = 'scale(' + ($elm$core$String$fromFloat(scaleX) + (', ' + ($elm$core$String$fromFloat(scaleY) + ') ')));
-		return {
-			aQ: $elm$svg$Svg$Attributes$transform(
-				_Utils_ap(
-					innerTranslate,
-					_Utils_ap(innerScale, innerRotate))),
-			M: $elm$svg$Svg$Attributes$transform(outer),
-			a3: $elm$svg$Svg$Attributes$transform(path)
-		};
-	});
-var $elm$svg$Svg$Attributes$viewBox = _VirtualDom_attribute('viewBox');
-var $elm$svg$Svg$Attributes$x = _VirtualDom_attribute('x');
-var $elm$svg$Svg$Attributes$y = _VirtualDom_attribute('y');
-var $lattyware$elm_fontawesome$FontAwesome$Icon$allSpace = _List_fromArray(
-	[
-		$elm$svg$Svg$Attributes$x('0'),
-		$elm$svg$Svg$Attributes$y('0'),
-		$elm$svg$Svg$Attributes$width('100%'),
-		$elm$svg$Svg$Attributes$height('100%')
-	]);
-var $elm$svg$Svg$clipPath = $elm$svg$Svg$trustedNode('clipPath');
-var $elm$svg$Svg$Attributes$clipPath = _VirtualDom_attribute('clip-path');
-var $elm$svg$Svg$Attributes$d = _VirtualDom_attribute('d');
-var $elm$svg$Svg$Attributes$fill = _VirtualDom_attribute('fill');
-var $elm$svg$Svg$path = $elm$svg$Svg$trustedNode('path');
-var $lattyware$elm_fontawesome$FontAwesome$Svg$Internal$corePath = F2(
-	function (attrs, d) {
-		return A2(
-			$elm$svg$Svg$path,
-			A2(
-				$elm$core$List$cons,
-				$elm$svg$Svg$Attributes$fill('currentColor'),
-				A2(
-					$elm$core$List$cons,
-					$elm$svg$Svg$Attributes$d(d),
-					attrs)),
-			_List_Nil);
-	});
-var $elm$svg$Svg$g = $elm$svg$Svg$trustedNode('g');
-var $lattyware$elm_fontawesome$FontAwesome$Svg$Internal$corePaths = F2(
-	function (attrs, icon) {
-		var _v0 = icon.dd;
-		if (!_v0.b) {
-			return A2($lattyware$elm_fontawesome$FontAwesome$Svg$Internal$corePath, attrs, '');
-		} else {
-			if (!_v0.b.b) {
-				var only = _v0.a;
-				return A2($lattyware$elm_fontawesome$FontAwesome$Svg$Internal$corePath, attrs, only);
-			} else {
-				var secondary = _v0.a;
-				var _v1 = _v0.b;
-				var primary = _v1.a;
-				return A2(
-					$elm$svg$Svg$g,
-					_List_fromArray(
-						[
-							$elm$svg$Svg$Attributes$class('fa-group')
-						]),
-					_List_fromArray(
-						[
-							A2(
-							$lattyware$elm_fontawesome$FontAwesome$Svg$Internal$corePath,
-							A2(
-								$elm$core$List$cons,
-								$elm$svg$Svg$Attributes$class('fa-secondary'),
-								attrs),
-							secondary),
-							A2(
-							$lattyware$elm_fontawesome$FontAwesome$Svg$Internal$corePath,
-							A2(
-								$elm$core$List$cons,
-								$elm$svg$Svg$Attributes$class('fa-primary'),
-								attrs),
-							primary)
-						]));
-			}
-		}
-	});
-var $elm$svg$Svg$defs = $elm$svg$Svg$trustedNode('defs');
-var $elm$svg$Svg$mask = $elm$svg$Svg$trustedNode('mask');
-var $elm$svg$Svg$Attributes$mask = _VirtualDom_attribute('mask');
-var $elm$svg$Svg$Attributes$maskContentUnits = _VirtualDom_attribute('maskContentUnits');
-var $elm$svg$Svg$Attributes$maskUnits = _VirtualDom_attribute('maskUnits');
-var $elm$svg$Svg$rect = $elm$svg$Svg$trustedNode('rect');
-var $lattyware$elm_fontawesome$FontAwesome$Icon$viewMaskedWithTransform = F4(
-	function (id, transforms, inner, outer) {
-		var maskInnerGroup = A2(
-			$elm$svg$Svg$g,
-			_List_fromArray(
-				[transforms.aQ]),
-			_List_fromArray(
-				[
-					A2(
-					$lattyware$elm_fontawesome$FontAwesome$Svg$Internal$corePaths,
-					_List_fromArray(
-						[
-							$elm$svg$Svg$Attributes$fill('black'),
-							transforms.a3
-						]),
-					inner)
-				]));
-		var maskId = 'mask-' + (inner.J + ('-' + id));
-		var maskTag = A2(
-			$elm$svg$Svg$mask,
-			_Utils_ap(
-				_List_fromArray(
-					[
-						$elm$svg$Svg$Attributes$id(maskId),
-						$elm$svg$Svg$Attributes$maskUnits('userSpaceOnUse'),
-						$elm$svg$Svg$Attributes$maskContentUnits('userSpaceOnUse')
-					]),
-				$lattyware$elm_fontawesome$FontAwesome$Icon$allSpace),
-			_List_fromArray(
-				[
-					A2(
-					$elm$svg$Svg$rect,
-					A2(
-						$elm$core$List$cons,
-						$elm$svg$Svg$Attributes$fill('white'),
-						$lattyware$elm_fontawesome$FontAwesome$Icon$allSpace),
-					_List_Nil),
-					A2(
-					$elm$svg$Svg$g,
-					_List_fromArray(
-						[transforms.M]),
-					_List_fromArray(
-						[maskInnerGroup]))
-				]));
-		var clipId = 'clip-' + (outer.J + ('-' + id));
-		var defs = A2(
-			$elm$svg$Svg$defs,
-			_List_Nil,
-			_List_fromArray(
-				[
-					A2(
-					$elm$svg$Svg$clipPath,
-					_List_fromArray(
-						[
-							$elm$svg$Svg$Attributes$id(clipId)
-						]),
-					_List_fromArray(
-						[
-							A2($lattyware$elm_fontawesome$FontAwesome$Svg$Internal$corePaths, _List_Nil, outer)
-						])),
-					maskTag
-				]));
+var $author$project$Views$Erd$Table$viewShowAllOption = function (incomingRelations) {
+	var _v0 = A2(
+		$elm$core$List$filter,
+		function (r) {
+			return _Utils_eq(r.ax.$7, $elm$core$Maybe$Nothing);
+		},
+		incomingRelations);
+	if (!_v0.b) {
+		return _List_Nil;
+	} else {
+		var rels = _v0;
 		return _List_fromArray(
 			[
-				defs,
 				A2(
-				$elm$svg$Svg$rect,
-				$elm$core$List$concat(
-					_List_fromArray(
-						[
-							_List_fromArray(
-							[
-								$elm$svg$Svg$Attributes$fill('currentColor'),
-								$elm$svg$Svg$Attributes$clipPath('url(#' + (clipId + ')')),
-								$elm$svg$Svg$Attributes$mask('url(#' + (maskId + ')'))
-							]),
-							$lattyware$elm_fontawesome$FontAwesome$Icon$allSpace
-						])),
-				_List_Nil)
-			]);
-	});
-var $lattyware$elm_fontawesome$FontAwesome$Icon$viewWithTransform = F2(
-	function (transforms, icon) {
-		if (!transforms.$) {
-			var ts = transforms.a;
-			return A2(
-				$elm$svg$Svg$g,
-				_List_fromArray(
-					[ts.M]),
+				$elm$html$Html$li,
+				_List_Nil,
 				_List_fromArray(
 					[
 						A2(
-						$elm$svg$Svg$g,
-						_List_fromArray(
-							[ts.aQ]),
+						$elm$html$Html$a,
 						_List_fromArray(
 							[
-								A2(
-								$lattyware$elm_fontawesome$FontAwesome$Svg$Internal$corePaths,
-								_List_fromArray(
-									[ts.a3]),
-								icon)
+								$elm$html$Html$Attributes$class('dropdown-item'),
+								$elm$html$Html$Events$onClick(
+								$author$project$Models$ShowTables(
+									A2(
+										$elm$core$List$map,
+										function (r) {
+											return r.ax.dM.aV;
+										},
+										rels)))
+							]),
+						_List_fromArray(
+							[
+								$elm$html$Html$text('Show all')
 							]))
-					]));
-		} else {
-			return A2($lattyware$elm_fontawesome$FontAwesome$Svg$Internal$corePaths, _List_Nil, icon);
-		}
-	});
-var $lattyware$elm_fontawesome$FontAwesome$Icon$internalView = function (_v0) {
-	var icon = _v0.aP;
-	var attributes = _v0.R;
-	var transforms = _v0.Y;
-	var role = _v0.an;
-	var id = _v0.ck;
-	var title = _v0.dQ;
-	var outer = _v0.M;
-	var alwaysId = A2($elm$core$Maybe$withDefault, icon.J, id);
-	var titleId = alwaysId + '-title';
-	var semantics = A2(
-		$elm$core$Maybe$withDefault,
-		A2($elm$html$Html$Attributes$attribute, 'aria-hidden', 'true'),
-		A2(
-			$elm$core$Maybe$map,
-			$elm$core$Basics$always(
-				A2($elm$html$Html$Attributes$attribute, 'aria-labelledby', titleId)),
-			title));
-	var _v1 = A2(
-		$elm$core$Maybe$withDefault,
-		_Utils_Tuple2(icon.dX, icon.cg),
-		A2(
-			$elm$core$Maybe$map,
-			function (o) {
-				return _Utils_Tuple2(o.dX, o.cg);
-			},
-			outer));
-	var width = _v1.a;
-	var height = _v1.b;
-	var classes = _List_fromArray(
-		[
-			'svg-inline--fa',
-			'fa-' + icon.J,
-			'fa-w-' + $elm$core$String$fromInt(
-			$elm$core$Basics$ceiling((width / height) * 16))
-		]);
-	var svgTransform = A2(
-		$elm$core$Maybe$map,
-		A2($lattyware$elm_fontawesome$FontAwesome$Transforms$Internal$transformForSvg, width, icon.dX),
-		$lattyware$elm_fontawesome$FontAwesome$Transforms$Internal$meaningfulTransform(transforms));
-	var contents = function () {
-		var resolvedSvgTransform = A2(
-			$elm$core$Maybe$withDefault,
-			A3($lattyware$elm_fontawesome$FontAwesome$Transforms$Internal$transformForSvg, width, icon.dX, $lattyware$elm_fontawesome$FontAwesome$Transforms$Internal$meaninglessTransform),
-			svgTransform);
-		return A2(
-			$elm$core$Maybe$withDefault,
-			_List_fromArray(
-				[
-					A2($lattyware$elm_fontawesome$FontAwesome$Icon$viewWithTransform, svgTransform, icon)
-				]),
-			A2(
-				$elm$core$Maybe$map,
-				A3($lattyware$elm_fontawesome$FontAwesome$Icon$viewMaskedWithTransform, alwaysId, resolvedSvgTransform, icon),
-				outer));
-	}();
-	var potentiallyTitledContents = A2(
-		$elm$core$Maybe$withDefault,
-		contents,
-		A2(
-			$elm$core$Maybe$map,
-			A2($lattyware$elm_fontawesome$FontAwesome$Icon$titledContents, titleId, contents),
-			title));
-	return A2(
-		$elm$svg$Svg$svg,
-		$elm$core$List$concat(
-			_List_fromArray(
-				[
-					_List_fromArray(
-					[
-						A2($elm$html$Html$Attributes$attribute, 'role', role),
-						A2($elm$html$Html$Attributes$attribute, 'xmlns', 'http://www.w3.org/2000/svg'),
-						$elm$svg$Svg$Attributes$viewBox(
-						'0 0 ' + ($elm$core$String$fromInt(width) + (' ' + $elm$core$String$fromInt(height)))),
-						semantics
-					]),
-					A2($elm$core$List$map, $elm$svg$Svg$Attributes$class, classes),
-					attributes
-				])),
-		potentiallyTitledContents);
+					]))
+			]);
+	}
 };
-var $lattyware$elm_fontawesome$FontAwesome$Icon$view = function (presentation) {
-	return $lattyware$elm_fontawesome$FontAwesome$Icon$internalView(presentation);
-};
-var $lattyware$elm_fontawesome$FontAwesome$Icon$viewIcon = A2($elm$core$Basics$composeR, $lattyware$elm_fontawesome$FontAwesome$Icon$present, $lattyware$elm_fontawesome$FontAwesome$Icon$view);
 var $author$project$Views$Helpers$withNullableInfo = F2(
 	function (nullable, text) {
 		return nullable ? (text + '?') : text;
 	});
-var $author$project$Views$Table$viewColumnDropdown = F3(
+var $author$project$Views$Erd$Table$viewColumnDropdown = F3(
 	function (incomingColumnRelations, ref, element) {
 		var _v0 = A2(
 			$elm$core$List$map,
@@ -13276,10 +14241,10 @@ var $author$project$Views$Table$viewColumnDropdown = F3(
 										[
 											_Utils_Tuple2(
 											'disabled',
-											!_Utils_eq(relation.aq.dk, $elm$core$Maybe$Nothing))
+											!_Utils_eq(relation.ax.$7, $elm$core$Maybe$Nothing))
 										])),
 									$elm$html$Html$Events$onClick(
-									$author$project$Models$ShowTable(relation.aq.bt.ck))
+									$author$project$Models$ShowTable(relation.ax.dM.aV))
 								]),
 							_List_fromArray(
 								[
@@ -13291,13 +14256,13 @@ var $author$project$Views$Table$viewColumnDropdown = F3(
 									_List_fromArray(
 										[
 											$elm$html$Html$text(
-											$author$project$Models$Schema$showTableId(relation.aq.bt.ck))
+											$author$project$Models$Schema$showTableId(relation.ax.dM.aV))
 										])),
 									$elm$html$Html$text(
 									A2(
 										$author$project$Views$Helpers$withNullableInfo,
-										relation.aq._.cZ,
-										A2($author$project$Views$Helpers$withColumnName, relation.aq._._, '')))
+										relation.ax.ag.c$,
+										A2($author$project$Views$Helpers$withColumnName, relation.ax.ag.ag, '')))
 								]))
 						]));
 			},
@@ -13323,11 +14288,15 @@ var $author$project$Views$Table$viewColumnDropdown = F3(
 					return element(attrs);
 				},
 				function (attrs) {
-					return A2($elm$html$Html$ul, attrs, items);
+					return A2(
+						$elm$html$Html$ul,
+						attrs,
+						_Utils_ap(
+							items,
+							$author$project$Views$Erd$Table$viewShowAllOption(incomingColumnRelations)));
 				});
 		}
 	});
-var $author$project$Libs$Bootstrap$Tooltip = 0;
 var $lattyware$elm_fontawesome$FontAwesome$Solid$fingerprint = A5(
 	$lattyware$elm_fontawesome$FontAwesome$Icon$Icon,
 	'fas',
@@ -13336,90 +14305,50 @@ var $lattyware$elm_fontawesome$FontAwesome$Solid$fingerprint = A5(
 	512,
 	_List_fromArray(
 		['M256.12 245.96c-13.25 0-24 10.74-24 24 1.14 72.25-8.14 141.9-27.7 211.55-2.73 9.72 2.15 30.49 23.12 30.49 10.48 0 20.11-6.92 23.09-17.52 13.53-47.91 31.04-125.41 29.48-224.52.01-13.25-10.73-24-23.99-24zm-.86-81.73C194 164.16 151.25 211.3 152.1 265.32c.75 47.94-3.75 95.91-13.37 142.55-2.69 12.98 5.67 25.69 18.64 28.36 13.05 2.67 25.67-5.66 28.36-18.64 10.34-50.09 15.17-101.58 14.37-153.02-.41-25.95 19.92-52.49 54.45-52.34 31.31.47 57.15 25.34 57.62 55.47.77 48.05-2.81 96.33-10.61 143.55-2.17 13.06 6.69 25.42 19.76 27.58 19.97 3.33 26.81-15.1 27.58-19.77 8.28-50.03 12.06-101.21 11.27-152.11-.88-55.8-47.94-101.88-104.91-102.72zm-110.69-19.78c-10.3-8.34-25.37-6.8-33.76 3.48-25.62 31.5-39.39 71.28-38.75 112 .59 37.58-2.47 75.27-9.11 112.05-2.34 13.05 6.31 25.53 19.36 27.89 20.11 3.5 27.07-14.81 27.89-19.36 7.19-39.84 10.5-80.66 9.86-121.33-.47-29.88 9.2-57.88 28-80.97 8.35-10.28 6.79-25.39-3.49-33.76zm109.47-62.33c-15.41-.41-30.87 1.44-45.78 4.97-12.89 3.06-20.87 15.98-17.83 28.89 3.06 12.89 16 20.83 28.89 17.83 11.05-2.61 22.47-3.77 34-3.69 75.43 1.13 137.73 61.5 138.88 134.58.59 37.88-1.28 76.11-5.58 113.63-1.5 13.17 7.95 25.08 21.11 26.58 16.72 1.95 25.51-11.88 26.58-21.11a929.06 929.06 0 0 0 5.89-119.85c-1.56-98.75-85.07-180.33-186.16-181.83zm252.07 121.45c-2.86-12.92-15.51-21.2-28.61-18.27-12.94 2.86-21.12 15.66-18.26 28.61 4.71 21.41 4.91 37.41 4.7 61.6-.11 13.27 10.55 24.09 23.8 24.2h.2c13.17 0 23.89-10.61 24-23.8.18-22.18.4-44.11-5.83-72.34zm-40.12-90.72C417.29 43.46 337.6 1.29 252.81.02 183.02-.82 118.47 24.91 70.46 72.94 24.09 119.37-.9 181.04.14 246.65l-.12 21.47c-.39 13.25 10.03 24.31 23.28 24.69.23.02.48.02.72.02 12.92 0 23.59-10.3 23.97-23.3l.16-23.64c-.83-52.5 19.16-101.86 56.28-139 38.76-38.8 91.34-59.67 147.68-58.86 69.45 1.03 134.73 35.56 174.62 92.39 7.61 10.86 22.56 13.45 33.42 5.86 10.84-7.62 13.46-22.59 5.84-33.43z']));
-var $author$project$Views$Table$formatReference = function (_v0) {
-	var schema = _v0.dr;
-	var table = _v0.bt;
-	var column = _v0._;
+var $author$project$Views$Erd$Table$formatReference = function (_v0) {
+	var tableId = _v0.bx;
+	var column = _v0.ag;
 	return A2(
 		$author$project$Views$Helpers$withColumnName,
 		column,
-		A2($author$project$Models$Schema$showTableName, schema, table));
+		A2($author$project$Models$Schema$showTableName, tableId.a, tableId.b));
 };
-var $author$project$Views$Table$formatFkTitle = function (fk) {
-	return 'Foreign key to ' + $author$project$Views$Table$formatReference(fk);
+var $author$project$Views$Erd$Table$formatFkTitle = function (fk) {
+	return 'Foreign key to ' + $author$project$Views$Erd$Table$formatReference(fk);
 };
-var $author$project$Views$Table$formatIndexName = function (_v0) {
+var $author$project$Views$Erd$Table$formatIndexName = function (_v0) {
 	var name = _v0;
 	return name;
 };
-var $author$project$Views$Table$formatIndexTitle = function (indexes) {
+var $author$project$Views$Erd$Table$formatIndexTitle = function (indexes) {
 	return 'Indexed by ' + A2(
 		$elm$core$String$join,
 		', ',
 		A2(
 			$elm$core$List$map,
 			function (index) {
-				return $author$project$Views$Table$formatIndexName(index.J);
+				return $author$project$Views$Erd$Table$formatIndexName(index.N);
 			},
 			indexes));
 };
-var $author$project$Views$Table$formatPkTitle = function (_v0) {
+var $author$project$Views$Erd$Table$formatPkTitle = function (_v0) {
 	return 'Primary key';
 };
-var $author$project$Views$Table$formatUniqueIndexName = function (_v0) {
+var $author$project$Views$Erd$Table$formatUniqueIndexName = function (_v0) {
 	var name = _v0;
 	return name;
 };
-var $author$project$Views$Table$formatUniqueTitle = function (uniques) {
+var $author$project$Views$Erd$Table$formatUniqueTitle = function (uniques) {
 	return 'Unique constraint in ' + A2(
 		$elm$core$String$join,
 		', ',
 		A2(
 			$elm$core$List$map,
 			function (unique) {
-				return $author$project$Views$Table$formatUniqueIndexName(unique.J);
+				return $author$project$Views$Erd$Table$formatUniqueIndexName(unique.N);
 			},
 			uniques));
 };
-var $author$project$Views$Table$hasColumn = F2(
-	function (column, columns) {
-		return A2(
-			$elm$core$List$any,
-			function (c) {
-				return _Utils_eq(c, column);
-			},
-			columns);
-	});
-var $author$project$Views$Table$inIndexes = F2(
-	function (column, indexes) {
-		return A2(
-			$elm$core$List$filter,
-			function (_v0) {
-				var columns = _v0.H;
-				return A2($author$project$Views$Table$hasColumn, column, columns);
-			},
-			indexes);
-	});
-var $author$project$Views$Table$inPrimaryKey = F2(
-	function (column, pk) {
-		return A2(
-			$author$project$Libs$Maybe$filter,
-			function (_v0) {
-				var columns = _v0.H;
-				return A2($author$project$Views$Table$hasColumn, column, columns);
-			},
-			pk);
-	});
-var $author$project$Views$Table$inUniqueIndexes = F2(
-	function (column, uniques) {
-		return A2(
-			$elm$core$List$filter,
-			function (_v0) {
-				var columns = _v0.H;
-				return A2($author$project$Views$Table$hasColumn, column, columns);
-			},
-			uniques);
-	});
 var $lattyware$elm_fontawesome$FontAwesome$Solid$key = A5(
 	$lattyware$elm_fontawesome$FontAwesome$Icon$Icon,
 	'fas',
@@ -13436,16 +14365,15 @@ var $lattyware$elm_fontawesome$FontAwesome$Solid$sortAmountDownAlt = A5(
 	512,
 	_List_fromArray(
 		['M240 96h64a16 16 0 0 0 16-16V48a16 16 0 0 0-16-16h-64a16 16 0 0 0-16 16v32a16 16 0 0 0 16 16zm0 128h128a16 16 0 0 0 16-16v-32a16 16 0 0 0-16-16H240a16 16 0 0 0-16 16v32a16 16 0 0 0 16 16zm256 192H240a16 16 0 0 0-16 16v32a16 16 0 0 0 16 16h256a16 16 0 0 0 16-16v-32a16 16 0 0 0-16-16zm-256-64h192a16 16 0 0 0 16-16v-32a16 16 0 0 0-16-16H240a16 16 0 0 0-16 16v32a16 16 0 0 0 16 16zm-64 0h-48V48a16 16 0 0 0-16-16H80a16 16 0 0 0-16 16v304H16c-14.19 0-21.37 17.24-11.29 27.31l80 96a16 16 0 0 0 22.62 0l80-96C197.35 369.26 190.22 352 176 352z']));
-var $elm$html$Html$Attributes$title = $elm$html$Html$Attributes$stringProperty('title');
-var $author$project$Views$Table$viewColumnIcon = F5(
-	function (maybePk, uniques, indexes, column, attrs) {
+var $author$project$Views$Erd$Table$viewColumnIcon = F3(
+	function (table, column, attrs) {
 		var _v0 = _Utils_Tuple2(
 			_Utils_Tuple2(
-				A2($author$project$Views$Table$inPrimaryKey, column._, maybePk),
-				column.cd),
+				A2($author$project$Models$Schema$inPrimaryKey, table, column.ag),
+				column.ch),
 			_Utils_Tuple2(
-				A2($author$project$Views$Table$inUniqueIndexes, column._, uniques),
-				A2($author$project$Views$Table$inIndexes, column._, indexes)));
+				A2($author$project$Models$Schema$inUniques, table, column.ag),
+				A2($author$project$Models$Schema$inIndexes, table, column.ag)));
 		if (!_v0.a.a.$) {
 			var _v1 = _v0.a;
 			var pk = _v1.a.a;
@@ -13462,7 +14390,7 @@ var $author$project$Views$Table$viewColumnIcon = F5(
 						_List_fromArray(
 							[
 								$elm$html$Html$Attributes$title(
-								$author$project$Views$Table$formatPkTitle(pk)),
+								$author$project$Views$Erd$Table$formatPkTitle(pk)),
 								$author$project$Libs$Bootstrap$bsToggle(0)
 							]),
 						_List_fromArray(
@@ -13482,7 +14410,7 @@ var $author$project$Views$Table$viewColumnIcon = F5(
 						A2(
 							$elm$core$List$cons,
 							$elm$html$Html$Events$onClick(
-								$author$project$Models$ShowTable(fk.dI)),
+								$author$project$Models$ShowTable(fk.bx)),
 							attrs)),
 					_List_fromArray(
 						[
@@ -13491,7 +14419,7 @@ var $author$project$Views$Table$viewColumnIcon = F5(
 							_List_fromArray(
 								[
 									$elm$html$Html$Attributes$title(
-									$author$project$Views$Table$formatFkTitle(fk)),
+									$author$project$Views$Erd$Table$formatFkTitle(fk)),
 									$author$project$Libs$Bootstrap$bsToggle(0)
 								]),
 							_List_fromArray(
@@ -13518,7 +14446,7 @@ var $author$project$Views$Table$viewColumnIcon = F5(
 								_List_fromArray(
 									[
 										$elm$html$Html$Attributes$title(
-										$author$project$Views$Table$formatUniqueTitle(
+										$author$project$Views$Erd$Table$formatUniqueTitle(
 											A2($elm$core$List$cons, u, us))),
 										$author$project$Libs$Bootstrap$bsToggle(0)
 									]),
@@ -13546,7 +14474,7 @@ var $author$project$Views$Table$viewColumnIcon = F5(
 									_List_fromArray(
 										[
 											$elm$html$Html$Attributes$title(
-											$author$project$Views$Table$formatIndexTitle(
+											$author$project$Views$Erd$Table$formatIndexTitle(
 												A2($elm$core$List$cons, i, is))),
 											$author$project$Libs$Bootstrap$bsToggle(0)
 										]),
@@ -13584,8 +14512,7 @@ var $author$project$Libs$List$appendOn = F3(
 			return list;
 		}
 	});
-var $author$project$Views$Helpers$extractColumnName = function (_v0) {
-	var name = _v0;
+var $author$project$Views$Helpers$extractColumnName = function (name) {
 	return name;
 };
 var $lattyware$elm_fontawesome$FontAwesome$Regular$commentDots = A5(
@@ -13597,7 +14524,7 @@ var $lattyware$elm_fontawesome$FontAwesome$Regular$commentDots = A5(
 	_List_fromArray(
 		['M144 208c-17.7 0-32 14.3-32 32s14.3 32 32 32 32-14.3 32-32-14.3-32-32-32zm112 0c-17.7 0-32 14.3-32 32s14.3 32 32 32 32-14.3 32-32-14.3-32-32-32zm112 0c-17.7 0-32 14.3-32 32s14.3 32 32 32 32-14.3 32-32-14.3-32-32-32zM256 32C114.6 32 0 125.1 0 240c0 47.6 19.9 91.2 52.9 126.3C38 405.7 7 439.1 6.5 439.5c-6.6 7-8.4 17.2-4.6 26S14.4 480 24 480c61.5 0 110-25.7 139.1-46.3C192 442.8 223.2 448 256 448c141.4 0 256-93.1 256-208S397.4 32 256 32zm0 368c-26.7 0-53.1-4.1-78.4-12.1l-22.7-7.2-19.5 13.8c-14.3 10.1-33.9 21.4-57.5 29 7.3-12.1 14.4-25.7 19.9-40.2l10.6-28.1-20.6-21.8C69.7 314.1 48 282.2 48 240c0-88.2 93.3-160 208-160s208 71.8 208 160-93.3 160-208 160z']));
 var $elm$html$Html$span = _VirtualDom_node('span');
-var $author$project$Views$Table$viewComment = function (comment) {
+var $author$project$Views$Erd$Table$viewComment = function (comment) {
 	return A2(
 		$elm$html$Html$span,
 		_List_fromArray(
@@ -13613,10 +14540,10 @@ var $author$project$Views$Table$viewComment = function (comment) {
 				$lattyware$elm_fontawesome$FontAwesome$Icon$viewIcon($lattyware$elm_fontawesome$FontAwesome$Regular$commentDots)
 			]));
 };
-var $author$project$Views$Table$viewColumnName = F2(
-	function (pk, column) {
+var $author$project$Views$Erd$Table$viewColumnName = F2(
+	function (table, column) {
 		var className = function () {
-			var _v1 = A2($author$project$Views$Table$inPrimaryKey, column._, pk);
+			var _v1 = A2($author$project$Models$Schema$inPrimaryKey, table, column.ag);
 			if (!_v1.$) {
 				return 'name bold';
 			} else {
@@ -13631,28 +14558,24 @@ var $author$project$Views$Table$viewColumnName = F2(
 				]),
 			A3(
 				$author$project$Libs$List$appendOn,
-				column.aA,
+				column.aF,
 				function (_v0) {
 					var comment = _v0;
-					return $author$project$Views$Table$viewComment(comment);
+					return $author$project$Views$Erd$Table$viewComment(comment);
 				},
 				_List_fromArray(
 					[
 						$elm$html$Html$text(
-						$author$project$Views$Helpers$extractColumnName(column._))
+						$author$project$Views$Helpers$extractColumnName(column.ag))
 					])));
 	});
-var $author$project$Views$Helpers$extractColumnType = function (_v0) {
-	var kind = _v0;
-	return kind;
-};
-var $author$project$Views$Table$formatColumnType = function (column) {
+var $author$project$Views$Erd$Table$formatColumnType = function (column) {
 	return A2(
 		$author$project$Views$Helpers$withNullableInfo,
-		column.cZ,
-		$author$project$Views$Helpers$extractColumnType(column.cv));
+		column.c$,
+		$author$project$Views$Helpers$extractColumnType(column.cy));
 };
-var $author$project$Views$Table$viewColumnType = function (column) {
+var $author$project$Views$Erd$Table$viewColumnType = function (column) {
 	return A2(
 		$elm$core$Maybe$withDefault,
 		A2(
@@ -13664,7 +14587,7 @@ var $author$project$Views$Table$viewColumnType = function (column) {
 			_List_fromArray(
 				[
 					$elm$html$Html$text(
-					$author$project$Views$Table$formatColumnType(column))
+					$author$project$Views$Erd$Table$formatColumnType(column))
 				])),
 		A2(
 			$elm$core$Maybe$map,
@@ -13682,13 +14605,13 @@ var $author$project$Views$Table$viewColumnType = function (column) {
 					_List_fromArray(
 						[
 							$elm$html$Html$text(
-							$author$project$Views$Table$formatColumnType(column))
+							$author$project$Views$Erd$Table$formatColumnType(column))
 						]));
 			},
-			column.b_));
+			column.b2));
 };
-var $author$project$Views$Table$viewColumn = F6(
-	function (ref, pk, uniques, indexes, columnRelations, column) {
+var $author$project$Views$Erd$Table$viewColumn = F4(
+	function (ref, table, columnRelations, column) {
 		return A2(
 			$elm$html$Html$div,
 			_List_fromArray(
@@ -13700,12 +14623,12 @@ var $author$project$Views$Table$viewColumn = F6(
 			_List_fromArray(
 				[
 					A3(
-					$author$project$Views$Table$viewColumnDropdown,
+					$author$project$Views$Erd$Table$viewColumnDropdown,
 					columnRelations,
 					ref,
-					A4($author$project$Views$Table$viewColumnIcon, pk, uniques, indexes, column)),
-					A2($author$project$Views$Table$viewColumnName, pk, column),
-					$author$project$Views$Table$viewColumnType(column)
+					A2($author$project$Views$Erd$Table$viewColumnIcon, table, column)),
+					A2($author$project$Views$Erd$Table$viewColumnName, table, column),
+					$author$project$Views$Erd$Table$viewColumnType(column)
 				]));
 	});
 var $author$project$Models$HideTable = function (a) {
@@ -13714,6 +14637,10 @@ var $author$project$Models$HideTable = function (a) {
 var $author$project$Models$SelectTable = function (a) {
 	return {$: 12, a: a};
 };
+var $author$project$Models$SortColumns = F2(
+	function (a, b) {
+		return {$: 21, a: a, b: b};
+	});
 var $lattyware$elm_fontawesome$FontAwesome$Solid$ellipsisV = A5(
 	$lattyware$elm_fontawesome$FontAwesome$Icon$Icon,
 	'fas',
@@ -13722,12 +14649,6 @@ var $lattyware$elm_fontawesome$FontAwesome$Solid$ellipsisV = A5(
 	512,
 	_List_fromArray(
 		['M96 184c39.8 0 72 32.2 72 72s-32.2 72-72 72-72-32.2-72-72 32.2-72 72-72zM24 80c0 39.8 32.2 72 72 72s72-32.2 72-72S135.8 8 96 8 24 40.2 24 80zm0 352c0 39.8 32.2 72 72 72s72-32.2 72-72-32.2-72-72-72-72 32.2-72 72z']));
-var $elm$html$Html$Attributes$href = function (url) {
-	return A2(
-		$elm$html$Html$Attributes$stringProperty,
-		'href',
-		_VirtualDom_noJavaScriptUri(url));
-};
 var $author$project$Libs$Html$Events$stopClick = function (m) {
 	return A2(
 		$elm$html$Html$Events$stopPropagationOn,
@@ -13735,7 +14656,7 @@ var $author$project$Libs$Html$Events$stopClick = function (m) {
 		$elm$json$Json$Decode$succeed(
 			_Utils_Tuple2(m, true)));
 };
-var $author$project$Views$Table$tableNameSize = function (zoom) {
+var $author$project$Views$Erd$Table$tableNameSize = function (zoom) {
 	return (zoom < 0.5) ? _List_fromArray(
 		[
 			A2(
@@ -13744,7 +14665,7 @@ var $author$project$Views$Table$tableNameSize = function (zoom) {
 			$elm$core$String$fromFloat(10 / zoom) + 'px')
 		]) : _List_Nil;
 };
-var $author$project$Views$Table$viewHeader = F2(
+var $author$project$Views$Erd$Table$viewHeader = F2(
 	function (zoom, table) {
 		return A2(
 			$elm$html$Html$div,
@@ -13754,7 +14675,7 @@ var $author$project$Views$Table$viewHeader = F2(
 					A2($elm$html$Html$Attributes$style, 'display', 'flex'),
 					A2($elm$html$Html$Attributes$style, 'align-items', 'center'),
 					$elm$html$Html$Events$onClick(
-					$author$project$Models$SelectTable(table.ck))
+					$author$project$Models$SelectTable(table.aV))
 				]),
 			_List_fromArray(
 				[
@@ -13766,25 +14687,25 @@ var $author$project$Views$Table$viewHeader = F2(
 						]),
 					A3(
 						$author$project$Libs$List$appendOn,
-						table.aA,
+						table.aF,
 						function (_v0) {
 							var comment = _v0;
-							return $author$project$Views$Table$viewComment(comment);
+							return $author$project$Views$Erd$Table$viewComment(comment);
 						},
 						_List_fromArray(
 							[
 								A2(
 								$elm$html$Html$span,
-								$author$project$Views$Table$tableNameSize(zoom),
+								$author$project$Views$Erd$Table$tableNameSize(zoom),
 								_List_fromArray(
 									[
 										$elm$html$Html$text(
-										A2($author$project$Models$Schema$showTableName, table.dr, table.bt))
+										A2($author$project$Models$Schema$showTableName, table.dv, table.dM))
 									]))
 							]))),
 					A4(
 					$author$project$Libs$Bootstrap$bsDropdown,
-					$author$project$Models$Schema$tableIdAsHtmlId(table.ck) + '-settings-dropdown',
+					$author$project$Models$Schema$tableIdAsHtmlId(table.aV) + '-settings-dropdown',
 					_List_Nil,
 					function (attrs) {
 						return A2(
@@ -13817,17 +14738,119 @@ var $author$project$Views$Table$viewHeader = F2(
 									_List_fromArray(
 										[
 											A2(
-											$elm$html$Html$a,
+											$elm$html$Html$button,
 											_List_fromArray(
 												[
+													$elm$html$Html$Attributes$type_('button'),
 													$elm$html$Html$Attributes$class('dropdown-item'),
-													$elm$html$Html$Attributes$href('#'),
 													$elm$html$Html$Events$onClick(
-													$author$project$Models$HideTable(table.ck))
+													$author$project$Models$HideTable(table.aV))
 												]),
 											_List_fromArray(
 												[
 													$elm$html$Html$text('Hide table')
+												]))
+										])),
+									A2(
+									$elm$html$Html$li,
+									_List_Nil,
+									_List_fromArray(
+										[
+											A2(
+											$elm$html$Html$button,
+											_List_fromArray(
+												[
+													$elm$html$Html$Attributes$type_('button'),
+													$elm$html$Html$Attributes$class('dropdown-item')
+												]),
+											_List_fromArray(
+												[
+													$elm$html$Html$text('Sort columns »')
+												])),
+											A2(
+											$elm$html$Html$ul,
+											_List_fromArray(
+												[
+													$elm$html$Html$Attributes$class('dropdown-menu dropdown-submenu')
+												]),
+											_List_fromArray(
+												[
+													A2(
+													$elm$html$Html$li,
+													_List_Nil,
+													_List_fromArray(
+														[
+															A2(
+															$elm$html$Html$button,
+															_List_fromArray(
+																[
+																	$elm$html$Html$Attributes$type_('button'),
+																	$elm$html$Html$Attributes$class('dropdown-item'),
+																	$elm$html$Html$Events$onClick(
+																	A2($author$project$Models$SortColumns, table.aV, 'sql'))
+																]),
+															_List_fromArray(
+																[
+																	$elm$html$Html$text('By SQL order')
+																]))
+														])),
+													A2(
+													$elm$html$Html$li,
+													_List_Nil,
+													_List_fromArray(
+														[
+															A2(
+															$elm$html$Html$button,
+															_List_fromArray(
+																[
+																	$elm$html$Html$Attributes$type_('button'),
+																	$elm$html$Html$Attributes$class('dropdown-item'),
+																	$elm$html$Html$Events$onClick(
+																	A2($author$project$Models$SortColumns, table.aV, 'name'))
+																]),
+															_List_fromArray(
+																[
+																	$elm$html$Html$text('By name')
+																]))
+														])),
+													A2(
+													$elm$html$Html$li,
+													_List_Nil,
+													_List_fromArray(
+														[
+															A2(
+															$elm$html$Html$button,
+															_List_fromArray(
+																[
+																	$elm$html$Html$Attributes$type_('button'),
+																	$elm$html$Html$Attributes$class('dropdown-item'),
+																	$elm$html$Html$Events$onClick(
+																	A2($author$project$Models$SortColumns, table.aV, 'type'))
+																]),
+															_List_fromArray(
+																[
+																	$elm$html$Html$text('By type')
+																]))
+														])),
+													A2(
+													$elm$html$Html$li,
+													_List_Nil,
+													_List_fromArray(
+														[
+															A2(
+															$elm$html$Html$button,
+															_List_fromArray(
+																[
+																	$elm$html$Html$Attributes$type_('button'),
+																	$elm$html$Html$Attributes$class('dropdown-item'),
+																	$elm$html$Html$Events$onClick(
+																	A2($author$project$Models$SortColumns, table.aV, 'property'))
+																]),
+															_List_fromArray(
+																[
+																	$elm$html$Html$text('By property')
+																]))
+														]))
 												]))
 										]))
 								]));
@@ -13836,10 +14859,10 @@ var $author$project$Views$Table$viewHeader = F2(
 	});
 var $author$project$Models$ShowColumn = F2(
 	function (a, b) {
-		return {$: 19, a: a, b: b};
+		return {$: 20, a: a, b: b};
 	});
-var $author$project$Views$Table$viewHiddenColumn = F5(
-	function (ref, pk, uniques, indexes, column) {
+var $author$project$Views$Erd$Table$viewHiddenColumn = F3(
+	function (ref, table, column) {
 		return A2(
 			$elm$html$Html$div,
 			_List_fromArray(
@@ -13849,54 +14872,49 @@ var $author$project$Views$Table$viewHiddenColumn = F5(
 					A2(
 						$author$project$Models$ShowColumn,
 						ref,
-						$author$project$Models$Schema$extractColumnIndex(column.co)))
+						$author$project$Models$Schema$extractColumnIndex(column.cr)))
 				]),
 			_List_fromArray(
 				[
-					A5($author$project$Views$Table$viewColumnIcon, pk, uniques, indexes, column, _List_Nil),
-					A2($author$project$Views$Table$viewColumnName, pk, column),
-					$author$project$Views$Table$viewColumnType(column)
+					A3($author$project$Views$Erd$Table$viewColumnIcon, table, column, _List_Nil),
+					A2($author$project$Views$Erd$Table$viewColumnName, table, column),
+					$author$project$Views$Erd$Table$viewColumnType(column)
 				]));
 	});
-var $author$project$Views$Table$viewTable = F5(
-	function (zoom, incomingTableRelations, table, props, size) {
+var $author$project$Views$Erd$Table$viewTable = F5(
+	function (zoom, table, props, incomingRelations, size) {
 		var hiddenColumns = A2(
-			$elm$core$List$filter,
+			$author$project$Libs$Nel$filter,
 			function (c) {
-				return A2($author$project$Libs$List$hasNot, c._, props.H);
+				return A2($author$project$Libs$List$hasNot, c.ag, props.L);
 			},
-			$pzp1997$assoc_list$AssocList$values(table.H));
-		var collapseId = $author$project$Models$Schema$tableIdAsHtmlId(table.ck) + '-hidden-columns-collapse';
+			$author$project$Libs$Ned$values(table.L));
+		var collapseId = $author$project$Models$Schema$tableIdAsHtmlId(table.aV) + '-hidden-columns-collapse';
 		return A2(
 			$elm$html$Html$div,
 			_Utils_ap(
-				A3(
-					$author$project$Libs$List$addIf,
-					_Utils_eq(size, $elm$core$Maybe$Nothing),
-					A2($elm$html$Html$Attributes$style, 'visibility', 'hidden'),
-					_List_fromArray(
-						[
-							$elm$html$Html$Attributes$class('erd-table'),
-							$elm$html$Html$Attributes$class(props.bS),
-							$elm$html$Html$Attributes$classList(
-							_List_fromArray(
-								[
-									_Utils_Tuple2('selected', props.dw)
-								])),
-							$elm$html$Html$Attributes$id(
-							$author$project$Models$Schema$tableIdAsHtmlId(table.ck)),
-							$author$project$Views$Helpers$placeAt(props.a6)
-						])),
-				_Utils_ap(
-					A2(
+				_List_fromArray(
+					[
+						$elm$html$Html$Attributes$class('erd-table'),
+						$elm$html$Html$Attributes$class(props.bX),
+						$elm$html$Html$Attributes$classList(
+						_List_fromArray(
+							[
+								_Utils_Tuple2('selected', props.dA)
+							])),
+						$elm$html$Html$Attributes$id(
+						$author$project$Models$Schema$tableIdAsHtmlId(table.aV)),
+						$author$project$Views$Helpers$placeAt(props.bd),
+						A2(
 						$elm$core$Maybe$withDefault,
-						_List_Nil,
-						A2($elm$core$Maybe$map, $author$project$Views$Helpers$sizeAttrs, size)),
-					$author$project$Views$Helpers$dragAttrs(
-						$author$project$Models$Schema$tableIdAsHtmlId(table.ck)))),
+						A2($elm$html$Html$Attributes$style, 'visibility', 'hidden'),
+						A2($elm$core$Maybe$map, $author$project$Views$Helpers$sizeAttr, size))
+					]),
+				$author$project$Views$Helpers$dragAttrs(
+					$author$project$Models$Schema$tableIdAsHtmlId(table.aV))),
 			_List_fromArray(
 				[
-					A2($author$project$Views$Table$viewHeader, zoom, table),
+					A2($author$project$Views$Erd$Table$viewHeader, zoom, table),
 					A2(
 					$elm$html$Html$div,
 					_List_fromArray(
@@ -13906,21 +14924,19 @@ var $author$project$Views$Table$viewTable = F5(
 					A2(
 						$elm$core$List$map,
 						function (c) {
-							return A6(
-								$author$project$Views$Table$viewColumn,
-								{_: c._, bt: table.ck},
-								table.dj,
-								table.dS,
-								table.cp,
-								A2($author$project$Views$Table$filterIncomingColumnRelations, incomingTableRelations, c),
+							return A4(
+								$author$project$Views$Erd$Table$viewColumn,
+								{ag: c.ag, dM: table.aV},
+								table,
+								A2($author$project$Views$Erd$Table$filterIncomingColumnRelations, incomingRelations, c),
 								c);
 						},
 						A2(
 							$elm$core$List$filterMap,
 							function (c) {
-								return A2($pzp1997$assoc_list$AssocList$get, c, table.H);
+								return A2($author$project$Libs$Ned$get, c, table.L);
 							},
-							props.H))),
+							props.L))),
 					A3(
 					$author$project$Libs$Html$divIf,
 					$elm$core$List$length(hiddenColumns) > 0,
@@ -13959,53 +14975,38 @@ var $author$project$Views$Table$viewTable = F5(
 							A2(
 								$elm$core$List$map,
 								function (c) {
-									return A5(
-										$author$project$Views$Table$viewHiddenColumn,
-										{_: c._, bt: table.ck},
-										table.dj,
-										table.dS,
-										table.cp,
+									return A3(
+										$author$project$Views$Erd$Table$viewHiddenColumn,
+										{ag: c.ag, dM: table.aV},
+										table,
 										c);
 								},
 								A2(
 									$elm$core$List$sortBy,
 									function (column) {
-										return $author$project$Models$Schema$extractColumnIndex(column.co);
+										return $author$project$Models$Schema$extractColumnIndex(column.cr);
 									},
 									hiddenColumns)))
 						]))
 				]));
 	});
-var $author$project$View$viewErd = F2(
+var $author$project$Views$Erd$viewErd = F2(
 	function (sizes, schema) {
-		var relations = A2(
-			$elm$core$Maybe$withDefault,
-			_List_Nil,
-			A2(
-				$elm$core$Maybe$map,
-				function (s) {
-					return A2(
-						$elm$core$List$filterMap,
-						A3($author$project$View$buildRelation, s.bu, s.cx, sizes),
-						s.bd);
-				},
-				schema));
 		return A2(
 			$elm$html$Html$div,
 			_Utils_ap(
 				_List_fromArray(
 					[
-						$elm$html$Html$Attributes$id($author$project$Conf$conf.cm.b5),
+						$elm$html$Html$Attributes$id($author$project$Conf$conf.cp.b9),
 						$elm$html$Html$Attributes$class('erd'),
-						$author$project$Libs$Html$Events$onWheel($author$project$Models$Zoom)
-					]),
-				_Utils_ap(
-					$author$project$Views$Helpers$sizeAttrs(
+						$author$project$Views$Helpers$sizeAttr(
 						A2(
 							$elm$core$Maybe$withDefault,
-							A2($author$project$Models$Utils$Size, 0, 0),
-							A2($pzp1997$assoc_list$AssocList$get, $author$project$Conf$conf.cm.b5, sizes))),
-					$author$project$Views$Helpers$dragAttrs($author$project$Conf$conf.cm.b5))),
+							A2($author$project$Libs$Size$Size, 0, 0),
+							$author$project$Models$Schema$viewportSize(sizes))),
+						$author$project$Libs$Html$Events$onWheel($author$project$Models$OnWheel)
+					]),
+				$author$project$Views$Helpers$dragAttrs($author$project$Conf$conf.cp.b9)),
 			_List_fromArray(
 				[
 					A2(
@@ -14016,13 +15017,14 @@ var $author$project$View$viewErd = F2(
 							A2(
 							$elm$core$Maybe$withDefault,
 							A2(
-								$author$project$View$placeAndZoom,
+								$author$project$Views$Erd$placeAndZoom,
 								1,
-								A2($author$project$Models$Utils$Position, 0, 0)),
+								A2($author$project$Libs$Position$Position, 0, 0)),
 							A2(
 								$elm$core$Maybe$map,
-								function (s) {
-									return A2($author$project$View$placeAndZoom, s.cx.bM.d$, s.cx.bM.a6);
+								function (_v0) {
+									var layout = _v0.c;
+									return A2($author$project$Views$Erd$placeAndZoom, layout.bR.d2, layout.bR.bd);
 								},
 								schema))
 						]),
@@ -14031,44 +15033,85 @@ var $author$project$View$viewErd = F2(
 						_List_Nil,
 						A2(
 							$elm$core$Maybe$map,
-							function (s) {
+							function (_v1) {
+								var tables = _v1.a;
+								var incomingRelations = _v1.b;
+								var layout = _v1.c;
 								return _Utils_ap(
 									A2(
 										$elm$core$List$map,
-										function (_v0) {
-											var t = _v0.a;
-											var _v1 = _v0.b;
-											var p = _v1.a;
-											var size = _v1.b;
-											return A5(
-												$author$project$Views$Table$viewTable,
-												s.cx.bM.d$,
-												A2($author$project$View$incomingTableRelations, relations, t),
-												t,
-												p,
-												size);
+										function (_v5) {
+											var _v6 = _v5.a;
+											var table = _v6.a;
+											var props = _v6.b;
+											var _v7 = _v5.b;
+											var rels = _v7.a;
+											var size = _v7.b;
+											return A5($author$project$Views$Erd$Table$viewTable, layout.bR.d2, table, props, rels, size);
 										},
 										A2(
-											$author$project$Libs$List$filterZip,
-											function (t) {
-												return A2(
-													$elm$core$Maybe$map,
-													function (p) {
-														return _Utils_Tuple2(
-															p,
-															A2(
-																$pzp1997$assoc_list$AssocList$get,
-																$author$project$Models$Schema$tableIdAsHtmlId(t.ck),
-																sizes));
-													},
-													A2($pzp1997$assoc_list$AssocList$get, t.ck, s.cx.bu));
+											$elm$core$List$map,
+											function (_v3) {
+												var _v4 = _v3.a;
+												var id = _v4.a;
+												var p = _v4.b;
+												var t = _v3.b;
+												return _Utils_Tuple2(
+													_Utils_Tuple2(t, p),
+													_Utils_Tuple2(
+														A4(
+															$author$project$Views$Erd$buildRelations,
+															tables,
+															layout,
+															sizes,
+															A3($author$project$Libs$Dict$getOrElse, id, _List_Nil, incomingRelations)),
+														A2(
+															$elm$core$Dict$get,
+															$author$project$Models$Schema$tableIdAsHtmlId(id),
+															sizes)));
 											},
-											$pzp1997$assoc_list$AssocList$values(s.bu))),
-									A3(
-										$author$project$Libs$List$filterMap,
-										$author$project$View$shouldDrawRelation(s.cx),
-										$author$project$Views$Relation$viewRelation,
-										relations));
+											A2(
+												$author$project$Libs$List$filterZip,
+												function (_v2) {
+													var id = _v2.a;
+													return A2($elm$core$Dict$get, id, tables);
+												},
+												$elm$core$Dict$toList(layout.by)))),
+									_Utils_ap(
+										A2(
+											$elm$core$List$map,
+											$author$project$Views$Erd$Relation$viewRelation,
+											A2(
+												$elm$core$List$concatMap,
+												A3($author$project$Views$Erd$buildRelations, tables, layout, sizes),
+												A2(
+													$elm$core$List$filterMap,
+													function (_v8) {
+														var id = _v8.a;
+														return A2($elm$core$Dict$get, id, incomingRelations);
+													},
+													$elm$core$Dict$toList(layout.by)))),
+										A2(
+											$elm$core$List$map,
+											$author$project$Views$Erd$Relation$viewRelation,
+											A2(
+												$elm$core$List$filterMap,
+												A3($author$project$Views$Erd$buildRelation, tables, layout, sizes),
+												A2(
+													$elm$core$List$filter,
+													function (r) {
+														return !A2($elm$core$Dict$member, r.aa.dM, layout.by);
+													},
+													A2(
+														$elm$core$List$concatMap,
+														$author$project$Models$Schema$outgoingRelations,
+														A2(
+															$elm$core$List$filterMap,
+															function (_v9) {
+																var id = _v9.a;
+																return A2($elm$core$Dict$get, id, tables);
+															},
+															$elm$core$Dict$toList(layout.by))))))));
 							},
 							schema)))
 				]));
@@ -14094,7 +15137,7 @@ var $author$project$Libs$Html$codeText = function (content) {
 };
 var $author$project$Views$Modals$HelpInstructions$viewHelpModal = A4(
 	$author$project$Libs$Bootstrap$bsModal,
-	$author$project$Conf$conf.cm.ch,
+	$author$project$Conf$conf.cp.ck,
 	'Schema Viz cheatsheet',
 	_List_fromArray(
 		[
@@ -14172,7 +15215,7 @@ var $author$project$Views$Modals$HelpInstructions$viewHelpModal = A4(
 				]))
 		]));
 var $author$project$Models$ChangeSchema = {$: 2};
-var $author$project$Models$HideAllTables = {$: 16};
+var $author$project$Models$HideAllTables = {$: 17};
 var $author$project$Libs$Bootstrap$Offcanvas = 4;
 var $author$project$Libs$Bootstrap$Primary = 0;
 var $author$project$Libs$Bootstrap$Secondary = 1;
@@ -14211,9 +15254,6 @@ var $author$project$Libs$Bootstrap$bsButton = F3(
 				attrs),
 			children);
 	});
-var $author$project$Libs$Html$Attributes$role = function (text) {
-	return A2($elm$html$Html$Attributes$attribute, 'role', text);
-};
 var $author$project$Libs$Bootstrap$bsButtonGroup = F2(
 	function (label, buttons) {
 		return A2(
@@ -14232,23 +15272,156 @@ var $author$project$Libs$Bootstrap$bsScroll = function (value) {
 		'data-bs-scroll',
 		$author$project$Libs$Bool$toString(value));
 };
-var $pzp1997$assoc_list$AssocList$foldl = F3(
-	function (func, initialResult, _v0) {
-		var alist = _v0;
-		return A3(
-			$elm$core$List$foldl,
-			F2(
-				function (_v1, result) {
-					var key = _v1.a;
-					var value = _v1.b;
-					return A3(func, key, value, result);
-				}),
-			initialResult,
-			alist);
-	});
-var $pzp1997$assoc_list$AssocList$isEmpty = function (dict) {
-	return _Utils_eq(dict, _List_Nil);
+var $elm$core$List$sum = function (numbers) {
+	return A3($elm$core$List$foldl, $elm$core$Basics$add, 0, numbers);
 };
+var $lattyware$elm_fontawesome$FontAwesome$Solid$eye = A5(
+	$lattyware$elm_fontawesome$FontAwesome$Icon$Icon,
+	'fas',
+	'eye',
+	576,
+	512,
+	_List_fromArray(
+		['M572.52 241.4C518.29 135.59 410.93 64 288 64S57.68 135.64 3.48 241.41a32.35 32.35 0 0 0 0 29.19C57.71 376.41 165.07 448 288 448s230.32-71.64 284.52-177.41a32.35 32.35 0 0 0 0-29.19zM288 400a144 144 0 1 1 144-144 143.93 143.93 0 0 1-144 144zm0-240a95.31 95.31 0 0 0-25.31 3.79 47.85 47.85 0 0 1-66.9 66.9A95.78 95.78 0 1 0 288 160z']));
+var $lattyware$elm_fontawesome$FontAwesome$Solid$eyeSlash = A5(
+	$lattyware$elm_fontawesome$FontAwesome$Icon$Icon,
+	'fas',
+	'eye-slash',
+	640,
+	512,
+	_List_fromArray(
+		['M320 400c-75.85 0-137.25-58.71-142.9-133.11L72.2 185.82c-13.79 17.3-26.48 35.59-36.72 55.59a32.35 32.35 0 0 0 0 29.19C89.71 376.41 197.07 448 320 448c26.91 0 52.87-4 77.89-10.46L346 397.39a144.13 144.13 0 0 1-26 2.61zm313.82 58.1l-110.55-85.44a331.25 331.25 0 0 0 81.25-102.07 32.35 32.35 0 0 0 0-29.19C550.29 135.59 442.93 64 320 64a308.15 308.15 0 0 0-147.32 37.7L45.46 3.37A16 16 0 0 0 23 6.18L3.37 31.45A16 16 0 0 0 6.18 53.9l588.36 454.73a16 16 0 0 0 22.46-2.81l19.64-25.27a16 16 0 0 0-2.82-22.45zm-183.72-142l-39.3-30.38A94.75 94.75 0 0 0 416 256a94.76 94.76 0 0 0-121.31-92.21A47.65 47.65 0 0 1 304 192a46.64 46.64 0 0 1-1.54 10l-73.61-56.89A142.31 142.31 0 0 1 320 112a143.92 143.92 0 0 1 144 144c0 21.63-5.29 41.79-13.9 60.11z']));
+var $elm$html$Html$Attributes$href = function (url) {
+	return A2(
+		$elm$html$Html$Attributes$stringProperty,
+		'href',
+		_VirtualDom_noJavaScriptUri(url));
+};
+var $author$project$Views$Menu$viewTableList = F2(
+	function (tables, layout) {
+		return A2(
+			$elm$html$Html$div,
+			_List_fromArray(
+				[
+					A2($elm$html$Html$Attributes$style, 'margin-top', '1em')
+				]),
+			_List_fromArray(
+				[
+					A2(
+					$elm$html$Html$div,
+					_List_fromArray(
+						[
+							$elm$html$Html$Attributes$class('list-group')
+						]),
+					A2(
+						$elm$core$List$concatMap,
+						function (_v1) {
+							var groupTitle = _v1.a;
+							var groupedTables = _v1.b;
+							return _List_fromArray(
+								[
+									A2(
+									$elm$html$Html$a,
+									_List_fromArray(
+										[
+											$elm$html$Html$Attributes$class('list-group-item list-group-item-secondary'),
+											$author$project$Libs$Bootstrap$bsToggle(3),
+											$elm$html$Html$Attributes$href('#' + (groupTitle + '-table-list'))
+										]),
+									_List_fromArray(
+										[
+											$elm$html$Html$text(
+											groupTitle + (' (' + (A4(
+												$author$project$Libs$String$plural,
+												$elm$core$List$length(groupedTables),
+												'',
+												'1 table',
+												'tables') + ')')))
+										])),
+									A2(
+									$elm$html$Html$div,
+									_List_fromArray(
+										[
+											$elm$html$Html$Attributes$class('collapse show'),
+											$elm$html$Html$Attributes$id(groupTitle + '-table-list')
+										]),
+									A2(
+										$elm$core$List$map,
+										function (t) {
+											return A2(
+												$elm$html$Html$div,
+												_List_fromArray(
+													[
+														$elm$html$Html$Attributes$class('list-group-item d-flex'),
+														$elm$html$Html$Attributes$title(
+														$author$project$Models$Schema$showTableId(t.aV))
+													]),
+												_List_fromArray(
+													[
+														A2(
+														$elm$html$Html$div,
+														_List_fromArray(
+															[
+																$elm$html$Html$Attributes$class('text-truncate me-auto')
+															]),
+														_List_fromArray(
+															[
+																$elm$html$Html$text(
+																$author$project$Models$Schema$showTableId(t.aV))
+															])),
+														A3(
+														$author$project$Libs$Bool$cond,
+														A2($elm$core$Dict$member, t.aV, layout.by),
+														A2(
+															$elm$html$Html$button,
+															_List_fromArray(
+																[
+																	$elm$html$Html$Attributes$type_('button'),
+																	$elm$html$Html$Attributes$class('link text-muted'),
+																	$elm$html$Html$Events$onClick(
+																	$author$project$Models$HideTable(t.aV))
+																]),
+															_List_fromArray(
+																[
+																	$lattyware$elm_fontawesome$FontAwesome$Icon$viewIcon($lattyware$elm_fontawesome$FontAwesome$Solid$eyeSlash)
+																])),
+														A2(
+															$elm$html$Html$button,
+															_List_fromArray(
+																[
+																	$elm$html$Html$Attributes$type_('button'),
+																	$elm$html$Html$Attributes$class('link text-muted'),
+																	$elm$html$Html$Events$onClick(
+																	$author$project$Models$ShowTable(t.aV))
+																]),
+															_List_fromArray(
+																[
+																	$lattyware$elm_fontawesome$FontAwesome$Icon$viewIcon($lattyware$elm_fontawesome$FontAwesome$Solid$eye)
+																])))
+													]));
+										},
+										groupedTables))
+								]);
+						},
+						A2(
+							$elm$core$List$sortBy,
+							function (_v0) {
+								var name = _v0.a;
+								return name;
+							},
+							$elm$core$Dict$toList(
+								A2(
+									$author$project$Libs$Dict$groupBy,
+									function (t) {
+										return A2(
+											$elm$core$Maybe$withDefault,
+											'',
+											$elm$core$List$head(
+												$author$project$Libs$String$wordSplit(t.aV.b)));
+									},
+									$elm$core$Dict$values(tables))))))
+				]));
+	});
 var $author$project$Views$Menu$viewMenu = function (schema) {
 	return _List_fromArray(
 		[
@@ -14256,11 +15429,11 @@ var $author$project$Views$Menu$viewMenu = function (schema) {
 			$elm$html$Html$div,
 			_List_fromArray(
 				[
-					$elm$html$Html$Attributes$id($author$project$Conf$conf.cm.cF),
+					$elm$html$Html$Attributes$id($author$project$Conf$conf.cp.cI),
 					$elm$html$Html$Attributes$class('offcanvas offcanvas-start'),
 					$author$project$Libs$Bootstrap$bsScroll(true),
 					$author$project$Libs$Bootstrap$bsBackdrop('false'),
-					$author$project$Libs$Bootstrap$ariaLabelledBy($author$project$Conf$conf.cm.cF + '-label'),
+					$author$project$Libs$Bootstrap$ariaLabelledBy($author$project$Conf$conf.cp.cI + '-label'),
 					$elm$html$Html$Attributes$tabindex(-1)
 				]),
 			_List_fromArray(
@@ -14278,7 +15451,7 @@ var $author$project$Views$Menu$viewMenu = function (schema) {
 							_List_fromArray(
 								[
 									$elm$html$Html$Attributes$class('offcanvas-title'),
-									$elm$html$Html$Attributes$id($author$project$Conf$conf.cm.cF + '-label')
+									$elm$html$Html$Attributes$id($author$project$Conf$conf.cp.cI + '-label')
 								]),
 							_List_fromArray(
 								[
@@ -14327,24 +15500,18 @@ var $author$project$Views$Menu$viewMenu = function (schema) {
 							_List_Nil,
 							A2(
 								$elm$core$Maybe$map,
-								function (s) {
-									return $pzp1997$assoc_list$AssocList$isEmpty(s.bu) ? _List_Nil : _List_fromArray(
+								function (_v0) {
+									var tables = _v0.a;
+									var relations = _v0.b;
+									var layout = _v0.c;
+									return $elm$core$Dict$isEmpty(tables) ? _List_Nil : _List_fromArray(
 										[
-											$elm$html$Html$text(
-											$elm$core$String$fromInt(
-												$pzp1997$assoc_list$AssocList$size(s.bu)) + (' tables, ' + ($elm$core$String$fromInt(
-												A3(
-													$pzp1997$assoc_list$AssocList$foldl,
-													F3(
-														function (_v0, t, c) {
-															return c + $pzp1997$assoc_list$AssocList$size(t.H);
-														}),
-													0,
-													s.bu)) + (' columns, ' + ($elm$core$String$fromInt(
-												$elm$core$List$length(s.bd)) + ' relations'))))),
 											A2(
 											$elm$html$Html$div,
-											_List_Nil,
+											_List_fromArray(
+												[
+													A2($elm$html$Html$Attributes$style, 'margin-top', '1em')
+												]),
 											_List_fromArray(
 												[
 													A2(
@@ -14375,7 +15542,33 @@ var $author$project$Views$Menu$viewMenu = function (schema) {
 																	$elm$html$Html$text('Show all tables')
 																]))
 														]))
-												]))
+												])),
+											A2(
+											$elm$html$Html$div,
+											_List_fromArray(
+												[
+													A2($elm$html$Html$Attributes$style, 'margin-top', '1em')
+												]),
+											_List_fromArray(
+												[
+													$elm$html$Html$text(
+													$elm$core$String$fromInt(
+														$elm$core$Dict$size(tables)) + (' tables, ' + ($elm$core$String$fromInt(
+														A3(
+															$elm$core$Dict$foldl,
+															F3(
+																function (_v1, t, c) {
+																	return c + $author$project$Libs$Ned$size(t.L);
+																}),
+															0,
+															tables)) + (' columns, ' + ($elm$core$String$fromInt(
+														$elm$core$List$sum(
+															A2(
+																$elm$core$List$map,
+																$elm$core$List$length,
+																$elm$core$Dict$values(relations)))) + ' relations')))))
+												])),
+											A2($author$project$Views$Menu$viewTableList, tables, layout)
 										]);
 								},
 								schema))))
@@ -14398,6 +15591,12 @@ var $author$project$Libs$Bootstrap$bsToggleOffcanvas = function (targetId) {
 			$author$project$Libs$Bootstrap$ariaControls(targetId)
 		]);
 };
+var $elm$html$Html$Attributes$height = function (n) {
+	return A2(
+		_VirtualDom_attribute,
+		'height',
+		$elm$core$String$fromInt(n));
+};
 var $elm$html$Html$img = _VirtualDom_node('img');
 var $elm$html$Html$nav = _VirtualDom_node('nav');
 var $elm$html$Html$Attributes$src = function (url) {
@@ -14407,13 +15606,13 @@ var $elm$html$Html$Attributes$src = function (url) {
 		_VirtualDom_noJavaScriptOrHtmlUri(url));
 };
 var $author$project$Models$DeleteLayout = function (a) {
-	return {$: 29, a: a};
+	return {$: 33, a: a};
 };
 var $author$project$Models$LoadLayout = function (a) {
-	return {$: 27, a: a};
+	return {$: 31, a: a};
 };
 var $author$project$Models$UpdateLayout = function (a) {
-	return {$: 28, a: a};
+	return {$: 32, a: a};
 };
 var $lattyware$elm_fontawesome$FontAwesome$Solid$edit = A5(
 	$lattyware$elm_fontawesome$FontAwesome$Icon$Icon,
@@ -14423,14 +15622,6 @@ var $lattyware$elm_fontawesome$FontAwesome$Solid$edit = A5(
 	512,
 	_List_fromArray(
 		['M402.6 83.2l90.2 90.2c3.8 3.8 3.8 10 0 13.8L274.4 405.6l-92.8 10.3c-12.4 1.4-22.9-9.1-21.5-21.5l10.3-92.8L388.8 83.2c3.8-3.8 10-3.8 13.8 0zm162-22.9l-48.8-48.8c-15.2-15.2-39.9-15.2-55.2 0l-35.4 35.4c-3.8 3.8-3.8 10 0 13.8l90.2 90.2c3.8 3.8 10 3.8 13.8 0l35.4-35.4c15.2-15.3 15.2-40 0-55.2zM384 346.2V448H64V128h229.8c3.2 0 6.2-1.3 8.5-3.5l40-40c7.6-7.6 2.2-20.5-8.5-20.5H48C21.5 64 0 85.5 0 112v352c0 26.5 21.5 48 48 48h352c26.5 0 48-21.5 48-48V306.2c0-10.7-12.9-16-20.5-8.5l-40 40c-2.2 2.3-3.5 5.3-3.5 8.5z']));
-var $lattyware$elm_fontawesome$FontAwesome$Solid$plus = A5(
-	$lattyware$elm_fontawesome$FontAwesome$Icon$Icon,
-	'fas',
-	'plus',
-	448,
-	512,
-	_List_fromArray(
-		['M416 208H272V64c0-17.67-14.33-32-32-32h-32c-17.67 0-32 14.33-32 32v144H32c-17.67 0-32 14.33-32 32v32c0 17.67 14.33 32 32 32h144v144c0 17.67 14.33 32 32 32h32c17.67 0 32-14.33 32-32V304h144c17.67 0 32-14.33 32-32v-32c0-17.67-14.33-32-32-32z']));
 var $lattyware$elm_fontawesome$FontAwesome$Solid$trashAlt = A5(
 	$lattyware$elm_fontawesome$FontAwesome$Icon$Icon,
 	'fas',
@@ -14449,7 +15640,7 @@ var $lattyware$elm_fontawesome$FontAwesome$Solid$upload = A5(
 		['M296 384h-80c-13.3 0-24-10.7-24-24V192h-87.7c-17.8 0-26.7-21.5-14.1-34.1L242.3 5.7c7.5-7.5 19.8-7.5 27.3 0l152.2 152.2c12.6 12.6 3.7 34.1-14.1 34.1H320v168c0 13.3-10.7 24-24 24zm216-8v112c0 13.3-10.7 24-24 24H24c-13.3 0-24-10.7-24-24V376c0-13.3 10.7-24 24-24h136v8c0 30.9 25.1 56 56 56h80c30.9 0 56-25.1 56-56v-8h136c13.3 0 24 10.7 24 24zm-124 88c0-11-9-20-20-20s-20 9-20 20 9 20 20 20 20-9 20-20zm64 0c0-11-9-20-20-20s-20 9-20 20 9 20 20 20 20-9 20-20z']));
 var $author$project$Views$Navbar$viewLayoutButton = F2(
 	function (currentLayout, layouts) {
-		return $pzp1997$assoc_list$AssocList$isEmpty(layouts) ? A3(
+		return $elm$core$Dict$isEmpty(layouts) ? A3(
 			$author$project$Libs$Bootstrap$bsButton,
 			0,
 			_Utils_ap(
@@ -14457,7 +15648,7 @@ var $author$project$Views$Navbar$viewLayoutButton = F2(
 					[
 						$elm$html$Html$Attributes$title('Save your current layout to reload it later')
 					]),
-				$author$project$Libs$Bootstrap$bsToggleModal($author$project$Conf$conf.cm.cP)),
+				$author$project$Libs$Bootstrap$bsToggleModal($author$project$Conf$conf.cp.cR)),
 			_List_fromArray(
 				[
 					$elm$html$Html$text('Save layout')
@@ -14545,14 +15736,14 @@ var $author$project$Views$Navbar$viewLayoutButton = F2(
 									_List_fromArray(
 										[
 											A2(
-											$elm$html$Html$a,
+											$elm$html$Html$button,
 											_Utils_ap(
 												_List_fromArray(
 													[
-														$elm$html$Html$Attributes$class('dropdown-item'),
-														$elm$html$Html$Attributes$href('#')
+														$elm$html$Html$Attributes$type_('button'),
+														$elm$html$Html$Attributes$class('dropdown-item')
 													]),
-												$author$project$Libs$Bootstrap$bsToggleModal($author$project$Conf$conf.cm.cP)),
+												$author$project$Libs$Bootstrap$bsToggleModal($author$project$Conf$conf.cp.cR)),
 											_List_fromArray(
 												[
 													$lattyware$elm_fontawesome$FontAwesome$Icon$viewIcon($lattyware$elm_fontawesome$FontAwesome$Solid$plus),
@@ -14571,11 +15762,11 @@ var $author$project$Views$Navbar$viewLayoutButton = F2(
 										_List_fromArray(
 											[
 												A2(
-												$elm$html$Html$a,
+												$elm$html$Html$button,
 												_List_fromArray(
 													[
-														$elm$html$Html$Attributes$class('dropdown-item'),
-														$elm$html$Html$Attributes$href('#')
+														$elm$html$Html$Attributes$type_('button'),
+														$elm$html$Html$Attributes$class('dropdown-item')
 													]),
 												_List_fromArray(
 													[
@@ -14632,7 +15823,7 @@ var $author$project$Views$Navbar$viewLayoutButton = F2(
 															[
 																$elm$html$Html$text(
 																name + (' (' + ($elm$core$String$fromInt(
-																	$pzp1997$assoc_list$AssocList$size(l.bu)) + ' tables)')))
+																	$elm$core$Dict$size(l.by)) + ' tables)')))
 															]))
 													]))
 											]));
@@ -14643,7 +15834,7 @@ var $author$project$Views$Navbar$viewLayoutButton = F2(
 										var name = _v0.a;
 										return name;
 									},
-									$pzp1997$assoc_list$AssocList$toList(layouts)))))
+									$elm$core$Dict$toList(layouts)))))
 					])));
 	});
 var $author$project$Models$ChangedSearch = function (a) {
@@ -14673,28 +15864,26 @@ var $lattyware$elm_fontawesome$FontAwesome$Solid$angleDoubleRight = A5(
 		['M224.3 273l-136 136c-9.4 9.4-24.6 9.4-33.9 0l-22.6-22.6c-9.4-9.4-9.4-24.6 0-33.9l96.4-96.4-96.4-96.4c-9.4-9.4-9.4-24.6 0-33.9L54.3 103c9.4-9.4 24.6-9.4 33.9 0l136 136c9.5 9.4 9.5 24.6.1 34zm192-34l-136-136c-9.4-9.4-24.6-9.4-33.9 0l-22.6 22.6c-9.4 9.4-9.4 24.6 0 33.9l96.4 96.4-96.4 96.4c-9.4 9.4-9.4 24.6 0 33.9l22.6 22.6c9.4 9.4 24.6 9.4 33.9 0l136-136c9.4-9.2 9.4-24.4 0-33.8z']));
 var $author$project$Views$Navbar$columnSuggestion = F3(
 	function (search, table, column) {
-		var _v0 = column._;
-		var name = _v0;
-		return _Utils_eq(name, search) ? $elm$core$Maybe$Just(
+		return _Utils_eq(column.ag, search) ? $elm$core$Maybe$Just(
 			{
-				aB: A2(
+				aG: A2(
 					$elm$core$List$cons,
 					$lattyware$elm_fontawesome$FontAwesome$Icon$viewIcon($lattyware$elm_fontawesome$FontAwesome$Solid$angleDoubleRight),
 					_List_fromArray(
 						[
 							$elm$html$Html$text(
-							' ' + ($author$project$Models$Schema$showTableId(table.ck) + '.')),
+							' ' + ($author$project$Models$Schema$showTableId(table.aV) + '.')),
 							A2(
 							$elm$html$Html$b,
 							_List_Nil,
 							_List_fromArray(
 								[
 									$elm$html$Html$text(
-									$author$project$Views$Helpers$extractColumnName(column._))
+									$author$project$Views$Helpers$extractColumnName(column.ag))
 								]))
 						])),
-				cM: $author$project$Models$ShowTable(table.ck),
-				W: 0 - 0.5
+				cO: $author$project$Models$ShowTable(table.aV),
+				_: 0 - 0.5
 			}) : $elm$core$Maybe$Nothing;
 	});
 var $author$project$Views$Navbar$highlightMatch = F2(
@@ -14738,50 +15927,49 @@ var $author$project$Views$Navbar$matchNotAtBeginning = F2(
 var $author$project$Views$Navbar$columnMatchingBonus = F2(
 	function (search, table) {
 		var columnNames = A2(
-			$elm$core$List$map,
+			$author$project$Libs$Nel$map,
 			function (c) {
-				return $author$project$Views$Helpers$extractColumnName(c._);
+				return $author$project$Views$Helpers$extractColumnName(c.ag);
 			},
-			$pzp1997$assoc_list$AssocList$values(table.H));
+			$author$project$Libs$Ned$values(table.L));
 		return (!(search === '')) ? (A2(
-			$elm$core$List$any,
+			$author$project$Libs$Nel$any,
 			function (columnName) {
 				return !(!A2($author$project$Views$Navbar$exactMatch, search, columnName));
 			},
 			columnNames) ? 0.5 : (A2(
-			$elm$core$List$any,
+			$author$project$Libs$Nel$any,
 			function (columnName) {
 				return !(!A2($author$project$Views$Navbar$matchAtBeginning, search, columnName));
 			},
 			columnNames) ? 0.2 : (A2(
-			$elm$core$List$any,
+			$author$project$Libs$Nel$any,
 			function (columnName) {
 				return !(!A2($author$project$Views$Navbar$matchNotAtBeginning, search, columnName));
 			},
 			columnNames) ? 0.1 : 0))) : 0;
 	});
 var $author$project$Views$Navbar$manyColumnBonus = function (table) {
-	return (!$pzp1997$assoc_list$AssocList$size(table.H)) ? (-0.3) : ((-1) / $pzp1997$assoc_list$AssocList$size(table.H));
+	var size = $author$project$Libs$Ned$size(table.L);
+	return (!size) ? (-0.3) : ((-1) / size);
 };
 var $author$project$Views$Navbar$shortNameBonus = function (name) {
 	return (!$elm$core$String$length(name)) ? 0 : (1 / $elm$core$String$length(name));
 };
 var $author$project$Views$Navbar$tableShownMalus = F2(
 	function (layout, table) {
-		return A2($pzp1997$assoc_list$AssocList$member, table.ck, layout.bu) ? (-2) : 0;
+		return A2($elm$core$Dict$member, table.aV, layout.by) ? (-2) : 0;
 	});
 var $author$project$Views$Navbar$matchStrength = F3(
 	function (table, layout, search) {
-		var _v0 = table.bt;
-		var name = _v0;
-		return (((((A2($author$project$Views$Navbar$exactMatch, search, name) + A2($author$project$Views$Navbar$matchAtBeginning, search, name)) + A2($author$project$Views$Navbar$matchNotAtBeginning, search, name)) + A2($author$project$Views$Navbar$tableShownMalus, layout, table)) + A2($author$project$Views$Navbar$columnMatchingBonus, search, table)) + (5 * $author$project$Views$Navbar$manyColumnBonus(table))) + $author$project$Views$Navbar$shortNameBonus(name);
+		return (((((A2($author$project$Views$Navbar$exactMatch, search, table.dM) + A2($author$project$Views$Navbar$matchAtBeginning, search, table.dM)) + A2($author$project$Views$Navbar$matchNotAtBeginning, search, table.dM)) + A2($author$project$Views$Navbar$tableShownMalus, layout, table)) + A2($author$project$Views$Navbar$columnMatchingBonus, search, table)) + (5 * $author$project$Views$Navbar$manyColumnBonus(table))) + $author$project$Views$Navbar$shortNameBonus(table.dM);
 	});
 var $author$project$Views$Navbar$asSuggestions = F3(
 	function (layout, search, table) {
 		return A2(
 			$elm$core$List$cons,
 			{
-				aB: A2(
+				aG: A2(
 					$elm$core$List$cons,
 					$lattyware$elm_fontawesome$FontAwesome$Icon$viewIcon($lattyware$elm_fontawesome$FontAwesome$Solid$angleRight),
 					A2(
@@ -14790,14 +15978,14 @@ var $author$project$Views$Navbar$asSuggestions = F3(
 						A2(
 							$author$project$Views$Navbar$highlightMatch,
 							search,
-							$author$project$Models$Schema$showTableId(table.ck)))),
-				cM: $author$project$Models$ShowTable(table.ck),
-				W: 0 - A3($author$project$Views$Navbar$matchStrength, table, layout, search)
+							$author$project$Models$Schema$showTableId(table.aV)))),
+				cO: $author$project$Models$ShowTable(table.aV),
+				_: 0 - A3($author$project$Views$Navbar$matchStrength, table, layout, search)
 			},
 			A2(
-				$elm$core$List$filterMap,
+				$author$project$Libs$Nel$filterMap,
 				A2($author$project$Views$Navbar$columnSuggestion, search, table),
-				$pzp1997$assoc_list$AssocList$values(table.H)));
+				$author$project$Libs$Ned$values(table.L)));
 	});
 var $elm$core$List$takeReverse = F3(
 	function (n, list, kept) {
@@ -14933,12 +16121,12 @@ var $author$project$Views$Navbar$buildSuggestions = F3(
 			A2(
 				$elm$core$List$sortBy,
 				function ($) {
-					return $.W;
+					return $._;
 				},
 				A2(
 					$elm$core$List$concatMap,
 					A2($author$project$Views$Navbar$asSuggestions, layout, search),
-					$pzp1997$assoc_list$AssocList$values(tables))));
+					$elm$core$Dict$values(tables))));
 	});
 var $elm$html$Html$form = _VirtualDom_node('form');
 var $elm$html$Html$Attributes$placeholder = $elm$html$Html$Attributes$stringProperty('placeholder');
@@ -14963,21 +16151,31 @@ var $author$project$Views$Navbar$viewSearchBar = F2(
 								$elm$html$Html$input,
 								_List_fromArray(
 									[
-										$elm$html$Html$Attributes$type_('search'),
+										$elm$html$Html$Attributes$type_('text'),
 										$elm$html$Html$Attributes$class('form-control'),
 										$elm$html$Html$Attributes$value(search),
 										$elm$html$Html$Attributes$placeholder('Search'),
 										$author$project$Libs$Bootstrap$ariaLabel('Search'),
 										$elm$html$Html$Attributes$autocomplete(false),
 										$elm$html$Html$Events$onInput($author$project$Models$ChangedSearch),
-										$elm$html$Html$Attributes$id($author$project$Conf$conf.cm.dv)
+										A2($elm$html$Html$Attributes$attribute, 'data-bs-auto-close', 'false'),
+										$elm$html$Html$Attributes$id($author$project$Conf$conf.cp.dz)
+									]),
+								_List_Nil),
+								A2(
+								$elm$html$Html$ul,
+								_List_fromArray(
+									[
+										$elm$html$Html$Attributes$class('dropdown-menu')
 									]),
 								_List_Nil)
 							]))
 					])),
 			A2(
 				$elm$core$Maybe$map,
-				function (s) {
+				function (_v0) {
+					var tables = _v0.a;
+					var layout = _v0.b;
 					return A2(
 						$elm$html$Html$form,
 						_List_fromArray(
@@ -14999,15 +16197,16 @@ var $author$project$Views$Navbar$viewSearchBar = F2(
 										_Utils_ap(
 											_List_fromArray(
 												[
-													$elm$html$Html$Attributes$type_('search'),
+													$elm$html$Html$Attributes$type_('text'),
 													$elm$html$Html$Attributes$class('form-control'),
 													$elm$html$Html$Attributes$value(search),
 													$elm$html$Html$Attributes$placeholder('Search'),
 													$author$project$Libs$Bootstrap$ariaLabel('Search'),
 													$elm$html$Html$Attributes$autocomplete(false),
-													$elm$html$Html$Events$onInput($author$project$Models$ChangedSearch)
+													$elm$html$Html$Events$onInput($author$project$Models$ChangedSearch),
+													A2($elm$html$Html$Attributes$attribute, 'data-bs-auto-close', 'false')
 												]),
-											$author$project$Libs$Bootstrap$bsToggleDropdown($author$project$Conf$conf.cm.dv)),
+											$author$project$Libs$Bootstrap$bsToggleDropdown($author$project$Conf$conf.cp.dz)),
 										_List_Nil),
 										A2(
 										$elm$html$Html$ul,
@@ -15029,12 +16228,12 @@ var $author$project$Views$Navbar$viewSearchBar = F2(
 																[
 																	$elm$html$Html$Attributes$class('dropdown-item'),
 																	A2($elm$html$Html$Attributes$style, 'cursor', 'pointer'),
-																	$elm$html$Html$Events$onClick(suggestion.cM)
+																	$elm$html$Html$Events$onClick(suggestion.cO)
 																]),
-															suggestion.aB)
+															suggestion.aG)
 														]));
 											},
-											A3($author$project$Views$Navbar$buildSuggestions, s.bu, s.cx, search)))
+											A3($author$project$Views$Navbar$buildSuggestions, tables, layout, search)))
 									]))
 							]));
 				},
@@ -15062,14 +16261,14 @@ var $author$project$Views$Navbar$viewNavbar = F2(
 						_List_fromArray(
 							[
 								A2(
-								$elm$html$Html$a,
+								$elm$html$Html$button,
 								_Utils_ap(
 									_List_fromArray(
 										[
-											$elm$html$Html$Attributes$href('#'),
-											$elm$html$Html$Attributes$class('navbar-brand')
+											$elm$html$Html$Attributes$type_('button'),
+											$elm$html$Html$Attributes$class('link navbar-brand')
 										]),
-									$author$project$Libs$Bootstrap$bsToggleOffcanvas($author$project$Conf$conf.cm.cF)),
+									$author$project$Libs$Bootstrap$bsToggleOffcanvas($author$project$Conf$conf.cp.cI)),
 								_List_fromArray(
 									[
 										A2(
@@ -15113,7 +16312,10 @@ var $author$project$Views$Navbar$viewNavbar = F2(
 									]),
 								_List_fromArray(
 									[
-										A2($author$project$Views$Navbar$viewSearchBar, schema, search),
+										A2(
+										$author$project$Views$Navbar$viewSearchBar,
+										A2($elm$core$Maybe$map, $elm$core$Tuple$first, schema),
+										search),
 										A2(
 										$elm$html$Html$ul,
 										_List_fromArray(
@@ -15131,14 +16333,14 @@ var $author$project$Views$Navbar$viewNavbar = F2(
 												_List_fromArray(
 													[
 														A2(
-														$elm$html$Html$a,
+														$elm$html$Html$button,
 														_Utils_ap(
 															_List_fromArray(
 																[
-																	$elm$html$Html$Attributes$href('#'),
-																	$elm$html$Html$Attributes$class('nav-link')
+																	$elm$html$Html$Attributes$type_('button'),
+																	$elm$html$Html$Attributes$class('link nav-link')
 																]),
-															$author$project$Libs$Bootstrap$bsToggleModal($author$project$Conf$conf.cm.ch)),
+															$author$project$Libs$Bootstrap$bsToggleModal($author$project$Conf$conf.cp.ck)),
 														_List_fromArray(
 															[
 																$elm$html$Html$text('?')
@@ -15150,8 +16352,11 @@ var $author$project$Views$Navbar$viewNavbar = F2(
 										A2($elm$html$Html$div, _List_Nil, _List_Nil),
 										A2(
 											$elm$core$Maybe$map,
-											function (s) {
-												return A2($author$project$Views$Navbar$viewLayoutButton, s.cy, s.cz);
+											function (_v0) {
+												var _v1 = _v0.b;
+												var layoutName = _v1.a;
+												var layouts = _v1.b;
+												return A2($author$project$Views$Navbar$viewLayoutButton, layoutName, layouts);
 											},
 											schema))
 									]))
@@ -15267,9 +16472,9 @@ var $mpizenberg$elm_file$FileValue$loadFile = function (msgTag) {
 			$elm$json$Json$Decode$map,
 			function (file) {
 				return {
-					aW: msgTag(file),
-					a8: true,
-					bo: true
+					a1: msgTag(file),
+					dm: true,
+					bs: true
 				};
 			},
 			A2(
@@ -15312,11 +16517,11 @@ var $mpizenberg$elm_file$FileValue$dynamicListOf = function (itemDecoder) {
 		A2($elm$json$Json$Decode$field, 'length', $elm$json$Json$Decode$int));
 };
 var $mpizenberg$elm_file$FileValue$errorFile = {
-	cw: $elm$time$Time$millisToPosix(0),
-	aX: 'text/plain',
-	J: 'If you see this file, please report an error at https://github.com/mpizenberg/elm-files/issues',
-	dA: 0,
-	t: $elm$json$Json$Encode$null
+	cz: $elm$time$Time$millisToPosix(0),
+	a2: 'text/plain',
+	N: 'If you see this file, please report an error at https://github.com/mpizenberg/elm-files/issues',
+	dE: 0,
+	v: $elm$json$Json$Encode$null
 };
 var $mpizenberg$elm_file$FileValue$multipleFilesDecoder = A2(
 	$elm$json$Json$Decode$andThen,
@@ -15343,9 +16548,9 @@ var $mpizenberg$elm_file$FileValue$filesOn = F2(
 					var file = _v0.a;
 					var list = _v0.b;
 					return {
-						aW: A2(msgTag, file, list),
-						a8: true,
-						bo: true
+						a1: A2(msgTag, file, list),
+						dm: true,
+						bs: true
 					};
 				},
 				A2(
@@ -15362,7 +16567,7 @@ var $mpizenberg$elm_file$FileValue$onWithId = F3(
 			A2(
 				$elm$json$Json$Decode$map,
 				function (message) {
-					return {aW: message, a8: true, bo: true};
+					return {a1: message, dm: true, bs: true};
 				},
 				A2(
 					$elm$json$Json$Decode$andThen,
@@ -15378,17 +16583,17 @@ var $mpizenberg$elm_file$FileValue$onWithId = F3(
 var $mpizenberg$elm_file$FileValue$onDrop = function (config) {
 	return A2(
 		$elm$core$List$cons,
-		A2($mpizenberg$elm_file$FileValue$filesOn, 'dragover', config.c7),
+		A2($mpizenberg$elm_file$FileValue$filesOn, 'dragover', config.da),
 		A2(
 			$elm$core$List$cons,
-			A2($mpizenberg$elm_file$FileValue$filesOn, 'drop', config.c4),
+			A2($mpizenberg$elm_file$FileValue$filesOn, 'drop', config.c6),
 			function () {
-				var _v0 = config.c5;
+				var _v0 = config.c8;
 				if (_v0.$ === 1) {
 					return _List_Nil;
 				} else {
-					var id = _v0.a.ck;
-					var msg = _v0.a.cM;
+					var id = _v0.a.aV;
+					var msg = _v0.a.cO;
 					return _List_fromArray(
 						[
 							$elm$html$Html$Attributes$id(id),
@@ -15422,14 +16627,14 @@ var $author$project$Views$Modals$SchemaSwitch$viewFileUpload = function (_switch
 						]),
 					$mpizenberg$elm_file$FileValue$onDrop(
 						{
-							c4: $author$project$Models$FileDropped,
-							c5: $elm$core$Maybe$Just(
-								{ck: 'file-drop', cM: $author$project$Models$FileDragLeave}),
-							c7: $author$project$Models$FileDragOver
+							c6: $author$project$Models$FileDropped,
+							c8: $elm$core$Maybe$Just(
+								{aV: 'file-drop', cO: $author$project$Models$FileDragLeave}),
+							da: $author$project$Models$FileDragOver
 						})),
 				_List_fromArray(
 					[
-						_switch.cC ? A2(
+						_switch.cF ? A2(
 						$elm$html$Html$span,
 						_List_fromArray(
 							[
@@ -15620,11 +16825,12 @@ var $author$project$Views$Modals$SchemaSwitch$viewSampleSchemas = A2(
 			_List_fromArray(
 				[
 					A2(
-					$elm$html$Html$a,
+					$elm$html$Html$button,
 					_List_fromArray(
 						[
+							$elm$html$Html$Attributes$type_('button'),
+							$elm$html$Html$Attributes$class('link link-primary'),
 							$elm$html$Html$Attributes$id('schema-samples'),
-							$elm$html$Html$Attributes$href('#'),
 							$author$project$Libs$Bootstrap$bsToggle(1),
 							$author$project$Libs$Bootstrap$ariaExpanded(false)
 						]),
@@ -15648,11 +16854,11 @@ var $author$project$Views$Modals$SchemaSwitch$viewSampleSchemas = A2(
 								_List_fromArray(
 									[
 										A2(
-										$elm$html$Html$a,
+										$elm$html$Html$button,
 										_List_fromArray(
 											[
+												$elm$html$Html$Attributes$type_('button'),
 												$elm$html$Html$Attributes$class('dropdown-item'),
-												$elm$html$Html$Attributes$href('#'),
 												$elm$html$Html$Events$onClick(
 												$author$project$Models$LoadSampleData(name))
 											]),
@@ -15662,7 +16868,7 @@ var $author$project$Views$Modals$SchemaSwitch$viewSampleSchemas = A2(
 											]))
 									]));
 						},
-						$pzp1997$assoc_list$AssocList$keys($author$project$Conf$schemaSamples)))
+						$elm$core$Dict$keys($author$project$Conf$schemaSamples)))
 				]))
 		]));
 var $author$project$Models$DeleteSchema = function (a) {
@@ -15731,8 +16937,8 @@ var $elm$time$Time$toAdjustedMinutesHelp = F3(
 			} else {
 				var era = eras.a;
 				var olderEras = eras.b;
-				if (_Utils_cmp(era.ar, posixMinutes) < 0) {
-					return posixMinutes + era.a$;
+				if (_Utils_cmp(era.ay, posixMinutes) < 0) {
+					return posixMinutes + era.a6;
 				} else {
 					var $temp$defaultOffset = defaultOffset,
 						$temp$posixMinutes = posixMinutes,
@@ -15768,15 +16974,15 @@ var $elm$time$Time$toCivil = function (minutes) {
 	var month = mp + ((mp < 10) ? 3 : (-9));
 	var year = yearOfEra + (era * 400);
 	return {
-		aa: (dayOfYear - ((((153 * mp) + 2) / 5) | 0)) + 1,
-		I: month,
-		Z: year + ((month <= 2) ? 1 : 0)
+		ai: (dayOfYear - ((((153 * mp) + 2) / 5) | 0)) + 1,
+		M: month,
+		ad: year + ((month <= 2) ? 1 : 0)
 	};
 };
 var $elm$time$Time$toDay = F2(
 	function (zone, time) {
 		return $elm$time$Time$toCivil(
-			A2($elm$time$Time$toAdjustedMinutes, zone, time)).aa;
+			A2($elm$time$Time$toAdjustedMinutes, zone, time)).ai;
 	});
 var $elm$time$Time$toHour = F2(
 	function (zone, time) {
@@ -15817,7 +17023,7 @@ var $elm$time$Time$Sep = 8;
 var $elm$time$Time$toMonth = F2(
 	function (zone, time) {
 		var _v0 = $elm$time$Time$toCivil(
-			A2($elm$time$Time$toAdjustedMinutes, zone, time)).I;
+			A2($elm$time$Time$toAdjustedMinutes, zone, time)).M;
 		switch (_v0) {
 			case 1:
 				return 0;
@@ -15891,21 +17097,21 @@ var $elm$time$Time$toWeekday = F2(
 var $elm$time$Time$toYear = F2(
 	function (zone, time) {
 		return $elm$time$Time$toCivil(
-			A2($elm$time$Time$toAdjustedMinutes, zone, time)).Z;
+			A2($elm$time$Time$toAdjustedMinutes, zone, time)).ad;
 	});
 var $author$project$Libs$DateTime$buildDateTime = F2(
 	function (zone, date) {
 		return {
-			aa: A2($elm$time$Time$toDay, zone, date),
-			ae: A2($elm$time$Time$toHour, zone, date),
-			ai: A2($elm$time$Time$toMillis, zone, date),
-			aj: A2($elm$time$Time$toMinute, zone, date),
-			I: $author$project$Libs$DateTime$formatMonth(
+			ai: A2($elm$time$Time$toDay, zone, date),
+			am: A2($elm$time$Time$toHour, zone, date),
+			aq: A2($elm$time$Time$toMillis, zone, date),
+			ar: A2($elm$time$Time$toMinute, zone, date),
+			M: $author$project$Libs$DateTime$formatMonth(
 				A2($elm$time$Time$toMonth, zone, date)),
-			ao: A2($elm$time$Time$toSecond, zone, date),
-			bA: $author$project$Libs$DateTime$formatWeekday(
+			av: A2($elm$time$Time$toSecond, zone, date),
+			bG: $author$project$Libs$DateTime$formatWeekday(
 				A2($elm$time$Time$toWeekday, zone, date)),
-			Z: A2($elm$time$Time$toYear, zone, date)
+			ad: A2($elm$time$Time$toYear, zone, date)
 		};
 	});
 var $elm$core$String$cons = _String_cons;
@@ -15936,7 +17142,7 @@ var $author$project$Libs$DateTime$format = F3(
 			'SSS',
 			A3(
 				$author$project$Libs$DateTime$padLeft,
-				$elm$core$String$fromInt(date.ai),
+				$elm$core$String$fromInt(date.aq),
 				3,
 				'0'),
 			A3(
@@ -15944,7 +17150,7 @@ var $author$project$Libs$DateTime$format = F3(
 				'ss',
 				A3(
 					$author$project$Libs$DateTime$padLeft,
-					$elm$core$String$fromInt(date.ao),
+					$elm$core$String$fromInt(date.av),
 					2,
 					'0'),
 				A3(
@@ -15952,7 +17158,7 @@ var $author$project$Libs$DateTime$format = F3(
 					'mm',
 					A3(
 						$author$project$Libs$DateTime$padLeft,
-						$elm$core$String$fromInt(date.aj),
+						$elm$core$String$fromInt(date.ar),
 						2,
 						'0'),
 					A3(
@@ -15960,54 +17166,54 @@ var $author$project$Libs$DateTime$format = F3(
 						'HH',
 						A3(
 							$author$project$Libs$DateTime$padLeft,
-							$elm$core$String$fromInt(date.ae),
+							$elm$core$String$fromInt(date.am),
 							2,
 							'0'),
 						A3(
 							$elm$core$String$replace,
 							'dd',
-							$elm$core$String$fromInt(date.aa),
+							$elm$core$String$fromInt(date.ai),
 							A3(
 								$elm$core$String$replace,
 								'MM',
 								A3(
 									$author$project$Libs$DateTime$padLeft,
-									$elm$core$String$fromInt(date.I.c),
+									$elm$core$String$fromInt(date.M.c),
 									2,
 									'0'),
 								A3(
 									$elm$core$String$replace,
 									'MMM',
-									date.I.d,
+									date.M.d,
 									A3(
 										$elm$core$String$replace,
 										'MMMMM',
-										date.I.b,
+										date.M.b,
 										A3(
 											$elm$core$String$replace,
 											'yy',
 											$elm$core$String$fromInt(
-												A2($elm$core$Basics$modBy, 100, date.Z)),
+												A2($elm$core$Basics$modBy, 100, date.ad)),
 											A3(
 												$elm$core$String$replace,
 												'yyyy',
-												$elm$core$String$fromInt(date.Z),
+												$elm$core$String$fromInt(date.ad),
 												pattern))))))))));
 	});
 var $author$project$Views$Helpers$formatDate = F2(
 	function (info, date) {
-		return A3($author$project$Libs$DateTime$format, 'dd MMM yyyy', info.d_, date);
+		return A3($author$project$Libs$DateTime$format, 'dd MMM yyyy', info.d1, date);
 	});
 var $author$project$Models$OpenConfirm = function (a) {
-	return {$: 30, a: a};
+	return {$: 34, a: a};
 };
 var $author$project$Views$Helpers$onClickConfirm = F2(
 	function (content, msg) {
 		return $elm$html$Html$Events$onClick(
 			$author$project$Models$OpenConfirm(
 				{
-					az: $author$project$Libs$Task$send(msg),
-					aB: $elm$html$Html$text(content)
+					aE: $author$project$Libs$Task$send(msg),
+					aG: $elm$html$Html$text(content)
 				}));
 	});
 var $elm$html$Html$small = _VirtualDom_node('small');
@@ -16064,7 +17270,7 @@ var $author$project$Views$Modals$SchemaSwitch$viewSavedSchemas = F2(
 													]),
 												_List_fromArray(
 													[
-														$elm$html$Html$text(s.ck)
+														$elm$html$Html$text(s.aV)
 													])),
 												A2(
 												$elm$html$Html$p,
@@ -16085,7 +17291,7 @@ var $author$project$Views$Modals$SchemaSwitch$viewSavedSchemas = F2(
 																$elm$html$Html$text(
 																A4(
 																	$author$project$Libs$String$plural,
-																	$pzp1997$assoc_list$AssocList$size(s.cz),
+																	$elm$core$Dict$size(s.cC),
 																	'No saved layout',
 																	'1 saved layout',
 																	'saved layouts')),
@@ -16096,13 +17302,13 @@ var $author$project$Views$Modals$SchemaSwitch$viewSavedSchemas = F2(
 																	time,
 																	A2(
 																		$elm$core$Maybe$withDefault,
-																		s.cq.bW,
+																		s.ct.b$,
 																		A2(
 																			$elm$core$Maybe$map,
 																			function ($) {
-																				return $.cw;
+																				return $.cz;
 																			},
-																			s.cq.aJ))))
+																			s.ct.aO))))
 															]))
 													]))
 											])),
@@ -16115,16 +17321,16 @@ var $author$project$Views$Modals$SchemaSwitch$viewSavedSchemas = F2(
 										_List_fromArray(
 											[
 												A2(
-												$elm$html$Html$a,
+												$elm$html$Html$button,
 												_List_fromArray(
 													[
-														$elm$html$Html$Attributes$class('btn-text link-secondary me-auto'),
-														$elm$html$Html$Attributes$href('#'),
+														$elm$html$Html$Attributes$type_('button'),
+														$elm$html$Html$Attributes$class('link link-secondary me-auto'),
 														$elm$html$Html$Attributes$title('Delete this schema'),
 														$author$project$Libs$Bootstrap$bsToggle(0),
 														A2(
 														$author$project$Views$Helpers$onClickConfirm,
-														'You you really want to delete ' + (s.ck + ' schema ?'),
+														'You you really want to delete ' + (s.aV + ' schema ?'),
 														$author$project$Models$DeleteSchema(s))
 													]),
 												_List_fromArray(
@@ -16150,7 +17356,7 @@ var $author$project$Views$Modals$SchemaSwitch$viewSavedSchemas = F2(
 				A2(
 					$elm$core$List$sortBy,
 					function (s) {
-						return -$elm$time$Time$posixToMillis(s.cq.dU);
+						return -$elm$time$Time$posixToMillis(s.ct.dX);
 					},
 					storedSchemas)));
 	});
@@ -16169,7 +17375,7 @@ var $author$project$Views$Modals$SchemaSwitch$viewSchemaSwitchModal = F4(
 	function (time, _switch, title, storedSchemas) {
 		return A4(
 			$author$project$Libs$Bootstrap$bsModal,
-			$author$project$Conf$conf.cm.ds,
+			$author$project$Conf$conf.cp.dw,
 			title,
 			_List_fromArray(
 				[
@@ -16201,43 +17407,70 @@ var $author$project$View$viewApp = function (model) {
 		_List_fromArray(
 			[$lattyware$elm_fontawesome$FontAwesome$Styles$css]),
 		_Utils_ap(
-			A2($author$project$Views$Navbar$viewNavbar, model.du, model.dr),
+			A2(
+				$author$project$Views$Navbar$viewNavbar,
+				model.dy,
+				A2(
+					$elm$core$Maybe$map,
+					function (s) {
+						return _Utils_Tuple2(
+							_Utils_Tuple2(s.by, s.cA),
+							_Utils_Tuple2(s.cB, s.cC));
+					},
+					model.dv)),
 			_Utils_ap(
-				$author$project$Views$Menu$viewMenu(model.dr),
-				_Utils_ap(
-					_List_fromArray(
-						[
-							A2($author$project$View$viewErd, model.bm, model.dr)
-						]),
-					_List_fromArray(
-						[
-							A4(
-							$author$project$Views$Modals$SchemaSwitch$viewSchemaSwitchModal,
-							model.bw,
-							model.bs,
+				$author$project$Views$Menu$viewMenu(
+					A2(
+						$elm$core$Maybe$map,
+						function (s) {
+							return _Utils_Tuple3(s.by, s.aW, s.cA);
+						},
+						model.dv)),
+				_List_fromArray(
+					[
+						A2(
+						$author$project$Views$Erd$viewErd,
+						model.bq,
+						A2(
+							$elm$core$Maybe$map,
+							function (s) {
+								return _Utils_Tuple3(s.by, s.aW, s.cA);
+							},
+							model.dv)),
+						$author$project$Views$Command$viewCommands(
+						A2(
+							$elm$core$Maybe$map,
+							function (s) {
+								return s.cA.bR;
+							},
+							model.dv)),
+						A4(
+						$author$project$Views$Modals$SchemaSwitch$viewSchemaSwitchModal,
+						model.bC,
+						model.bw,
+						A2(
+							$elm$core$Maybe$withDefault,
+							'Load a new schema',
 							A2(
-								$elm$core$Maybe$withDefault,
-								'Load a new schema',
-								A2(
-									$elm$core$Maybe$map,
-									function (_v0) {
-										return 'Schema Viz, easily explore your SQL schema!';
-									},
-									model.dr)),
-							model.at),
-							$author$project$Views$Modals$CreateLayout$viewCreateLayoutModal(model.aZ),
-							$author$project$Views$Modals$HelpInstructions$viewHelpModal,
-							$author$project$Views$Modals$Confirm$viewConfirm(model.bU),
-							$author$project$View$viewToasts
-						])))));
+								$elm$core$Maybe$map,
+								function (_v0) {
+									return 'Schema Viz, easily explore your SQL schema!';
+								},
+								model.dv)),
+						model.az),
+						$author$project$Views$Modals$CreateLayout$viewCreateLayoutModal(model.a4),
+						$author$project$Views$Modals$HelpInstructions$viewHelpModal,
+						$author$project$Views$Modals$Confirm$viewConfirm(model.bZ),
+						$author$project$View$viewToasts
+					]))));
 };
 var $author$project$Main$view = function (model) {
 	return {
-		bI: $author$project$View$viewApp(model),
-		dQ: 'Schema Viz'
+		bN: $author$project$View$viewApp(model),
+		dT: 'Schema Viz'
 	};
 };
 var $author$project$Main$main = $elm$browser$Browser$document(
-	{cr: $author$project$Main$init, dH: $author$project$Main$subscriptions, dT: $author$project$Main$update, dW: $author$project$Main$view});
+	{cu: $author$project$Main$init, dL: $author$project$Main$subscriptions, dW: $author$project$Main$update, dZ: $author$project$Main$view});
 _Platform_export({'Main':{'init':$author$project$Main$main(
 	$elm$json$Json$Decode$succeed(0))(0)}});}(this));

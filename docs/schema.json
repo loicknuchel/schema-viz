@@ -11,32 +11,32 @@
       "columns": [
         {
           "index": 0,
-          "column": "id",
+          "name": "id",
           "type": "int",
           "nullable": false,
           "comment": "The user id which is automatically defined based on subscription order. Should never change!"
         },
         {
           "index": 1,
-          "column": "first_name",
+          "name": "first_name",
           "type": "varchar(255)",
           "nullable": false
         },
         {
           "index": 2,
-          "column": "last_name",
+          "name": "last_name",
           "type": "varchar(255)",
           "nullable": false
         },
         {
           "index": 3,
-          "column": "email",
+          "name": "email",
           "type": "varchar(255)",
           "nullable": true
         },
         {
           "index": 4,
-          "column": "external_id",
+          "name": "external_id",
           "type": "uuid",
           "nullable": true
         }
@@ -81,37 +81,37 @@
       "columns": [
         {
           "index": 0,
-          "column": "id",
+          "name": "id",
           "type": "int",
           "nullable": false
         },
         {
           "index": 1,
-          "column": "slug",
+          "name": "slug",
           "type": "varchar(255)",
           "nullable": false
         },
         {
           "index": 2,
-          "column": "name",
+          "name": "name",
           "type": "varchar(255)",
           "nullable": false
         },
         {
           "index": 3,
-          "column": "description",
+          "name": "description",
           "type": "text",
           "nullable": true
         },
         {
           "index": 4,
-          "column": "created_at",
+          "name": "created_at",
           "type": "timestamp",
           "nullable": false
         },
         {
           "index": 5,
-          "column": "updated_at",
+          "name": "updated_at",
           "type": "timestamp",
           "nullable": false
         }
@@ -146,7 +146,7 @@
       "columns": [
         {
           "index": 0,
-          "column": "user_id",
+          "name": "user_id",
           "type": "int",
           "nullable": false,
           "foreignKey": {
@@ -158,13 +158,13 @@
         },
         {
           "index": 1,
-          "column": "login",
+          "name": "login",
           "type": "varchar(255)",
           "nullable": false
         },
         {
           "index": 2,
-          "column": "password",
+          "name": "password",
           "type": "varchar(255)",
           "nullable": false
         }
@@ -186,13 +186,13 @@
       "columns": [
         {
           "index": 0,
-          "column": "id",
+          "name": "id",
           "type": "int",
           "nullable": false
         },
         {
           "index": 1,
-          "column": "role_id",
+          "name": "role_id",
           "type": "int",
           "nullable": false,
           "foreignKey": {
@@ -204,7 +204,7 @@
         },
         {
           "index": 2,
-          "column": "user_id",
+          "name": "user_id",
           "type": "int",
           "nullable": false,
           "foreignKey": {
@@ -216,13 +216,13 @@
         },
         {
           "index": 3,
-          "column": "created_at",
+          "name": "created_at",
           "type": "timestamp",
           "nullable": false
         },
         {
           "index": 4,
-          "column": "updated_at",
+          "name": "updated_at",
           "type": "timestamp",
           "nullable": false
         }

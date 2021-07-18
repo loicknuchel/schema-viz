@@ -42,6 +42,7 @@
                         case "DropSchema":    dropSchema(msg.schema); break;
                         case "ReadFile":      readFile(msg.file); break;
                         case "ObserveSizes":  observeSizes(msg.ids); break;
+                        case "ListenKeys":    listenHotkeys(msg.keys); break;
                         default: console.error('Unsupported Elm message', msg); break;
                     }
                 }, 100)
@@ -69,26 +70,32 @@
             function showToast(toast) {
                 const toastNo = toastCpt += 1
                 const toastId = 'toast-' + toastNo
+                let bgColor = ''
+                let btnColor = ''
+                let autoHide = true
+                switch (toast.kind) {
+                    case 'info':
+                        break
+                    case 'warning':
+                        bgColor = 'bg-warning'
+                        break
+                    case 'error':
+                        bgColor = 'bg-danger text-white'
+                        btnColor = 'btn-close-white'
+                        autoHide = false
+                        break
+                    default:
+                        break
+                }
                 let html =
-                    '<div class="toast align-items-center" id="' + toastId + '" role="status" aria-live="polite" aria-atomic="true">\n' +
+                    '<div class="toast align-items-center ' + bgColor + '" id="' + toastId + '" role="status" aria-live="polite" aria-atomic="true"' + (autoHide ? '' : ' data-bs-autohide="false"') + '>\n' +
                     '  <div class="d-flex">\n' +
                     '    <div class="toast-body">\n' +
                     '      ' + toast.message + '\n' +
                     '    </div>\n' +
-                    '    <button type="button" class="btn-close me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>\n' +
+                    '    <button type="button" class="btn-close ' + btnColor + ' me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>\n' +
                     '  </div>\n' +
                     '</div>'
-                if (toast.kind === 'error') {
-                    html =
-                        '<div class="toast align-items-center bg-danger text-white" id="' + toastId + '" role="status" aria-live="polite" aria-atomic="true" data-bs-autohide="false">\n' +
-                        '  <div class="d-flex">\n' +
-                        '    <div class="toast-body">\n' +
-                        '      ' + toast.message + '\n' +
-                        '    </div>\n' +
-                        '    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>\n' +
-                        '  </div>\n' +
-                        '</div>'
-                }
                 toastContainer.insertAdjacentHTML('beforeend', html);
                 bootstrap.Toast.getOrCreateInstance(document.getElementById(toastId)).show()
             }
@@ -129,7 +136,33 @@
                 sendToElm({kind: "SizesChanged", sizes: sizes})
             })
             function observeSizes(ids) {
-                ids.forEach(id => resizeObserver.observe(document.getElementById(id)))
+                ids.forEach(id => {
+                    const el = document.getElementById(id)
+                    el ? resizeObserver.observe(el) : console.error("Can't observe element with '" + id + "' id, it doesn't exist")
+                })
+            }
+
+            const hotkeys = {}
+            document.addEventListener('keydown', function (e) {
+                Object.entries(hotkeys).forEach(([id, hotkey]) => {
+                    if ((!hotkey.key || hotkey.key === e.key) &&
+                        (!hotkey.ctrl || e.ctrlKey) &&
+                        (!hotkey.shift || e.shiftKey) &&
+                        (!hotkey.alt || e.altKey) &&
+                        (!hotkey.meta || e.metaKey) &&
+                        ((!hotkey.target && (!hotkey.oninput || e.target.localName !== 'input')) || (hotkey.target &&
+                            (!hotkey.target.id || hotkey.target.id === e.target.id) &&
+                            (!hotkey.target.class || e.target.className.split(' ').includes(hotkey.target.class)) &&
+                            (!hotkey.target.tag || hotkey.target.tag === e.target.localName)))) {
+                        if (hotkey.preventDefault) {
+                            e.preventDefault()
+                        }
+                        sendToElm({kind: "HotkeyUsed", id: id})
+                    }
+                })
+            })
+            function listenHotkeys(keys) {
+                Object.assign(hotkeys, keys)
             }
 
 
@@ -154,6 +187,44 @@
             window.addEventListener('hidden.bs.toast', function (e) {
                 const toast = document.getElementById(e.target.id)
                 toast.parentNode.removeChild(toast)
+            })
+
+
+            /* Autocomplete hacks, this is more than ugly and also very fragile, should find better ways to handle autocomplete!!! */
+
+            // when the search is focused, the dropdown should be open:
+            //  - prevent closing it if search input is still active
+            //  - open it when search input is focused
+            //  - close it when search input is blurred
+            const searchEl = document.getElementById('search')
+            window.addEventListener('hide.bs.dropdown', function (e) {
+                if(e.target.id === 'search' && searchEl === document.activeElement) {
+                    e.preventDefault()
+                }
+            })
+            searchEl.addEventListener('focus', function () {
+                setTimeout(function() { bootstrap.Dropdown.getOrCreateInstance(searchEl).show() }, 10)
+            })
+            searchEl.addEventListener('blur', function () {
+                setTimeout(function() { bootstrap.Dropdown.getOrCreateInstance(searchEl).hide() }, 10)
+            })
+            // search input parent is the dropdown element, on mousedown it's blurred but we want that only on click
+            searchEl.parentElement.addEventListener('mousedown', function () {
+                setTimeout(function () { searchEl.focus() }, 10)
+            })
+            // the second node inside the dropdown element is the dropdown menu, we want to blur the search on click
+            searchEl.parentElement.childNodes[1].addEventListener('click', function () {
+                searchEl.blur()
+            })
+            // blur search when esc key is pressed
+            searchEl.addEventListener('keydown', function (e) {
+                if (e.keyCode === 27) {
+                    searchEl.blur()
+                }
+            })
+            // do not submit search form on enter
+            searchEl.parentElement.parentElement.addEventListener('submit', function(e) {
+                e.preventDefault()
             })
         }
     </script>

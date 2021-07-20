@@ -7,8 +7,10 @@ import Libs.Json.Decode as D
 import Libs.Json.Encode as E
 import Libs.Maybe as M
 import Libs.Ned as Ned
+import Libs.Position exposing (Position)
+import Libs.Size exposing (Size)
 import Models.Schema exposing (CanvasProps, Column, ColumnComment(..), ColumnIndex(..), ColumnName, ColumnType(..), ColumnValue(..), FileInfo, ForeignKey, ForeignKeyName(..), Index, IndexName(..), Layout, PrimaryKey, PrimaryKeyName(..), Schema, SchemaInfo, SchemaName, Source, SourceLine, Table, TableComment(..), TableId, TableName, TableProps, Unique, UniqueName(..), buildSchema, initLayout, stringAsTableId, tableIdAsString)
-import Models.Utils exposing (Color, Position, Size, ZoomLevel)
+import Models.Utils exposing (Color, ZoomLevel)
 import Time
 
 

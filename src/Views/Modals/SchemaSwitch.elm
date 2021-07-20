@@ -5,8 +5,8 @@ import Dict
 import FileValue exposing (hiddenInputSingle)
 import FontAwesome.Icon exposing (viewIcon)
 import FontAwesome.Solid as Icon
-import Html exposing (Html, a, br, div, h5, label, li, p, small, span, text, ul)
-import Html.Attributes exposing (class, for, href, id, style, target, title)
+import Html exposing (Html, a, br, button, div, h5, label, li, p, small, span, text, ul)
+import Html.Attributes exposing (class, for, href, id, style, target, title, type_)
 import Html.Events exposing (onClick)
 import Libs.Bootstrap exposing (BsColor(..), Toggle(..), ariaExpanded, ariaLabelledBy, bsButton, bsModal, bsToggle, bsToggleCollapseLink)
 import Libs.Html exposing (bText, codeText, divIf)
@@ -61,7 +61,7 @@ viewSavedSchemas time storedSchemas =
                                     ]
                                 ]
                             , div [ class "card-footer d-flex" ]
-                                [ a [ class "btn-text link-secondary me-auto", href "#", title "Delete this schema", bsToggle Tooltip, onClickConfirm ("You you really want to delete " ++ s.id ++ " schema ?") (DeleteSchema s) ] [ viewIcon Icon.trash ]
+                                [ button [ type_ "button", class "link link-secondary me-auto", title "Delete this schema", bsToggle Tooltip, onClickConfirm ("You you really want to delete " ++ s.id ++ " schema ?") (DeleteSchema s) ] [ viewIcon Icon.trash ]
                                 , bsButton Primary [ onClick (UseSchema s) ] [ text "Use this schema" ]
                                 ]
                             ]
@@ -96,9 +96,9 @@ viewSampleSchemas =
     div [ style "text-align" "center", style "margin-top" "1em" ]
         [ text "Or just try out with "
         , div [ class "dropdown", style "display" "inline-block" ]
-            [ a [ id "schema-samples", href "#", bsToggle Dropdown, ariaExpanded False ] [ text "an example" ]
+            [ button [ type_ "button", class "link link-primary", id "schema-samples", bsToggle Dropdown, ariaExpanded False ] [ text "an example" ]
             , ul [ class "dropdown-menu", ariaLabelledBy "schema-samples" ]
-                (schemaSamples |> Dict.keys |> List.map (\name -> li [] [ a [ class "dropdown-item", href "#", onClick (LoadSampleData name) ] [ text name ] ]))
+                (schemaSamples |> Dict.keys |> List.map (\name -> li [] [ button [ type_ "button", class "dropdown-item", onClick (LoadSampleData name) ] [ text name ] ]))
             ]
         ]
 

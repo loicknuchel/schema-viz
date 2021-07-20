@@ -1,10 +1,11 @@
-module Views.Relation exposing (viewRelation)
+module Views.Erd.Relation exposing (viewRelation)
 
 import Libs.List as L
 import Libs.Maybe as M
+import Libs.Size exposing (Size)
 import Models exposing (Msg)
 import Models.Schema exposing (Column, ForeignKeyName(..), Relation, RelationTarget, Table, TableProps, showTableId)
-import Models.Utils exposing (Color, Size)
+import Models.Utils exposing (Color)
 import Svg exposing (Svg, line, svg, text)
 import Svg.Attributes exposing (class, height, strokeDasharray, style, width, x1, x2, y1, y2)
 import Views.Helpers exposing (withColumnName)

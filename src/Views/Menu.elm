@@ -82,8 +82,8 @@ viewTableList tables layout =
                                         div [ class "list-group-item d-flex", title (showTableId t.id) ]
                                             [ div [ class "text-truncate me-auto" ] [ text (showTableId t.id) ]
                                             , cond (layout.tables |> Dict.member t.id)
-                                                (a [ href "#", class "text-muted", onClick (HideTable t.id) ] [ viewIcon Icon.eyeSlash ])
-                                                (a [ href "#", class "text-muted", onClick (ShowTable t.id) ] [ viewIcon Icon.eye ])
+                                                (button [ type_ "button", class "link text-muted", onClick (HideTable t.id) ] [ viewIcon Icon.eyeSlash ])
+                                                (button [ type_ "button", class "link text-muted", onClick (ShowTable t.id) ] [ viewIcon Icon.eye ])
                                             ]
                                     )
                             )

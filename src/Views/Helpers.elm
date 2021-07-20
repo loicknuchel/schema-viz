@@ -1,16 +1,17 @@
-module Views.Helpers exposing (columnRefAsHtmlId, dragAttrs, extractColumnName, extractColumnType, formatDate, humanDatetime, onClickConfirm, placeAt, sizeAttrs, withColumnName, withNullableInfo)
+module Views.Helpers exposing (columnRefAsHtmlId, dragAttrs, extractColumnName, extractColumnType, formatDate, humanDatetime, onClickConfirm, placeAt, sizeAttr, withColumnName, withNullableInfo)
 
 import Draggable
 import Html exposing (Attribute, Html, span, text)
-import Html.Attributes exposing (height, style, title, width)
+import Html.Attributes exposing (attribute, style, title)
 import Html.Events exposing (onClick)
 import Libs.Bootstrap exposing (Toggle(..), bsToggle)
 import Libs.DateTime as DateTime
 import Libs.Models exposing (HtmlId)
+import Libs.Position exposing (Position)
+import Libs.Size exposing (Size)
 import Libs.Task as T
 import Models exposing (DragId, Msg(..), TimeInfo)
 import Models.Schema exposing (ColumnName, ColumnRef, ColumnType(..), tableIdAsHtmlId)
-import Models.Utils exposing (Position, Size)
 import Time
 
 
@@ -28,9 +29,9 @@ dragAttrs id =
     Draggable.mouseTrigger id DragMsg :: Draggable.touchTriggers id DragMsg
 
 
-sizeAttrs : Size -> List (Attribute Msg)
-sizeAttrs size =
-    [ width (round size.width), height (round size.height) ]
+sizeAttr : Size -> Attribute msg
+sizeAttr size =
+    attribute "data-size" (String.fromInt (round size.width) ++ "x" ++ String.fromInt (round size.height))
 
 
 onClickConfirm : String -> Msg -> Attribute Msg

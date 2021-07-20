@@ -1,8 +1,11 @@
 module Libs.Nel exposing (Nel, any, filter, filterMap, find, fromList, indexedMap, map, toList)
 
--- deps = { to = { only = [ "Libs.*" ] } }
-
 import Libs.List as L
+
+
+
+-- deps = { to = { only = [ "Libs.*" ] } }
+-- Nel: NonEmptyList
 
 
 type alias Nel a =

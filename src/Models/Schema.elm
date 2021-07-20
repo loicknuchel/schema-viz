@@ -1,14 +1,17 @@
-module Models.Schema exposing (CanvasProps, Column, ColumnComment(..), ColumnIndex(..), ColumnName, ColumnRef, ColumnType(..), ColumnValue(..), FileInfo, ForeignKey, ForeignKeyName(..), Index, IndexName(..), Layout, LayoutName, PrimaryKey, PrimaryKeyName(..), Relation, RelationRef, RelationTarget, Schema, SchemaId, SchemaInfo, SchemaName, Source, SourceLine, Table, TableComment(..), TableId, TableName, TableProps, Unique, UniqueName(..), buildSchema, extractColumnIndex, htmlIdAsTableId, initLayout, initTableProps, outgoingRelations, showTableId, showTableName, stringAsTableId, tableIdAsHtmlId, tableIdAsString)
+module Models.Schema exposing (CanvasProps, Column, ColumnComment(..), ColumnIndex(..), ColumnName, ColumnRef, ColumnType(..), ColumnValue(..), FileInfo, ForeignKey, ForeignKeyName(..), Index, IndexName(..), Layout, LayoutName, PrimaryKey, PrimaryKeyName(..), Relation, RelationRef, RelationTarget, Schema, SchemaId, SchemaInfo, SchemaName, Source, SourceLine, Table, TableComment(..), TableId, TableName, TableProps, Unique, UniqueName(..), buildSchema, extractColumnIndex, htmlIdAsTableId, initLayout, initTableProps, outgoingRelations, showTableId, showTableName, stringAsTableId, tableIdAsHtmlId, tableIdAsString, tablesArea, viewportArea, viewportSize)
 
 import Conf exposing (conf)
 import Dict exposing (Dict)
+import Libs.Area exposing (Area)
 import Libs.Dict as D
 import Libs.List as L
 import Libs.Models exposing (HtmlId)
 import Libs.Ned as Ned exposing (Ned)
 import Libs.Nel as Nel exposing (Nel)
+import Libs.Position exposing (Position)
+import Libs.Size exposing (Size)
 import Libs.String as S
-import Models.Utils exposing (Color, Position, Size, ZoomLevel)
+import Models.Utils exposing (Color, ZoomLevel)
 import Time
 
 
@@ -277,3 +280,56 @@ computeColor ( _, table ) =
 extractColumnIndex : ColumnIndex -> Int
 extractColumnIndex (ColumnIndex index) =
     index
+
+
+viewportSize : Dict HtmlId Size -> Maybe Size
+viewportSize sizes =
+    sizes |> Dict.get conf.ids.erd
+
+
+viewportArea : Size -> CanvasProps -> Area
+viewportArea size canvas =
+    let
+        left : Float
+        left =
+            -canvas.position.left / canvas.zoom
+
+        top : Float
+        top =
+            -canvas.position.top / canvas.zoom
+
+        right : Float
+        right =
+            (-canvas.position.left + size.width) / canvas.zoom
+
+        bottom : Float
+        bottom =
+            (-canvas.position.top + size.height) / canvas.zoom
+    in
+    Area left top right bottom
+
+
+tablesArea : Dict HtmlId Size -> Dict TableId TableProps -> Area
+tablesArea sizes tables =
+    let
+        positions : List ( ( TableId, TableProps ), Size )
+        positions =
+            tables |> Dict.toList |> L.zipWith (\( id, _ ) -> sizes |> Dict.get (tableIdAsHtmlId id) |> Maybe.withDefault (Size 0 0))
+
+        left : Float
+        left =
+            positions |> List.map (\( ( _, t ), _ ) -> t.position.left) |> List.minimum |> Maybe.withDefault 0
+
+        top : Float
+        top =
+            positions |> List.map (\( ( _, t ), _ ) -> t.position.top) |> List.minimum |> Maybe.withDefault 0
+
+        right : Float
+        right =
+            positions |> List.map (\( ( _, t ), s ) -> t.position.left + s.width) |> List.maximum |> Maybe.withDefault 0
+
+        bottom : Float
+        bottom =
+            positions |> List.map (\( ( _, t ), s ) -> t.position.top + s.height) |> List.maximum |> Maybe.withDefault 0
+    in
+    Area left top right bottom

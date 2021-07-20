@@ -8,9 +8,11 @@ import Http
 import Json.Decode as Decode
 import Libs.Html.Events exposing (WheelEvent)
 import Libs.Models exposing (FileContent, HtmlId, Text)
+import Libs.Position exposing (Position)
+import Libs.Size exposing (Size)
 import Libs.Task as T
 import Models.Schema exposing (ColumnRef, LayoutName, Schema, TableId)
-import Models.Utils exposing (Position, Size, SizeChange)
+import Models.Utils exposing (SizeChange, ZoomDelta)
 import Time
 
 
@@ -74,6 +76,8 @@ type Msg
     | HideColumn ColumnRef
     | ShowColumn ColumnRef Int
     | OnWheel WheelEvent
+    | Zoom ZoomDelta
+    | FitContent
     | DragMsg (Draggable.Msg DragId)
     | StartDragging DragId
     | StopDragging

@@ -6,8 +6,10 @@ import Fuzz exposing (Fuzzer)
 import Libs.Fuzz as F
 import Libs.Ned as Ned
 import Libs.Nel exposing (Nel)
+import Libs.Position exposing (Position)
+import Libs.Size exposing (Size)
 import Models.Schema exposing (CanvasProps, Column, ColumnComment(..), ColumnIndex(..), ColumnName, ColumnType(..), ColumnValue(..), FileInfo, ForeignKey, ForeignKeyName(..), Index, IndexName(..), Layout, LayoutName, PrimaryKey, PrimaryKeyName(..), Schema, SchemaId, SchemaInfo, SchemaName, Source, SourceLine, Table, TableComment(..), TableId, TableName, TableProps, Unique, UniqueName(..), buildSchema)
-import Models.Utils exposing (Color, Position, Size, ZoomLevel)
+import Models.Utils exposing (Color, ZoomLevel)
 import Time
 
 

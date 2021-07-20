@@ -10,7 +10,8 @@ import Models exposing (Flags, JsMsg(..), Model, Msg(..), initConfirm, initModel
 import Ports exposing (activateTooltipsAndPopovers, click, dropSchema, hideOffcanvas, listenHotkeys, loadSchemas, observeSize, onJsMessage, readFile, saveSchema, showModal, toastError, toastInfo, toastWarning)
 import Task
 import Time
-import Update exposing (dragConfig, dragItem, handleWheel, updateSizes)
+import Update exposing (dragConfig, dragItem, updateSizes)
+import Updates.Canvas exposing (fitCanvas, handleWheel, zoomCanvas)
 import Updates.Helpers exposing (decodeErrorToHtml, setCanvas, setDictTable, setLayout, setSchema, setSchemaWithCmd, setSwitch, setTables, setTime)
 import Updates.Layout exposing (createLayout, deleteLayout, loadLayout, updateLayout)
 import Updates.Schema exposing (createSampleSchema, createSchema, useSchema)
@@ -117,6 +118,12 @@ update msg model =
 
         OnWheel event ->
             ( model |> setSchema (setLayout (setCanvas (handleWheel event))), Cmd.none )
+
+        Zoom delta ->
+            ( model |> setSchema (setLayout (setCanvas (zoomCanvas model.sizes delta))), Cmd.none )
+
+        FitContent ->
+            ( model |> setSchema (setLayout (fitCanvas model.sizes)), Cmd.none )
 
         DragMsg dragMsg ->
             model |> Draggable.update dragConfig dragMsg

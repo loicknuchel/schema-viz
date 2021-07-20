@@ -1,16 +1,18 @@
-module Update exposing (dragConfig, dragItem, handleWheel, updateSizes)
+module Update exposing (dragConfig, dragItem, updateSizes)
 
 import Commands.InitializeTable exposing (initializeTable)
 import Conf exposing (conf)
 import Dict
 import Draggable
 import Draggable.Events exposing (onDragBy, onDragEnd, onDragStart)
+import Libs.Area exposing (Area)
 import Libs.Bool as B
-import Libs.Html.Events exposing (WheelEvent)
 import Libs.Maybe as M
+import Libs.Position exposing (Position)
+import Libs.Size exposing (Size)
 import Models exposing (DragId, Model, Msg(..))
 import Models.Schema exposing (CanvasProps, htmlIdAsTableId)
-import Models.Utils exposing (Area, Position, Size, SizeChange, ZoomLevel)
+import Models.Utils exposing (SizeChange)
 import Ports exposing (toastError)
 import Updates.Helpers exposing (setCanvas, setDictTable, setLayout, setPosition, setSchema)
 
@@ -51,42 +53,6 @@ getArea canvasSize canvas =
     , top = (0 - canvas.position.top) / canvas.zoom
     , bottom = (canvasSize.height - canvas.position.top) / canvas.zoom
     }
-
-
-handleWheel : WheelEvent -> CanvasProps -> CanvasProps
-handleWheel event canvas =
-    if event.keys.ctrl then
-        let
-            newZoom : ZoomLevel
-            newZoom =
-                (canvas.zoom + (event.delta.y * conf.zoom.speed)) |> clamp conf.zoom.min conf.zoom.max
-
-            zoomFactor : Float
-            zoomFactor =
-                newZoom / canvas.zoom
-
-            -- to zoom on cursor, works only if origin is top left (CSS property: "transform-origin: top left;")
-            newLeft : Float
-            newLeft =
-                canvas.position.left - ((event.mouse.x - canvas.position.left) * (zoomFactor - 1))
-
-            newTop : Float
-            newTop =
-                canvas.position.top - ((event.mouse.y - canvas.position.top) * (zoomFactor - 1))
-        in
-        { canvas | position = Position newLeft newTop, zoom = newZoom }
-
-    else
-        let
-            newLeft : Float
-            newLeft =
-                canvas.position.left - (event.delta.x * canvas.zoom)
-
-            newTop : Float
-            newTop =
-                canvas.position.top - (event.delta.y * canvas.zoom)
-        in
-        { canvas | position = Position newLeft newTop }
 
 
 dragConfig : Draggable.Config DragId Msg

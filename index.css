@@ -1,5 +1,5 @@
 :root {
-    --navbar-height: 56px;
+    --navbar-height: 54px;
     --modal-backdrop-z-index: 1040;
     --offcanvas-z-index: 1050;
     --modal-z-index: 1060;
@@ -204,6 +204,14 @@ body {
     z-index: var(--relation-z-index);
 }
 
+.commands {
+    position: absolute;
+    bottom: 1em;
+    right: 1em;
+    background-color: var(--bg-light);
+    border-radius: .2rem;
+}
+
 .drop-zone {
     border: 2px dashed var(--tw-blue);
     border-radius: 1em;
@@ -233,11 +241,14 @@ body {
     line-height: 38px;
 }
 
-#toast-container {
-    z-index: calc(var(--modal-z-index) + 1);
+button.link {
+    border: none;
+    padding: 0;
+    background: transparent;
 }
 
-.toast {
+#toast-container {
+    z-index: calc(var(--modal-z-index) + 1);
     overflow: auto;
     max-width: calc(100% - 20px);
     max-height: calc(100vh - 32px);

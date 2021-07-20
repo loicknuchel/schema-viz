@@ -5,7 +5,7 @@ import Dict exposing (Dict)
 import FontAwesome.Icon exposing (viewIcon)
 import FontAwesome.Solid as Icon
 import Html exposing (Html, a, b, button, div, form, img, input, li, nav, span, text, ul)
-import Html.Attributes exposing (alt, attribute, autocomplete, class, height, href, id, placeholder, src, style, title, type_, value)
+import Html.Attributes exposing (alt, attribute, autocomplete, class, height, id, placeholder, src, style, title, type_, value)
 import Html.Events exposing (onClick, onInput)
 import Libs.Bootstrap exposing (BsColor(..), Toggle(..), ariaExpanded, ariaLabel, bsButton, bsToggle, bsToggleCollapse, bsToggleDropdown, bsToggleModal, bsToggleOffcanvas)
 import Libs.Models exposing (Text)
@@ -24,14 +24,14 @@ viewNavbar : Search -> Maybe ( ( Dict TableId Table, Layout ), ( Maybe LayoutNam
 viewNavbar search schema =
     [ nav [ id "navbar", class "navbar navbar-expand-md navbar-light bg-white shadow-sm" ]
         [ div [ class "container-fluid" ]
-            [ a ([ href "#", class "navbar-brand" ] ++ bsToggleOffcanvas conf.ids.menu) [ img [ src "assets/logo.png", alt "logo", height 24, class "d-inline-block align-text-top" ] [], text " Schema Viz" ]
+            [ button ([ type_ "button", class "link navbar-brand" ] ++ bsToggleOffcanvas conf.ids.menu) [ img [ src "assets/logo.png", alt "logo", height 24, class "d-inline-block align-text-top" ] [], text " Schema Viz" ]
             , button ([ type_ "button", class "navbar-toggler", ariaLabel "Toggle navigation" ] ++ bsToggleCollapse "navbar-content")
                 [ span [ class "navbar-toggler-icon" ] []
                 ]
             , div [ class "collapse navbar-collapse", id "navbar-content" ]
                 [ viewSearchBar (schema |> Maybe.map Tuple.first) search
                 , ul [ class "navbar-nav me-auto" ]
-                    [ li [ class "nav-item" ] [ a ([ href "#", class "nav-link" ] ++ bsToggleModal conf.ids.helpModal) [ text "?" ] ]
+                    [ li [ class "nav-item" ] [ button ([ type_ "button", class "link nav-link" ] ++ bsToggleModal conf.ids.helpModal) [ text "?" ] ]
                     ]
                 , schema |> Maybe.map (\( _, ( layoutName, layouts ) ) -> viewLayoutButton layoutName layouts) |> Maybe.withDefault (div [] [])
                 ]
@@ -82,14 +82,14 @@ viewLayoutButton currentLayout layouts =
                 |> Maybe.withDefault [ bsButton Primary [ class "dropdown-toggle", bsToggle Dropdown, ariaExpanded False ] [ text "Layouts" ] ]
              )
                 ++ [ ul [ class "dropdown-menu dropdown-menu-end" ]
-                        ([ li [] [ a ([ class "dropdown-item", href "#" ] ++ bsToggleModal conf.ids.newLayoutModal) [ viewIcon Icon.plus, text " Create new layout" ] ] ]
+                        ([ li [] [ button ([ type_ "button", class "dropdown-item" ] ++ bsToggleModal conf.ids.newLayoutModal) [ viewIcon Icon.plus, text " Create new layout" ] ] ]
                             ++ (layouts
                                     |> Dict.toList
                                     |> List.sortBy (\( name, _ ) -> name)
                                     |> List.map
                                         (\( name, l ) ->
                                             li []
-                                                [ a [ class "dropdown-item", href "#" ]
+                                                [ button [ type_ "button", class "dropdown-item" ]
                                                     [ span [ title "Load layout", bsToggle Tooltip, onClick (LoadLayout name) ] [ viewIcon Icon.upload ]
                                                     , text " "
                                                     , span [ title "Update layout with current one", bsToggle Tooltip, onClick (UpdateLayout name) ] [ viewIcon Icon.edit ]

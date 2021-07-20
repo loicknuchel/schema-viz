@@ -8,3 +8,4 @@
 /index.js
 /tests/resources/samples/
 /legacy/ruby/test/resources/samples/
+/.coverage/

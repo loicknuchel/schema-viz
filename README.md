@@ -30,14 +30,18 @@ For me, this tool is the missing piece between a classic ERD tool and a Data cat
 
 ## Installation
 
-Schema Viz is a Single Page Application built with Elm that parse your SQL schema and allows you to explore it.
+Schema Viz is a Single Page Application built with Elm that parse and explore your SQL schema.
 
 First, you need to install Elm & NPM on your machine and run `npm install` to get the dependencies.
 
-- launch dev env: `elm-live src/Main.elm --open --start-page=index.html -- --output=index.js`
-- launch the tests: `npx elm-test`
-- run linter: `npx elm-review`
-- compile to the demo file: `elm make src/Main.elm`
+- launch dev server: `elm-live src/Main.elm --open --start-page=index.html -- --output=index.js`
+- launch the tests: `elm-test` (needs `npm install -g elm-test`)
+- run coverage: `elm-coverage --open` (needs `npm install -g elm-coverage`)
+- run linter: `elm-review` (needs `npm install -g elm-review`)
+- update the demo: `./build-demo.sh`
+- install deps `elm-json install author/package` (needs `npm install --g elm-json`)
+- uninstall deps `elm-json uninstall author/package`
+- update deps `elm-json upgrade` (use `--unsafe` flag for major versions)
 
 Elm folders are `src` for sources & `tests` for tests.
 
@@ -49,7 +53,7 @@ To run it you need to install Ruby & Bundler in your machine, then run `bundle i
 
 - launch the
   program: `exe/schema-viz generate --structure ./test/resources/schema.sql --output ../../tests/resources/schema.json`
-- launch the tests: `rake test`
+- launch the tests: `rake test` (& open coverage `xdg-open coverage/index.html`)
 - launch a Ruby console: `bin/console`
 
 Ruby folders are `lib/schema-viz` for sources & `test` for tests.

@@ -8,8 +8,8 @@ import JsonFormats.SchemaFormat exposing (..)
 import Libs.Dict as D
 import Libs.Ned as Ned
 import Libs.Nel exposing (Nel)
+import Libs.Position exposing (Position)
 import Models.Schema exposing (CanvasProps, Column, ColumnComment(..), ColumnIndex(..), ColumnRef, ColumnType(..), ColumnValue(..), FileInfo, ForeignKey, ForeignKeyName(..), Index, IndexName(..), Layout, PrimaryKey, PrimaryKeyName(..), RelationRef, Schema, SchemaInfo, Source, SourceLine, TableComment(..), TableProps, Unique, UniqueName(..))
-import Models.Utils exposing (Position)
 import Test exposing (Test, describe, fuzz, test)
 import TestHelpers.Fuzzers as Fuzzers
 import Time

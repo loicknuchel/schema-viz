@@ -1,10 +1,10 @@
-module Views.Table exposing (viewTable)
+module Views.Erd.Table exposing (viewTable)
 
 import FontAwesome.Icon exposing (viewIcon)
 import FontAwesome.Regular as IconLight
 import FontAwesome.Solid as Icon
 import Html exposing (Attribute, Html, a, b, button, div, li, span, text, ul)
-import Html.Attributes exposing (class, classList, href, id, style, title, type_)
+import Html.Attributes exposing (class, classList, id, style, title, type_)
 import Html.Events exposing (onClick, onDoubleClick)
 import Libs.Bootstrap exposing (Toggle(..), bsDropdown, bsToggle, bsToggleCollapse)
 import Libs.Html exposing (divIf)
@@ -13,11 +13,12 @@ import Libs.List as L
 import Libs.Maybe as M
 import Libs.Ned as Ned
 import Libs.Nel as Nel exposing (Nel)
+import Libs.Size exposing (Size)
 import Libs.String as S
 import Models exposing (Msg(..))
 import Models.Schema exposing (Column, ColumnComment(..), ColumnName, ColumnRef, ColumnValue(..), ForeignKey, Index, IndexName(..), PrimaryKey, Relation, Table, TableComment(..), TableProps, Unique, UniqueName(..), extractColumnIndex, showTableId, showTableName, tableIdAsHtmlId)
-import Models.Utils exposing (Size, ZoomLevel)
-import Views.Helpers exposing (columnRefAsHtmlId, dragAttrs, extractColumnName, extractColumnType, placeAt, sizeAttrs, withColumnName, withNullableInfo)
+import Models.Utils exposing (ZoomLevel)
+import Views.Helpers exposing (columnRefAsHtmlId, dragAttrs, extractColumnName, extractColumnType, placeAt, sizeAttr, withColumnName, withNullableInfo)
 
 
 
@@ -36,10 +37,13 @@ viewTable zoom table props incomingRelations size =
             tableIdAsHtmlId table.id ++ "-hidden-columns-collapse"
     in
     div
-        (L.addIf (size == Nothing)
-            (style "visibility" "hidden")
-            [ class "erd-table", class props.color, classList [ ( "selected", props.selected ) ], id (tableIdAsHtmlId table.id), placeAt props.position ]
-            ++ (size |> Maybe.map sizeAttrs |> Maybe.withDefault [])
+        ([ class "erd-table"
+         , class props.color
+         , classList [ ( "selected", props.selected ) ]
+         , id (tableIdAsHtmlId table.id)
+         , placeAt props.position
+         , size |> Maybe.map sizeAttr |> Maybe.withDefault (style "visibility" "hidden")
+         ]
             ++ dragAttrs (tableIdAsHtmlId table.id)
         )
         [ viewHeader zoom table
@@ -69,7 +73,7 @@ viewHeader zoom table =
         , bsDropdown (tableIdAsHtmlId table.id ++ "-settings-dropdown")
             []
             (\attrs -> div ([ style "font-size" "0.9rem", style "opacity" "0.25", style "width" "30px", style "margin-left" "-10px", style "margin-right" "-20px", stopClick Noop ] ++ attrs) [ viewIcon Icon.ellipsisV ])
-            (\attrs -> ul attrs [ li [] [ a [ class "dropdown-item", href "#", onClick (HideTable table.id) ] [ text "Hide table" ] ] ])
+            (\attrs -> ul attrs [ li [] [ button [ type_ "button", class "dropdown-item", onClick (HideTable table.id) ] [ text "Hide table" ] ] ])
         ]
 
 

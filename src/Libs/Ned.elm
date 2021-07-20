@@ -4,6 +4,11 @@ import Dict exposing (Dict)
 import Libs.Nel as Nel exposing (Nel)
 
 
+
+-- deps = { to = { only = [ "Libs.*" ] } }
+-- Ned: NonEmptyDict
+
+
 type alias Ned k a =
     { head : ( k, a ), tail : Dict k a }
 

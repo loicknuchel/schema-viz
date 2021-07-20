@@ -1,8 +1,10 @@
 module Commands.InitializeTable exposing (initializeTable)
 
+import Libs.Area exposing (Area)
+import Libs.Position exposing (Position)
+import Libs.Size exposing (Size)
 import Models exposing (Msg(..))
 import Models.Schema exposing (TableId)
-import Models.Utils exposing (Area, Position, Size)
 import Random
 
 

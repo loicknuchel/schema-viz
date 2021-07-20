@@ -3,7 +3,8 @@ module Updates.Helpers exposing (decodeErrorToHtml, map, setCanvas, setDictTable
 import Dict exposing (Dict)
 import Draggable
 import Json.Decode as Decode
-import Models.Utils exposing (Position, ZoomLevel)
+import Libs.Position exposing (Position)
+import Models.Utils exposing (ZoomLevel)
 
 
 map : (a -> b) -> a -> b

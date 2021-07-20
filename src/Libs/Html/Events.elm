@@ -82,6 +82,6 @@ onWheel callback =
 
         preventDefaultAndStopPropagation : msg -> { message : msg, stopPropagation : Bool, preventDefault : Bool }
         preventDefaultAndStopPropagation msg =
-            { message = msg, stopPropagation = True, preventDefault = False }
+            { message = msg, stopPropagation = True, preventDefault = True }
     in
     Html.Events.custom "wheel" (Decode.map preventDefaultAndStopPropagation decoder)

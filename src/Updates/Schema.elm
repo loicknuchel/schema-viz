@@ -12,7 +12,7 @@ import Libs.Task as T
 import Mappers.SchemaMapper exposing (buildSchemaFromSql)
 import Models exposing (Errors, Model, Msg(..), initSwitch)
 import Models.Schema exposing (FileInfo, Schema, SchemaId)
-import Ports exposing (click, hideModal, observeTablesSize, saveSchema, toastError, toastInfo)
+import Ports exposing (activateTooltipsAndPopovers, click, hideModal, observeTablesSize, saveSchema, toastError, toastInfo)
 import SqlParser.SchemaParser exposing (parseSchema)
 import Time
 import Updates.Helpers exposing (decodeErrorToHtml)
@@ -63,6 +63,7 @@ loadSchema model ( errs, schema ) =
                                 :: [ toastInfo ("<b>" ++ s.id ++ "</b> loaded.<br>Use the search bar to explore it")
                                    , hideModal conf.ids.schemaSwitchModal
                                    , saveSchema s
+                                   , activateTooltipsAndPopovers
                                    ]
                         )
                     |> Maybe.withDefault []

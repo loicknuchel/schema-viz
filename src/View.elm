@@ -1,9 +1,12 @@
 module View exposing (viewApp)
 
+import Css.Global
 import FontAwesome.Styles as Icon
 import Html exposing (Html, div)
 import Html.Attributes exposing (class, id)
+import Html.Styled as SHtml
 import Models exposing (Model, Msg(..))
+import Tailwind.Utilities exposing (globalStyles)
 import Views.Command exposing (viewCommands)
 import Views.Erd exposing (viewErd)
 import Views.Menu exposing (viewMenu)
@@ -21,7 +24,8 @@ import Views.Navbar exposing (viewNavbar)
 
 viewApp : Model -> List (Html Msg)
 viewApp model =
-    [ Icon.css ]
+    -- INFO: add the tailwind styles in DOM
+    [ Icon.css, Css.Global.global globalStyles |> SHtml.toUnstyled ]
         ++ viewNavbar model.search (model.schema |> Maybe.map (\s -> ( ( s.tables, s.layout ), ( s.layoutName, s.layouts ) )))
         ++ viewMenu (model.schema |> Maybe.map (\s -> ( s.tables, s.incomingRelations, s.layout )))
         ++ [ viewErd model.sizes (model.schema |> Maybe.map (\s -> ( s.tables, s.incomingRelations, s.layout )))

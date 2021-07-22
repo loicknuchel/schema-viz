@@ -8,12 +8,15 @@ import FontAwesome.Solid as Icon
 import Html exposing (Html, a, br, button, div, h5, label, li, p, small, span, text, ul)
 import Html.Attributes exposing (class, for, href, id, style, target, title, type_)
 import Html.Events exposing (onClick)
+import Html.Styled as SHtml
+import Html.Styled.Attributes as SAttributes
 import Libs.Bootstrap exposing (BsColor(..), Toggle(..), ariaExpanded, ariaLabelledBy, bsButton, bsModal, bsToggle, bsToggleCollapseLink)
 import Libs.Html exposing (bText, codeText, divIf)
 import Libs.Html.Attributes exposing (role)
 import Libs.String as S
 import Models exposing (Msg(..), Switch, TimeInfo)
 import Models.Schema exposing (Schema)
+import Tailwind.Utilities exposing (bg_black, text_center, text_gray_50)
 import Time
 import Views.Helpers exposing (formatDate, onClickConfirm)
 
@@ -31,8 +34,16 @@ viewSchemaSwitchModal time switch title storedSchemas =
         , viewFileUpload switch
         , viewSampleSchemas
         , div [ style "margin-top" "1em" ] (viewGetSchemaInstructions ++ viewDataPrivacyExplanation)
+        , viewTailwind |> SHtml.toUnstyled
         ]
         [ viewFooter ]
+
+
+viewTailwind : SHtml.Html msg
+viewTailwind =
+    -- https://package.elm-lang.org/packages/matheus23/elm-default-tailwind-modules uses https://github.com/rtfeldman/elm-css
+    -- so returned type is `Html.Styled` instead of `Html`
+    SHtml.div [ SAttributes.css [ bg_black, text_gray_50, text_center ] ] [ SHtml.text "tailwind 🤘" ]
 
 
 viewWarning : Html msg

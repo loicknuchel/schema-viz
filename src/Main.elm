@@ -15,7 +15,7 @@ import Updates.Canvas exposing (fitCanvas, handleWheel, zoomCanvas)
 import Updates.Helpers exposing (decodeErrorToHtml, setCanvas, setDictTable, setLayout, setSchema, setSchemaWithCmd, setSwitch, setTables, setTime)
 import Updates.Layout exposing (createLayout, deleteLayout, loadLayout, updateLayout)
 import Updates.Schema exposing (createSampleSchema, createSchema, useSchema)
-import Updates.Table exposing (hideAllTables, hideColumn, hideTable, showAllTables, showColumn, showTable)
+import Updates.Table exposing (hideAllTables, hideColumn, hideTable, showAllTables, showColumn, showTable, showTables)
 import View exposing (viewApp)
 
 
@@ -100,6 +100,9 @@ update msg model =
 
         ShowTable id ->
             model |> setSchemaWithCmd (showTable id)
+
+        ShowTables ids ->
+            model |> setSchemaWithCmd (showTables ids)
 
         InitializedTable id position ->
             ( model |> setSchema (setLayout (setDictTable id (\t -> { t | position = position }))), Cmd.none )

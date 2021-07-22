@@ -139,7 +139,17 @@ viewColumnDropdown incomingColumnRelations ref element =
             bsDropdown (columnRefAsHtmlId ref ++ "-relations-dropdown")
                 [ class "dropdown-menu-end" ]
                 (\attrs -> element attrs)
-                (\attrs -> ul attrs items)
+                (\attrs -> ul attrs (items ++ viewShowAllOption incomingColumnRelations))
+
+
+viewShowAllOption : List Relation -> List (Html Msg)
+viewShowAllOption incomingRelations =
+    case incomingRelations |> List.filter (\r -> r.src.props == Nothing) of
+        [] ->
+            []
+
+        rels ->
+            [ li [] [ a [ class "dropdown-item", onClick (ShowTables (rels |> List.map (\r -> r.src.table.id))) ] [ text "Show all" ] ] ]
 
 
 viewColumnName : Maybe PrimaryKey -> Column -> Html msg

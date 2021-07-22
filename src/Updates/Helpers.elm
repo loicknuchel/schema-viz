@@ -1,15 +1,10 @@
-module Updates.Helpers exposing (decodeErrorToHtml, map, setCanvas, setDictTable, setLayout, setLayouts, setPosition, setSchema, setSchemaWithCmd, setSwitch, setTables, setTime)
+module Updates.Helpers exposing (decodeErrorToHtml, setCanvas, setDictTable, setLayout, setLayouts, setPosition, setSchema, setSchemaWithCmd, setSwitch, setTables, setTime)
 
 import Dict exposing (Dict)
 import Draggable
 import Json.Decode as Decode
 import Libs.Position exposing (Position)
 import Models.Utils exposing (ZoomLevel)
-
-
-map : (a -> b) -> a -> b
-map transform item =
-    transform item
 
 
 setTime : (t -> t) -> { item | time : t } -> { item | time : t }

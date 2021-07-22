@@ -70,6 +70,7 @@ type Msg
     | SelectTable TableId
     | HideTable TableId
     | ShowTable TableId
+    | ShowTables (List TableId)
     | InitializedTable TableId Position
     | HideAllTables
     | ShowAllTables

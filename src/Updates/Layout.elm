@@ -5,7 +5,7 @@ import Libs.Bool as B
 import Models exposing (Msg)
 import Models.Schema exposing (LayoutName, Schema)
 import Ports exposing (activateTooltipsAndPopovers, observeTablesSize, saveSchema)
-import Updates.Helpers exposing (map, setLayout, setLayouts)
+import Updates.Helpers exposing (setLayout, setLayouts)
 
 
 
@@ -17,7 +17,7 @@ createLayout name schema =
     -- TODO check that layout name does not already exist
     { schema | layoutName = Just name }
         |> setLayouts (Dict.update name (\_ -> Just schema.layout))
-        |> map (\newSchema -> ( newSchema, saveSchema newSchema ))
+        |> (\newSchema -> ( newSchema, saveSchema newSchema ))
 
 
 loadLayout : LayoutName -> Schema -> ( Schema, Cmd Msg )
@@ -38,11 +38,11 @@ updateLayout name schema =
     -- TODO check that layout name already exist
     { schema | layoutName = Just name }
         |> setLayouts (Dict.update name (\_ -> Just schema.layout))
-        |> map (\newSchema -> ( newSchema, saveSchema newSchema ))
+        |> (\newSchema -> ( newSchema, saveSchema newSchema ))
 
 
 deleteLayout : LayoutName -> Schema -> ( Schema, Cmd Msg )
 deleteLayout name schema =
     { schema | layoutName = B.cond (schema.layoutName == Just name) Nothing (Just name) }
         |> setLayouts (Dict.update name (\_ -> Nothing))
-        |> map (\newSchema -> ( newSchema, saveSchema newSchema ))
+        |> (\newSchema -> ( newSchema, saveSchema newSchema ))

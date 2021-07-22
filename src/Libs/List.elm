@@ -1,4 +1,4 @@
-module Libs.List exposing (addAt, addIf, appendOn, filterMap, filterZip, find, get, has, hasNot, indexOf, prependOn, resultCollect, resultSeq, zipWith)
+module Libs.List exposing (addAt, addIf, appendOn, filterMap, filterZip, find, get, has, hasNot, indexOf, nonEmpty, prependOn, resultCollect, resultSeq, zipWith)
 
 import Libs.Bool as B
 import Random
@@ -11,6 +11,11 @@ import Random
 get : Int -> List a -> Maybe a
 get index list =
     list |> List.drop index |> List.head
+
+
+nonEmpty : List a -> Bool
+nonEmpty list =
+    not (List.isEmpty list)
 
 
 find : (a -> Bool) -> List a -> Maybe a

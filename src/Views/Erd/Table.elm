@@ -10,13 +10,12 @@ import Libs.Bootstrap exposing (Toggle(..), bsDropdown, bsToggle, bsToggleCollap
 import Libs.Html exposing (divIf)
 import Libs.Html.Events exposing (stopClick)
 import Libs.List as L
-import Libs.Maybe as M
 import Libs.Ned as Ned
-import Libs.Nel as Nel exposing (Nel)
+import Libs.Nel as Nel
 import Libs.Size exposing (Size)
 import Libs.String as S
 import Models exposing (Msg(..))
-import Models.Schema exposing (Column, ColumnComment(..), ColumnName, ColumnRef, ColumnValue(..), ForeignKey, Index, IndexName(..), PrimaryKey, Relation, Table, TableComment(..), TableProps, Unique, UniqueName(..), extractColumnIndex, showTableId, showTableName, tableIdAsHtmlId)
+import Models.Schema exposing (Column, ColumnComment(..), ColumnRef, ColumnValue(..), ForeignKey, Index, IndexName(..), PrimaryKey, Relation, Table, TableComment(..), TableProps, Unique, UniqueName(..), extractColumnIndex, inIndexes, inPrimaryKey, inUniques, showTableId, showTableName, tableIdAsHtmlId)
 import Models.Utils exposing (ZoomLevel)
 import Views.Helpers exposing (columnRefAsHtmlId, dragAttrs, extractColumnName, extractColumnType, placeAt, sizeAttr, withColumnName, withNullableInfo)
 
@@ -50,7 +49,7 @@ viewTable zoom table props incomingRelations size =
         , div [ class "columns" ]
             (props.columns
                 |> List.filterMap (\c -> table.columns |> Ned.get c)
-                |> List.map (\c -> viewColumn { table = table.id, column = c.column } table.primaryKey table.uniques table.indexes (filterIncomingColumnRelations incomingRelations c) c)
+                |> List.map (\c -> viewColumn { table = table.id, column = c.column } table (filterIncomingColumnRelations incomingRelations c) c)
             )
         , divIf (List.length hiddenColumns > 0)
             [ class "hidden-columns" ]
@@ -60,7 +59,7 @@ viewTable zoom table props incomingRelations size =
             , div [ class "collapse", id collapseId ]
                 (hiddenColumns
                     |> List.sortBy (\column -> extractColumnIndex column.index)
-                    |> List.map (\c -> viewHiddenColumn { table = table.id, column = c.column } table.primaryKey table.uniques table.indexes c)
+                    |> List.map (\c -> viewHiddenColumn { table = table.id, column = c.column } table c)
                 )
             ]
         ]
@@ -73,31 +72,44 @@ viewHeader zoom table =
         , bsDropdown (tableIdAsHtmlId table.id ++ "-settings-dropdown")
             []
             (\attrs -> div ([ style "font-size" "0.9rem", style "opacity" "0.25", style "width" "30px", style "margin-left" "-10px", style "margin-right" "-20px", stopClick Noop ] ++ attrs) [ viewIcon Icon.ellipsisV ])
-            (\attrs -> ul attrs [ li [] [ button [ type_ "button", class "dropdown-item", onClick (HideTable table.id) ] [ text "Hide table" ] ] ])
+            (\attrs ->
+                ul attrs
+                    [ li [] [ button [ type_ "button", class "dropdown-item", onClick (HideTable table.id) ] [ text "Hide table" ] ]
+                    , li []
+                        [ button [ type_ "button", class "dropdown-item" ] [ text "Sort columns »" ]
+                        , ul [ class "dropdown-menu dropdown-submenu" ]
+                            [ li [] [ button [ type_ "button", class "dropdown-item", onClick (SortColumns table.id "sql") ] [ text "By SQL order" ] ]
+                            , li [] [ button [ type_ "button", class "dropdown-item", onClick (SortColumns table.id "name") ] [ text "By name" ] ]
+                            , li [] [ button [ type_ "button", class "dropdown-item", onClick (SortColumns table.id "type") ] [ text "By type" ] ]
+                            , li [] [ button [ type_ "button", class "dropdown-item", onClick (SortColumns table.id "property") ] [ text "By property" ] ]
+                            ]
+                        ]
+                    ]
+            )
         ]
 
 
-viewColumn : ColumnRef -> Maybe PrimaryKey -> List Unique -> List Index -> List Relation -> Column -> Html Msg
-viewColumn ref pk uniques indexes columnRelations column =
+viewColumn : ColumnRef -> Table -> List Relation -> Column -> Html Msg
+viewColumn ref table columnRelations column =
     div [ class "column", onDoubleClick (HideColumn ref) ]
-        [ viewColumnDropdown columnRelations ref (viewColumnIcon pk uniques indexes column)
-        , viewColumnName pk column
+        [ viewColumnDropdown columnRelations ref (viewColumnIcon table column)
+        , viewColumnName table column
         , viewColumnType column
         ]
 
 
-viewHiddenColumn : ColumnRef -> Maybe PrimaryKey -> List Unique -> List Index -> Column -> Html Msg
-viewHiddenColumn ref pk uniques indexes column =
+viewHiddenColumn : ColumnRef -> Table -> Column -> Html Msg
+viewHiddenColumn ref table column =
     div [ class "hidden-column", onDoubleClick (ShowColumn ref (extractColumnIndex column.index)) ]
-        [ viewColumnIcon pk uniques indexes column []
-        , viewColumnName pk column
+        [ viewColumnIcon table column []
+        , viewColumnName table column
         , viewColumnType column
         ]
 
 
-viewColumnIcon : Maybe PrimaryKey -> List Unique -> List Index -> Column -> List (Attribute Msg) -> Html Msg
-viewColumnIcon maybePk uniques indexes column attrs =
-    case ( ( inPrimaryKey column.column maybePk, column.foreignKey ), ( inUniqueIndexes column.column uniques, inIndexes column.column indexes ) ) of
+viewColumnIcon : Table -> Column -> List (Attribute Msg) -> Html Msg
+viewColumnIcon table column attrs =
+    case ( ( column.column |> inPrimaryKey table, column.foreignKey ), ( column.column |> inUniques table, column.column |> inIndexes table ) ) of
         ( ( Just pk, _ ), _ ) ->
             div (class "icon" :: attrs) [ div [ title (formatPkTitle pk), bsToggle Tooltip ] [ viewIcon Icon.key ] ]
 
@@ -152,12 +164,12 @@ viewShowAllOption incomingRelations =
             [ li [] [ a [ class "dropdown-item", onClick (ShowTables (rels |> List.map (\r -> r.src.table.id))) ] [ text "Show all" ] ] ]
 
 
-viewColumnName : Maybe PrimaryKey -> Column -> Html msg
-viewColumnName pk column =
+viewColumnName : Table -> Column -> Html msg
+viewColumnName table column =
     let
         className : String
         className =
-            case inPrimaryKey column.column pk of
+            case column.column |> inPrimaryKey table of
                 Just _ ->
                     "name bold"
 
@@ -201,30 +213,6 @@ tableNameSize zoom =
 filterIncomingColumnRelations : List Relation -> Column -> List Relation
 filterIncomingColumnRelations incomingTableRelations column =
     incomingTableRelations |> List.filter (\r -> r.ref.column.column == column.column)
-
-
-inPrimaryKey : ColumnName -> Maybe PrimaryKey -> Maybe PrimaryKey
-inPrimaryKey column pk =
-    pk |> M.filter (\{ columns } -> columns |> hasColumn column)
-
-
-inUniqueIndexes : ColumnName -> List Unique -> List Unique
-inUniqueIndexes column uniques =
-    uniques |> List.filter (\{ columns } -> columns |> hasColumn column)
-
-
-inIndexes : ColumnName -> List Index -> List Index
-inIndexes column indexes =
-    indexes |> List.filter (\{ columns } -> columns |> hasColumn column)
-
-
-hasColumn : ColumnName -> Nel ColumnName -> Bool
-hasColumn column columns =
-    columns |> Nel.any (\c -> c == column)
-
-
-
--- formatters
 
 
 formatColumnType : Column -> String

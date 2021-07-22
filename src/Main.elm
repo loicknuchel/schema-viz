@@ -15,7 +15,7 @@ import Updates.Canvas exposing (fitCanvas, handleWheel, zoomCanvas)
 import Updates.Helpers exposing (decodeErrorToHtml, setCanvas, setDictTable, setLayout, setSchema, setSchemaWithCmd, setSwitch, setTables, setTime)
 import Updates.Layout exposing (createLayout, deleteLayout, loadLayout, updateLayout)
 import Updates.Schema exposing (createSampleSchema, createSchema, useSchema)
-import Updates.Table exposing (hideAllTables, hideColumn, hideTable, showAllTables, showColumn, showTable, showTables)
+import Updates.Table exposing (hideAllTables, hideColumn, hideTable, showAllTables, showColumn, showTable, showTables, sortColumns)
 import View exposing (viewApp)
 
 
@@ -118,6 +118,9 @@ update msg model =
 
         ShowColumn { table, column } index ->
             ( model |> setSchema (setLayout (showColumn table column index)), activateTooltipsAndPopovers )
+
+        SortColumns id kind ->
+            ( model |> setSchema (sortColumns id kind), activateTooltipsAndPopovers )
 
         OnWheel event ->
             ( model |> setSchema (setLayout (setCanvas (handleWheel event))), Cmd.none )

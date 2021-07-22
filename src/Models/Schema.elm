@@ -1,10 +1,11 @@
-module Models.Schema exposing (CanvasProps, Column, ColumnComment(..), ColumnIndex(..), ColumnName, ColumnRef, ColumnType(..), ColumnValue(..), FileInfo, ForeignKey, ForeignKeyName(..), Index, IndexName(..), Layout, LayoutName, PrimaryKey, PrimaryKeyName(..), Relation, RelationRef, RelationTarget, Schema, SchemaId, SchemaInfo, SchemaName, Source, SourceLine, Table, TableComment(..), TableId, TableName, TableProps, Unique, UniqueName(..), buildSchema, extractColumnIndex, htmlIdAsTableId, initLayout, initTableProps, outgoingRelations, showTableId, showTableName, stringAsTableId, tableIdAsHtmlId, tableIdAsString, tablesArea, viewportArea, viewportSize)
+module Models.Schema exposing (CanvasProps, Column, ColumnComment(..), ColumnIndex(..), ColumnName, ColumnRef, ColumnType(..), ColumnValue(..), FileInfo, ForeignKey, ForeignKeyName(..), Index, IndexName(..), Layout, LayoutName, PrimaryKey, PrimaryKeyName(..), Relation, RelationRef, RelationTarget, Schema, SchemaId, SchemaInfo, SchemaName, Source, SourceLine, Table, TableComment(..), TableId, TableName, TableProps, Unique, UniqueName(..), buildSchema, extractColumnIndex, htmlIdAsTableId, inIndexes, inPrimaryKey, inUniques, initLayout, initTableProps, outgoingRelations, showTableId, showTableName, stringAsTableId, tableIdAsHtmlId, tableIdAsString, tablesArea, viewportArea, viewportSize)
 
 import Conf exposing (conf)
 import Dict exposing (Dict)
 import Libs.Area exposing (Area)
 import Libs.Dict as D
 import Libs.List as L
+import Libs.Maybe as M
 import Libs.Models exposing (HtmlId)
 import Libs.Ned as Ned exposing (Ned)
 import Libs.Nel as Nel exposing (Nel)
@@ -280,6 +281,26 @@ computeColor ( _, table ) =
 extractColumnIndex : ColumnIndex -> Int
 extractColumnIndex (ColumnIndex index) =
     index
+
+
+inPrimaryKey : Table -> ColumnName -> Maybe PrimaryKey
+inPrimaryKey table column =
+    table.primaryKey |> M.filter (\{ columns } -> columns |> hasColumn column)
+
+
+inUniques : Table -> ColumnName -> List Unique
+inUniques table column =
+    table.uniques |> List.filter (\u -> u.columns |> hasColumn column)
+
+
+inIndexes : Table -> ColumnName -> List Index
+inIndexes table column =
+    table.indexes |> List.filter (\i -> i.columns |> hasColumn column)
+
+
+hasColumn : ColumnName -> Nel ColumnName -> Bool
+hasColumn column columns =
+    columns |> Nel.any (\c -> c == column)
 
 
 viewportSize : Dict HtmlId Size -> Maybe Size

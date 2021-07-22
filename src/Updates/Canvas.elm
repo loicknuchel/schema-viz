@@ -42,7 +42,7 @@ fitCanvas sizes layout =
 
                     padding : Float
                     padding =
-                        50
+                        20
 
                     ( newZoom, centerOffset ) =
                         computeFit viewport padding contentArea layout.canvas.zoom

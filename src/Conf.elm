@@ -28,7 +28,7 @@ conf :
     }
 conf =
     { zoom = { min = 0.05, max = 5, speed = 0.001 }
-    , colors = [ "red", "yellow", "green", "blue", "indigo", "purple", "pink" ]
+    , colors = [ "red", "orange", "amber", "yellow", "lime", "green", "emerald", "teal", "cyan", "sky", "blue", "indigo", "violet", "purple", "fuchsia", "pink", "rose" ]
     , default = { schema = "public", color = "gray" }
     , ids =
         { searchInput = "search"

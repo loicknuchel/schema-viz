@@ -9,7 +9,7 @@ import Models exposing (Msg)
 import Models.Schema exposing (ColumnName, Layout, Schema, Table, TableId, extractColumnIndex, inIndexes, inPrimaryKey, inUniques, initTableProps, showTableId)
 import Ports exposing (activateTooltipsAndPopovers, observeTableSize, observeTablesSize, toastError, toastInfo)
 import Updates.Helpers exposing (setLayout)
-import Views.Helpers exposing (extractColumnType)
+import Views.Helpers exposing (extractColumnType, withNullableInfo)
 
 
 
@@ -114,35 +114,44 @@ sortBy kind table columns =
         |> List.sortBy
             (\( name, col ) ->
                 case ( kind, col ) of
-                    ( "sql", Just c ) ->
-                        ( extractColumnIndex c.index, "" )
+                    ( "property", Just c ) ->
+                        if name |> inPrimaryKey table |> M.isJust then
+                            ( 0 + sortOffset c.nullable, name )
+
+                        else if c.foreignKey |> M.isJust then
+                            ( 1 + sortOffset c.nullable, name )
+
+                        else if name |> inUniques table |> L.nonEmpty then
+                            ( 2 + sortOffset c.nullable, name )
+
+                        else if name |> inIndexes table |> L.nonEmpty then
+                            ( 3 + sortOffset c.nullable, name )
+
+                        else
+                            ( 4 + sortOffset c.nullable, name )
 
                     ( "name", Just _ ) ->
                         ( 0, name )
 
+                    ( "sql", Just c ) ->
+                        ( toFloat (extractColumnIndex c.index), "" )
+
                     ( "type", Just c ) ->
-                        ( 0, extractColumnType c.kind )
-
-                    ( "property", Just c ) ->
-                        if name |> inPrimaryKey table |> M.isJust then
-                            ( 0, name )
-
-                        else if c.foreignKey |> M.isJust then
-                            ( 1, name )
-
-                        else if name |> inUniques table |> L.nonEmpty then
-                            ( 2, name )
-
-                        else if name |> inIndexes table |> L.nonEmpty then
-                            ( 3, name )
-
-                        else
-                            ( 4, name )
+                        ( 0, extractColumnType c.kind |> withNullableInfo c.nullable )
 
                     _ ->
-                        ( table.columns |> Ned.size, name )
+                        ( toFloat (table.columns |> Ned.size), name )
             )
         |> List.map Tuple.first
+
+
+sortOffset : Bool -> Float
+sortOffset b =
+    if b then
+        0.5
+
+    else
+        0
 
 
 performShowTable : TableId -> Table -> Schema -> Schema

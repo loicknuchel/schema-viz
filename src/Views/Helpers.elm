@@ -1,10 +1,9 @@
-module Views.Helpers exposing (columnRefAsHtmlId, dragAttrs, extractColumnName, extractColumnType, formatDate, humanDatetime, onClickConfirm, placeAt, sizeAttr, withColumnName, withNullableInfo)
+module Views.Helpers exposing (columnRefAsHtmlId, dragAttrs, extractColumnName, extractColumnType, formatDate, onClickConfirm, placeAt, sizeAttr, withColumnName, withNullableInfo)
 
 import Draggable
-import Html exposing (Attribute, Html, span, text)
-import Html.Attributes exposing (attribute, style, title)
+import Html exposing (Attribute, text)
+import Html.Attributes exposing (attribute, style)
 import Html.Events exposing (onClick)
-import Libs.Bootstrap exposing (Toggle(..), bsToggle)
 import Libs.DateTime as DateTime
 import Libs.Models exposing (HtmlId)
 import Libs.Position exposing (Position)
@@ -75,8 +74,3 @@ withNullableInfo nullable text =
 formatDate : TimeInfo -> Time.Posix -> String
 formatDate info date =
     DateTime.format "dd MMM yyyy" info.zone date
-
-
-humanDatetime : TimeInfo -> Time.Posix -> Html msg
-humanDatetime info date =
-    span [ title (DateTime.format "dd MMM yyyy HH:mm" info.zone date), bsToggle Tooltip ] [ text (DateTime.human info.now date) ]

@@ -1,4 +1,4 @@
-module Updates.Table exposing (hideAllTables, hideColumn, hideTable, showAllTables, showColumn, showTable, showTables, sortColumns)
+module Updates.Table exposing (hideAllTables, hideColumn, hideColumns, hideTable, showAllTables, showColumn, showTable, showTables, sortColumns)
 
 import Dict
 import Libs.Bool exposing (cond)
@@ -152,6 +152,39 @@ sortOffset b =
 
     else
         0
+
+
+hideColumns : TableId -> String -> Schema -> Schema
+hideColumns id kind schema =
+    schema.tables
+        |> Dict.get id
+        |> Maybe.map (\table -> schema |> setLayout (\l -> { l | tables = l.tables |> Dict.update id (Maybe.map (\t -> { t | columns = t.columns |> hideBy kind table })) }))
+        |> Maybe.withDefault schema
+
+
+hideBy : String -> Table -> List ColumnName -> List ColumnName
+hideBy kind table columns =
+    columns
+        |> L.zipWith (\name -> table.columns |> Ned.get name)
+        |> List.filter
+            (\( name, col ) ->
+                case ( kind, col ) of
+                    ( "regular", Just c ) ->
+                        (name |> inPrimaryKey table |> M.isJust)
+                            || (c.foreignKey |> M.isJust)
+                            || (name |> inUniques table |> L.nonEmpty)
+                            || (name |> inIndexes table |> L.nonEmpty)
+
+                    ( "nullable", Just c ) ->
+                        not c.nullable
+
+                    ( "all", _ ) ->
+                        False
+
+                    _ ->
+                        False
+            )
+        |> List.map Tuple.first
 
 
 performShowTable : TableId -> Table -> Schema -> Schema

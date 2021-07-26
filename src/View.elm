@@ -22,7 +22,7 @@ import Views.Navbar exposing (viewNavbar)
 viewApp : Model -> List (Html Msg)
 viewApp model =
     [ Icon.css ]
-        ++ viewNavbar model.search (model.schema |> Maybe.map (\s -> ( ( s.tables, s.layout ), ( s.layoutName, s.layouts ) )))
+        ++ viewNavbar model.search (model.schema |> Maybe.map (\s -> ( s.id, ( s.tables, s.layout ), ( s.layoutName, s.layouts ) )))
         ++ viewMenu (model.schema |> Maybe.map (\s -> ( s.tables, s.incomingRelations, s.layout )))
         ++ [ viewErd model.sizes (model.schema |> Maybe.map (\s -> ( s.tables, s.incomingRelations, s.layout )))
            , viewCommands (model.schema |> Maybe.map (\s -> s.layout.canvas))

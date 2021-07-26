@@ -12,7 +12,7 @@ import Libs.Models exposing (Text)
 import Libs.Ned as Ned
 import Libs.Nel as Nel exposing (Nel)
 import Models exposing (Msg(..), Search)
-import Models.Schema exposing (Column, Layout, LayoutName, Table, TableId, showTableId)
+import Models.Schema exposing (Column, Layout, LayoutName, SchemaId, Table, TableId, showTableId)
 import Views.Helpers exposing (extractColumnName)
 
 
@@ -20,7 +20,7 @@ import Views.Helpers exposing (extractColumnName)
 -- deps = { to = { only = [ "Libs.*", "Models.*", "Conf", "Views.Helpers" ] } }
 
 
-viewNavbar : Search -> Maybe ( ( Dict TableId Table, Layout ), ( Maybe LayoutName, Dict LayoutName Layout ) ) -> List (Html Msg)
+viewNavbar : Search -> Maybe ( SchemaId, ( Dict TableId Table, Layout ), ( Maybe LayoutName, Dict LayoutName Layout ) ) -> List (Html Msg)
 viewNavbar search schema =
     [ nav [ id "navbar", class "navbar navbar-expand-md navbar-light bg-white shadow-sm" ]
         [ div [ class "container-fluid" ]
@@ -29,12 +29,13 @@ viewNavbar search schema =
                 [ span [ class "navbar-toggler-icon" ] []
                 ]
             , div [ class "collapse navbar-collapse", id "navbar-content" ]
-                [ viewSearchBar (schema |> Maybe.map Tuple.first) search
-                , ul [ class "navbar-nav me-auto" ]
+                ([ viewSearchBar (schema |> Maybe.map (\( _, s, _ ) -> s)) search
+                 , ul [ class "navbar-nav me-auto" ]
                     [ li [ class "nav-item" ] [ button ([ type_ "button", class "link nav-link" ] ++ bsToggleModal conf.ids.helpModal) [ text "?" ] ]
                     ]
-                , schema |> Maybe.map (\( _, ( layoutName, layouts ) ) -> viewLayoutButton layoutName layouts) |> Maybe.withDefault (div [] [])
-                ]
+                 ]
+                    ++ (schema |> Maybe.map (\( id, ( tables, _ ), ( layoutName, layouts ) ) -> [ viewTitle id tables layoutName, viewLayoutButton layoutName layouts ]) |> Maybe.withDefault [])
+                )
             ]
         ]
     ]
@@ -63,6 +64,11 @@ viewSearchBar schema search =
                     ]
                 ]
             )
+
+
+viewTitle : SchemaId -> Dict TableId Table -> Maybe LayoutName -> Html msg
+viewTitle id tables layoutName =
+    div [ class "me-auto", title (String.fromInt (Dict.size tables) ++ " tables") ] [ text (id ++ (layoutName |> Maybe.map (\name -> " > " ++ name) |> Maybe.withDefault "")) ]
 
 
 viewLayoutButton : Maybe LayoutName -> Dict LayoutName Layout -> Html Msg

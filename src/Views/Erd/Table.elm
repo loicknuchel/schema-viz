@@ -92,6 +92,12 @@ viewHeader zoom table =
                             , li [] [ button [ type_ "button", class "dropdown-item", onClick (HideColumns table.id "all") ] [ text "All" ] ]
                             ]
                         ]
+                    , li []
+                        [ button [ type_ "button", class "dropdown-item" ] [ text "Show columns »" ]
+                        , ul [ class "dropdown-menu dropdown-submenu" ]
+                            [ li [] [ button [ type_ "button", class "dropdown-item", onClick (ShowColumns table.id "all") ] [ text "All" ] ]
+                            ]
+                        ]
                     ]
             )
         ]
@@ -108,7 +114,7 @@ viewColumn ref table columnRelations column =
 
 viewHiddenColumn : ColumnRef -> Table -> Column -> Html Msg
 viewHiddenColumn ref table column =
-    div [ class "hidden-column", onDoubleClick (ShowColumn ref (extractColumnIndex column.index)) ]
+    div [ class "hidden-column", onDoubleClick (ShowColumn ref) ]
         [ viewColumnIcon table column []
         , viewColumnName table column
         , viewColumnType column

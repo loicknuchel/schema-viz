@@ -75,9 +75,10 @@ type Msg
     | HideAllTables
     | ShowAllTables
     | HideColumn ColumnRef
-    | ShowColumn ColumnRef Int
+    | ShowColumn ColumnRef
     | SortColumns TableId String
     | HideColumns TableId String
+    | ShowColumns TableId String
     | OnWheel WheelEvent
     | Zoom ZoomDelta
     | FitContent

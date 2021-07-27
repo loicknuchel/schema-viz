@@ -187,7 +187,7 @@ showColumns id kind schema =
             columns
                 ++ (table.columns
                         |> Ned.values
-                        |> Nel.filter (\c -> not (columns |> List.member c.column))
+                        |> Nel.filter (\c -> not (columns |> List.member c.name))
                         |> List.filter
                             (\_ ->
                                 case kind of
@@ -197,7 +197,7 @@ showColumns id kind schema =
                                     _ ->
                                         False
                             )
-                        |> List.map (\c -> c.column)
+                        |> List.map .name
                    )
         )
         schema

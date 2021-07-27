@@ -8,7 +8,7 @@ import Libs.Ned as Ned
 import Libs.Nel exposing (Nel)
 import Libs.Position exposing (Position)
 import Libs.Size exposing (Size)
-import Models.Schema exposing (CanvasProps, Column, ColumnComment(..), ColumnIndex(..), ColumnName, ColumnType(..), ColumnValue(..), FileInfo, ForeignKey, ForeignKeyName(..), Index, IndexName(..), Layout, LayoutName, PrimaryKey, PrimaryKeyName(..), Schema, SchemaId, SchemaInfo, SchemaName, Source, SourceLine, Table, TableComment(..), TableId, TableName, TableProps, Unique, UniqueName(..), buildSchema)
+import Models.Schema exposing (CanvasProps, Column, ColumnComment(..), ColumnIndex(..), ColumnName, ColumnRef, ColumnType(..), ColumnValue(..), FileInfo, ForeignKey, ForeignKeyName(..), Index, IndexName(..), Layout, LayoutName, PrimaryKey, PrimaryKeyName(..), Schema, SchemaId, SchemaInfo, SchemaName, Source, SourceLine, Table, TableComment(..), TableId, TableName, TableProps, Unique, UniqueName(..), buildSchema)
 import Models.Utils exposing (Color, ZoomLevel)
 import Time
 
@@ -33,7 +33,7 @@ table =
     F.map8 (\s t c p u i co so -> Table ( s, t ) s t c p u i co so)
         schemaName
         tableName
-        (nelSmall column |> Fuzz.map (Ned.fromNelMap .column))
+        (nelSmall column |> Fuzz.map (Ned.fromNelMap .name))
         (Fuzz.maybe primaryKey)
         (listSmall unique)
         (listSmall index)
@@ -53,7 +53,12 @@ primaryKey =
 
 foreignKey : Fuzzer ForeignKey
 foreignKey =
-    Fuzz.map4 (\f s t c -> ForeignKey f ( s, t ) c) foreignKeyName schemaName tableName columnName
+    Fuzz.map2 (\f r -> ForeignKey f r) foreignKeyName columnRef
+
+
+columnRef : Fuzzer ColumnRef
+columnRef =
+    Fuzz.map2 (\t c -> ColumnRef t c) tableId columnName
 
 
 unique : Fuzzer Unique

@@ -3,7 +3,7 @@ module Mappers.SchemaMapper exposing (buildSchemaFromSql)
 import Dict
 import Libs.Ned as Ned
 import Libs.Nel as Nel
-import Models.Schema exposing (Column, ColumnComment(..), ColumnIndex(..), ColumnType(..), ColumnValue(..), ForeignKey, ForeignKeyName(..), Index, IndexName(..), PrimaryKey, PrimaryKeyName(..), Schema, SchemaInfo, Source, Table, TableComment(..), TableId, Unique, UniqueName(..), buildSchema, initLayout)
+import Models.Schema exposing (Column, ColumnComment(..), ColumnIndex(..), ColumnRef, ColumnType(..), ColumnValue(..), ForeignKey, ForeignKeyName(..), Index, IndexName(..), PrimaryKey, PrimaryKeyName(..), Schema, SchemaInfo, Source, Table, TableComment(..), TableId, Unique, UniqueName(..), buildSchema, initLayout)
 import SqlParser.SchemaParser exposing (SqlColumn, SqlForeignKey, SqlIndex, SqlPrimaryKey, SqlSchema, SqlTable, SqlUnique)
 import SqlParser.Utils.Types exposing (SqlStatement)
 
@@ -27,7 +27,7 @@ buildSqlTable table =
     { id = tableIdFromSqlTable table
     , schema = table.schema
     , table = table.table
-    , columns = table.columns |> Nel.indexedMap buildSqlColumn |> Ned.fromNelMap .column
+    , columns = table.columns |> Nel.indexedMap buildSqlColumn |> Ned.fromNelMap .name
     , primaryKey = table.primaryKey |> Maybe.map buildSqlPrimaryKey
     , indexes = table.indexes |> List.map buildSqlIndex
     , uniques = table.uniques |> List.map buildSqlUnique
@@ -39,7 +39,7 @@ buildSqlTable table =
 buildSqlColumn : Int -> SqlColumn -> Column
 buildSqlColumn index column =
     { index = index |> ColumnIndex
-    , column = column.name
+    , name = column.name
     , kind = column.kind |> ColumnType
     , nullable = column.nullable
     , default = column.default |> Maybe.map ColumnValue
@@ -57,9 +57,8 @@ buildSqlPrimaryKey pk =
 
 buildSqlForeignKey : SqlForeignKey -> ForeignKey
 buildSqlForeignKey fk =
-    { tableId = ( fk.schema, fk.table )
-    , column = fk.column
-    , name = fk.name |> ForeignKeyName
+    { name = fk.name |> ForeignKeyName
+    , ref = ColumnRef ( fk.schema, fk.table ) fk.column
     }
 
 

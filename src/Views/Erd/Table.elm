@@ -5,16 +5,17 @@ import FontAwesome.Regular as IconLight
 import FontAwesome.Solid as Icon
 import Html exposing (Attribute, Html, a, b, button, div, li, span, text, ul)
 import Html.Attributes exposing (class, classList, id, style, title, type_)
-import Html.Events exposing (onClick, onDoubleClick)
+import Html.Events exposing (onClick, onDoubleClick, onMouseEnter, onMouseLeave)
 import Libs.Bootstrap exposing (Toggle(..), bsDropdown, bsToggle, bsToggleCollapse)
 import Libs.Html exposing (divIf)
 import Libs.Html.Events exposing (stopClick)
 import Libs.List as L
+import Libs.Maybe as M
 import Libs.Ned as Ned
 import Libs.Nel as Nel
 import Libs.Size exposing (Size)
 import Libs.String as S
-import Models exposing (Msg(..))
+import Models exposing (Hover, Msg(..))
 import Models.Schema exposing (Column, ColumnComment(..), ColumnRef, ColumnValue(..), ForeignKey, Index, IndexName(..), PrimaryKey, Relation, Table, TableComment(..), TableProps, Unique, UniqueName(..), extractColumnIndex, inIndexes, inPrimaryKey, inUniques, showTableId, showTableName, tableIdAsHtmlId)
 import Models.Utils exposing (ZoomLevel)
 import Views.Helpers exposing (columnRefAsHtmlId, dragAttrs, extractColumnName, extractColumnType, placeAt, sizeAttr, withColumnName, withNullableInfo)
@@ -24,12 +25,12 @@ import Views.Helpers exposing (columnRefAsHtmlId, dragAttrs, extractColumnName, 
 -- deps = { to = { only = [ "Libs.*", "Models.*", "Conf", "Views.Helpers" ] } }
 
 
-viewTable : ZoomLevel -> Table -> TableProps -> List Relation -> Maybe Size -> Html Msg
-viewTable zoom table props incomingRelations size =
+viewTable : Hover -> ZoomLevel -> Table -> TableProps -> List Relation -> Maybe Size -> Html Msg
+viewTable hover zoom table props incomingRelations size =
     let
         hiddenColumns : List Column
         hiddenColumns =
-            table.columns |> Ned.values |> Nel.filter (\c -> props.columns |> L.hasNot c.column)
+            table.columns |> Ned.values |> Nel.filter (\c -> props.columns |> L.hasNot c.name)
 
         collapseId : String
         collapseId =
@@ -42,6 +43,8 @@ viewTable zoom table props incomingRelations size =
          , id (tableIdAsHtmlId table.id)
          , placeAt props.position
          , size |> Maybe.map sizeAttr |> Maybe.withDefault (style "visibility" "hidden")
+         , onMouseEnter (HoverTable (Just table.id))
+         , onMouseLeave (HoverTable Nothing)
          ]
             ++ dragAttrs (tableIdAsHtmlId table.id)
         )
@@ -49,7 +52,7 @@ viewTable zoom table props incomingRelations size =
         , div [ class "columns" ]
             (props.columns
                 |> List.filterMap (\c -> table.columns |> Ned.get c)
-                |> List.map (\c -> viewColumn { table = table.id, column = c.column } table (filterIncomingColumnRelations incomingRelations c) c)
+                |> List.map (\c -> viewColumn hover (filterIncomingColumnRelations incomingRelations c) table c)
             )
         , divIf (List.length hiddenColumns > 0)
             [ class "hidden-columns" ]
@@ -59,7 +62,7 @@ viewTable zoom table props incomingRelations size =
             , div [ class "collapse", id collapseId ]
                 (hiddenColumns
                     |> List.sortBy (\column -> extractColumnIndex column.index)
-                    |> List.map (\c -> viewHiddenColumn { table = table.id, column = c.column } table c)
+                    |> List.map (\c -> viewHiddenColumn table c)
                 )
             ]
         ]
@@ -103,18 +106,33 @@ viewHeader zoom table =
         ]
 
 
-viewColumn : ColumnRef -> Table -> List Relation -> Column -> Html Msg
-viewColumn ref table columnRelations column =
-    div [ class "column", onDoubleClick (HideColumn ref) ]
-        [ viewColumnDropdown columnRelations ref (viewColumnIcon table column)
+viewColumn : Hover -> List Relation -> Table -> Column -> Html Msg
+viewColumn hover incomingRelations table column =
+    let
+        ref : ColumnRef
+        ref =
+            ColumnRef table.id column.name
+    in
+    div [ class "column", classList [ ( "hover", isRelationHover hover incomingRelations column ) ], id (columnRefAsHtmlId ref), onDoubleClick (HideColumn ref), onMouseEnter (HoverColumn (Just ref)), onMouseLeave (HoverColumn Nothing) ]
+        [ viewColumnDropdown incomingRelations ref (viewColumnIcon table column)
         , viewColumnName table column
         , viewColumnType column
         ]
 
 
-viewHiddenColumn : ColumnRef -> Table -> Column -> Html Msg
-viewHiddenColumn ref table column =
-    div [ class "hidden-column", onDoubleClick (ShowColumn ref) ]
+isRelationHover : Hover -> List Relation -> Column -> Bool
+isRelationHover hover columnRelations column =
+    hover.column
+        |> M.exist
+            (\c ->
+                (column.foreignKey |> M.exist (\fk -> fk.ref == c))
+                    || (columnRelations |> List.any (\r -> r.src.table.id == c.table && r.src.column.name == c.column))
+            )
+
+
+viewHiddenColumn : Table -> Column -> Html Msg
+viewHiddenColumn table column =
+    div [ class "hidden-column", onDoubleClick (ShowColumn (ColumnRef table.id column.name)) ]
         [ viewColumnIcon table column []
         , viewColumnName table column
         , viewColumnType column
@@ -123,13 +141,13 @@ viewHiddenColumn ref table column =
 
 viewColumnIcon : Table -> Column -> List (Attribute Msg) -> Html Msg
 viewColumnIcon table column attrs =
-    case ( ( column.column |> inPrimaryKey table, column.foreignKey ), ( column.column |> inUniques table, column.column |> inIndexes table ) ) of
+    case ( ( column.name |> inPrimaryKey table, column.foreignKey ), ( column.name |> inUniques table, column.name |> inIndexes table ) ) of
         ( ( Just pk, _ ), _ ) ->
             div (class "icon" :: attrs) [ div [ title (formatPkTitle pk), bsToggle Tooltip ] [ viewIcon Icon.key ] ]
 
         ( ( _, Just fk ), _ ) ->
             -- TODO: know fk table state to not put onClick when it's already shown (so Update.elm#showTable on Shown state could issue an error)
-            div (class "icon" :: onClick (ShowTable fk.tableId) :: attrs) [ div [ title (formatFkTitle fk), bsToggle Tooltip ] [ viewIcon Icon.externalLinkAlt ] ]
+            div (class "icon" :: onClick (ShowTable fk.ref.table) :: attrs) [ div [ title (formatFkTitle fk), bsToggle Tooltip ] [ viewIcon Icon.externalLinkAlt ] ]
 
         ( _, ( u :: us, _ ) ) ->
             div (class "icon" :: attrs) [ div [ title (formatUniqueTitle (u :: us)), bsToggle Tooltip ] [ viewIcon Icon.fingerprint ] ]
@@ -152,7 +170,7 @@ viewColumnDropdown incomingColumnRelations ref element =
                             [ viewIcon Icon.externalLinkAlt
                             , text " "
                             , b [] [ text (showTableId relation.src.table.id) ]
-                            , text ("" |> withColumnName relation.src.column.column |> withNullableInfo relation.src.column.nullable)
+                            , text ("" |> withColumnName relation.src.column.name |> withNullableInfo relation.src.column.nullable)
                             ]
                         ]
                 )
@@ -183,7 +201,7 @@ viewColumnName table column =
     let
         className : String
         className =
-            case column.column |> inPrimaryKey table of
+            case column.name |> inPrimaryKey table of
                 Just _ ->
                     "name bold"
 
@@ -191,7 +209,7 @@ viewColumnName table column =
                     "name"
     in
     div [ class className ]
-        ([ text (extractColumnName column.column) ] |> L.appendOn column.comment (\(ColumnComment comment) -> viewComment comment))
+        ([ text (extractColumnName column.name) ] |> L.appendOn column.comment (\(ColumnComment comment) -> viewComment comment))
 
 
 viewColumnType : Column -> Html msg
@@ -226,7 +244,7 @@ tableNameSize zoom =
 
 filterIncomingColumnRelations : List Relation -> Column -> List Relation
 filterIncomingColumnRelations incomingTableRelations column =
-    incomingTableRelations |> List.filter (\r -> r.ref.column.column == column.column)
+    incomingTableRelations |> List.filter (\r -> r.ref.column.name == column.name)
 
 
 formatColumnType : Column -> String
@@ -255,8 +273,8 @@ formatIndexTitle indexes =
 
 
 formatReference : ForeignKey -> String
-formatReference { tableId, column } =
-    showTableName (tableId |> Tuple.first) (tableId |> Tuple.second) |> withColumnName column
+formatReference fk =
+    showTableName (fk.ref.table |> Tuple.first) (fk.ref.table |> Tuple.second) |> withColumnName fk.ref.column
 
 
 formatUniqueIndexName : UniqueName -> String

@@ -1,4 +1,4 @@
-module Models exposing (Confirm, DragId, Error, Errors, Flags, JsMsg(..), Model, Msg(..), Search, Switch, TimeInfo, initConfirm, initModel, initSwitch)
+module Models exposing (Confirm, DragId, Error, Errors, Flags, Hover, JsMsg(..), Model, Msg(..), Search, Switch, TimeInfo, initConfirm, initModel, initSwitch)
 
 import Dict exposing (Dict)
 import Draggable
@@ -36,6 +36,7 @@ type alias Model =
     , sizes : Dict HtmlId Size
     , dragId : Maybe DragId
     , drag : Draggable.State DragId
+    , hover : Hover
     }
 
 
@@ -51,6 +52,7 @@ initModel =
     , sizes = Dict.empty
     , dragId = Nothing
     , drag = Draggable.init
+    , hover = initHover
     }
 
 
@@ -79,6 +81,8 @@ type Msg
     | SortColumns TableId String
     | HideColumns TableId String
     | ShowColumns TableId String
+    | HoverTable (Maybe TableId)
+    | HoverColumn (Maybe ColumnRef)
     | OnWheel WheelEvent
     | Zoom ZoomDelta
     | FitContent
@@ -130,6 +134,15 @@ type alias Confirm =
 initConfirm : Confirm
 initConfirm =
     { content = text "No text", cmd = T.send Noop }
+
+
+type alias Hover =
+    { table : Maybe TableId, column : Maybe ColumnRef }
+
+
+initHover : Hover
+initHover =
+    { table = Nothing, column = Nothing }
 
 
 type alias Error =

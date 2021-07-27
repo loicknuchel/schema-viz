@@ -55,7 +55,7 @@ type alias Relation =
 
 
 type alias RelationTarget =
-    { table : Table, column : Column, props : Maybe ( TableProps, Size ) }
+    { ref : ColumnRef, table : Table, column : Column, props : Maybe ( TableProps, Size ) }
 
 
 type alias Table =
@@ -73,7 +73,7 @@ type alias Table =
 
 type alias Column =
     { index : ColumnIndex
-    , column : ColumnName
+    , name : ColumnName
     , kind : ColumnType
     , nullable : Bool
     , default : Maybe ColumnValue
@@ -87,7 +87,7 @@ type alias PrimaryKey =
 
 
 type alias ForeignKey =
-    { name : ForeignKeyName, tableId : TableId, column : ColumnName }
+    { name : ForeignKeyName, ref : ColumnRef }
 
 
 type alias Unique =
@@ -251,12 +251,12 @@ outgoingRelations table =
 
 buildRelation : Table -> Column -> ForeignKey -> RelationRef
 buildRelation table column fk =
-    { key = fk.name, src = { table = table.id, column = column.column }, ref = { table = fk.tableId, column = fk.column } }
+    { key = fk.name, src = ColumnRef table.id column.name, ref = fk.ref }
 
 
 initLayout : Layout
 initLayout =
-    { canvas = { position = Position 0 0, zoom = 1 }, tables = Dict.empty, hiddenTables = Dict.empty }
+    { canvas = CanvasProps (Position 0 0) 1, tables = Dict.empty, hiddenTables = Dict.empty }
 
 
 initTableProps : Table -> TableProps
@@ -264,7 +264,7 @@ initTableProps table =
     { position = Position 0 0
     , color = computeColor table.id
     , selected = False
-    , columns = table.columns |> Ned.values |> Nel.toList |> List.sortBy (\c -> c.index |> extractColumnIndex) |> List.map .column
+    , columns = table.columns |> Ned.values |> Nel.toList |> List.sortBy (\c -> c.index |> extractColumnIndex) |> List.map .name
     }
 
 

@@ -3,7 +3,7 @@ module Views.Erd.Relation exposing (viewRelation)
 import Libs.List as L
 import Libs.Maybe as M
 import Libs.Size exposing (Size)
-import Models exposing (Msg)
+import Models exposing (Hover, Msg)
 import Models.Schema exposing (Column, ForeignKeyName(..), Relation, RelationTarget, Table, TableProps, showTableId)
 import Models.Utils exposing (Color)
 import Svg exposing (Svg, line, svg, text)
@@ -15,9 +15,9 @@ import Views.Helpers exposing (withColumnName)
 -- deps = { to = { only = [ "Libs.*", "Models.*", "Conf", "Views.Helpers" ] } }
 
 
-viewRelation : Relation -> Svg Msg
-viewRelation { key, src, ref } =
-    case ( ( src.props, ref.props ), ( formatText key src ref, getColor src ref ) ) of
+viewRelation : Hover -> Relation -> Svg Msg
+viewRelation hover { key, src, ref } =
+    case ( ( src.props, ref.props ), ( formatText key src ref, getColor hover src ref ) ) of
         ( ( Nothing, Nothing ), ( name, _ ) ) ->
             svg [ class "erd-relation" ] [ text name ]
 
@@ -86,10 +86,16 @@ type alias Point =
     { x : Float, y : Float }
 
 
-getColor : RelationTarget -> RelationTarget -> Maybe Color
-getColor src ref =
-    (src.props |> Maybe.map Tuple.first |> M.filter .selected |> Maybe.map .color)
-        |> M.orElse (ref.props |> Maybe.map Tuple.first |> M.filter .selected |> Maybe.map .color)
+getColor : Hover -> RelationTarget -> RelationTarget -> Maybe Color
+getColor hover src ref =
+    (src.props |> Maybe.map (\( p, _ ) -> p.color))
+        |> M.orElse (ref.props |> Maybe.map (\( p, _ ) -> p.color))
+        |> M.filter (\_ -> shouldHighlight hover src || shouldHighlight hover ref)
+
+
+shouldHighlight : Hover -> RelationTarget -> Bool
+shouldHighlight hover target =
+    target.props |> M.exist (\( p, _ ) -> p.selected || (hover.column |> M.contains target.ref))
 
 
 positionX : ( TableProps, Size ) -> ( TableProps, Size ) -> ( Float, Float )
@@ -126,7 +132,7 @@ columnHeight =
 
 positionY : TableProps -> Column -> Float
 positionY props column =
-    props.position.top + headerHeight + (columnHeight * (0.5 + (props.columns |> L.indexOf column.column |> Maybe.withDefault -1 |> toFloat)))
+    props.position.top + headerHeight + (columnHeight * (0.5 + (props.columns |> L.indexOf column.name |> Maybe.withDefault -1 |> toFloat)))
 
 
 minus : Point -> Point -> Point
@@ -145,7 +151,7 @@ formatText fk src ref =
 
 formatRef : Table -> Column -> String
 formatRef table column =
-    showTableId table.id |> withColumnName column.column
+    showTableId table.id |> withColumnName column.name
 
 
 formatForeignKeyName : ForeignKeyName -> String

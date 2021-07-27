@@ -9,7 +9,7 @@ import Libs.Maybe as M
 import Libs.Ned as Ned
 import Libs.Position exposing (Position)
 import Libs.Size exposing (Size)
-import Models.Schema exposing (CanvasProps, Column, ColumnComment(..), ColumnIndex(..), ColumnName, ColumnType(..), ColumnValue(..), FileInfo, ForeignKey, ForeignKeyName(..), Index, IndexName(..), Layout, PrimaryKey, PrimaryKeyName(..), Schema, SchemaInfo, SchemaName, Source, SourceLine, Table, TableComment(..), TableId, TableName, TableProps, Unique, UniqueName(..), buildSchema, initLayout, stringAsTableId, tableIdAsString)
+import Models.Schema exposing (CanvasProps, Column, ColumnComment(..), ColumnIndex(..), ColumnName, ColumnRef, ColumnType(..), ColumnValue(..), FileInfo, ForeignKey, ForeignKeyName(..), Index, IndexName(..), Layout, PrimaryKey, PrimaryKeyName(..), Schema, SchemaInfo, SchemaName, Source, SourceLine, Table, TableComment(..), TableId, TableName, TableProps, Unique, UniqueName(..), buildSchema, initLayout, stringAsTableId, tableIdAsString)
 import Models.Utils exposing (Color, ZoomLevel)
 import Time
 
@@ -92,7 +92,7 @@ decodeTable =
     Decode.map8 (\schema table columns primaryKey uniques indexes comment sources -> Table ( schema, table ) schema table columns primaryKey uniques indexes comment sources)
         (Decode.field "schema" decodeSchemaName)
         (Decode.field "table" decodeTableName)
-        (Decode.field "columns" (D.nel decodeColumn |> Decode.map (Ned.fromNelMap .column)))
+        (Decode.field "columns" (D.nel decodeColumn |> Decode.map (Ned.fromNelMap .name)))
         (Decode.maybe (Decode.field "primaryKey" decodePrimaryKey))
         (decodeMaybeWithDefault (\_ -> Decode.field "uniques" (Decode.list decodeUnique)) [])
         (decodeMaybeWithDefault (\_ -> Decode.field "indexes" (Decode.list decodeIndex)) [])
@@ -104,7 +104,7 @@ encodeColumn : Column -> Value
 encodeColumn value =
     E.object
         [ ( "index", value.index |> encodeColumnIndex )
-        , ( "name", value.column |> encodeColumnName )
+        , ( "name", value.name |> encodeColumnName )
         , ( "type", value.kind |> encodeColumnType )
         , ( "nullable", value.nullable |> encodeMaybeWithoutDefault (\_ -> Encode.bool) True )
         , ( "default", value.default |> E.maybe encodeColumnValue )
@@ -144,15 +144,15 @@ encodeForeignKey : ForeignKey -> Value
 encodeForeignKey value =
     E.object
         [ ( "name", value.name |> encodeForeignKeyName )
-        , ( "schema", value.tableId |> Tuple.first |> encodeSchemaName )
-        , ( "table", value.tableId |> Tuple.second |> encodeTableName )
-        , ( "column", value.column |> encodeColumnName )
+        , ( "schema", value.ref.table |> Tuple.first |> encodeSchemaName )
+        , ( "table", value.ref.table |> Tuple.second |> encodeTableName )
+        , ( "column", value.ref.column |> encodeColumnName )
         ]
 
 
 decodeForeignKey : Decode.Decoder ForeignKey
 decodeForeignKey =
-    Decode.map4 (\name schema table column -> ForeignKey name ( schema, table ) column)
+    Decode.map4 (\name schema table column -> ForeignKey name (ColumnRef ( schema, table ) column))
         (Decode.field "name" decodeForeignKeyName)
         (Decode.field "schema" decodeSchemaName)
         (Decode.field "table" decodeTableName)

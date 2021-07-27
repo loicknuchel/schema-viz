@@ -132,10 +132,10 @@ asSuggestions layout search table =
 
 columnSuggestion : Search -> Table -> Column -> Maybe Suggestion
 columnSuggestion search table column =
-    if column.column == search then
+    if column.name == search then
         Just
             { priority = 0 - 0.5
-            , content = viewIcon Icon.angleDoubleRight :: [ text (" " ++ showTableId table.id ++ "."), b [] [ text (extractColumnName column.column) ] ]
+            , content = viewIcon Icon.angleDoubleRight :: [ text (" " ++ showTableId table.id ++ "."), b [] [ text (extractColumnName column.name) ] ]
             , msg = ShowTable table.id
             }
 
@@ -191,7 +191,7 @@ columnMatchingBonus search table =
     let
         columnNames : Nel Text
         columnNames =
-            table.columns |> Ned.values |> Nel.map (\c -> extractColumnName c.column)
+            table.columns |> Ned.values |> Nel.map (\c -> extractColumnName c.name)
     in
     if not (search == "") then
         if columnNames |> Nel.any (\columnName -> not (exactMatch search columnName == 0)) then

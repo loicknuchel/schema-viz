@@ -41,7 +41,7 @@ schema1 =
             [ { id = ( "public", "users" )
               , schema = "public"
               , table = "users"
-              , columns = Ned.singletonMap .column (Column (ColumnIndex 1) "id" (ColumnType "int") False Nothing Nothing Nothing)
+              , columns = Ned.singletonMap .name (Column (ColumnIndex 1) "id" (ColumnType "int") False Nothing Nothing Nothing)
               , primaryKey = Nothing
               , uniques = []
               , indexes = []
@@ -71,7 +71,7 @@ schema2 =
               , schema = "public"
               , table = "users"
               , columns =
-                    Ned.buildMap .column
+                    Ned.buildMap .name
                         (Column (ColumnIndex 1) "id" (ColumnType "int") False Nothing Nothing Nothing)
                         [ Column (ColumnIndex 2) "name" (ColumnType "varchar") True Nothing Nothing Nothing ]
               , primaryKey = Just (PrimaryKey (PrimaryKeyName "users_pk") (Nel "id" []))
@@ -84,8 +84,8 @@ schema2 =
               , schema = "public"
               , table = "creds"
               , columns =
-                    Ned.buildMap .column
-                        (Column (ColumnIndex 1) "user_id" (ColumnType "int") False Nothing (Just (ForeignKey (ForeignKeyName "creds_user_id") ( "public", "users" ) "id")) Nothing)
+                    Ned.buildMap .name
+                        (Column (ColumnIndex 1) "user_id" (ColumnType "int") False Nothing (Just (ForeignKey (ForeignKeyName "creds_user_id") (ColumnRef ( "public", "users" ) "id"))) Nothing)
                         [ Column (ColumnIndex 2) "login" (ColumnType "varchar") False Nothing Nothing Nothing
                         , Column (ColumnIndex 3) "pass" (ColumnType "varchar") False Nothing Nothing (Just (ColumnComment "Encrypted field"))
                         , Column (ColumnIndex 4) "role" (ColumnType "varchar") True (Just (ColumnValue "guest")) Nothing Nothing

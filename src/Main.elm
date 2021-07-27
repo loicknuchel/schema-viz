@@ -128,6 +128,12 @@ update msg model =
         ShowColumns id kind ->
             ( model |> setSchema (showColumns id kind), activateTooltipsAndPopovers )
 
+        HoverTable t ->
+            ( { model | hover = model.hover |> (\h -> { h | table = t }) }, Cmd.none )
+
+        HoverColumn c ->
+            ( { model | hover = model.hover |> (\h -> { h | column = c }) }, Cmd.none )
+
         OnWheel event ->
             ( model |> setSchema (setLayout (setCanvas (handleWheel event))), Cmd.none )
 

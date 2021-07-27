@@ -121,25 +121,25 @@ body {
 .erd-table.selected.fuchsia { box-shadow: var(--tw-fuchsia) 0 0 0 3px; }
 .erd-table.selected.rose { box-shadow: var(--tw-rose) 0 0 0 3px; }
 
-.erd-table .column:hover .icon, .erd-table .column:hover .name, .erd-table .column:hover .type { color: var(--tw-blueGray); }
-.erd-table.gray .column:hover .icon, .erd-table.gray .column:hover .name, .erd-table.gray .column:hover .type { color: var(--tw-blueGray); }
-.erd-table.red .column:hover .icon, .erd-table.red .column:hover .name, .erd-table.red .column:hover .type { color: var(--tw-red); }
-.erd-table.orange .column:hover .icon, .erd-table.orange .column:hover .name, .erd-table.orange .column:hover .type { color: var(--tw-orange); }
-.erd-table.amber .column:hover .icon, .erd-table.amber .column:hover .name, .erd-table.amber .column:hover .type { color: var(--tw-amber); }
-.erd-table.yellow .column:hover .icon, .erd-table.yellow .column:hover .name, .erd-table.yellow .column:hover .type { color: var(--tw-yellow); }
-.erd-table.lime .column:hover .icon, .erd-table.lime .column:hover .name, .erd-table.lime .column:hover .type { color: var(--tw-lime); }
-.erd-table.green .column:hover .icon, .erd-table.green .column:hover .name, .erd-table.green .column:hover .type { color: var(--tw-green); }
-.erd-table.emerald .column:hover .icon, .erd-table.emerald .column:hover .name, .erd-table.emerald .column:hover .type { color: var(--tw-emerald); }
-.erd-table.teal .column:hover .icon, .erd-table.teal .column:hover .name, .erd-table.teal .column:hover .type { color: var(--tw-teal); }
-.erd-table.cyan .column:hover .icon, .erd-table.cyan .column:hover .name, .erd-table.cyan .column:hover .type { color: var(--tw-cyan); }
-.erd-table.sky .column:hover .icon, .erd-table.sky .column:hover .name, .erd-table.sky .column:hover .type { color: var(--tw-sky); }
-.erd-table.blue .column:hover .icon, .erd-table.blue .column:hover .name, .erd-table.blue .column:hover .type { color: var(--tw-blue); }
-.erd-table.indigo .column:hover .icon, .erd-table.indigo .column:hover .name, .erd-table.indigo .column:hover .type { color: var(--tw-indigo); }
-.erd-table.violet .column:hover .icon, .erd-table.violet .column:hover .name, .erd-table.violet .column:hover .type { color: var(--tw-violet); }
-.erd-table.purple .column:hover .icon, .erd-table.purple .column:hover .name, .erd-table.purple .column:hover .type { color: var(--tw-purple); }
-.erd-table.fuchsia .column:hover .icon, .erd-table.fuchsia .column:hover .name, .erd-table.fuchsia .column:hover .type { color: var(--tw-fuchsia); }
-.erd-table.pink .column:hover .icon, .erd-table.pink .column:hover .name, .erd-table.pink .column:hover .type { color: var(--tw-pink); }
-.erd-table.rose .column:hover .icon, .erd-table.rose .column:hover .name, .erd-table.rose .column:hover .type { color: var(--tw-rose); }
+.erd-table .column:hover .icon, .erd-table .column:hover .name, .erd-table .column:hover .type, .erd-table .column.hover .icon, .erd-table .column.hover .name, .erd-table .column.hover .type { color: var(--tw-blueGray); }
+.erd-table.gray .column:hover .icon, .erd-table.gray .column:hover .name, .erd-table.gray .column:hover .type, .erd-table.gray .column.hover .icon, .erd-table.gray .column.hover .name, .erd-table.gray .column.hover .type { color: var(--tw-blueGray); }
+.erd-table.red .column:hover .icon, .erd-table.red .column:hover .name, .erd-table.red .column:hover .type, .erd-table.red .column.hover .icon, .erd-table.red .column.hover .name, .erd-table.red .column.hover .type { color: var(--tw-red); }
+.erd-table.orange .column:hover .icon, .erd-table.orange .column:hover .name, .erd-table.orange .column:hover .type, .erd-table.orange .column.hover .icon, .erd-table.orange .column.hover .name, .erd-table.orange .column.hover .type { color: var(--tw-orange); }
+.erd-table.amber .column:hover .icon, .erd-table.amber .column:hover .name, .erd-table.amber .column:hover .type, .erd-table.amber .column.hover .icon, .erd-table.amber .column.hover .name, .erd-table.amber .column.hover .type { color: var(--tw-amber); }
+.erd-table.yellow .column:hover .icon, .erd-table.yellow .column:hover .name, .erd-table.yellow .column:hover .type, .erd-table.yellow .column.hover .icon, .erd-table.yellow .column.hover .name, .erd-table.yellow .column.hover .type { color: var(--tw-yellow); }
+.erd-table.lime .column:hover .icon, .erd-table.lime .column:hover .name, .erd-table.lime .column:hover .type, .erd-table.lime .column.hover .icon, .erd-table.lime .column.hover .name, .erd-table.lime .column.hover .type { color: var(--tw-lime); }
+.erd-table.green .column:hover .icon, .erd-table.green .column:hover .name, .erd-table.green .column:hover .type, .erd-table.green .column.hover .icon, .erd-table.green .column.hover .name, .erd-table.green .column.hover .type { color: var(--tw-green); }
+.erd-table.emerald .column:hover .icon, .erd-table.emerald .column:hover .name, .erd-table.emerald .column:hover .type, .erd-table.emerald .column.hover .icon, .erd-table.emerald .column.hover .name, .erd-table.emerald .column.hover .type { color: var(--tw-emerald); }
+.erd-table.teal .column:hover .icon, .erd-table.teal .column:hover .name, .erd-table.teal .column:hover .type, .erd-table.teal .column.hover .icon, .erd-table.teal .column.hover .name, .erd-table.teal .column.hover .type { color: var(--tw-teal); }
+.erd-table.cyan .column:hover .icon, .erd-table.cyan .column:hover .name, .erd-table.cyan .column:hover .type, .erd-table.cyan .column.hover .icon, .erd-table.cyan .column.hover .name, .erd-table.cyan .column.hover .type { color: var(--tw-cyan); }
+.erd-table.sky .column:hover .icon, .erd-table.sky .column:hover .name, .erd-table.sky .column:hover .type, .erd-table.sky .column.hover .icon, .erd-table.sky .column.hover .name, .erd-table.sky .column.hover .type { color: var(--tw-sky); }
+.erd-table.blue .column:hover .icon, .erd-table.blue .column:hover .name, .erd-table.blue .column:hover .type, .erd-table.blue .column.hover .icon, .erd-table.blue .column.hover .name, .erd-table.blue .column.hover .type { color: var(--tw-blue); }
+.erd-table.indigo .column:hover .icon, .erd-table.indigo .column:hover .name, .erd-table.indigo .column:hover .type, .erd-table.indigo .column.hover .icon, .erd-table.indigo .column.hover .name, .erd-table.indigo .column.hover .type { color: var(--tw-indigo); }
+.erd-table.violet .column:hover .icon, .erd-table.violet .column:hover .name, .erd-table.violet .column:hover .type, .erd-table.violet .column.hover .icon, .erd-table.violet .column.hover .name, .erd-table.violet .column.hover .type { color: var(--tw-violet); }
+.erd-table.purple .column:hover .icon, .erd-table.purple .column:hover .name, .erd-table.purple .column:hover .type, .erd-table.purple .column.hover .icon, .erd-table.purple .column.hover .name, .erd-table.purple .column.hover .type { color: var(--tw-purple); }
+.erd-table.fuchsia .column:hover .icon, .erd-table.fuchsia .column:hover .name, .erd-table.fuchsia .column:hover .type, .erd-table.fuchsia .column.hover .icon, .erd-table.fuchsia .column.hover .name, .erd-table.fuchsia .column.hover .type { color: var(--tw-fuchsia); }
+.erd-table.pink .column:hover .icon, .erd-table.pink .column:hover .name, .erd-table.pink .column:hover .type, .erd-table.pink .column.hover .icon, .erd-table.pink .column.hover .name, .erd-table.pink .column.hover .type { color: var(--tw-pink); }
+.erd-table.rose .column:hover .icon, .erd-table.rose .column:hover .name, .erd-table.rose .column:hover .type, .erd-table.rose .column.hover .icon, .erd-table.rose .column.hover .name, .erd-table.rose .column.hover .type { color: var(--tw-rose); }
 
 .erd-table:hover {
     box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
@@ -175,13 +175,17 @@ body {
     border-radius: 0 0 .5rem .5rem;
 }
 
-.erd-table .column:hover {
+.erd-table .column:hover,
+.erd-table .column.hover{
     background-color: #F5F7FA;
 }
 
 .erd-table .column:hover .icon,
 .erd-table .column:hover .name,
-.erd-table .column:hover .type {
+.erd-table .column:hover .type,
+.erd-table .column.hover .icon,
+.erd-table .column.hover .name,
+.erd-table .column.hover .type {
     opacity: 1;
 }
 

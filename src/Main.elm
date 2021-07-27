@@ -10,7 +10,7 @@ import Models exposing (Flags, JsMsg(..), Model, Msg(..), initConfirm, initModel
 import Ports exposing (activateTooltipsAndPopovers, click, dropSchema, hideOffcanvas, listenHotkeys, loadSchemas, observeSize, onJsMessage, readFile, saveSchema, showModal, toastError, toastInfo, toastWarning)
 import Task
 import Time
-import Update exposing (dragConfig, dragItem, updateSizes)
+import Update exposing (dragConfig, dragItem, removeElement, updateSizes)
 import Updates.Canvas exposing (fitCanvas, handleWheel, zoomCanvas)
 import Updates.Helpers exposing (decodeErrorToHtml, setCanvas, setDictTable, setLayout, setSchema, setSchemaWithCmd, setSwitch, setTables, setTime)
 import Updates.Layout exposing (createLayout, deleteLayout, loadLayout, updateLayout)
@@ -176,11 +176,14 @@ update msg model =
         OnConfirm answer cmd ->
             ( { model | confirm = initConfirm }, B.cond answer cmd Cmd.none )
 
-        JsMessage (HotkeyUsed "save") ->
-            ( model, model.schema |> Maybe.map (\s -> Cmd.batch [ saveSchema s, toastInfo "Schema saved" ]) |> Maybe.withDefault (toastWarning "No schema to save") )
-
         JsMessage (HotkeyUsed "focus-search") ->
             ( model, click conf.ids.searchInput )
+
+        JsMessage (HotkeyUsed "remove") ->
+            ( model, removeElement model )
+
+        JsMessage (HotkeyUsed "save") ->
+            ( model, model.schema |> Maybe.map (\s -> Cmd.batch [ saveSchema s, toastInfo "Schema saved" ]) |> Maybe.withDefault (toastWarning "No schema to save") )
 
         JsMessage (HotkeyUsed "help") ->
             ( model, showModal conf.ids.helpModal )

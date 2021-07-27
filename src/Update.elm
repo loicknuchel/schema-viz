@@ -1,4 +1,4 @@
-module Update exposing (dragConfig, dragItem, updateSizes)
+module Update exposing (dragConfig, dragItem, removeElement, updateSizes)
 
 import Commands.InitializeTable exposing (initializeTable)
 import Conf exposing (conf)
@@ -7,13 +7,15 @@ import Draggable
 import Draggable.Events exposing (onDragBy, onDragEnd, onDragStart)
 import Libs.Area exposing (Area)
 import Libs.Bool as B
+import Libs.List as L
 import Libs.Maybe as M
 import Libs.Position exposing (Position)
 import Libs.Size exposing (Size)
+import Libs.Task exposing (send)
 import Models exposing (DragId, Model, Msg(..))
-import Models.Schema exposing (CanvasProps, htmlIdAsTableId)
+import Models.Schema exposing (CanvasProps, TableId, htmlIdAsTableId)
 import Models.Utils exposing (SizeChange)
-import Ports exposing (toastError)
+import Ports exposing (toastError, toastInfo)
 import Updates.Helpers exposing (setCanvas, setDictTable, setLayout, setPosition, setSchema)
 
 
@@ -76,3 +78,24 @@ dragItem model delta =
 
         Nothing ->
             ( model, toastError "Can't dragItem when no drag id" )
+
+
+removeElement : Model -> Cmd Msg
+removeElement model =
+    model.schema
+        |> Maybe.map
+            (\s ->
+                let
+                    selectedTables : List TableId
+                    selectedTables =
+                        s.layout.tables |> Dict.toList |> List.filter (\( _, t ) -> t.selected) |> List.map (\( id, _ ) -> id)
+                in
+                if L.nonEmpty selectedTables then
+                    Cmd.batch (selectedTables |> List.map (\id -> send (HideTable id)))
+
+                else
+                    (model.hover.column |> Maybe.map (\c -> send (HideColumn c)))
+                        |> M.orElse (model.hover.table |> Maybe.map (\t -> send (HideTable t)))
+                        |> Maybe.withDefault (toastInfo "Can't find an element to remove :(")
+            )
+        |> Maybe.withDefault Cmd.none

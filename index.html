@@ -145,21 +145,23 @@
 
             const hotkeys = {}
             document.addEventListener('keydown', function (e) {
-                Object.entries(hotkeys).forEach(([id, hotkey]) => {
-                    if ((!hotkey.key || hotkey.key === e.key) &&
-                        (!hotkey.ctrl || e.ctrlKey) &&
-                        (!hotkey.shift || e.shiftKey) &&
-                        (!hotkey.alt || e.altKey) &&
-                        (!hotkey.meta || e.metaKey) &&
-                        ((!hotkey.target && (!hotkey.oninput || e.target.localName !== 'input')) || (hotkey.target &&
-                            (!hotkey.target.id || hotkey.target.id === e.target.id) &&
-                            (!hotkey.target.class || e.target.className.split(' ').includes(hotkey.target.class)) &&
-                            (!hotkey.target.tag || hotkey.target.tag === e.target.localName)))) {
-                        if (hotkey.preventDefault) {
-                            e.preventDefault()
+                Object.entries(hotkeys).forEach(([id, alternatives]) => {
+                    alternatives.forEach(hotkey => {
+                        if ((!hotkey.key || hotkey.key === e.key) &&
+                            (!hotkey.ctrl || e.ctrlKey) &&
+                            (!hotkey.shift || e.shiftKey) &&
+                            (!hotkey.alt || e.altKey) &&
+                            (!hotkey.meta || e.metaKey) &&
+                            ((!hotkey.target && (!hotkey.oninput || e.target.localName !== 'input')) || (hotkey.target &&
+                                (!hotkey.target.id || hotkey.target.id === e.target.id) &&
+                                (!hotkey.target.class || e.target.className.split(' ').includes(hotkey.target.class)) &&
+                                (!hotkey.target.tag || hotkey.target.tag === e.target.localName)))) {
+                            if (hotkey.preventDefault) {
+                                e.preventDefault()
+                            }
+                            sendToElm({kind: "HotkeyUsed", id: id})
                         }
-                        sendToElm({kind: "HotkeyUsed", id: id})
-                    }
+                    })
                 })
             })
             function listenHotkeys(keys) {

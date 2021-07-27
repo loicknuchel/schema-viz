@@ -24,7 +24,7 @@ conf :
         , confirm : HtmlId
         }
     , loading : { showTablesThreshold : Int }
-    , hotkeys : Dict String Hotkey
+    , hotkeys : Dict String (List Hotkey)
     }
 conf =
     { zoom = { min = 0.05, max = 5, speed = 0.001 }
@@ -42,13 +42,14 @@ conf =
     , loading = { showTablesThreshold = 20 }
     , hotkeys =
         Dict.fromList
-            [ ( "save", { hotkey | key = Just "s", ctrl = True, onInput = True, preventDefault = True } )
-            , ( "undo", { hotkey | key = Just "z", ctrl = True } )
-            , ( "redo", { hotkey | key = Just "Z", ctrl = True, shift = True } )
-            , ( "focus-search", { hotkey | key = Just "/" } )
-            , ( "autocomplete-down", { hotkey | key = Just "ArrowDown", target = Just { target | id = Just "search", tag = Just "input" } } )
-            , ( "autocomplete-up", { hotkey | key = Just "ArrowUp", target = Just { target | id = Just "search", tag = Just "input" } } )
-            , ( "help", { hotkey | key = Just "?" } )
+            [ ( "focus-search", [ { hotkey | key = Just "/" } ] )
+            , ( "autocomplete-down", [ { hotkey | key = Just "ArrowDown", target = Just { target | id = Just "search", tag = Just "input" } } ] )
+            , ( "autocomplete-up", [ { hotkey | key = Just "ArrowUp", target = Just { target | id = Just "search", tag = Just "input" } } ] )
+            , ( "remove", [ { hotkey | key = Just "d" }, { hotkey | key = Just "h" }, { hotkey | key = Just "Backspace" }, { hotkey | key = Just "Delete" } ] )
+            , ( "save", [ { hotkey | key = Just "s", ctrl = True, onInput = True, preventDefault = True } ] )
+            , ( "undo", [ { hotkey | key = Just "z", ctrl = True } ] )
+            , ( "redo", [ { hotkey | key = Just "Z", ctrl = True, shift = True } ] )
+            , ( "help", [ { hotkey | key = Just "?" } ] )
             ]
     }
 

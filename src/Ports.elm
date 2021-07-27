@@ -103,7 +103,7 @@ observeTablesSize ids =
     observeSizes (List.map tableIdAsHtmlId ids)
 
 
-listenHotkeys : Dict String Hotkey -> Cmd msg
+listenHotkeys : Dict String (List Hotkey) -> Cmd msg
 listenHotkeys keys =
     messageToJs (ListenKeys keys)
 
@@ -120,7 +120,7 @@ type ElmMsg
     | DropSchema Schema
     | ReadFile File
     | ObserveSizes (List HtmlId)
-    | ListenKeys (Dict String Hotkey)
+    | ListenKeys (Dict String (List Hotkey))
 
 
 type alias Toast =
@@ -182,7 +182,7 @@ elmEncoder elm =
             Encode.object [ ( "kind", "ObserveSizes" |> Encode.string ), ( "ids", ids |> Encode.list Encode.string ) ]
 
         ListenKeys keys ->
-            Encode.object [ ( "kind", "ListenKeys" |> Encode.string ), ( "keys", keys |> Encode.dict identity hotkeyEncoder ) ]
+            Encode.object [ ( "kind", "ListenKeys" |> Encode.string ), ( "keys", keys |> Encode.dict identity (Encode.list hotkeyEncoder) ) ]
 
 
 toastEncoder : Toast -> Value

@@ -4,10 +4,6 @@ import Libs.String as S
 import Time
 
 
-
--- deps = { to = { only = [ "Libs.*" ] } }
-
-
 format : String -> Time.Zone -> Time.Posix -> String
 format pattern zone time =
     let

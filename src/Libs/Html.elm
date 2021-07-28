@@ -3,10 +3,6 @@ module Libs.Html exposing (bText, codeText, divIf)
 import Html exposing (Attribute, Html, b, code, div, text)
 
 
-
--- deps = { to = { only = [ "Libs.*" ] } }
-
-
 bText : String -> Html msg
 bText content =
     b [] [ text content ]

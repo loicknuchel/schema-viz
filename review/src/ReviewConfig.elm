@@ -37,15 +37,15 @@ config =
     , NoExposingEverything.rule |> Rule.ignoreErrorsForDirectories [ "tests" ]
     , NoMissingSubscriptionsCall.rule
     , NoRecursiveUpdate.rule
-    , NoUselessSubscriptions.rule
-    , NoMissingTypeAnnotation.rule
+    , NoUselessSubscriptions.rule |> Rule.ignoreErrorsForDirectories [ ".elm-spa" ]
+    , NoMissingTypeAnnotation.rule |> Rule.ignoreErrorsForDirectories [ ".elm-spa" ]
     , NoMissingTypeAnnotationInLetIn.rule
-    , NoMissingTypeExpose.rule
-    , NoUnused.CustomTypeConstructors.rule [] |> Rule.ignoreErrorsForDirectories [ "src/Libs" ]
+    , NoMissingTypeExpose.rule |> Rule.ignoreErrorsForDirectories [ ".elm-spa" ]
+    , NoUnused.CustomTypeConstructors.rule [] |> Rule.ignoreErrorsForDirectories [ ".elm-spa", "src/Libs" ]
     , NoUnused.Dependencies.rule
-    , NoUnused.Exports.rule |> Rule.ignoreErrorsForDirectories [ "src/Libs" ]
-    , NoUnused.Modules.rule |> Rule.ignoreErrorsForDirectories [ "src/Libs" ]
-    , NoUnused.Parameters.rule
+    , NoUnused.Exports.rule |> Rule.ignoreErrorsForDirectories [ ".elm-spa", "src/Libs" ]
+    , NoUnused.Modules.rule |> Rule.ignoreErrorsForDirectories [ ".elm-spa", "src/Libs" ]
+    , NoUnused.Parameters.rule |> Rule.ignoreErrorsForDirectories [ ".elm-spa" ]
     , NoUnused.Patterns.rule
-    , NoUnused.Variables.rule |> Rule.ignoreErrorsForDirectories [ "src/Libs" ] |> Rule.ignoreErrorsForDirectories [ "tests/Libs" ]
+    , NoUnused.Variables.rule |> Rule.ignoreErrorsForDirectories [ ".elm-spa", "src/Libs", "tests/Libs" ]
     ]

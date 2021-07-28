@@ -3,10 +3,6 @@ module Libs.Task exposing (send)
 import Task
 
 
-
--- deps = { to = { only = [ "Libs.*" ] } }
-
-
 send : msg -> Cmd msg
 send msg =
     Task.succeed msg |> Task.perform identity

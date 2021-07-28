@@ -3,10 +3,6 @@ module Libs.Maybe exposing (andThenZip, contains, exist, filter, isJust, orElse,
 import Libs.Bool as B
 
 
-
--- deps = { to = { only = [ "Libs.*" ] } }
-
-
 orElse : Maybe a -> Maybe a -> Maybe a
 orElse other item =
     case ( item, other ) of

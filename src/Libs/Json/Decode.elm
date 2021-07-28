@@ -5,10 +5,6 @@ import Json.Decode as Decode exposing (Decoder)
 import Libs.Nel as Nel exposing (Nel)
 
 
-
--- deps = { to = { only = [ "Libs.*" ] } }
-
-
 tuple : Decoder a -> Decoder b -> Decoder ( a, b )
 tuple aDecoder bDecoder =
     Decode.map2 Tuple.pair

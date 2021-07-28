@@ -32,18 +32,18 @@ For me, this tool is the missing piece between a classic ERD tool and a Data cat
 
 Schema Viz is a Single Page Application built with Elm that parse and explore your SQL schema.
 
-First, you need to install Elm & NPM on your machine and run `npm install` to get the dependencies.
+First, you need to install npm, Elm & [elm-spa](https://www.elm-spa.dev) on your machine and run `npm install` to get the dependencies.
 
-- launch dev server: `elm-live src/Main.elm --open --start-page=index.html -- --output=index.js`
+- launch dev server: `elm-spa server`
 - launch the tests: `elm-test` (needs `npm install -g elm-test`)
-- run coverage: `elm-coverage --open` (needs `npm install -g elm-coverage`)
 - run linter: `elm-review` (needs `npm install -g elm-review`)
+- run coverage: `elm-coverage --open` (needs `npm install -g elm-coverage`) > doesn't work with elm-spa :(
 - update the demo: `./build-demo.sh`
 - install deps `elm-json install author/package` (needs `npm install --g elm-json`)
 - uninstall deps `elm-json uninstall author/package`
 - update deps `elm-json upgrade` (use `--unsafe` flag for major versions)
 
-Elm folders are `src` for sources & `tests` for tests.
+Elm folders are `src` for sources, `tests` for tests and `public` for static assets.
 
 ### (legacy) Ruby parser
 

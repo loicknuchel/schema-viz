@@ -1,21 +1,15 @@
-port module Ports exposing (activateTooltipsAndPopovers, click, dropSchema, hideModal, hideOffcanvas, listenHotkeys, loadSchemas, observeSize, observeTableSize, observeTablesSize, onJsMessage, readFile, saveSchema, showModal, toastError, toastInfo, toastWarning)
+port module Ports exposing (JsMsg(..), activateTooltipsAndPopovers, click, dropSchema, hideModal, hideOffcanvas, listenHotkeys, loadSchemas, observeSize, observeTableSize, observeTablesSize, onJsMessage, readFile, saveSchema, showModal, toastError, toastInfo, toastWarning)
 
 import Dict exposing (Dict)
 import FileValue exposing (File)
 import Json.Decode as Decode exposing (Decoder, Value)
 import Json.Encode as Encode
-import JsonFormats.SchemaFormat exposing (decodeSchema, decodeSize, encodeSchema)
 import Libs.Hotkey exposing (Hotkey, hotkeyEncoder)
 import Libs.Json.Decode as D
 import Libs.List as L
-import Libs.Models exposing (HtmlId, Text)
-import Models exposing (JsMsg(..))
-import Models.Schema exposing (Schema, SchemaId, TableId, tableIdAsHtmlId)
+import Libs.Models exposing (FileContent, HtmlId, SizeChange, Text)
+import Models.Schema exposing (Schema, SchemaId, TableId, decodeSchema, decodeSize, encodeSchema, tableIdAsHtmlId)
 import Time
-
-
-
--- deps = { to = { only = [ "Libs.*", "Models.*" ] } }
 
 
 click : HtmlId -> Cmd msg
@@ -121,6 +115,14 @@ type ElmMsg
     | ReadFile File
     | ObserveSizes (List HtmlId)
     | ListenKeys (Dict String (List Hotkey))
+
+
+type JsMsg
+    = SchemasLoaded ( List ( String, Decode.Error ), List Schema )
+    | FileRead Time.Posix File FileContent
+    | SizesChanged (List SizeChange)
+    | HotkeyUsed String
+    | Error Decode.Error
 
 
 type alias Toast =

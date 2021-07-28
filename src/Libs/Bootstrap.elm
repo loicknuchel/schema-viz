@@ -7,10 +7,6 @@ import Libs.Html.Attributes exposing (role)
 import Libs.Models exposing (HtmlId, Text)
 
 
-
--- deps = { to = { only = [ "Libs.*" ] } }
-
-
 type BsColor
     = Primary
     | Secondary

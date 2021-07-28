@@ -1,6 +1,6 @@
-module Libs.Models exposing (FileContent, FileName, HtmlId, Text)
+module Libs.Models exposing (Color, FileContent, FileName, HtmlId, SizeChange, Text, ZoomDelta, ZoomLevel)
 
--- deps = { to = { only = [ "Libs.*" ] } }
+import Libs.Size exposing (Size)
 
 
 type alias HtmlId =
@@ -16,4 +16,20 @@ type alias FileName =
 
 
 type alias FileContent =
+    String
+
+
+type alias ZoomLevel =
+    Float
+
+
+type alias ZoomDelta =
+    Float
+
+
+type alias SizeChange =
+    { id : HtmlId, size : Size }
+
+
+type alias Color =
     String

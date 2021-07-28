@@ -4,7 +4,6 @@ import Libs.List as L
 
 
 
--- deps = { to = { only = [ "Libs.*" ] } }
 -- Nel: NonEmptyList
 
 

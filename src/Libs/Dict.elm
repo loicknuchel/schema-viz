@@ -1,7 +1,5 @@
 module Libs.Dict exposing (fromListMap, getOrElse, groupBy)
 
--- deps = { to = { only = [ "Libs.*" ] } }
-
 import Dict exposing (Dict)
 
 

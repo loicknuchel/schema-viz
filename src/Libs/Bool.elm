@@ -1,7 +1,5 @@
 module Libs.Bool exposing (cond, lazyCond, toString)
 
--- deps = { to = { only = [ "Libs.*" ] } }
-
 
 cond : Bool -> a -> a -> a
 cond predicate true false =

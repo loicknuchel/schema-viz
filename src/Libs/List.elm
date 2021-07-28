@@ -4,10 +4,6 @@ import Libs.Bool as B
 import Random
 
 
-
--- deps = { to = { only = [ "Libs.*" ] } }
-
-
 get : Int -> List a -> Maybe a
 get index list =
     list |> List.drop index |> List.head

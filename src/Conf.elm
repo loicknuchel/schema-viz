@@ -2,12 +2,7 @@ module Conf exposing (conf, schemaSamples)
 
 import Dict exposing (Dict)
 import Libs.Hotkey exposing (Hotkey, hotkey, target)
-import Libs.Models exposing (HtmlId)
-import Models.Utils exposing (Color, ZoomLevel)
-
-
-
--- deps = { to = { only = [ "Libs.*", "Models.*" ] } }
+import Libs.Models exposing (Color, HtmlId, ZoomLevel)
 
 
 conf :
@@ -58,6 +53,6 @@ schemaSamples : Dict String String
 schemaSamples =
     Dict.fromList
         (List.reverse
-            [ ( "Basic example", "/tests/resources/schema.json" )
+            [ ( "Basic example", "samples/basic.json" )
             ]
         )

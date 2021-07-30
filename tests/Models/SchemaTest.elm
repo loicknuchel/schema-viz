@@ -101,7 +101,7 @@ schema2 =
               , sources = []
               }
             ]
-    , incomingRelations = Dict.fromList [ ( ( "public", "users" ), [ RelationRef (ForeignKeyName "creds_user_id") (ColumnRef ( "public", "creds" ) "user_id") (ColumnRef ( "public", "users" ) "id") ] ) ]
+    , incomingRelations = Dict.fromList [ ( ( "public", "users" ), Nel (RelationRef (ForeignKeyName "creds_user_id") (ColumnRef ( "public", "creds" ) "user_id") (ColumnRef ( "public", "users" ) "id")) [] ) ]
     , layout = Layout (CanvasProps (Position 5 8) 0.5) (Dict.fromList [ ( ( "public", "users" ), TableProps (Position 1 2) "red" True [ "id", "name" ] ) ]) (Dict.fromList [ ( ( "public", "creds" ), TableProps (Position 0 0) "blue" False [ "login", "pass" ] ) ])
     , layoutName = Just "users"
     , layouts =

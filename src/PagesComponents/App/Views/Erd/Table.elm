@@ -1,9 +1,10 @@
 module PagesComponents.App.Views.Erd.Table exposing (viewTable)
 
+import Dict
 import FontAwesome.Icon exposing (viewIcon)
 import FontAwesome.Regular as IconLight
 import FontAwesome.Solid as Icon
-import Html exposing (Attribute, Html, a, b, button, div, li, span, text, ul)
+import Html exposing (Attribute, Html, b, button, div, li, span, text, ul)
 import Html.Attributes exposing (class, classList, id, style, title, type_)
 import Html.Events exposing (onClick, onDoubleClick, onMouseEnter, onMouseLeave)
 import Libs.Bootstrap exposing (Toggle(..), bsDropdown, bsToggle, bsToggleCollapse)
@@ -16,7 +17,7 @@ import Libs.Ned as Ned
 import Libs.Nel as Nel
 import Libs.Size exposing (Size)
 import Libs.String as S
-import Models.Schema exposing (Column, ColumnComment(..), ColumnRef, ColumnValue(..), ForeignKey, Index, IndexName(..), PrimaryKey, Relation, Table, TableComment(..), TableProps, Unique, UniqueName(..), extractColumnIndex, inIndexes, inPrimaryKey, inUniques, showTableId, showTableName, tableIdAsHtmlId)
+import Models.Schema exposing (Column, ColumnComment(..), ColumnRef, ColumnValue(..), ForeignKey, Index, IndexName(..), PrimaryKey, Relation, Table, TableComment(..), TableProps, Unique, UniqueName(..), extractColumnIndex, inIndexes, inPrimaryKey, inUniques, showTableId, showTableName, tableIdAsHtmlId, tableIdAsString)
 import PagesComponents.App.Models exposing (Hover, Msg(..))
 import PagesComponents.App.Views.Helpers exposing (columnRefAsHtmlId, dragAttrs, extractColumnName, extractColumnType, placeAt, sizeAttr, withColumnName, withNullableInfo)
 
@@ -159,10 +160,13 @@ viewColumnDropdown : List Relation -> ColumnRef -> (List (Attribute Msg) -> Html
 viewColumnDropdown incomingColumnRelations ref element =
     case
         incomingColumnRelations
+            |> L.groupBy (\relation -> relation.src.table.id |> tableIdAsString)
+            |> Dict.values
+            |> List.concatMap (\tableRelations -> [ tableRelations.head ])
             |> List.map
                 (\relation ->
                     li []
-                        [ a [ class "dropdown-item", classList [ ( "disabled", not (relation.src.props == Nothing) ) ], onClick (ShowTable relation.src.table.id) ]
+                        [ button [ type_ "button", class "dropdown-item", classList [ ( "disabled", not (relation.src.props == Nothing) ) ], onClick (ShowTable relation.src.table.id) ]
                             [ viewIcon Icon.externalLinkAlt
                             , text " "
                             , b [] [ text (showTableId relation.src.table.id) ]
@@ -189,7 +193,7 @@ viewShowAllOption incomingRelations =
             []
 
         rels ->
-            [ li [] [ a [ class "dropdown-item", onClick (ShowTables (rels |> List.map (\r -> r.src.table.id))) ] [ text "Show all" ] ] ]
+            [ li [] [ button [ type_ "button", class "dropdown-item", onClick (ShowTables (rels |> List.map (\r -> r.src.table.id))) ] [ text "Show all" ] ] ]
 
 
 viewColumnName : Table -> Column -> Html msg

@@ -1,8 +1,7 @@
 module PagesComponents.App.View exposing (viewApp)
 
 import FontAwesome.Styles as Icon
-import Html exposing (Html, div, node, text)
-import Html.Attributes exposing (class, id)
+import Html exposing (Html, node, text)
 import PagesComponents.App.Models exposing (Model, Msg(..))
 import PagesComponents.App.Views.Command exposing (viewCommands)
 import PagesComponents.App.Views.Erd exposing (viewErd)
@@ -25,10 +24,4 @@ viewApp model =
            , viewCreateLayoutModal model.newLayout
            , viewHelpModal
            , viewConfirm model.confirm
-           , viewToasts
            ]
-
-
-viewToasts : Html Msg
-viewToasts =
-    div [ id "toast-container", class "toast-container position-fixed bottom-0 end-0 p-3" ] []

@@ -49,10 +49,11 @@ conf =
     }
 
 
-schemaSamples : Dict String String
+schemaSamples : Dict String ( Int, String )
 schemaSamples =
     Dict.fromList
         (List.reverse
-            [ ( "Basic example", "samples/basic.json" )
+            [ ( "basic schema", ( 4, "samples/basic.json" ) )
+            , ( "gospeak.io", ( 26, "samples/gospeak.sql" ) )
             ]
         )

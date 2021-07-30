@@ -23,7 +23,7 @@ type alias Schema =
     { id : SchemaId
     , info : SchemaInfo
     , tables : Dict TableId Table
-    , incomingRelations : Dict TableId (List RelationRef)
+    , incomingRelations : Dict TableId (Nel RelationRef)
     , layout : Layout
     , layoutName : Maybe LayoutName
     , layouts : Dict LayoutName Layout
@@ -233,9 +233,9 @@ buildSchema takenIds id info tables layout layoutName layouts =
     }
 
 
-buildIncomingRelations : List Table -> Dict TableId (List RelationRef)
+buildIncomingRelations : List Table -> Dict TableId (Nel RelationRef)
 buildIncomingRelations tables =
-    tables |> buildRelations |> D.groupBy (\r -> r.ref.table)
+    tables |> buildRelations |> L.groupBy (\r -> r.ref.table)
 
 
 buildRelations : List Table -> List RelationRef

@@ -3,13 +3,14 @@ module Pages.Home_ exposing (view)
 import Gen.Route as Route
 import Html exposing (Html, a, div, h1, h2, img, p, text)
 import Html.Attributes exposing (alt, attribute, class, height, href, id, src, style, width)
+import PagesComponents.Containers as Containers
 import View exposing (View)
 
 
 view : View msg
 view =
     { title = "Schema Viz"
-    , body = [ hero, features, footer ]
+    , body = Containers.root [ hero, features, footer ]
     }
 
 
@@ -27,7 +28,7 @@ hero =
             ]
         , div [ class "overflow-hidden", style "max-height" "50vh" ]
             [ div [ class "container px-5" ]
-                [ img [ src "/assets/schema-viz-screenshot.png", class "img-fluid border rounded-3 shadow-lg mb-4", alt "Schema Viz screenshot", width 800, attribute "loading" "lazy" ] []
+                [ img [ src "/assets/schema-viz-screenshot.png", class "img-fluid border rounded-3 shadow-lg mb-4", alt "Schema Viz screenshot", width 800, height 759, attribute "loading" "lazy" ] []
                 ]
             ]
         ]

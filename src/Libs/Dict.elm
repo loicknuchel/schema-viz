@@ -1,4 +1,4 @@
-module Libs.Dict exposing (fromListMap, getOrElse, groupBy)
+module Libs.Dict exposing (fromListMap, getOrElse)
 
 import Dict exposing (Dict)
 
@@ -11,11 +11,6 @@ fromListMap getKey list =
 getOrElse : comparable -> a -> Dict comparable a -> a
 getOrElse key default dict =
     dict |> Dict.get key |> Maybe.withDefault default
-
-
-groupBy : (a -> comparable) -> List a -> Dict comparable (List a)
-groupBy key list =
-    List.foldr (\a dict -> dict |> Dict.update (key a) (\v -> v |> Maybe.map ((::) a) |> Maybe.withDefault [ a ] |> Just)) Dict.empty list
 
 
 filterMap : (comparable -> a -> Maybe b) -> Dict comparable a -> Dict comparable b

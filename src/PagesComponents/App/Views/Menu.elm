@@ -9,14 +9,15 @@ import Html.Attributes exposing (class, href, id, style, tabindex, title, type_)
 import Html.Events exposing (onClick)
 import Libs.Bool exposing (cond)
 import Libs.Bootstrap exposing (BsColor(..), Toggle(..), ariaLabel, ariaLabelledBy, bsBackdrop, bsButton, bsButtonGroup, bsDismiss, bsScroll, bsToggle)
-import Libs.Dict as D
+import Libs.List as L
 import Libs.Ned as Ned
+import Libs.Nel as Nel exposing (Nel)
 import Libs.String as S exposing (plural)
 import Models.Schema exposing (Layout, RelationRef, Table, TableId, showTableId)
 import PagesComponents.App.Models exposing (Msg(..))
 
 
-viewMenu : Maybe ( Dict TableId Table, Dict TableId (List RelationRef), Layout ) -> List (Html Msg)
+viewMenu : Maybe ( Dict TableId Table, Dict TableId (Nel RelationRef), Layout ) -> List (Html Msg)
 viewMenu schema =
     [ div [ id conf.ids.menu, class "offcanvas offcanvas-start", bsScroll True, bsBackdrop "false", ariaLabelledBy (conf.ids.menu ++ "-label"), tabindex -1 ]
         [ div [ class "offcanvas-header" ]
@@ -44,7 +45,7 @@ viewMenu schema =
                                                 ++ " tables, "
                                                 ++ (tables |> Dict.foldl (\_ t c -> c + Ned.size t.columns) 0 |> String.fromInt)
                                                 ++ " columns, "
-                                                ++ (relations |> Dict.values |> List.map List.length |> List.sum |> String.fromInt)
+                                                ++ (relations |> Dict.values |> List.map Nel.length |> List.sum |> String.fromInt)
                                                 ++ " relations"
                                             )
                                         ]
@@ -64,16 +65,16 @@ viewTableList tables layout =
         [ div [ class "list-group" ]
             (tables
                 |> Dict.values
-                |> D.groupBy (\t -> t.id |> Tuple.second |> S.wordSplit |> List.head |> Maybe.withDefault "")
+                |> L.groupBy (\t -> t.id |> Tuple.second |> S.wordSplit |> List.head |> Maybe.withDefault "")
                 |> Dict.toList
                 |> List.sortBy (\( name, _ ) -> name)
                 |> List.concatMap
                     (\( groupTitle, groupedTables ) ->
                         [ a [ class "list-group-item list-group-item-secondary", bsToggle Collapse, href ("#" ++ groupTitle ++ "-table-list") ]
-                            [ text (groupTitle ++ " (" ++ plural (List.length groupedTables) "" "1 table" "tables" ++ ")") ]
+                            [ text (groupTitle ++ " (" ++ plural (Nel.length groupedTables) "" "1 table" "tables" ++ ")") ]
                         , div [ class "collapse show", id (groupTitle ++ "-table-list") ]
                             (groupedTables
-                                |> List.map
+                                |> Nel.map
                                     (\t ->
                                         div [ class "list-group-item d-flex", title (showTableId t.id) ]
                                             [ div [ class "text-truncate me-auto" ] [ text (showTableId t.id) ]
@@ -82,6 +83,7 @@ viewTableList tables layout =
                                                 (button [ type_ "button", class "link text-muted", onClick (ShowTable t.id) ] [ viewIcon Icon.eye ])
                                             ]
                                     )
+                                |> Nel.toList
                             )
                         ]
                     )

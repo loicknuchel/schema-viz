@@ -10,7 +10,7 @@ window.onload = function () {
     }
     app.ports && app.ports.elmToJs.subscribe(msg => {
         // setTimeout: a ugly hack to wait for Elm to render the model changes before running the commands :(
-        setTimeout(function () {
+        setTimeout(() => {
             // console.log('elm message', msg)
             switch (msg.kind) {
                 case "Click":         click(msg.id); break;
@@ -31,16 +31,16 @@ window.onload = function () {
     })
 
     function click(id) {
-        document.getElementById(id).click()
+        getElementById(id).click()
     }
     function showModal(id) {
-        bootstrap.Modal.getOrCreateInstance(document.getElementById(id)).show()
+        bootstrap.Modal.getOrCreateInstance(getElementById(id)).show()
     }
     function hideModal(id) {
-        bootstrap.Modal.getOrCreateInstance(document.getElementById(id)).hide()
+        bootstrap.Modal.getOrCreateInstance(getElementById(id)).hide()
     }
     function hideOffcanvas(id) {
-        bootstrap.Offcanvas.getOrCreateInstance(document.getElementById(id)).hide()
+        bootstrap.Offcanvas.getOrCreateInstance(getElementById(id)).hide()
     }
     function activateTooltipsAndPopovers() {
         document.querySelectorAll('[data-bs-toggle="tooltip"]').forEach(e => bootstrap.Tooltip.getOrCreateInstance(e))
@@ -48,7 +48,7 @@ window.onload = function () {
     }
 
     let toastCpt = 0
-    const toastContainer = document.getElementById('toast-container')
+    const toastContainer = getElementById('toast-container')
     function showToast(toast) {
         const toastNo = toastCpt += 1
         const toastId = 'toast-' + toastNo
@@ -79,7 +79,7 @@ window.onload = function () {
             '  </div>\n' +
             '</div>'
         toastContainer.insertAdjacentHTML('beforeend', html);
-        bootstrap.Toast.getOrCreateInstance(document.getElementById(toastId)).show()
+        bootstrap.Toast.getOrCreateInstance(getElementById(toastId)).show()
     }
 
     const schemaPrefix = 'schema-'
@@ -118,14 +118,11 @@ window.onload = function () {
         sendToElm({kind: "SizesChanged", sizes: sizes})
     })
     function observeSizes(ids) {
-        ids.forEach(id => {
-            const el = document.getElementById(id)
-            el ? resizeObserver.observe(el) : console.error("Can't observe element with '" + id + "' id, it doesn't exist")
-        })
+        ids.forEach(id => resizeObserver.observe(getElementById(id)))
     }
 
     const hotkeys = {}
-    document.addEventListener('keydown', function (e) {
+    document.addEventListener('keydown', e => {
         Object.entries(hotkeys).forEach(([id, alternatives]) => {
             alternatives.forEach(hotkey => {
                 if ((!hotkey.key || hotkey.key === e.key) &&
@@ -155,21 +152,21 @@ window.onload = function () {
     // hide tooltip on click (avoid orphan tooltips when element is removed)
     // cf https://getbootstrap.com/docs/5.0/components/tooltips/: "Tooltips must be hidden before their corresponding elements have been removed from the DOM."
     let currentTooltip = null
-    window.addEventListener('show.bs.tooltip', function (e) {
+    window.addEventListener('show.bs.tooltip', e => {
         currentTooltip = e.target
     })
-    window.addEventListener('click', function () {
+    window.addEventListener('click', () => {
         currentTooltip && bootstrap.Tooltip.getOrCreateInstance(currentTooltip).hide()
     })
     // autofocus element in modal that require it (not done automatically)
     // cd https://getbootstrap.com/docs/5.0/components/modal/: "Due to how HTML5 defines its semantics, the autofocus HTML attribute has no effect in Bootstrap modals."
-    window.addEventListener('shown.bs.modal', function (e) {
+    window.addEventListener('shown.bs.modal', e => {
         const input = e.target.querySelector('[autofocus]')
         input && input.focus()
         activateTooltipsAndPopovers()
     })
-    window.addEventListener('hidden.bs.toast', function (e) {
-        const toast = document.getElementById(e.target.id)
+    window.addEventListener('hidden.bs.toast', e => {
+        const toast = getElementById(e.target.id)
         toast.parentNode.removeChild(toast)
     })
 
@@ -180,34 +177,55 @@ window.onload = function () {
     //  - prevent closing it if search input is still active
     //  - open it when search input is focused
     //  - close it when search input is blurred
-    const searchEl = document.getElementById('search')
-    window.addEventListener('hide.bs.dropdown', function (e) {
-        if(e.target.id === 'search' && searchEl === document.activeElement) {
+    window.addEventListener('hide.bs.dropdown', e => {
+        if(e.target.id === 'search' && e.target === document.activeElement) {
             e.preventDefault()
         }
     })
-    searchEl && searchEl.addEventListener('focus', function () {
-        setTimeout(function() { bootstrap.Dropdown.getOrCreateInstance(searchEl).show() }, 10)
+    window.addEventListener('focusin', e => {
+        if (e.target.id === 'search') { setTimeout(() => bootstrap.Dropdown.getOrCreateInstance(e.target).show(), 10) }
     })
-    searchEl && searchEl.addEventListener('blur', function () {
-        setTimeout(function() { bootstrap.Dropdown.getOrCreateInstance(searchEl).hide() }, 10)
+    window.addEventListener('focusout', e => {
+        if (e.target.id === 'search') { setTimeout(() => bootstrap.Dropdown.getOrCreateInstance(e.target).hide(), 10) }
     })
     // search input parent is the dropdown element, on mousedown it's blurred but we want that only on click
-    searchEl && searchEl.parentElement.addEventListener('mousedown', function () {
-        setTimeout(function () { searchEl.focus() }, 10)
+    window.addEventListener('mousedown', e => {
+        const dropdown = e.path.find(e => e.className === 'dropdown')
+        const search = Array.from(dropdown?.children || []).find(e => e.id === 'search')
+        if (search) {
+            setTimeout(() => search.focus(), 10)
+        }
     })
     // the second node inside the dropdown element is the dropdown menu, we want to blur the search on click
-    searchEl && searchEl.parentElement.childNodes[1].addEventListener('click', function () {
-        searchEl.blur()
+    window.addEventListener('click', e => {
+        const dropdown = e.path.find(e => e.className === 'dropdown')
+        const search = Array.from(dropdown?.children || []).find(e => e.id === 'search')
+        if (search && e.path.find(e => e.className && e.className.includes('dropdown-menu'))) {
+            search.blur()
+        }
     })
-    // blur search when esc key is pressed
-    searchEl && searchEl.addEventListener('keydown', function (e) {
-        if (e.keyCode === 27) {
-            searchEl.blur()
+    // blur search when esc key is pressed, doesn't work :(
+    window.addEventListener('keydown', e => {
+        const dropdown = e.path.find(e => e.className === 'dropdown')
+        const search = Array.from(dropdown?.children || []).find(e => e.id === 'search')
+        if (search && e.keyCode === 27) {
+            search.blur()
         }
     })
     // do not submit search form on enter
-    searchEl && searchEl.parentElement.parentElement.addEventListener('submit', function(e) {
-        e.preventDefault()
+    window.addEventListener('submit', e => {
+        if (e.target[0].id === 'search') {
+            e.preventDefault()
+        }
     })
+
+    /* Libs */
+    function getElementById(id) {
+        const elem = document.getElementById(id)
+        if (elem) {
+            return elem
+        } else {
+            throw new Error(`Can't find element with id '${id}'`)
+        }
+    }
 }

@@ -13,7 +13,7 @@ loadSample : String -> Cmd Msg
 loadSample name =
     schemaSamples
         |> Dict.get name
-        |> Maybe.map (\path -> Task.perform (\( now, body ) -> GotSampleData now name path body) (httpGet path))
+        |> Maybe.map (\( _, path ) -> Task.perform (\( now, body ) -> GotSampleData now name path body) (httpGet path))
         |> Maybe.withDefault (toastError ("Unable to find '" ++ name ++ "' example"))
 
 

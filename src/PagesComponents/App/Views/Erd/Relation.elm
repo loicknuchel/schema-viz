@@ -13,7 +13,13 @@ import Svg.Attributes exposing (class, height, strokeDasharray, style, width, x1
 
 viewRelation : Hover -> Relation -> Svg Msg
 viewRelation hover { key, src, ref } =
-    case ( ( src.props, ref.props ), ( formatText key src ref, getColor hover src ref ) ) of
+    case
+        ( ( src.props |> M.filter (\p -> p |> Tuple.first |> .columns |> List.member src.column.name)
+          , ref.props |> M.filter (\p -> p |> Tuple.first |> .columns |> List.member ref.column.name)
+          )
+        , ( formatText key src ref, getColor hover src ref )
+        )
+    of
         ( ( Nothing, Nothing ), ( name, _ ) ) ->
             svg [ class "erd-relation" ] [ text name ]
 

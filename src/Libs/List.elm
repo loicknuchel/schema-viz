@@ -1,6 +1,8 @@
-module Libs.List exposing (addAt, addIf, appendOn, filterMap, filterZip, find, get, has, hasNot, indexOf, nonEmpty, prependOn, resultCollect, resultSeq, zipWith)
+module Libs.List exposing (addAt, addIf, appendOn, filterMap, filterZip, find, get, groupBy, has, hasNot, indexOf, nonEmpty, prependOn, resultCollect, resultSeq, zipWith)
 
+import Dict exposing (Dict)
 import Libs.Bool as B
+import Libs.Nel as Nel exposing (Nel)
 import Random
 
 
@@ -96,6 +98,11 @@ appendOn maybe transform list =
 zipWith : (a -> b) -> List a -> List ( a, b )
 zipWith transform list =
     list |> List.map (\a -> ( a, transform a ))
+
+
+groupBy : (a -> comparable) -> List a -> Dict comparable (Nel a)
+groupBy key list =
+    List.foldr (\a dict -> dict |> Dict.update (key a) (\v -> v |> Maybe.map (Nel.prepend a) |> Maybe.withDefault (Nel a []) |> Just)) Dict.empty list
 
 
 resultCollect : List (Result e a) -> ( List e, List a )

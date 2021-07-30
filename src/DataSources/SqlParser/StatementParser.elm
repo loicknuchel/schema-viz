@@ -77,6 +77,12 @@ parseCommand statement =
     else if statement.head.text |> String.toUpper |> String.startsWith "CREATE SCHEMA " then
         Ok (Ignored statement)
 
+    else if statement.head.text |> String.toUpper |> String.startsWith "ALTER SCHEMA " then
+        Ok (Ignored statement)
+
+    else if statement.head.text |> String.toUpper |> String.startsWith "COMMENT ON SCHEMA " then
+        Ok (Ignored statement)
+
     else if statement.head.text |> String.toUpper |> String.startsWith "CREATE EXTENSION " then
         Ok (Ignored statement)
 
@@ -93,6 +99,12 @@ parseCommand statement =
         Ok (Ignored statement)
 
     else if statement.head.text |> String.toUpper |> String.startsWith "ALTER SEQUENCE " then
+        Ok (Ignored statement)
+
+    else if statement.head.text |> String.toUpper |> String.startsWith "GRANT ALL ON " then
+        Ok (Ignored statement)
+
+    else if statement.head.text |> String.toUpper |> String.startsWith "REVOKE ALL ON " then
         Ok (Ignored statement)
 
     else if statement.head.text |> String.toUpper |> String.startsWith "SELECT " then

@@ -1,14 +1,15 @@
-module Libs.Nel exposing (Nel, any, filter, filterMap, find, fromList, indexedMap, map, toList)
-
-import Libs.List as L
-
-
+module Libs.Nel exposing (Nel, any, filter, filterMap, find, fromList, indexedMap, length, map, prepend, toList)
 
 -- Nel: NonEmptyList
 
 
 type alias Nel a =
     { head : a, tail : List a }
+
+
+prepend : a -> Nel a -> Nel a
+prepend a nel =
+    Nel a (nel.head :: nel.tail)
 
 
 map : (a -> b) -> Nel a -> Nel b
@@ -28,7 +29,16 @@ indexedMap f xs =
 
 find : (a -> Bool) -> Nel a -> Maybe a
 find predicate nel =
-    nel |> toList |> L.find predicate
+    if predicate nel.head then
+        Just nel.head
+
+    else
+        case nel.tail of
+            [] ->
+                Nothing
+
+            head :: tail ->
+                find predicate (Nel head tail)
 
 
 filter : (a -> Bool) -> Nel a -> List a
@@ -39,6 +49,11 @@ filter predicate nel =
 any : (a -> Bool) -> Nel a -> Bool
 any predicate nel =
     nel |> toList |> List.any predicate
+
+
+length : Nel a -> Int
+length nel =
+    1 + List.length nel.tail
 
 
 toList : Nel a -> List a

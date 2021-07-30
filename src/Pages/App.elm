@@ -17,6 +17,7 @@ import PagesComponents.App.Updates.Layout exposing (createLayout, deleteLayout, 
 import PagesComponents.App.Updates.Schema exposing (createSampleSchema, createSchema, useSchema)
 import PagesComponents.App.Updates.Table exposing (hideAllTables, hideColumn, hideColumns, hideTable, showAllTables, showColumn, showColumns, showTable, showTables, sortColumns)
 import PagesComponents.App.View exposing (viewApp)
+import PagesComponents.Containers as Containers
 import Ports exposing (JsMsg(..), activateTooltipsAndPopovers, click, dropSchema, hideOffcanvas, listenHotkeys, loadSchemas, observeSize, onJsMessage, readFile, saveSchema, showModal, toastError, toastInfo, toastWarning)
 import Request
 import Shared
@@ -250,5 +251,5 @@ subscriptions model =
 view : Model -> View Msg
 view model =
     { title = "Schema Viz"
-    , body = viewApp model
+    , body = Containers.root (viewApp model)
     }

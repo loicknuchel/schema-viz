@@ -34,6 +34,16 @@
     --tw-gray-100: #F3F4F6;
 }
 
+/* home page */
+
+.img-swipe { display: inline-block; }
+.img-swipe .img-default { display: initial; }
+.img-swipe .img-hover { display: none; }
+.img-swipe:hover .img-default { display: none; }
+.img-swipe:hover .img-hover { display: initial; }
+
+/* app */
+
 .loading {
     position: absolute;
     top: 0;

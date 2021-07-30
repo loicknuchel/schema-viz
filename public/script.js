@@ -1,5 +1,7 @@
 window.onload = function () {
+    const isDev = window.location.hostname === 'localhost'
     const app = Elm.Main.init()
+    initAnalytics()
 
 
     /* Elm ports */
@@ -25,6 +27,8 @@ window.onload = function () {
                 case "ReadFile":      readFile(msg.file); break;
                 case "ObserveSizes":  observeSizes(msg.ids); break;
                 case "ListenKeys":    listenHotkeys(msg.keys); break;
+                case "TrackPage":     trackPage(msg.name); break;
+                case "TrackEvent":    trackEvent(msg.name, msg.details); break;
                 default: console.error('Unsupported Elm message', msg); break;
             }
         }, 100)
@@ -48,38 +52,41 @@ window.onload = function () {
     }
 
     let toastCpt = 0
-    const toastContainer = getElementById('toast-container')
+    const maybeToastContainer = maybeElementById('toast-container')
     function showToast(toast) {
-        const toastNo = toastCpt += 1
-        const toastId = 'toast-' + toastNo
-        let bgColor = ''
-        let btnColor = ''
-        let autoHide = true
-        switch (toast.kind) {
-            case 'info':
-                break
-            case 'warning':
-                bgColor = 'bg-warning'
-                break
-            case 'error':
-                bgColor = 'bg-danger text-white'
-                btnColor = 'btn-close-white'
-                autoHide = false
-                break
-            default:
-                break
-        }
-        let html =
-            '<div class="toast align-items-center ' + bgColor + '" id="' + toastId + '" role="status" aria-live="polite" aria-atomic="true"' + (autoHide ? '' : ' data-bs-autohide="false"') + '>\n' +
-            '  <div class="d-flex">\n' +
-            '    <div class="toast-body">\n' +
-            '      ' + toast.message + '\n' +
-            '    </div>\n' +
-            '    <button type="button" class="btn-close ' + btnColor + ' me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>\n' +
-            '  </div>\n' +
-            '</div>'
-        toastContainer.insertAdjacentHTML('beforeend', html);
-        bootstrap.Toast.getOrCreateInstance(getElementById(toastId)).show()
+        maybeToastContainer.forEach(toastContainer => {
+            const toastNo = toastCpt += 1
+            const toastId = 'toast-' + toastNo
+            let bgColor = ''
+            let btnColor = ''
+            let autoHide = true
+            switch (toast.kind) {
+                case 'info':
+                    break
+                case 'warning':
+                    bgColor = 'bg-warning'
+                    break
+                case 'error':
+                    bgColor = 'bg-danger text-white'
+                    btnColor = 'btn-close-white'
+                    autoHide = false
+                    break
+                default:
+                    break
+            }
+            let html =
+                '<div class="toast align-items-center ' + bgColor + '" id="' + toastId + '" role="status" aria-live="polite" aria-atomic="true"' + (autoHide ? '' : ' data-bs-autohide="false"') + '>\n' +
+                '  <div class="d-flex">\n' +
+                '    <div class="toast-body">\n' +
+                '      ' + toast.message + '\n' +
+                '    </div>\n' +
+                '    <button type="button" class="btn-close ' + btnColor + ' me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>\n' +
+                '  </div>\n' +
+                '</div>'
+            toastContainer.insertAdjacentHTML('beforeend', html);
+            bootstrap.Toast.getOrCreateInstance(getElementById(toastId)).show()
+        })
+        if (maybeToastContainer.length === 0) { console.warn("Can't show toast, container not present", toast) }
     }
 
     const schemaPrefix = 'schema-'
@@ -219,13 +226,59 @@ window.onload = function () {
         }
     })
 
+
     /* Libs */
+
     function getElementById(id) {
         const elem = document.getElementById(id)
         if (elem) {
             return elem
         } else {
             throw new Error(`Can't find element with id '${id}'`)
+        }
+    }
+
+    function maybeElementById(id) {
+        const elem = document.getElementById(id)
+        return elem ? [elem] : []
+    }
+
+    function initAnalytics() {
+        if (!isDev) {
+            insights.init('TelOpGhJG0jZQtCk');
+        }
+    }
+
+    function trackPage(name) {
+        if (isDev) {
+            console.log("trackPage", name)
+        } else {
+            insights.track({
+                id: 'page-view',
+                parameters: {
+                    name,
+                    path: insights.parameters.path().value,
+                    locale: insights.parameters.locale().value,
+                    screenType: insights.parameters.screenType().value,
+                    referrer: insights.parameters.referrer().value,
+                }
+            })
+        }
+    }
+
+    function trackEvent(name, details) {
+        if (isDev) {
+            console.log("trackEvent", name, details)
+        } else {
+            insights.track({
+                id: name,
+                parameters: {
+                    ...details,
+                    locale: insights.parameters.locale().value,
+                    screenType: insights.parameters.screenType().value,
+                    referrer: insights.parameters.referrer().value,
+                }
+            })
         }
     }
 }

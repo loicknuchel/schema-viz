@@ -13,14 +13,13 @@ import Libs.Task as T
 import Models.Schema exposing (FileInfo, Schema, SchemaId, decodeSchema)
 import PagesComponents.App.Models exposing (Errors, Model, Msg(..), initSwitch)
 import PagesComponents.App.Updates.Helpers exposing (decodeErrorToHtml)
-import Ports exposing (activateTooltipsAndPopovers, click, hideModal, observeTablesSize, saveSchema, toastError, toastInfo)
+import Ports exposing (activateTooltipsAndPopovers, click, hideModal, observeTablesSize, saveSchema, toastError, toastInfo, trackSchemaEvent)
 import Time
 
 
 useSchema : Schema -> Model -> ( Model, Cmd Msg )
 useSchema schema model =
-    ( [], Just schema )
-        |> loadSchema model
+    ( [], Just schema ) |> loadSchema model
 
 
 createSchema : Time.Posix -> File -> FileContent -> Model -> ( Model, Cmd Msg )
@@ -59,6 +58,7 @@ loadSchema model ( errs, schema ) =
                                    , hideModal conf.ids.schemaSwitchModal
                                    , saveSchema s
                                    , activateTooltipsAndPopovers
+                                   , trackSchemaEvent "load" s
                                    ]
                         )
                     |> Maybe.withDefault []

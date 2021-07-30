@@ -1,14 +1,47 @@
-module Pages.Home_ exposing (view)
+module Pages.Home_ exposing (Model, Msg, page)
 
+import Gen.Params.Home_ exposing (Params)
 import Gen.Route as Route
-import Html exposing (Html, a, div, h1, h2, img, p, text)
-import Html.Attributes exposing (alt, attribute, class, height, href, id, src, style, width)
+import Html exposing (Html, a, div, h1, h2, img, p, span, text)
+import Html.Attributes exposing (alt, class, height, href, id, src, style, width)
+import Page
 import PagesComponents.Containers as Containers
+import Ports exposing (trackPage)
+import Request
+import Shared
 import View exposing (View)
 
 
-view : View msg
-view =
+page : Shared.Model -> Request.With Params -> Page.With Model Msg
+page _ _ =
+    Page.element
+        { init = init
+        , update = update
+        , view = view
+        , subscriptions = subscriptions
+        }
+
+
+type alias Model =
+    ()
+
+
+type alias Msg =
+    ()
+
+
+init : ( Model, Cmd Msg )
+init =
+    ( (), trackPage "home" )
+
+
+update : Msg -> Model -> ( Model, Cmd Msg )
+update _ model =
+    ( model, Cmd.none )
+
+
+view : Model -> View Msg
+view _ =
     { title = "Schema Viz"
     , body = Containers.root [ hero, features, footer ]
     }
@@ -28,7 +61,10 @@ hero =
             ]
         , div [ class "overflow-hidden", style "max-height" "50vh" ]
             [ div [ class "container px-5" ]
-                [ img [ src "/assets/schema-viz-screenshot.png", class "img-fluid border rounded-3 shadow-lg mb-4", alt "Schema Viz screenshot", width 800, height 759, attribute "loading" "lazy" ] []
+                [ span [ class "img-swipe" ]
+                    [ img [ src "/assets/schema-viz-screenshot.png", class "img-fluid border rounded-3 shadow-lg mb-4 img-default", alt "Schema Viz screenshot", width 800, height 759 ] []
+                    , img [ src "/assets/schema-viz-screenshot-complex.png", class "img-fluid border rounded-3 shadow-lg mb-4 img-hover", alt "Schema Viz screenshot", width 800, height 759 ] []
+                    ]
                 ]
             ]
         ]
@@ -93,3 +129,8 @@ features =
 footer : Html msg
 footer =
     div [] []
+
+
+subscriptions : Model -> Sub Msg
+subscriptions _ =
+    Sub.none

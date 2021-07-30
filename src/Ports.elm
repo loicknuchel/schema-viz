@@ -1,4 +1,4 @@
-port module Ports exposing (JsMsg(..), activateTooltipsAndPopovers, click, dropSchema, hideModal, hideOffcanvas, listenHotkeys, loadSchemas, observeSize, observeTableSize, observeTablesSize, onJsMessage, readFile, saveSchema, showModal, toastError, toastInfo, toastWarning)
+port module Ports exposing (JsMsg(..), activateTooltipsAndPopovers, click, dropSchema, hideModal, hideOffcanvas, listenHotkeys, loadSchemas, observeSize, observeTableSize, observeTablesSize, onJsMessage, readFile, saveSchema, showModal, toastError, toastInfo, toastWarning, trackLayoutEvent, trackPage, trackSchemaEvent)
 
 import Dict exposing (Dict)
 import FileValue exposing (File)
@@ -8,7 +8,7 @@ import Libs.Hotkey exposing (Hotkey, hotkeyEncoder)
 import Libs.Json.Decode as D
 import Libs.List as L
 import Libs.Models exposing (FileContent, HtmlId, SizeChange, Text)
-import Models.Schema exposing (Schema, SchemaId, TableId, decodeSchema, decodeSize, encodeSchema, tableIdAsHtmlId)
+import Models.Schema exposing (Layout, Schema, SchemaId, TableId, decodeSchema, decodeSize, encodeSchema, tableIdAsHtmlId)
 import Time
 
 
@@ -102,6 +102,28 @@ listenHotkeys keys =
     messageToJs (ListenKeys keys)
 
 
+trackPage : String -> Cmd msg
+trackPage name =
+    messageToJs (TrackPage name)
+
+
+trackSchemaEvent : String -> Schema -> Cmd msg
+trackSchemaEvent name schema =
+    messageToJs
+        (TrackEvent (name ++ "-schema")
+            (Encode.object
+                [ ( "tableCount", schema.tables |> Dict.size |> Encode.int )
+                , ( "layoutCount", schema.layouts |> Dict.size |> Encode.int )
+                ]
+            )
+        )
+
+
+trackLayoutEvent : String -> Layout -> Cmd msg
+trackLayoutEvent name layout =
+    messageToJs (TrackEvent (name ++ "-layout") (Encode.object [ ( "tableCount", layout.tables |> Dict.size |> Encode.int ) ]))
+
+
 type ElmMsg
     = Click HtmlId
     | ShowModal HtmlId
@@ -115,6 +137,8 @@ type ElmMsg
     | ReadFile File
     | ObserveSizes (List HtmlId)
     | ListenKeys (Dict String (List Hotkey))
+    | TrackPage String
+    | TrackEvent String Value
 
 
 type JsMsg
@@ -185,6 +209,12 @@ elmEncoder elm =
 
         ListenKeys keys ->
             Encode.object [ ( "kind", "ListenKeys" |> Encode.string ), ( "keys", keys |> Encode.dict identity (Encode.list hotkeyEncoder) ) ]
+
+        TrackPage name ->
+            Encode.object [ ( "kind", "TrackPage" |> Encode.string ), ( "name", name |> Encode.string ) ]
+
+        TrackEvent name details ->
+            Encode.object [ ( "kind", "TrackEvent" |> Encode.string ), ( "name", name |> Encode.string ), ( "details", details ) ]
 
 
 toastEncoder : Toast -> Value

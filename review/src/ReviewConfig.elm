@@ -26,7 +26,6 @@ import NoUnused.Modules
 import NoUnused.Parameters
 import NoUnused.Patterns
 import NoUnused.Variables
-import NoUselessSubscriptions
 import Review.Rule as Rule exposing (Rule)
 
 
@@ -37,7 +36,6 @@ config =
     , NoExposingEverything.rule |> Rule.ignoreErrorsForDirectories [ "tests" ]
     , NoMissingSubscriptionsCall.rule
     , NoRecursiveUpdate.rule
-    , NoUselessSubscriptions.rule |> Rule.ignoreErrorsForDirectories [ ".elm-spa" ]
     , NoMissingTypeAnnotation.rule |> Rule.ignoreErrorsForDirectories [ ".elm-spa" ]
     , NoMissingTypeAnnotationInLetIn.rule
     , NoMissingTypeExpose.rule |> Rule.ignoreErrorsForDirectories [ ".elm-spa" ]

@@ -18,7 +18,7 @@ import PagesComponents.App.Updates.Schema exposing (createSampleSchema, createSc
 import PagesComponents.App.Updates.Table exposing (hideAllTables, hideColumn, hideColumns, hideTable, showAllTables, showColumn, showColumns, showTable, showTables, sortColumns)
 import PagesComponents.App.View exposing (viewApp)
 import PagesComponents.Containers as Containers
-import Ports exposing (JsMsg(..), activateTooltipsAndPopovers, click, dropSchema, hideOffcanvas, listenHotkeys, loadSchemas, observeSize, onJsMessage, readFile, saveSchema, showModal, toastError, toastInfo, toastWarning)
+import Ports exposing (JsMsg(..), activateTooltipsAndPopovers, click, dropSchema, hideOffcanvas, listenHotkeys, loadSchemas, observeSize, onJsMessage, readFile, saveSchema, showModal, toastError, toastInfo, toastWarning, trackPage, trackSchemaEvent)
 import Request
 import Shared
 import Time
@@ -68,6 +68,7 @@ init =
         , getZone
         , getTime
         , listenHotkeys conf.hotkeys
+        , trackPage "app"
         ]
     )
 
@@ -117,7 +118,7 @@ update msg model =
             model |> createSampleSchema now name path response
 
         DeleteSchema schema ->
-            ( { model | storedSchemas = model.storedSchemas |> List.filter (\s -> not (s.id == schema.id)) }, dropSchema schema )
+            ( { model | storedSchemas = model.storedSchemas |> List.filter (\s -> not (s.id == schema.id)) }, Cmd.batch [ dropSchema schema, trackSchemaEvent "drop" schema ] )
 
         UseSchema schema ->
             model |> useSchema schema
@@ -216,7 +217,7 @@ update msg model =
             ( model, removeElement model )
 
         JsMessage (HotkeyUsed "save") ->
-            ( model, model.schema |> Maybe.map (\s -> Cmd.batch [ saveSchema s, toastInfo "Schema saved" ]) |> Maybe.withDefault (toastWarning "No schema to save") )
+            ( model, model.schema |> Maybe.map (\s -> Cmd.batch [ saveSchema s, toastInfo "Schema saved", trackSchemaEvent "save" s ]) |> Maybe.withDefault (toastWarning "No schema to save") )
 
         JsMessage (HotkeyUsed "help") ->
             ( model, showModal conf.ids.helpModal )

@@ -1,17 +1,20 @@
 module Pages.NotFound exposing (Model, Msg, page)
 
+import Gen.Params.NotFound exposing (Params)
 import Page
+import Ports exposing (trackPage)
 import Request exposing (Request)
 import Shared
 import View exposing (View)
 
 
-page : Shared.Model -> Request -> Page.With Model Msg
+page : Shared.Model -> Request.With Params -> Page.With Model Msg
 page _ req =
-    Page.sandbox
+    Page.element
         { init = init req
         , update = update
         , view = view
+        , subscriptions = subscriptions
         }
 
 
@@ -23,14 +26,16 @@ type alias Msg =
     ()
 
 
-init : Request -> Model
+init : Request -> ( Model, Cmd Msg )
 init req =
-    req.url.path |> addPrefixed "?" req.url.query |> addPrefixed "#" req.url.fragment
+    ( req.url.path |> addPrefixed "?" req.url.query |> addPrefixed "#" req.url.fragment
+    , trackPage "not-found"
+    )
 
 
-update : Msg -> Model -> Model
+update : Msg -> Model -> ( Model, Cmd Msg )
 update _ model =
-    model
+    ( model, Cmd.none )
 
 
 view : Model -> View Msg
@@ -46,3 +51,8 @@ addPrefixed prefix maybeSegment starter =
 
         Just segment ->
             starter ++ prefix ++ segment
+
+
+subscriptions : Model -> Sub Msg
+subscriptions _ =
+    Sub.none

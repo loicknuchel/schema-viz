@@ -1,9 +1,19 @@
 module PagesComponents.Website.Views.FooterSection exposing (viewFooterSection)
 
-import Html exposing (Html, a, blockquote, button, div, footer, form, h1, h2, h3, header, img, input, label, li, main_, nav, p, span, text, ul)
+import Html exposing (Html, a, div, footer, h2, p, span, text)
 import Html.Attributes as Attr
 import Svg exposing (path, svg)
 import Svg.Attributes as SvgAttr
+
+
+twitterLink : String
+twitterLink =
+    "https://twitter.com/loicknuchel"
+
+
+githubLink : String
+githubLink =
+    "https://github.com/loicknuchel/schema-viz"
 
 
 viewFooterSection : Html msg
@@ -28,7 +38,7 @@ viewFooterSection =
                         [ Attr.class "flex space-x-6 md:order-2"
                         ]
                         [ a
-                            [ Attr.href "https://twitter.com/loicknuchel"
+                            [ Attr.href twitterLink
                             , Attr.class "text-gray-400 hover:text-gray-500"
                             ]
                             [ span
@@ -48,7 +58,7 @@ viewFooterSection =
                                 ]
                             ]
                         , a
-                            [ Attr.href "https://github.com/loicknuchel/schema-viz"
+                            [ Attr.href githubLink
                             , Attr.class "text-gray-400 hover:text-gray-500"
                             ]
                             [ span

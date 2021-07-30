@@ -1,0 +1,3 @@
+#!/bin/bash
+
+elm-test --fuzz 5 && echo "Running elm-review:" && elm-review && echo ""

@@ -49,6 +49,8 @@ If `elm-spa` don't display a relevant error, try using `elm-live` instead or com
 
 Elm folders are `src` for sources, `tests` for tests and `public` for static assets.
 
+When developing, please enable git hooks on your machine using: `git config --local core.hooksPath .githooks`
+
 ### (legacy) Ruby parser
 
 This tool started as a Ruby parser for the SQL schema, you can still find it under `legacy/ruby` folder.

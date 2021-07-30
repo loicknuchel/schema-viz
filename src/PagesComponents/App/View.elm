@@ -1,7 +1,7 @@
 module PagesComponents.App.View exposing (viewApp)
 
 import FontAwesome.Styles as Icon
-import Html exposing (Html, div)
+import Html exposing (Html, div, node, text)
 import Html.Attributes exposing (class, id)
 import PagesComponents.App.Models exposing (Model, Msg(..))
 import PagesComponents.App.Views.Command exposing (viewCommands)
@@ -16,7 +16,7 @@ import PagesComponents.App.Views.Navbar exposing (viewNavbar)
 
 viewApp : Model -> List (Html Msg)
 viewApp model =
-    [ Icon.css ]
+    [ Icon.css, node "style" [] [ text "body { overflow: hidden; }" ] ]
         ++ viewNavbar model.search (model.schema |> Maybe.map (\s -> ( s.id, ( s.tables, s.layout ), ( s.layoutName, s.layouts ) )))
         ++ viewMenu (model.schema |> Maybe.map (\s -> ( s.tables, s.incomingRelations, s.layout )))
         ++ [ viewErd model.hover model.sizes (model.schema |> Maybe.map (\s -> ( s.tables, s.incomingRelations, s.layout )))

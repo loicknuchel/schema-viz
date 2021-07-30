@@ -1,11 +1,15 @@
 module PagesComponents.Website.Views.CtaSection exposing (viewCtaSection)
 
+import Gen.Route as Route
 import Html exposing (Html, a, div, h2, span, text)
 import Html.Attributes as Attr
-import Gen.Route as Route
 
-documentationLink: String
-documentationLink = "https://github.com/loicknuchel/schema-viz"
+
+documentationLink : String
+documentationLink =
+    "https://github.com/loicknuchel/schema-viz"
+
+
 viewCtaSection : Html msg
 viewCtaSection =
     div

@@ -1,5 +1,6 @@
 window.onload = function () {
     const isDev = window.location.hostname === 'localhost'
+    const isProd = window.location.hostname === 'schema-viz.netlify.app'
     const app = Elm.Main.init()
     initAnalytics()
 
@@ -29,6 +30,7 @@ window.onload = function () {
                 case "ListenKeys":    listenHotkeys(msg.keys); break;
                 case "TrackPage":     trackPage(msg.name); break;
                 case "TrackEvent":    trackEvent(msg.name, msg.details); break;
+                case "TrackError":    trackError(msg.name, msg.details); break;
                 default: console.error('Unsupported Elm message', msg); break;
             }
         }, 100)
@@ -52,9 +54,9 @@ window.onload = function () {
     }
 
     let toastCpt = 0
-    const maybeToastContainer = maybeElementById('toast-container')
     function showToast(toast) {
-        maybeToastContainer.forEach(toastContainer => {
+        const toastContainer = document.getElementById('toast-container')
+        if (toastContainer) {
             const toastNo = toastCpt += 1
             const toastId = 'toast-' + toastNo
             let bgColor = ''
@@ -85,8 +87,9 @@ window.onload = function () {
                 '</div>'
             toastContainer.insertAdjacentHTML('beforeend', html);
             bootstrap.Toast.getOrCreateInstance(getElementById(toastId)).show()
-        })
-        if (maybeToastContainer.length === 0) { console.warn("Can't show toast, container not present", toast) }
+        } else {
+            console.warn("Can't show toast, container not present", toast)
+        }
     }
 
     const schemaPrefix = 'schema-'
@@ -244,15 +247,13 @@ window.onload = function () {
     }
 
     function initAnalytics() {
-        if (!isDev) {
+        if (isProd) {
             insights.init('TelOpGhJG0jZQtCk');
         }
     }
 
     function trackPage(name) {
-        if (isDev) {
-            console.log("trackPage", name)
-        } else {
+        if (isProd) {
             insights.track({
                 id: 'page-view',
                 parameters: {
@@ -263,13 +264,13 @@ window.onload = function () {
                     referrer: insights.parameters.referrer().value,
                 }
             })
+        } else {
+            console.log("trackPage", name)
         }
     }
 
     function trackEvent(name, details) {
-        if (isDev) {
-            console.log("trackEvent", name, details)
-        } else {
+        if (isProd) {
             insights.track({
                 id: name,
                 parameters: {
@@ -279,6 +280,24 @@ window.onload = function () {
                     referrer: insights.parameters.referrer().value,
                 }
             })
+        } else {
+            console.log("trackEvent", name, details)
+        }
+    }
+
+    function trackError(name, details) {
+        if (isProd) {
+            insights.track({
+                id: name + '-error',
+                parameters: {
+                    ...details,
+                    locale: insights.parameters.locale().value,
+                    screenType: insights.parameters.screenType().value,
+                    referrer: insights.parameters.referrer().value,
+                }
+            })
+        } else {
+            console.log("trackError", name, details)
         }
     }
 }

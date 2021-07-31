@@ -1,7 +1,7 @@
-module DataSources.SqlParser.Parsers.AlterTable exposing (CheckInner, ColumnUpdate(..), ForeignKeyInner, PrimaryKeyInner, SqlPredicate, SqlUser, TableConstraint(..), TableUpdate(..), UniqueInner, parseAlterTable)
+module DataSources.SqlParser.Parsers.AlterTable exposing (CheckInner, ColumnUpdate(..), ForeignKeyInner, PrimaryKeyInner, SqlUser, TableConstraint(..), TableUpdate(..), UniqueInner, parseAlterTable, parseAlterTableAddConstraint)
 
 import DataSources.SqlParser.Utils.Helpers exposing (buildRawSql, parseIndexDefinition)
-import DataSources.SqlParser.Utils.Types exposing (ParseError, RawSql, SqlColumnName, SqlColumnValue, SqlConstraintName, SqlForeignKeyRef, SqlSchemaName, SqlStatement, SqlTableName)
+import DataSources.SqlParser.Utils.Types exposing (ParseError, RawSql, SqlColumnName, SqlColumnValue, SqlConstraintName, SqlForeignKeyRef, SqlPredicate, SqlSchemaName, SqlStatement, SqlTableName)
 import Libs.Nel as Nel exposing (Nel)
 import Libs.Regex as R
 
@@ -33,10 +33,6 @@ type alias UniqueInner =
 
 type alias CheckInner =
     SqlPredicate
-
-
-type alias SqlPredicate =
-    String
 
 
 type ColumnUpdate

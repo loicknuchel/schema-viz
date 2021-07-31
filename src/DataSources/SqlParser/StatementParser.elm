@@ -74,6 +74,9 @@ parseCommand statement =
     else if statement.head.text |> String.toUpper |> String.startsWith "ALTER OPERATOR " then
         Ok (Ignored statement)
 
+    else if statement.head.text |> String.toUpper |> String.startsWith "CREATE DATABASE " then
+        Ok (Ignored statement)
+
     else if statement.head.text |> String.toUpper |> String.startsWith "CREATE SCHEMA " then
         Ok (Ignored statement)
 
@@ -81,6 +84,15 @@ parseCommand statement =
         Ok (Ignored statement)
 
     else if statement.head.text |> String.toUpper |> String.startsWith "COMMENT ON SCHEMA " then
+        Ok (Ignored statement)
+
+    else if statement.head.text |> String.toUpper |> String.startsWith "DROP TABLE " then
+        Ok (Ignored statement)
+
+    else if statement.head.text |> String.toUpper |> String.startsWith "LOCK TABLES " then
+        Ok (Ignored statement)
+
+    else if statement.head.text |> String.toUpper |> String.startsWith "UNLOCK TABLES;" then
         Ok (Ignored statement)
 
     else if statement.head.text |> String.toUpper |> String.startsWith "CREATE EXTENSION " then
@@ -111,6 +123,9 @@ parseCommand statement =
         Ok (Ignored statement)
 
     else if statement.head.text |> String.toUpper |> String.startsWith "INSERT INTO " then
+        Ok (Ignored statement)
+
+    else if statement.head.text |> String.toUpper |> String.startsWith "USE " then
         Ok (Ignored statement)
 
     else if statement.head.text |> String.toUpper |> String.startsWith "SET " then

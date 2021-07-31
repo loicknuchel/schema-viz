@@ -18,7 +18,7 @@ import PagesComponents.App.Updates.Schema exposing (createSampleSchema, createSc
 import PagesComponents.App.Updates.Table exposing (hideAllTables, hideColumn, hideColumns, hideTable, showAllTables, showColumn, showColumns, showTable, showTables, sortColumns)
 import PagesComponents.App.View exposing (viewApp)
 import PagesComponents.Containers as Containers
-import Ports exposing (JsMsg(..), activateTooltipsAndPopovers, click, dropSchema, hideOffcanvas, listenHotkeys, loadSchemas, observeSize, onJsMessage, readFile, saveSchema, showModal, toastError, toastInfo, toastWarning, trackPage, trackSchemaEvent)
+import Ports exposing (JsMsg(..), activateTooltipsAndPopovers, click, dropSchema, hideOffcanvas, listenHotkeys, loadSchemas, observeSize, onJsMessage, readFile, saveSchema, showModal, toastError, toastInfo, toastWarning, trackJsonError, trackPage, trackSchemaEvent)
 import Request
 import Shared
 import Time
@@ -94,7 +94,7 @@ update msg model =
             ( model, Cmd.batch [ hideOffcanvas conf.ids.menu, showModal conf.ids.schemaSwitchModal, loadSchemas ] )
 
         JsMessage (SchemasLoaded ( errors, schemas )) ->
-            ( { model | storedSchemas = schemas }, Cmd.batch (errors |> List.map (\( name, err ) -> toastError ("Unable to read schema <b>" ++ name ++ "</b>:<br>" ++ decodeErrorToHtml err))) )
+            ( { model | storedSchemas = schemas }, Cmd.batch (errors |> List.concatMap (\( name, err ) -> [ toastError ("Unable to read schema <b>" ++ name ++ "</b>:<br>" ++ decodeErrorToHtml err), trackJsonError "decode-schema" err ])) )
 
         FileDragOver _ _ ->
             ( model, Cmd.none )
@@ -226,7 +226,7 @@ update msg model =
             ( model, toastInfo ("Shortcut <b>" ++ hotkey ++ "</b> is not implemented yet :(") )
 
         JsMessage (Error err) ->
-            ( model, toastError ("Unable to decode JavaScript message:<br>" ++ decodeErrorToHtml err) )
+            ( model, Cmd.batch [ toastError ("Unable to decode JavaScript message:<br>" ++ decodeErrorToHtml err), trackJsonError "js-message" err ] )
 
         Noop ->
             ( model, Cmd.none )

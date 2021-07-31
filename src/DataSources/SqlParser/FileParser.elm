@@ -1,17 +1,18 @@
 module DataSources.SqlParser.FileParser exposing (SchemaError, SqlCheck, SqlColumn, SqlForeignKey, SqlIndex, SqlPrimaryKey, SqlSchema, SqlTable, SqlTableId, SqlUnique, buildStatements, parseLines, parseSchema, updateColumn, updateTable)
 
-import DataSources.SqlParser.Parsers.AlterTable exposing (ColumnUpdate(..), SqlPredicate, TableConstraint(..), TableUpdate(..))
+import DataSources.SqlParser.Parsers.AlterTable exposing (ColumnUpdate(..), TableConstraint(..), TableUpdate(..))
 import DataSources.SqlParser.Parsers.Comment exposing (SqlComment)
 import DataSources.SqlParser.Parsers.CreateTable exposing (ParsedColumn, ParsedTable)
 import DataSources.SqlParser.Parsers.CreateView exposing (ParsedView)
 import DataSources.SqlParser.Parsers.Select exposing (SelectColumn(..))
 import DataSources.SqlParser.StatementParser exposing (Command(..), parseCommand)
-import DataSources.SqlParser.Utils.Types exposing (SqlColumnName, SqlColumnType, SqlColumnValue, SqlConstraintName, SqlLine, SqlSchemaName, SqlStatement, SqlTableName)
+import DataSources.SqlParser.Utils.Types exposing (SqlColumnName, SqlColumnType, SqlColumnValue, SqlConstraintName, SqlLine, SqlPredicate, SqlSchemaName, SqlStatement, SqlTableName)
 import Dict exposing (Dict)
 import Libs.List as L
 import Libs.Maybe as M
 import Libs.Models exposing (FileContent, FileName)
 import Libs.Nel as Nel exposing (Nel)
+import Libs.Regex as R
 
 
 type alias SchemaError =
@@ -31,8 +32,8 @@ type alias SqlTable =
     , table : SqlTableName
     , columns : Nel SqlColumn
     , primaryKey : Maybe SqlPrimaryKey
-    , indexes : List SqlIndex
     , uniques : List SqlUnique
+    , indexes : List SqlIndex
     , checks : List SqlCheck
     , comment : Maybe SqlComment
     , source : SqlStatement
@@ -57,11 +58,11 @@ type alias SqlForeignKey =
     { name : SqlConstraintName, schema : SqlSchemaName, table : SqlTableName, column : SqlColumnName }
 
 
-type alias SqlIndex =
+type alias SqlUnique =
     { name : SqlConstraintName, columns : Nel SqlColumnName, definition : String }
 
 
-type alias SqlUnique =
+type alias SqlIndex =
     { name : SqlConstraintName, columns : Nel SqlColumnName, definition : String }
 
 
@@ -167,7 +168,7 @@ updateColumn id name transform tables =
             table.columns
                 |> Nel.find (\column -> column.name == name)
                 |> Maybe.map (\column -> transform column |> Result.map (\newColumn -> updateTableColumn name (\_ -> newColumn) table))
-                |> Maybe.withDefault (Err [ "Column " ++ name ++ " does not exist in table " ++ id ])
+                |> Maybe.withDefault (Err [ "Column '" ++ name ++ "' does not exist in table " ++ id ])
         )
         tables
 
@@ -196,14 +197,14 @@ buildTable tables table =
         |> L.resultSeq
         |> Result.andThen (\cols -> cols |> Nel.fromList |> Result.fromMaybe [ "No valid column for table " ++ buildId table.schema table.table ])
         |> Result.map
-            (\cols ->
+            (\columns ->
                 { schema = table.schema |> withDefaultSchema
                 , table = table.table
-                , columns = cols
-                , primaryKey = table.columns |> Nel.filterMap (\c -> c.primaryKey |> Maybe.map (\pk -> { name = pk, columns = Nel c.name [] })) |> List.head
-                , indexes = []
-                , uniques = []
-                , checks = []
+                , columns = columns
+                , primaryKey = table.primaryKey |> M.orElse (table.columns |> Nel.filterMap (\c -> c.primaryKey |> Maybe.map (\pk -> { name = pk, columns = Nel c.name [] })) |> List.head)
+                , uniques = table.uniques
+                , indexes = table.indexes
+                , checks = table.checks
                 , source = table.source
                 , comment = Nothing
                 }
@@ -272,8 +273,8 @@ buildView view =
     , table = view.table
     , columns = view.select.columns |> Nel.map buildViewColumn
     , primaryKey = Nothing
-    , indexes = []
     , uniques = []
+    , indexes = []
     , checks = []
     , source = view.source
     , comment = Nothing
@@ -315,7 +316,7 @@ withDefaultSchema schema =
 buildStatements : List SqlLine -> List SqlStatement
 buildStatements lines =
     lines
-        |> List.filter (\line -> not (String.isEmpty (String.trim line.text) || String.startsWith "--" line.text))
+        |> List.filter (\line -> not (String.isEmpty (String.trim line.text) || String.startsWith "--" line.text || hasOnlyComment line))
         |> List.foldr
             (\line ( currentStatementLines, statements, nestedBlock ) ->
                 if (line.text |> String.trim |> String.toUpper) == "BEGIN" then
@@ -333,6 +334,16 @@ buildStatements lines =
             ( [], [], 0 )
         |> (\( cur, res, _ ) -> addStatement cur res)
         |> List.filter (\s -> not (statementIsEmpty s))
+
+
+hasOnlyComment : SqlLine -> Bool
+hasOnlyComment line =
+    case line.text |> R.matches "^/\\*(.*)\\*/;$" of
+        _ :: [] ->
+            True
+
+        _ ->
+            False
 
 
 addStatement : List SqlLine -> List SqlStatement -> List SqlStatement

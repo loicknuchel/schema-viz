@@ -27,7 +27,32 @@ buildRawSql statement =
 
 noEnclosingQuotes : String -> String
 noEnclosingQuotes text =
+    text |> removeEnclosingDoubleQuotes |> removeEnclosingSingleQuotes |> removeEnclosingBackQuotes
+
+
+removeEnclosingDoubleQuotes : String -> String
+removeEnclosingDoubleQuotes text =
     case text |> R.matches "\"(.*)\"" of
+        (Just res) :: [] ->
+            res
+
+        _ ->
+            text
+
+
+removeEnclosingSingleQuotes : String -> String
+removeEnclosingSingleQuotes text =
+    case text |> R.matches "'(.*)'" of
+        (Just res) :: [] ->
+            res
+
+        _ ->
+            text
+
+
+removeEnclosingBackQuotes : String -> String
+removeEnclosingBackQuotes text =
+    case text |> R.matches "`(.*)`" of
         (Just res) :: [] ->
             res
 

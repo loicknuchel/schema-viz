@@ -36,7 +36,7 @@ Schema Viz is a Single Page Application built with Elm that parse and explore yo
 
 First, you need to install npm, Elm & [elm-spa](https://www.elm-spa.dev) on your machine and run `npm install` to get the dependencies.
 
-- launch dev server: `elm-spa server` or `elm-live .elm-spa/defaults/Main.elm --dir=public --start-page=index.html --open -- --output=public/dist/elm.js`
+- launch dev server: `elm-spa server` or `elm-live .elm-spa/defaults/Main.elm --dir=public --pushstate --open -- --output=public/dist/elm.js`
 - launch the tests: `elm-test` (needs `npm install -g elm-test`)
 - run linter: `elm-review` (needs `npm install -g elm-review`)
 - run coverage: `elm-coverage --open` (needs `npm install -g elm-coverage`) > doesn't work with elm-spa :(

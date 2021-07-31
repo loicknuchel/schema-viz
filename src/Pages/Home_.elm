@@ -12,7 +12,7 @@ import Shared
 import View exposing (View)
 
 
-page : Shared.Model -> Request.With Params -> Page.With Model Msg
+page : Shared.Model -> Request.With Params -> Page.With Model msg
 page _ _ =
     Page.element
         { init = init
@@ -30,17 +30,17 @@ type alias Msg =
     ()
 
 
-init : ( Model, Cmd Msg )
+init : ( Model, Cmd msg )
 init =
     ( (), trackPage "home" )
 
 
-update : Msg -> Model -> ( Model, Cmd Msg )
+update : msg -> Model -> ( Model, Cmd msg )
 update _ model =
     ( model, Cmd.none )
 
 
-view : Model -> View Msg
+view : Model -> View msg
 view _ =
     { title = "Schema Viz"
     , body = Containers.root [ hero, features, footer ]
@@ -131,6 +131,6 @@ footer =
     div [] []
 
 
-subscriptions : Model -> Sub Msg
+subscriptions : Model -> Sub msg
 subscriptions _ =
     Sub.none

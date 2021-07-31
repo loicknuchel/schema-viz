@@ -1,8 +1,8 @@
-port module Ports exposing (JsMsg(..), activateTooltipsAndPopovers, click, dropSchema, hideModal, hideOffcanvas, listenHotkeys, loadSchemas, observeSize, observeTableSize, observeTablesSize, onJsMessage, readFile, saveSchema, showModal, toastError, toastInfo, toastWarning, trackLayoutEvent, trackPage, trackSchemaEvent)
+port module Ports exposing (JsMsg(..), activateTooltipsAndPopovers, click, dropSchema, hideModal, hideOffcanvas, listenHotkeys, loadSchemas, observeSize, observeTableSize, observeTablesSize, onJsMessage, readFile, saveSchema, showModal, toastError, toastInfo, toastWarning, trackErrorList, trackJsonError, trackLayoutEvent, trackPage, trackSchemaEvent)
 
 import Dict exposing (Dict)
 import FileValue exposing (File)
-import Json.Decode as Decode exposing (Decoder, Value)
+import Json.Decode as Decode exposing (Decoder, Value, errorToString)
 import Json.Encode as Encode
 import Libs.Hotkey exposing (Hotkey, hotkeyEncoder)
 import Libs.Json.Decode as D
@@ -124,6 +124,16 @@ trackLayoutEvent name layout =
     messageToJs (TrackEvent (name ++ "-layout") (Encode.object [ ( "tableCount", layout.tables |> Dict.size |> Encode.int ) ]))
 
 
+trackJsonError : String -> Decode.Error -> Cmd msg
+trackJsonError name error =
+    messageToJs (TrackError name (Encode.object [ ( "message", errorToString error |> Encode.string ) ]))
+
+
+trackErrorList : String -> List String -> Cmd msg
+trackErrorList name errors =
+    messageToJs (TrackError name (Encode.object [ ( "errors", errors |> Encode.list Encode.string ) ]))
+
+
 type ElmMsg
     = Click HtmlId
     | ShowModal HtmlId
@@ -139,6 +149,7 @@ type ElmMsg
     | ListenKeys (Dict String (List Hotkey))
     | TrackPage String
     | TrackEvent String Value
+    | TrackError String Value
 
 
 type JsMsg
@@ -215,6 +226,9 @@ elmEncoder elm =
 
         TrackEvent name details ->
             Encode.object [ ( "kind", "TrackEvent" |> Encode.string ), ( "name", name |> Encode.string ), ( "details", details ) ]
+
+        TrackError name details ->
+            Encode.object [ ( "kind", "TrackError" |> Encode.string ), ( "name", name |> Encode.string ), ( "details", details ) ]
 
 
 toastEncoder : Toast -> Value

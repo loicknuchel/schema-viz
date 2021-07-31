@@ -7,13 +7,14 @@ import Dict
 import FileValue exposing (File)
 import Http exposing (Error(..))
 import Json.Decode as Decode
+import Libs.Bool exposing (cond)
 import Libs.Models exposing (FileContent, FileName)
 import Libs.Result as R
 import Libs.Task as T
 import Models.Schema exposing (FileInfo, Schema, SchemaId, decodeSchema)
 import PagesComponents.App.Models exposing (Errors, Model, Msg(..), initSwitch)
 import PagesComponents.App.Updates.Helpers exposing (decodeErrorToHtml)
-import Ports exposing (activateTooltipsAndPopovers, click, hideModal, observeTablesSize, saveSchema, toastError, toastInfo, trackSchemaEvent)
+import Ports exposing (activateTooltipsAndPopovers, click, hideModal, observeTablesSize, saveSchema, toastError, toastInfo, trackErrorList, trackSchemaEvent)
 import Time
 
 
@@ -42,6 +43,7 @@ loadSchema model ( errs, schema ) =
     ( { model | switch = initSwitch, schema = schema, sizes = model.sizes |> Dict.filter (\id _ -> not (id |> String.startsWith "table-")) }
     , Cmd.batch
         ((errs |> List.map toastError)
+            ++ cond (List.isEmpty errs) [] [ trackErrorList "parse-schema" errs ]
             ++ (schema
                     |> Maybe.map
                         (\s ->

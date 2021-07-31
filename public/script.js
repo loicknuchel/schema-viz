@@ -85,7 +85,7 @@ window.onload = function () {
                 '    <button type="button" class="btn-close ' + btnColor + ' me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>\n' +
                 '  </div>\n' +
                 '</div>'
-            toastContainer.insertAdjacentHTML('beforeend', html);
+            toastContainer.insertAdjacentHTML('beforeend', html)
             bootstrap.Toast.getOrCreateInstance(getElementById(toastId)).show()
         } else {
             console.warn("Can't show toast, container not present", toast)
@@ -257,7 +257,9 @@ window.onload = function () {
 
     function initAnalytics() {
         if (isProd) {
-            insights.init('TelOpGhJG0jZQtCk');
+            // see https://getinsights.io/projects/TelOpGhJG0jZQtCk
+            insights.init('TelOpGhJG0jZQtCk')
+            insights.trackPages({hash: true, search: true})
         }
     }
 
@@ -305,6 +307,7 @@ window.onload = function () {
                     referrer: insights.parameters.referrer().value,
                 }
             })
+            Sentry.captureException(new Error(JSON.stringify({name, ...details})))
         } else {
             console.log("trackError", name, details)
         }

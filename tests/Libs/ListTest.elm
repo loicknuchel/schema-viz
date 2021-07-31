@@ -14,4 +14,10 @@ suite =
             , test "last" (\_ -> [ "a", "b" ] |> L.addAt "c" 2 |> Expect.equal [ "a", "b", "c" ])
             , test "after" (\_ -> [ "a", "b" ] |> L.addAt "c" 5 |> Expect.equal [ "a", "b", "c" ])
             ]
+        , describe "dropWhile"
+            [ test "drop items while its true" (\_ -> [ 1, 2, 3, 4, 5 ] |> L.dropWhile (\i -> i < 3) |> Expect.equal [ 3, 4, 5 ])
+            ]
+        , describe "dropUntil"
+            [ test "drop items while its false" (\_ -> [ 1, 2, 3, 4, 5 ] |> L.dropUntil (\i -> i == 3) |> Expect.equal [ 3, 4, 5 ])
+            ]
         ]

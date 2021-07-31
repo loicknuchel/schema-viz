@@ -1,4 +1,4 @@
-module PagesComponents.App.Updates.Table exposing (hideAllTables, hideColumn, hideColumns, hideTable, showAllTables, showColumn, showColumns, showTable, showTables, sortColumns)
+module PagesComponents.App.Updates.Table exposing (hideAllTables, hideColumn, hideColumns, hideTable, hoverNextColumn, showAllTables, showColumn, showColumns, showTable, showTables, sortColumns)
 
 import Dict
 import Libs.Bool exposing (cond)
@@ -6,8 +6,8 @@ import Libs.List as L
 import Libs.Maybe as M
 import Libs.Ned as Ned
 import Libs.Nel as Nel
-import Models.Schema exposing (ColumnName, Layout, Schema, Table, TableId, extractColumnIndex, extractColumnType, inIndexes, inPrimaryKey, inUniques, initTableProps, showTableId, withNullableInfo)
-import PagesComponents.App.Models exposing (Msg)
+import Models.Schema exposing (ColumnName, ColumnRef, Layout, Schema, Table, TableId, extractColumnIndex, extractColumnType, inIndexes, inPrimaryKey, inUniques, initTableProps, showTableId, withNullableInfo)
+import PagesComponents.App.Models as Models exposing (Msg)
 import PagesComponents.App.Updates.Helpers exposing (setLayout)
 import Ports exposing (activateTooltipsAndPopovers, observeTableSize, observeTablesSize, toastError, toastInfo)
 
@@ -93,6 +93,18 @@ showColumn table column layout =
 hideColumn : TableId -> ColumnName -> Layout -> Layout
 hideColumn table column layout =
     { layout | tables = layout.tables |> Dict.update table (Maybe.map (\t -> { t | columns = t.columns |> List.filter (\c -> not (c == column)) })) }
+
+
+hoverNextColumn : TableId -> ColumnName -> Models.Model -> Models.Model
+hoverNextColumn table column model =
+    let
+        nextColumn : Maybe ColumnName
+        nextColumn =
+            model.schema
+                |> Maybe.andThen (\s -> s.layout.tables |> Dict.get table)
+                |> Maybe.andThen (\p -> p.columns |> L.dropUntil (\c -> c == column) |> List.drop 1 |> List.head)
+    in
+    { model | hover = model.hover |> (\h -> { h | column = nextColumn |> Maybe.map (\c -> ColumnRef table c) }) }
 
 
 sortColumns : TableId -> String -> Schema -> Schema

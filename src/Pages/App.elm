@@ -15,7 +15,7 @@ import PagesComponents.App.Updates.Canvas exposing (fitCanvas, handleWheel, zoom
 import PagesComponents.App.Updates.Helpers exposing (decodeErrorToHtml, setCanvas, setDictTable, setLayout, setSchema, setSchemaWithCmd, setSwitch, setTables, setTime)
 import PagesComponents.App.Updates.Layout exposing (createLayout, deleteLayout, loadLayout, updateLayout)
 import PagesComponents.App.Updates.Schema exposing (createSampleSchema, createSchema, useSchema)
-import PagesComponents.App.Updates.Table exposing (hideAllTables, hideColumn, hideColumns, hideTable, showAllTables, showColumn, showColumns, showTable, showTables, sortColumns)
+import PagesComponents.App.Updates.Table exposing (hideAllTables, hideColumn, hideColumns, hideTable, hoverNextColumn, showAllTables, showColumn, showColumns, showTable, showTables, sortColumns)
 import PagesComponents.App.View exposing (viewApp)
 import PagesComponents.Containers as Containers
 import Ports exposing (JsMsg(..), activateTooltipsAndPopovers, click, dropSchema, hideOffcanvas, listenHotkeys, loadSchemas, observeSize, onJsMessage, readFile, saveSchema, showModal, toastError, toastInfo, toastWarning, trackJsonError, trackPage, trackSchemaEvent)
@@ -148,7 +148,7 @@ update msg model =
             model |> setSchemaWithCmd showAllTables
 
         HideColumn { table, column } ->
-            ( model |> setSchema (setLayout (hideColumn table column)), Cmd.none )
+            ( model |> hoverNextColumn table column |> setSchema (setLayout (hideColumn table column)), Cmd.none )
 
         ShowColumn { table, column } ->
             ( model |> setSchema (setLayout (showColumn table column)), activateTooltipsAndPopovers )

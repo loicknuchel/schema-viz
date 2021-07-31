@@ -1,4 +1,4 @@
-module Libs.List exposing (addAt, addIf, appendOn, filterMap, filterZip, find, get, groupBy, has, hasNot, indexOf, nonEmpty, prependOn, resultCollect, resultSeq, zipWith)
+module Libs.List exposing (addAt, addIf, appendOn, dropUntil, dropWhile, filterMap, filterZip, find, get, groupBy, has, hasNot, indexOf, nonEmpty, prependOn, resultCollect, resultSeq, zipWith)
 
 import Dict exposing (Dict)
 import Libs.Bool as B
@@ -98,6 +98,25 @@ appendOn maybe transform list =
 zipWith : (a -> b) -> List a -> List ( a, b )
 zipWith transform list =
     list |> List.map (\a -> ( a, transform a ))
+
+
+dropWhile : (a -> Bool) -> List a -> List a
+dropWhile predicate list =
+    case list of
+        [] ->
+            []
+
+        x :: xs ->
+            if predicate x then
+                dropWhile predicate xs
+
+            else
+                list
+
+
+dropUntil : (a -> Bool) -> List a -> List a
+dropUntil predicate list =
+    dropWhile (\a -> not (predicate a)) list
 
 
 groupBy : (a -> comparable) -> List a -> Dict comparable (Nel a)

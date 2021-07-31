@@ -105,7 +105,16 @@ window.onload = function () {
         const now = Date.now()
         schema.info.updated = now
         if (localStorage.getItem(key) == null) { schema.info.created = now }
-        localStorage.setItem(key, JSON.stringify(schema))
+        try {
+            localStorage.setItem(key, JSON.stringify(schema))
+        } catch (e) {
+            if (e.code === DOMException.QUOTA_EXCEEDED_ERR) {
+                showToast({kind: 'error', message: "Can't save schema, storage quota exceeded. Use a smaller schema or clean unused ones."})
+            } else {
+                showToast({kind: 'error', message: "Can't save schema: " + e.message})
+            }
+            trackError('local-storage', {error: e.name, message: e.message})
+        }
     }
     function dropSchema(schema) {
         localStorage.removeItem(schemaPrefix + schema.id)

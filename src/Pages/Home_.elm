@@ -1,10 +1,10 @@
 module Pages.Home_ exposing (Model, Msg, page)
 
 import Gen.Params.Home_ exposing (Params)
-import Page exposing (Page)
+import Page
 import PagesComponents.Home_.View exposing (viewHome)
 import Ports exposing (trackPage)
-import Request exposing (Request)
+import Request
 import Shared
 import View exposing (View)
 

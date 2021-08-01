@@ -1,8 +1,8 @@
 module DataSources.SqlParser.Parsers.SelectTest exposing (..)
 
+import DataSources.SqlParser.Parsers.Select exposing (SelectColumn(..), SelectTable(..), parseSelect, parseSelectColumn, parseSelectTable)
 import Expect
 import Libs.Nel exposing (Nel)
-import DataSources.SqlParser.Parsers.Select exposing (SelectColumn(..), SelectTable(..), parseSelect, parseSelectColumn, parseSelectTable)
 import Test exposing (Test, describe, test)
 
 

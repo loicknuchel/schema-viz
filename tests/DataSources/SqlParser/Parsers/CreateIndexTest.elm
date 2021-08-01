@@ -1,8 +1,8 @@
 module DataSources.SqlParser.Parsers.CreateIndexTest exposing (..)
 
-import Libs.Nel exposing (Nel)
 import DataSources.SqlParser.Parsers.CreateIndex exposing (parseCreateIndex)
 import DataSources.SqlParser.Utils.HelpersTest exposing (stmCheck)
+import Libs.Nel exposing (Nel)
 import Test exposing (Test, describe)
 
 

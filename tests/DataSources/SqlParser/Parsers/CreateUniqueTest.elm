@@ -1,8 +1,8 @@
 module DataSources.SqlParser.Parsers.CreateUniqueTest exposing (..)
 
-import Libs.Nel exposing (Nel)
 import DataSources.SqlParser.Parsers.CreateUnique exposing (parseCreateUniqueIndex)
 import DataSources.SqlParser.Utils.HelpersTest exposing (stmCheck)
+import Libs.Nel exposing (Nel)
 import Test exposing (Test, describe)
 
 

@@ -1,8 +1,8 @@
 module DataSources.SqlParser.Utils.HelpersTest exposing (..)
 
-import Expect
 import DataSources.SqlParser.Utils.Helpers exposing (buildRawSql, commaSplit)
 import DataSources.SqlParser.Utils.Types exposing (SqlStatement)
+import Expect
 import Test exposing (Test, describe, test)
 
 

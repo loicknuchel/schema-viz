@@ -1,8 +1,8 @@
 module DataSources.SqlParser.Parsers.AlterTableTest exposing (..)
 
-import Libs.Nel exposing (Nel)
 import DataSources.SqlParser.Parsers.AlterTable exposing (ColumnUpdate(..), TableConstraint(..), TableUpdate(..), parseAlterTable)
 import DataSources.SqlParser.Utils.HelpersTest exposing (stmCheck)
+import Libs.Nel exposing (Nel)
 import Test exposing (Test, describe)
 
 

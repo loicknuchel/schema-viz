@@ -108,8 +108,8 @@ viewGetSchemaInstructions =
                 [ text "An "
                 , bText "SQL schema"
                 , text " is a SQL file with all the needed instructions to create your database, so it contains your database structure. Here are some ways to get it:"
-                , ul []
-                    [ li [] [ bText "Export it", text " from your database: connect to your database using your favorite client and follow the instructions to extract the schema (ex: ", a [ href "https://stackoverflow.com/a/54504510/15051232" ] [ text "DBeaver" ], text ")" ]
+                , ul [ class "list-disc list-inside" ]
+                    [ li [] [ bText "Export it", text " from your database: connect to your database using your favorite client and follow the instructions to extract the schema (ex: ", a [ href "https://stackoverflow.com/a/54504510/15051232", class "link" ] [ text "DBeaver" ], text ")" ]
                     , li [] [ bText "Find it", text " in your project: some frameworks like Rails store the schema in your project, so you may have it (ex: with Rails it's ", codeText "db/structure.sql", text " if you use the SQL version)" ]
                     ]
                 , text "If you have no idea on what I'm talking about just before, ask to the developers working on the project or your database administrator 😇"
@@ -136,9 +136,9 @@ viewFooter =
     p [ class "fw-lighter fst-italic text-muted" ]
         [ bText "Schema Viz"
         , text " is an "
-        , a [ href "https://github.com/loicknuchel/schema-viz", target "_blank" ] [ text "open source tool" ]
+        , a [ href "https://github.com/loicknuchel/schema-viz", class "link", target "_blank" ] [ text "open source tool" ]
         , text " done by "
-        , a [ href "https://twitter.com/sbouaked", target "_blank" ] [ text "@sbouaked" ]
+        , a [ href "https://twitter.com/sbouaked", class "link", target "_blank" ] [ text "@sbouaked" ]
         , text " and "
-        , a [ href "https://twitter.com/loicknuchel", target "_blank" ] [ text "@loicknuchel" ]
+        , a [ href "https://twitter.com/loicknuchel", class "link", target "_blank" ] [ text "@loicknuchel" ]
         ]

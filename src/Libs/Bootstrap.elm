@@ -1,9 +1,9 @@
-module Libs.Bootstrap exposing (BsColor(..), Toggle(..), ariaExpanded, ariaHidden, ariaLabel, ariaLabelledBy, bsBackdrop, bsButton, bsButtonGroup, bsDismiss, bsDropdown, bsKeyboard, bsModal, bsScroll, bsToggle, bsToggleCollapse, bsToggleCollapseLink, bsToggleDropdown, bsToggleModal, bsToggleOffcanvas)
+module Libs.Bootstrap exposing (BsColor(..), Toggle(..), bsBackdrop, bsButton, bsButtonGroup, bsDismiss, bsDropdown, bsKeyboard, bsModal, bsScroll, bsToggle, bsToggleCollapse, bsToggleCollapseLink, bsToggleDropdown, bsToggleModal, bsToggleOffcanvas)
 
 import Html exposing (Attribute, Html, button, div, h5, text)
 import Html.Attributes exposing (attribute, class, href, id, tabindex, type_)
 import Libs.Bool as B
-import Libs.Html.Attributes exposing (role)
+import Libs.Html.Attributes exposing (ariaControls, ariaExpanded, ariaHidden, ariaLabel, ariaLabelledBy, role)
 import Libs.Models exposing (HtmlId, Text)
 
 
@@ -73,31 +73,6 @@ bsBackdrop value =
 bsKeyboard : Bool -> Attribute msg
 bsKeyboard value =
     attribute "data-bs-keyboard" (B.toString value)
-
-
-ariaExpanded : Bool -> Attribute msg
-ariaExpanded value =
-    attribute "aria-expanded" (B.toString value)
-
-
-ariaHidden : Bool -> Attribute msg
-ariaHidden value =
-    attribute "aria-hidden" (B.toString value)
-
-
-ariaControls : HtmlId -> Attribute msg
-ariaControls targetId =
-    attribute "aria-controls" targetId
-
-
-ariaLabel : Text -> Attribute msg
-ariaLabel text =
-    attribute "aria-label" text
-
-
-ariaLabelledBy : HtmlId -> Attribute msg
-ariaLabelledBy targetId =
-    attribute "aria-labelledby" targetId
 
 
 bsToggleDropdown : HtmlId -> List (Attribute msg)

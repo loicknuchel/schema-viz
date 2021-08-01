@@ -7,7 +7,8 @@ import FontAwesome.Solid as Icon
 import Html exposing (Html, b, button, div, form, img, input, li, nav, span, text, ul)
 import Html.Attributes exposing (alt, attribute, autocomplete, class, height, id, placeholder, src, title, type_, value)
 import Html.Events exposing (onClick, onInput)
-import Libs.Bootstrap exposing (BsColor(..), Toggle(..), ariaExpanded, ariaLabel, bsButton, bsToggle, bsToggleCollapse, bsToggleDropdown, bsToggleModal, bsToggleOffcanvas)
+import Libs.Bootstrap exposing (BsColor(..), Toggle(..), bsButton, bsToggle, bsToggleCollapse, bsToggleDropdown, bsToggleModal, bsToggleOffcanvas)
+import Libs.Html.Attributes exposing (ariaExpanded, ariaLabel)
 import Libs.Models exposing (Text)
 import Libs.Ned as Ned
 import Libs.Nel as Nel exposing (Nel)

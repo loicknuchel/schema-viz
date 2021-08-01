@@ -8,7 +8,8 @@ import Html exposing (Html, a, button, div, h5, text)
 import Html.Attributes exposing (class, href, id, style, tabindex, title, type_)
 import Html.Events exposing (onClick)
 import Libs.Bool exposing (cond)
-import Libs.Bootstrap exposing (BsColor(..), Toggle(..), ariaLabel, ariaLabelledBy, bsBackdrop, bsButton, bsButtonGroup, bsDismiss, bsScroll, bsToggle)
+import Libs.Bootstrap exposing (BsColor(..), Toggle(..), bsBackdrop, bsButton, bsButtonGroup, bsDismiss, bsScroll, bsToggle)
+import Libs.Html.Attributes exposing (ariaLabel, ariaLabelledBy)
 import Libs.List as L
 import Libs.Ned as Ned
 import Libs.Nel as Nel exposing (Nel)

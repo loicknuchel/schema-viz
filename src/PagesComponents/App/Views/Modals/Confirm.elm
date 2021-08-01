@@ -4,7 +4,8 @@ import Conf exposing (conf)
 import Html exposing (Html, button, div, h5, text)
 import Html.Attributes exposing (autofocus, class, id, tabindex, type_)
 import Html.Events exposing (onClick)
-import Libs.Bootstrap exposing (Toggle(..), ariaHidden, ariaLabel, ariaLabelledBy, bsBackdrop, bsDismiss, bsKeyboard)
+import Libs.Bootstrap exposing (Toggle(..), bsBackdrop, bsDismiss, bsKeyboard)
+import Libs.Html.Attributes exposing (ariaHidden, ariaLabel, ariaLabelledBy)
 import PagesComponents.App.Models exposing (Confirm, Msg(..))
 
 

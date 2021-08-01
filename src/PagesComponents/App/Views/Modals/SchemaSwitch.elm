@@ -8,9 +8,9 @@ import FontAwesome.Solid as Icon
 import Html exposing (Html, a, br, button, div, h5, label, li, p, small, span, text, ul)
 import Html.Attributes exposing (class, for, href, id, style, target, title, type_)
 import Html.Events exposing (onClick)
-import Libs.Bootstrap exposing (BsColor(..), Toggle(..), ariaExpanded, ariaLabelledBy, bsButton, bsModal, bsToggle, bsToggleCollapseLink)
+import Libs.Bootstrap exposing (BsColor(..), Toggle(..), bsButton, bsModal, bsToggle, bsToggleCollapseLink)
 import Libs.Html exposing (bText, codeText, divIf)
-import Libs.Html.Attributes exposing (role)
+import Libs.Html.Attributes exposing (ariaExpanded, ariaLabelledBy, role)
 import Libs.String as S
 import Models.Schema exposing (Schema)
 import PagesComponents.App.Models exposing (Msg(..), Switch, TimeInfo)

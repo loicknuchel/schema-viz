@@ -1,4 +1,4 @@
-module Libs.List exposing (addAt, addIf, appendOn, dropUntil, dropWhile, filterMap, filterZip, find, get, groupBy, has, hasNot, indexOf, nonEmpty, prependOn, resultCollect, resultSeq, zipWith)
+module Libs.List exposing (addAt, addIf, appendOn, dropUntil, dropWhile, filterMap, filterZip, find, get, groupBy, has, hasNot, indexOf, nonEmpty, prependOn, resultCollect, resultSeq, unique, zipWith)
 
 import Dict exposing (Dict)
 import Libs.Bool as B
@@ -117,6 +117,12 @@ dropWhile predicate list =
 dropUntil : (a -> Bool) -> List a -> List a
 dropUntil predicate list =
     dropWhile (\a -> not (predicate a)) list
+
+
+unique : List comparable -> List comparable
+unique list =
+    -- TODO better code here
+    list |> List.map (\a -> ( a, True )) |> Dict.fromList |> Dict.keys
 
 
 groupBy : (a -> comparable) -> List a -> Dict comparable (Nel a)

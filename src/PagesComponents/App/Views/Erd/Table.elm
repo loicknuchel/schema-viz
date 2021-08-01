@@ -188,12 +188,12 @@ viewColumnDropdown incomingColumnRelations ref element =
 
 viewShowAllOption : List Relation -> List (Html Msg)
 viewShowAllOption incomingRelations =
-    case incomingRelations |> List.filter (\r -> r.src.props == Nothing) of
+    case incomingRelations |> List.filter (\r -> r.src.props == Nothing) |> List.map (\r -> r.src.table.id) |> L.unique of
         [] ->
             []
 
         rels ->
-            [ li [] [ button [ type_ "button", class "dropdown-item", onClick (ShowTables (rels |> List.map (\r -> r.src.table.id))) ] [ text "Show all" ] ] ]
+            [ li [] [ button [ type_ "button", class "dropdown-item", onClick (ShowTables rels) ] [ text ("Show all (" ++ String.fromInt (List.length rels) ++ " tables)") ] ] ]
 
 
 viewColumnName : Table -> Column -> Html msg

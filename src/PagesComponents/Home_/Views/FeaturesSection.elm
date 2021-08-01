@@ -29,7 +29,7 @@ viewFeaturesSection =
                         [ blockquote []
                             [ div []
                                 [ p [ class "text-base text-gray-500" ]
-                                    [ text "“Cras velit quis eros eget rhoncus lacus ultrices sed diam. Sit orci risus aenean curabitur donec aliquet. Mi venenatis in euismod ut.”" ]
+                                    [ text "“Being able to see only the relevant tables/columns and follow relations (incoming and outgoing) was a real game changer when working with hundreds of tables”" ]
                                 ]
                             , footer [ class "mt-3" ]
                                 [ div [ class "flex items-center space-x-3" ]

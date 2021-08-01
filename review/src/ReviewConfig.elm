@@ -21,8 +21,6 @@ import NoMissingTypeExpose
 import NoRecursiveUpdate
 import NoUnused.CustomTypeConstructors
 import NoUnused.Dependencies
-import NoUnused.Exports
-import NoUnused.Modules
 import NoUnused.Parameters
 import NoUnused.Patterns
 import NoUnused.Variables
@@ -41,8 +39,6 @@ config =
     , NoMissingTypeExpose.rule |> Rule.ignoreErrorsForDirectories [ ".elm-spa" ]
     , NoUnused.CustomTypeConstructors.rule [] |> Rule.ignoreErrorsForDirectories [ ".elm-spa", "src/Libs" ]
     , NoUnused.Dependencies.rule
-    , NoUnused.Exports.rule |> Rule.ignoreErrorsForDirectories [ ".elm-spa", "src/Libs" ]
-    , NoUnused.Modules.rule |> Rule.ignoreErrorsForDirectories [ ".elm-spa", "src/Libs" ]
     , NoUnused.Parameters.rule |> Rule.ignoreErrorsForDirectories [ ".elm-spa" ]
     , NoUnused.Patterns.rule
     , NoUnused.Variables.rule |> Rule.ignoreErrorsForDirectories [ ".elm-spa", "src/Libs", "tests/Libs" ]

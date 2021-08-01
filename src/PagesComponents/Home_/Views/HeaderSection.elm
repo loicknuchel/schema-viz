@@ -1,4 +1,4 @@
-module PagesComponents.Website.Views.HeaderSection exposing (viewHeaderSection)
+module PagesComponents.Home_.Views.HeaderSection exposing (viewHeaderSection)
 
 import Gen.Route as Route
 import Html exposing (Html, a, div, header, img, span, text)

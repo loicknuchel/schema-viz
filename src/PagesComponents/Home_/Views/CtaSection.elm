@@ -1,4 +1,4 @@
-module PagesComponents.Website.Views.CtaSection exposing (viewCtaSection)
+module PagesComponents.Home_.Views.CtaSection exposing (viewCtaSection)
 
 import Gen.Route as Route
 import Html exposing (Html, a, div, h2, span, text)

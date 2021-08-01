@@ -1,4 +1,4 @@
-module PagesComponents.Website.Views.HeroSection exposing (viewHeroSection)
+module PagesComponents.Home_.Views.HeroSection exposing (viewHeroSection)
 
 import Gen.Route as Route
 import Html exposing (Html, a, div, h1, img, p, span, text)

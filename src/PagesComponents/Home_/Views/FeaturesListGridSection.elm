@@ -1,4 +1,4 @@
-module PagesComponents.Website.Views.FeaturesListGridSection exposing (viewFeaturesListGridSection)
+module PagesComponents.Home_.Views.FeaturesListGridSection exposing (viewFeaturesListGridSection)
 
 import Html exposing (Html, div, h2, h3, main_, p, span, text)
 import Html.Attributes as Attr

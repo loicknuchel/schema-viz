@@ -1,4 +1,4 @@
-module PagesComponents.Website.Views.LogoCloudSection exposing (viewLogoCloudSection)
+module PagesComponents.Home_.Views.LogoCloudSection exposing (viewLogoCloudSection)
 
 import Html exposing (Html, div, img, p, text)
 import Html.Attributes as Attr

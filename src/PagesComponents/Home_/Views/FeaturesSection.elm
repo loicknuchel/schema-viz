@@ -1,4 +1,4 @@
-module PagesComponents.Website.Views.FeaturesSection exposing (viewFeaturesSection)
+module PagesComponents.Home_.Views.FeaturesSection exposing (viewFeaturesSection)
 
 import Gen.Route as Route
 import Html exposing (Html, a, blockquote, div, footer, h2, img, p, text)

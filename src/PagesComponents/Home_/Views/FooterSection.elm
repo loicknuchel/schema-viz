@@ -1,4 +1,4 @@
-module PagesComponents.Website.Views.FooterSection exposing (viewFooterSection)
+module PagesComponents.Home_.Views.FooterSection exposing (viewFooterSection)
 
 import Html exposing (Html, a, div, footer, h2, p, span, text)
 import Html.Attributes as Attr

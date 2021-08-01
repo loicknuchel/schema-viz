@@ -94,7 +94,11 @@ viewSampleSchemas =
         , div [ class "dropdown", style "display" "inline-block" ]
             [ button [ type_ "button", class "link link-primary", id "schema-samples", bsToggle Dropdown, ariaExpanded False ] [ text "an example" ]
             , ul [ class "dropdown-menu", ariaLabelledBy "schema-samples" ]
-                (schemaSamples |> Dict.toList |> List.map (\( name, ( tables, _ ) ) -> li [] [ button [ type_ "button", class "dropdown-item", onClick (LoadSampleData name) ] [ text (name ++ " (" ++ String.fromInt tables ++ " tables)") ] ]))
+                (schemaSamples
+                    |> Dict.toList
+                    |> List.sortBy (\( _, ( tables, _ ) ) -> tables)
+                    |> List.map (\( name, ( tables, _ ) ) -> li [] [ button [ type_ "button", class "dropdown-item", onClick (LoadSampleData name) ] [ text (name ++ " (" ++ String.fromInt tables ++ " tables)") ] ])
+                )
             ]
         ]
 

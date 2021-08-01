@@ -52,8 +52,7 @@ conf =
 schemaSamples : Dict String ( Int, String )
 schemaSamples =
     Dict.fromList
-        (List.reverse
-            [ ( "basic schema", ( 4, "samples/basic.json" ) )
-            , ( "gospeak.io", ( 26, "samples/gospeak.sql" ) )
-            ]
-        )
+        [ ( "basic schema", ( 4, "samples/basic.json" ) )
+        , ( "wordpress", ( 12, "samples/wordpress.sql" ) )
+        , ( "gospeak.io", ( 26, "samples/gospeak.sql" ) )
+        ]

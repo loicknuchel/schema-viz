@@ -1,7 +1,7 @@
-module PagesComponents.Home_.View exposing (viewWebsite)
+module PagesComponents.Home_.View exposing (viewHome)
 
 import Html exposing (Html, div)
-import Html.Attributes as Attr
+import Html.Attributes exposing (class)
 import PagesComponents.Home_.Views.CtaSection exposing (viewCtaSection)
 import PagesComponents.Home_.Views.FeaturesListGridSection exposing (viewFeaturesListGridSection)
 import PagesComponents.Home_.Views.FeaturesSection exposing (viewFeaturesSection)
@@ -10,10 +10,14 @@ import PagesComponents.Home_.Views.HeaderSection exposing (viewHeaderSection)
 import PagesComponents.Home_.Views.HeroSection exposing (viewHeroSection)
 
 
-viewWebsite : List (Html msg)
-viewWebsite =
-    []
-        ++ [ div
-                [ Attr.class "bg-white" ]
-                [ viewHeaderSection, viewHeroSection, viewFeaturesSection, viewFeaturesListGridSection, viewCtaSection, viewFooterSection ]
-           ]
+viewHome : List (Html msg)
+viewHome =
+    [ div [ class "bg-white" ]
+        [ viewHeaderSection
+        , viewHeroSection
+        , viewFeaturesSection
+        , viewFeaturesListGridSection
+        , viewCtaSection
+        , viewFooterSection
+        ]
+    ]

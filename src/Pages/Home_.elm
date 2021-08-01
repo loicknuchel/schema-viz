@@ -2,7 +2,7 @@ module Pages.Home_ exposing (Model, Msg, page)
 
 import Gen.Params.Home_ exposing (Params)
 import Page exposing (Page)
-import PagesComponents.Home_.View exposing (viewWebsite)
+import PagesComponents.Home_.View exposing (viewHome)
 import Ports exposing (trackPage)
 import Request exposing (Request)
 import Shared
@@ -40,7 +40,7 @@ update _ model =
 view : Model -> View msg
 view _ =
     { title = "Schema Viz"
-    , body = viewWebsite
+    , body = viewHome
     }
 
 

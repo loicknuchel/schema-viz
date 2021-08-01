@@ -1,7 +1,7 @@
 module PagesComponents.Home_.Views.FeaturesSection exposing (viewFeaturesSection)
 
 import Gen.Route as Route
-import Html exposing (Html, a, blockquote, div, footer, h2, img, p, text)
+import Html exposing (Html, a, blockquote, div, footer, h2, img, p, span, text)
 import Html.Attributes exposing (alt, class, href, src)
 import Libs.Html.Attributes exposing (ariaHidden)
 
@@ -44,7 +44,11 @@ viewFeaturesSection =
                     ]
                 , div [ class "mt-12 sm:mt-16 lg:mt-0" ]
                     [ div [ class "pl-4 -mr-48 sm:pl-6 md:-mr-16 lg:px-0 lg:m-0 lg:relative lg:h-full" ]
-                        [ img [ class "w-full rounded-xl shadow-xl ring-1 ring-black ring-opacity-5 lg:absolute lg:left-0 lg:h-full lg:w-auto lg:max-w-none", src "/assets/schema-viz-screenshot.png", alt "Schema Viz screenshot" ] [] ]
+                        [ span [ class "img-swipe" ]
+                            [ img [ class "w-full rounded-xl shadow-xl ring-1 ring-black ring-opacity-5 lg:absolute lg:left-0 lg:h-full lg:w-auto lg:max-w-none img-default", src "/assets/schema-viz-screenshot.png", alt "Schema Viz screenshot" ] []
+                            , img [ class "w-full rounded-xl shadow-xl ring-1 ring-black ring-opacity-5 lg:absolute lg:left-0 lg:h-full lg:w-auto lg:max-w-none img-hover", src "/assets/schema-viz-screenshot-complex.png", alt "Schema Viz screenshot" ] []
+                            ]
+                        ]
                     ]
                 ]
             ]

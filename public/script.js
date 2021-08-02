@@ -1,10 +1,9 @@
 window.onload = function () {
     const isDev = window.location.hostname === 'localhost'
     const isProd = window.location.hostname === 'schema-viz.netlify.app'
-    const isAdmin = JSON.parse(localStorage.getItem('is-admin'))
-    const shouldTrack = isProd && !isAdmin
-    const analytics = initAnalytics(shouldTrack)
-    const errorTracking = initErrorTracking(shouldTrack)
+    const skipAnalytics = !!JSON.parse(localStorage.getItem('skip-analytics'))
+    const analytics = initAnalytics(isProd && !skipAnalytics)
+    const errorTracking = initErrorTracking(isProd)
     const app = Elm.Main.init()
 
 
@@ -33,7 +32,7 @@ window.onload = function () {
                 case 'ListenKeys':    listenHotkeys(msg.keys); break;
                 case 'TrackPage':     analytics.then(a => a.trackPage(msg.name)); break;
                 case 'TrackEvent':    analytics.then(a => a.trackEvent(msg.name, msg.details)); break;
-                case 'TrackError':    analytics.then(a => a.trackError(msg.name, msg.details)); errorTracking.then(e => e.track(msg.name, msg.details)); break;
+                case 'TrackError':    analytics.then(a => a.trackError(msg.name, msg.details)); errorTracking.then(e => e.trackError(msg.name, msg.details)); break;
                 default: console.error('Unsupported Elm message', msg); break;
             }
         }, 100)
@@ -171,6 +170,76 @@ window.onload = function () {
     }
 
 
+    /* Tracking */
+
+    function initAnalytics(shouldTrack) {
+        if (shouldTrack) {
+            // see https://getinsights.io/projects/TelOpGhJG0jZQtCk
+            // initial: https://getinsights.io/js/insights.js
+            return loadScript('/assets/insights.js').then(() => {
+                insights.init('TelOpGhJG0jZQtCk')
+                insights.trackPages({hash: true, search: true})
+                return {
+                    trackPage: name => {
+                        insights.track({
+                            id: 'page-view',
+                            parameters: {
+                                name,
+                                path: insights.parameters.path().value,
+                                locale: insights.parameters.locale().value,
+                                screenType: insights.parameters.screenType().value,
+                                referrer: insights.parameters.referrer().value,
+                            }
+                        })
+                    },
+                    trackEvent: (name, details) => {
+                        insights.track({
+                            id: name,
+                            parameters: {
+                                ...details,
+                                locale: insights.parameters.locale().value,
+                                screenType: insights.parameters.screenType().value,
+                                referrer: insights.parameters.referrer().value,
+                            }
+                        })
+                    },
+                    trackError: (name, details) => {
+                        insights.track({
+                            id: name + '-error',
+                            parameters: {
+                                ...details,
+                                locale: insights.parameters.locale().value,
+                                screenType: insights.parameters.screenType().value,
+                                referrer: insights.parameters.referrer().value,
+                            }
+                        })
+                    }
+                }
+            })
+        } else {
+            return Promise.resolve({
+                trackPage: name => console.log('analytics.page', name),
+                trackEvent: (name, details) => console.log('analytics.event', name, details),
+                trackError: (name, details) => console.log('analytics.error', name, details)
+            })
+        }
+    }
+
+    function initErrorTracking(shouldTrack) {
+        if (shouldTrack) {
+            // see https://sentry.io
+            // initial: https://js.sentry-cdn.com/268b122ecafb4f20b6316b87246e509c.min.js
+            return loadScript('/assets/sentry-268b122ecafb4f20b6316b87246e509c.min.js').then(() => ({
+                trackError: (name, details) => Sentry.captureException(new Error(JSON.stringify({name, ...details})))
+            }))
+        } else {
+            return Promise.resolve({
+                trackError: (name, details) => console.log('error.track', name, details)
+            })
+        }
+    }
+
+
     /* Bootstrap helpers */
 
     // hide tooltip on click (avoid orphan tooltips when element is removed)
@@ -266,73 +335,8 @@ window.onload = function () {
             script.src = url
             script.type='text/javascript'
             script.addEventListener('load', resolve)
+            script.addEventListener('error', reject)
             document.getElementsByTagName('head')[0].appendChild(script)
         })
-    }
-
-    function initAnalytics(shouldTrack) {
-        if (shouldTrack) {
-            // see https://getinsights.io/projects/TelOpGhJG0jZQtCk
-            return loadScript('/assets/insights.js').then(() => {
-                insights.init('TelOpGhJG0jZQtCk')
-                insights.trackPages({hash: true, search: true})
-                return {
-                    trackPage: name => {
-                        insights.track({
-                            id: 'page-view',
-                            parameters: {
-                                name,
-                                path: insights.parameters.path().value,
-                                locale: insights.parameters.locale().value,
-                                screenType: insights.parameters.screenType().value,
-                                referrer: insights.parameters.referrer().value,
-                            }
-                        })
-                    },
-                    trackEvent: (name, details) => {
-                        insights.track({
-                            id: name,
-                            parameters: {
-                                ...details,
-                                locale: insights.parameters.locale().value,
-                                screenType: insights.parameters.screenType().value,
-                                referrer: insights.parameters.referrer().value,
-                            }
-                        })
-                    },
-                    trackError: (name, details) => {
-                        insights.track({
-                            id: name + '-error',
-                            parameters: {
-                                ...details,
-                                locale: insights.parameters.locale().value,
-                                screenType: insights.parameters.screenType().value,
-                                referrer: insights.parameters.referrer().value,
-                            }
-                        })
-                    }
-                }
-            })
-        } else {
-            return Promise.resolve({
-                trackPage: name => console.log('analytics.trackPage', name),
-                trackEvent: (name, details) => console.log('analytics.trackEvent', name, details),
-                trackError: (name, details) => console.log('analytics.trackError', name, details)
-            })
-        }
-    }
-
-    function initErrorTracking(shouldTrack) {
-        if (shouldTrack) {
-            return loadScript('https://js.sentry-cdn.com/268b122ecafb4f20b6316b87246e509c.min.js').then(() => {
-                return {
-                    track: (name, details) => Sentry.captureException(new Error(JSON.stringify({name, ...details})))
-                }
-            })
-        } else {
-            return Promise.resolve({
-                track: (name, details) => console.log('error.track', name, details)
-            })
-        }
     }
 }

@@ -1,7 +1,8 @@
-module Libs.List exposing (addAt, addIf, appendOn, dropUntil, dropWhile, filterMap, filterZip, find, get, groupBy, has, hasNot, indexOf, nonEmpty, prependOn, resultCollect, resultSeq, unique, zipWith)
+module Libs.List exposing (addAt, addIf, appendOn, dropUntil, dropWhile, filterMap, filterZip, find, findBy, get, groupBy, has, hasNot, indexOf, memberBy, nonEmpty, prependOn, resultCollect, resultSeq, unique, uniqueBy, updateBy, zipWith)
 
 import Dict exposing (Dict)
 import Libs.Bool as B
+import Libs.Maybe as M
 import Libs.Nel as Nel exposing (Nel)
 import Random
 
@@ -30,9 +31,24 @@ find predicate list =
                 find predicate rest
 
 
+findBy : (a -> b) -> b -> List a -> Maybe a
+findBy matcher value list =
+    find (\a -> matcher a == value) list
+
+
+memberBy : (a -> b) -> b -> List a -> Bool
+memberBy matcher value list =
+    findBy matcher value list |> M.isJust
+
+
 indexOf : a -> List a -> Maybe Int
 indexOf item xs =
     xs |> List.indexedMap (\i a -> ( i, a )) |> find (\( _, a ) -> a == item) |> Maybe.map Tuple.first
+
+
+updateBy : (a -> b) -> b -> (a -> a) -> List a -> List a
+updateBy matcher value transform list =
+    list |> List.map (\a -> B.cond (matcher a == value) (transform a) a)
 
 
 has : a -> List a -> Bool
@@ -121,8 +137,13 @@ dropUntil predicate list =
 
 unique : List comparable -> List comparable
 unique list =
-    -- TODO better code here
-    list |> List.map (\a -> ( a, True )) |> Dict.fromList |> Dict.keys
+    uniqueBy identity list
+
+
+uniqueBy : (a -> comparable) -> List a -> List a
+uniqueBy matcher list =
+    -- TODO better code here, keep the first found
+    list |> List.map (\a -> ( matcher a, a )) |> Dict.fromList |> Dict.values
 
 
 groupBy : (a -> comparable) -> List a -> Dict comparable (Nel a)

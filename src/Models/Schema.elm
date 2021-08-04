@@ -106,7 +106,7 @@ type alias SourceLine =
 
 
 type alias Layout =
-    { canvas : CanvasProps, tables : Dict TableId TableProps, hiddenTables : Dict TableId TableProps }
+    { canvas : CanvasProps, tables : List TableProps, hiddenTables : List TableProps }
 
 
 type alias CanvasProps =
@@ -114,7 +114,7 @@ type alias CanvasProps =
 
 
 type alias TableProps =
-    { position : Position, color : Color, selected : Bool, columns : List ColumnName }
+    { id : TableId, position : Position, color : Color, selected : Bool, columns : List ColumnName }
 
 
 type alias SchemaId =
@@ -255,12 +255,13 @@ buildRelation table column fk =
 
 initLayout : Layout
 initLayout =
-    { canvas = CanvasProps (Position 0 0) 1, tables = Dict.empty, hiddenTables = Dict.empty }
+    { canvas = CanvasProps (Position 0 0) 1, tables = [], hiddenTables = [] }
 
 
 initTableProps : Table -> TableProps
 initTableProps table =
-    { position = Position 0 0
+    { id = table.id
+    , position = Position 0 0
     , color = computeColor table.id
     , selected = False
     , columns = table.columns |> Ned.values |> Nel.toList |> List.sortBy (\c -> c.index |> extractColumnIndex) |> List.map .name
@@ -343,28 +344,28 @@ viewportArea size canvas =
     Area left top right bottom
 
 
-tablesArea : Dict HtmlId Size -> Dict TableId TableProps -> Area
+tablesArea : Dict HtmlId Size -> List TableProps -> Area
 tablesArea sizes tables =
     let
-        positions : List ( ( TableId, TableProps ), Size )
+        positions : List ( TableProps, Size )
         positions =
-            tables |> Dict.toList |> L.zipWith (\( id, _ ) -> sizes |> Dict.get (tableIdAsHtmlId id) |> Maybe.withDefault (Size 0 0))
+            tables |> L.zipWith (\t -> sizes |> Dict.get (tableIdAsHtmlId t.id) |> Maybe.withDefault (Size 0 0))
 
         left : Float
         left =
-            positions |> List.map (\( ( _, t ), _ ) -> t.position.left) |> List.minimum |> Maybe.withDefault 0
+            positions |> List.map (\( t, _ ) -> t.position.left) |> List.minimum |> Maybe.withDefault 0
 
         top : Float
         top =
-            positions |> List.map (\( ( _, t ), _ ) -> t.position.top) |> List.minimum |> Maybe.withDefault 0
+            positions |> List.map (\( t, _ ) -> t.position.top) |> List.minimum |> Maybe.withDefault 0
 
         right : Float
         right =
-            positions |> List.map (\( ( _, t ), s ) -> t.position.left + s.width) |> List.maximum |> Maybe.withDefault 0
+            positions |> List.map (\( t, s ) -> t.position.left + s.width) |> List.maximum |> Maybe.withDefault 0
 
         bottom : Float
         bottom =
-            positions |> List.map (\( ( _, t ), s ) -> t.position.top + s.height) |> List.maximum |> Maybe.withDefault 0
+            positions |> List.map (\( t, s ) -> t.position.top + s.height) |> List.maximum |> Maybe.withDefault 0
     in
     Area left top right bottom
 
@@ -582,8 +583,8 @@ encodeLayout : Layout -> Value
 encodeLayout value =
     E.object
         [ ( "canvas", value.canvas |> encodeCanvasProps )
-        , ( "tables", value.tables |> encodeMaybeWithoutDefault (\_ -> Encode.dict tableIdAsString encodeTableProps) Dict.empty )
-        , ( "hiddenTables", value.hiddenTables |> encodeMaybeWithoutDefault (\_ -> Encode.dict tableIdAsString encodeTableProps) Dict.empty )
+        , ( "tables", value.tables |> encodeMaybeWithoutDefault (\_ -> Encode.list encodeTableProps) [] )
+        , ( "hiddenTables", value.hiddenTables |> encodeMaybeWithoutDefault (\_ -> Encode.list encodeTableProps) [] )
         ]
 
 
@@ -591,8 +592,8 @@ decodeLayout : Decode.Decoder Layout
 decodeLayout =
     Decode.map3 Layout
         (Decode.field "canvas" decodeCanvasProps)
-        (decodeMaybeWithDefault (\_ -> Decode.field "tables" (D.dict stringAsTableId decodeTableProps)) Dict.empty)
-        (decodeMaybeWithDefault (\_ -> Decode.field "hiddenTables" (D.dict stringAsTableId decodeTableProps)) Dict.empty)
+        (decodeMaybeWithDefault (\_ -> Decode.field "tables" (Decode.list decodeTableProps)) [])
+        (decodeMaybeWithDefault (\_ -> Decode.field "hiddenTables" (Decode.list decodeTableProps)) [])
 
 
 encodeCanvasProps : CanvasProps -> Value
@@ -613,7 +614,8 @@ decodeCanvasProps =
 encodeTableProps : TableProps -> Value
 encodeTableProps value =
     E.object
-        [ ( "position", value.position |> encodePosition )
+        [ ( "id", value.id |> encodeTableId )
+        , ( "position", value.position |> encodePosition )
         , ( "color", value.color |> encodeColor )
         , ( "selected", value.selected |> encodeMaybeWithoutDefault (\_ -> Encode.bool) False )
         , ( "columns", value.columns |> encodeMaybeWithoutDefault (\_ -> Encode.list encodeColumnName) [] )
@@ -622,7 +624,8 @@ encodeTableProps value =
 
 decodeTableProps : Decode.Decoder TableProps
 decodeTableProps =
-    Decode.map4 TableProps
+    Decode.map5 TableProps
+        (Decode.field "id" decodeTableId)
         (Decode.field "position" decodePosition)
         (Decode.field "color" decodeColor)
         (decodeMaybeWithDefault (\_ -> Decode.field "selected" Decode.bool) False)

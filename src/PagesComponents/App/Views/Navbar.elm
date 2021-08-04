@@ -9,6 +9,7 @@ import Html.Attributes exposing (alt, attribute, autocomplete, class, height, id
 import Html.Events exposing (onClick, onInput)
 import Libs.Bootstrap exposing (BsColor(..), Toggle(..), bsButton, bsToggle, bsToggleCollapse, bsToggleDropdown, bsToggleModal, bsToggleOffcanvas)
 import Libs.Html.Attributes exposing (ariaExpanded, ariaLabel)
+import Libs.List as L
 import Libs.Models exposing (Text)
 import Libs.Ned as Ned
 import Libs.Nel as Nel exposing (Nel)
@@ -99,7 +100,7 @@ viewLayoutButton currentLayout layouts =
                                                     , text " "
                                                     , span [ title "Delete layout", bsToggle Tooltip, onClick (DeleteLayout name) ] [ viewIcon Icon.trashAlt ]
                                                     , text " "
-                                                    , span [ onClick (LoadLayout name) ] [ text (name ++ " (" ++ String.fromInt (Dict.size l.tables) ++ " tables)") ]
+                                                    , span [ onClick (LoadLayout name) ] [ text (name ++ " (" ++ String.fromInt (List.length l.tables) ++ " tables)") ]
                                                     ]
                                                 ]
                                         )
@@ -232,7 +233,7 @@ manyColumnBonus table =
 
 tableShownMalus : Layout -> Table -> Float
 tableShownMalus layout table =
-    if layout.tables |> Dict.member table.id then
+    if layout.tables |> L.memberBy .id table.id then
         -2
 
     else

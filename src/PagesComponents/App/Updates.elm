@@ -15,7 +15,7 @@ import Libs.Task exposing (send)
 import Models.Schema exposing (CanvasProps, TableId, htmlIdAsTableId)
 import PagesComponents.App.Commands.InitializeTable exposing (initializeTable)
 import PagesComponents.App.Models exposing (DragId, Model, Msg(..))
-import PagesComponents.App.Updates.Helpers exposing (setCanvas, setDictTable, setLayout, setPosition, setSchema)
+import PagesComponents.App.Updates.Helpers exposing (setCanvas, setLayout, setListTable, setPosition, setSchema)
 import Ports exposing (toastError, toastInfo)
 
 
@@ -36,7 +36,7 @@ initializeTableOnFirstSize model change =
             (\s ->
                 Maybe.map3 (\t props canvasSize -> ( t, props, canvasSize ))
                     (s.tables |> Dict.get (htmlIdAsTableId change.id))
-                    (s.layout.tables |> Dict.get (htmlIdAsTableId change.id))
+                    (s.layout.tables |> L.findBy .id (htmlIdAsTableId change.id))
                     (model.sizes |> Dict.get conf.ids.erd)
                     |> M.filter (\( _, props, _ ) -> props.position == Position 0 0 && not (model.sizes |> Dict.member change.id))
                     |> Maybe.map (\( t, _, canvasSize ) -> t.id |> initializeTable change.size (getArea canvasSize s.layout.canvas))
@@ -69,7 +69,7 @@ dragItem model delta =
                 ( model |> setSchema (setLayout (setCanvas (setPosition delta 1))), Cmd.none )
 
             else
-                ( model |> setSchema (setLayout (\l -> l |> setDictTable (htmlIdAsTableId id) (setPosition delta l.canvas.zoom))), Cmd.none )
+                ( model |> setSchema (setLayout (\l -> l |> setListTable .id (htmlIdAsTableId id) (setPosition delta l.canvas.zoom))), Cmd.none )
 
         Nothing ->
             ( model, toastError "Can't dragItem when no drag id" )
@@ -83,7 +83,7 @@ removeElement model =
                 let
                     selectedTables : List TableId
                     selectedTables =
-                        s.layout.tables |> Dict.toList |> List.filter (\( _, t ) -> t.selected) |> List.map (\( id, _ ) -> id)
+                        s.layout.tables |> List.filter (\t -> t.selected) |> List.map .id
                 in
                 if L.nonEmpty selectedTables then
                     Cmd.batch (selectedTables |> List.map (\id -> send (HideTable id)))

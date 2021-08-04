@@ -16,7 +16,7 @@ showTable : TableId -> Schema -> ( Schema, Cmd Msg )
 showTable id schema =
     case schema.tables |> Dict.get id of
         Just table ->
-            if schema.layout.tables |> Dict.member id then
+            if schema.layout.tables |> L.memberBy .id id then
                 ( schema, toastInfo ("Table <b>" ++ showTableId id ++ "</b> already shown") )
 
             else
@@ -34,7 +34,7 @@ showTables ids schema =
             (\( id, maybeTable ) ( s, ( found, shown, notFound ) ) ->
                 case maybeTable of
                     Just table ->
-                        if schema.layout.tables |> Dict.member id then
+                        if schema.layout.tables |> L.memberBy .id id then
                             ( s, ( found, id :: shown, notFound ) )
 
                         else
@@ -61,38 +61,38 @@ showAllTables schema =
         |> setLayout
             (\l ->
                 { l
-                    | tables = schema.tables |> Dict.map (\id t -> l.tables |> Dict.get id |> M.orElse (l.hiddenTables |> Dict.get id) |> Maybe.withDefault (initTableProps t))
-                    , hiddenTables = Dict.empty
+                    | tables = schema.tables |> Dict.toList |> List.map (\( id, t ) -> l.tables |> L.findBy .id id |> M.orElse (l.hiddenTables |> L.findBy .id id) |> Maybe.withDefault (initTableProps t))
+                    , hiddenTables = []
                 }
             )
-    , Cmd.batch [ observeTablesSize (schema.tables |> Dict.keys |> List.filter (\id -> not (schema.layout.tables |> Dict.member id))), activateTooltipsAndPopovers ]
+    , Cmd.batch [ observeTablesSize (schema.tables |> Dict.keys |> List.filter (\id -> not (schema.layout.tables |> L.memberBy .id id))), activateTooltipsAndPopovers ]
     )
 
 
 hideTable : TableId -> Layout -> Layout
 hideTable id layout =
     { layout
-        | tables = layout.tables |> Dict.update id (\_ -> Nothing)
-        , hiddenTables = layout.hiddenTables |> Dict.update id (\_ -> layout.tables |> Dict.get id)
+        | tables = layout.tables |> List.filter (\t -> not (t.id == id))
+        , hiddenTables = (layout.tables |> L.findBy .id id |> M.toList) ++ (layout.hiddenTables |> List.filter (\t -> not (t.id == id)))
     }
 
 
 hideAllTables : Layout -> Layout
 hideAllTables layout =
     { layout
-        | tables = Dict.empty
-        , hiddenTables = Dict.union layout.tables layout.hiddenTables
+        | tables = []
+        , hiddenTables = (layout.tables ++ layout.hiddenTables) |> L.uniqueBy .id
     }
 
 
 showColumn : TableId -> ColumnName -> Layout -> Layout
 showColumn table column layout =
-    { layout | tables = layout.tables |> Dict.update table (Maybe.map (\t -> { t | columns = t.columns |> L.addAt column (t.columns |> List.length) })) }
+    { layout | tables = layout.tables |> L.updateBy .id table (\t -> { t | columns = t.columns |> L.addAt column (t.columns |> List.length) }) }
 
 
 hideColumn : TableId -> ColumnName -> Layout -> Layout
 hideColumn table column layout =
-    { layout | tables = layout.tables |> Dict.update table (Maybe.map (\t -> { t | columns = t.columns |> List.filter (\c -> not (c == column)) })) }
+    { layout | tables = layout.tables |> L.updateBy .id table (\t -> { t | columns = t.columns |> List.filter (\c -> not (c == column)) }) }
 
 
 hoverNextColumn : TableId -> ColumnName -> Models.Model -> Models.Model
@@ -101,7 +101,7 @@ hoverNextColumn table column model =
         nextColumn : Maybe ColumnName
         nextColumn =
             model.schema
-                |> Maybe.andThen (\s -> s.layout.tables |> Dict.get table)
+                |> Maybe.andThen (\s -> s.layout.tables |> L.findBy .id table)
                 |> Maybe.andThen (\p -> p.columns |> L.dropUntil (\c -> c == column) |> List.drop 1 |> List.head)
     in
     { model | hover = model.hover |> (\h -> { h | column = nextColumn |> Maybe.map (\c -> ColumnRef table c) }) }
@@ -214,10 +214,10 @@ updateColumns : TableId -> (Table -> List ColumnName -> List ColumnName) -> Sche
 updateColumns id update schema =
     schema.tables
         |> Dict.get id
-        |> Maybe.map (\table -> schema |> setLayout (\l -> { l | tables = l.tables |> Dict.update id (Maybe.map (\t -> { t | columns = t.columns |> update table })) }))
+        |> Maybe.map (\table -> schema |> setLayout (\l -> { l | tables = l.tables |> L.updateBy .id id (\t -> { t | columns = t.columns |> update table }) }))
         |> Maybe.withDefault schema
 
 
 performShowTable : TableId -> Table -> Schema -> Schema
 performShowTable id table schema =
-    schema |> setLayout (\l -> { l | tables = l.tables |> Dict.update id (\_ -> Just (l.hiddenTables |> Dict.get id |> Maybe.withDefault (initTableProps table))) })
+    schema |> setLayout (\l -> { l | tables = ((l.hiddenTables |> L.findBy .id id |> Maybe.withDefault (initTableProps table)) :: l.tables) |> L.uniqueBy .id })

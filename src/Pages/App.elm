@@ -12,7 +12,7 @@ import PagesComponents.App.Commands.LoadSample exposing (loadSample)
 import PagesComponents.App.Models as Models exposing (Model, Msg(..), initConfirm, initHover, initSwitch, initTimeInfo)
 import PagesComponents.App.Updates exposing (dragConfig, dragItem, removeElement, updateSizes)
 import PagesComponents.App.Updates.Canvas exposing (fitCanvas, handleWheel, zoomCanvas)
-import PagesComponents.App.Updates.Helpers exposing (decodeErrorToHtml, setCanvas, setDictTable, setLayout, setSchema, setSchemaWithCmd, setSwitch, setTables, setTime)
+import PagesComponents.App.Updates.Helpers exposing (decodeErrorToHtml, setCanvas, setLayout, setListTable, setSchema, setSchemaWithCmd, setSwitch, setTables, setTime)
 import PagesComponents.App.Updates.Layout exposing (createLayout, deleteLayout, loadLayout, updateLayout)
 import PagesComponents.App.Updates.Schema exposing (createSampleSchema, createSchema, useSchema)
 import PagesComponents.App.Updates.Table exposing (hideAllTables, hideColumn, hideColumns, hideTable, hoverNextColumn, showAllTables, showColumn, showColumns, showTable, showTables, sortColumns)
@@ -127,7 +127,7 @@ update msg model =
             ( { model | search = search }, Cmd.none )
 
         SelectTable id ->
-            ( model |> setSchema (setLayout (setTables (Dict.map (\i t -> { t | selected = B.cond (i == id) (not t.selected) False })))), Cmd.none )
+            ( model |> setSchema (setLayout (setTables (List.map (\t -> { t | selected = B.cond (t.id == id) (not t.selected) False })))), Cmd.none )
 
         HideTable id ->
             ( model |> setSchema (setLayout (hideTable id)), Cmd.none )
@@ -139,7 +139,7 @@ update msg model =
             model |> setSchemaWithCmd (showTables ids)
 
         InitializedTable id position ->
-            ( model |> setSchema (setLayout (setDictTable id (\t -> { t | position = position }))), Cmd.none )
+            ( model |> setSchema (setLayout (setListTable .id id (\t -> { t | position = position }))), Cmd.none )
 
         HideAllTables ->
             ( model |> setSchema (setLayout hideAllTables), Cmd.none )

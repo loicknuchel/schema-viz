@@ -23,7 +23,7 @@ loadLayout name schema =
         |> Maybe.map
             (\layout ->
                 ( { schema | layoutName = Just name } |> setLayout (\_ -> layout)
-                , Cmd.batch [ layout.tables |> Dict.keys |> observeTablesSize, activateTooltipsAndPopovers, trackLayoutEvent "load" layout ]
+                , Cmd.batch [ layout.tables |> List.map .id |> observeTablesSize, activateTooltipsAndPopovers, trackLayoutEvent "load" layout ]
                 )
             )
         |> Maybe.withDefault ( schema, Cmd.none )

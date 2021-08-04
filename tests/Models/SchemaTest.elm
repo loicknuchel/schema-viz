@@ -25,7 +25,7 @@ schema0 =
     , info = SchemaInfo (Time.millisToPosix 12) (Time.millisToPosix 42) Nothing
     , tables = Dict.empty
     , incomingRelations = Dict.empty
-    , layout = Layout (CanvasProps (Position 5 8) 0.5) Dict.empty Dict.empty
+    , layout = Layout (CanvasProps (Position 5 8) 0.5) [] []
     , layoutName = Nothing
     , layouts = Dict.empty
     }
@@ -54,15 +54,15 @@ schema1 =
               }
             ]
     , incomingRelations = Dict.empty
-    , layout = Layout (CanvasProps (Position 5 8) 0.5) (Dict.fromList [ ( ( "public", "users" ), TableProps (Position 1 2) "red" False [] ) ]) Dict.empty
+    , layout = Layout (CanvasProps (Position 5 8) 0.5) [ TableProps ( "public", "users" ) (Position 1 2) "red" False [] ] []
     , layoutName = Nothing
-    , layouts = Dict.fromList [ ( "empty", Layout (CanvasProps (Position 3 6) 1) Dict.empty Dict.empty ) ]
+    , layouts = Dict.fromList [ ( "empty", Layout (CanvasProps (Position 3 6) 1) [] [] ) ]
     }
 
 
 schema1Json : String
 schema1Json =
-    """{"id":"schema-1","info":{"created":12,"updated":42,"file":{"name":"structure.sql","lastModified":58}},"tables":[{"schema":"public","table":"users","columns":[{"index":1,"name":"id","type":"int","nullable":false}]}],"layout":{"canvas":{"position":{"left":5,"top":8},"zoom":0.5},"tables":{"public.users":{"position":{"left":1,"top":2},"color":"red"}}},"layouts":{"empty":{"canvas":{"position":{"left":3,"top":6},"zoom":1}}}}"""
+    """{"id":"schema-1","info":{"created":12,"updated":42,"file":{"name":"structure.sql","lastModified":58}},"tables":[{"schema":"public","table":"users","columns":[{"index":1,"name":"id","type":"int","nullable":false}]}],"layout":{"canvas":{"position":{"left":5,"top":8},"zoom":0.5},"tables":[{"id":"public.users","position":{"left":1,"top":2},"color":"red"}]},"layouts":{"empty":{"canvas":{"position":{"left":3,"top":6},"zoom":1}}}}"""
 
 
 schema2 : Schema
@@ -102,12 +102,12 @@ schema2 =
               }
             ]
     , incomingRelations = Dict.fromList [ ( ( "public", "users" ), Nel (RelationRef (ForeignKeyName "creds_user_id") (ColumnRef ( "public", "creds" ) "user_id") (ColumnRef ( "public", "users" ) "id")) [] ) ]
-    , layout = Layout (CanvasProps (Position 5 8) 0.5) (Dict.fromList [ ( ( "public", "users" ), TableProps (Position 1 2) "red" True [ "id", "name" ] ) ]) (Dict.fromList [ ( ( "public", "creds" ), TableProps (Position 0 0) "blue" False [ "login", "pass" ] ) ])
+    , layout = Layout (CanvasProps (Position 5 8) 0.5) [ TableProps ( "public", "users" ) (Position 1 2) "red" True [ "id", "name" ] ] [ TableProps ( "public", "creds" ) (Position 0 0) "blue" False [ "login", "pass" ] ]
     , layoutName = Just "users"
     , layouts =
         Dict.fromList
-            [ ( "link", Layout (CanvasProps (Position 32 13) 1.5) (Dict.fromList [ ( ( "public", "users" ), TableProps (Position 90 102) "red" True [ "id" ] ), ( ( "public", "creds" ), TableProps (Position 0 0) "blue" False [ "user_id" ] ) ]) Dict.empty )
-            , ( "empty", Layout (CanvasProps (Position 3 6) 1) Dict.empty Dict.empty )
+            [ ( "link", Layout (CanvasProps (Position 32 13) 1.5) [ TableProps ( "public", "users" ) (Position 90 102) "red" True [ "id" ], TableProps ( "public", "creds" ) (Position 0 0) "blue" False [ "user_id" ] ] [] )
+            , ( "empty", Layout (CanvasProps (Position 3 6) 1) [] [] )
             ]
     }
 
@@ -117,11 +117,11 @@ schema2Json =
     """{"id":"schema-2","info":{"created":12,"updated":42,"file":{"name":"structure.sql","lastModified":58}},"tables":["""
         ++ """{"schema":"public","table":"creds","columns":[{"index":1,"name":"user_id","type":"int","nullable":false,"foreignKey":{"name":"creds_user_id","schema":"public","table":"users","column":"id"}},{"index":2,"name":"login","type":"varchar","nullable":false},{"index":3,"name":"pass","type":"varchar","nullable":false,"comment":"Encrypted field"},{"index":4,"name":"role","type":"varchar","default":"guest"}],"uniques":[{"name":"unique_login","columns":["login"],"definition":"(login)"}],"indexes":[{"name":"role_idx","columns":["role"],"definition":"(role)"}],"comment":"To allow users to login"},"""
         ++ """{"schema":"public","table":"users","columns":[{"index":1,"name":"id","type":"int","nullable":false},{"index":2,"name":"name","type":"varchar"}],"primaryKey":{"name":"users_pk","columns":["id"]},"sources":[{"file":"structure.sql","lines":[{"no":10,"text":"CREATE TABLE users"},{"no":11,"text":"  (id int NOT NULL, name varchar);"}]}]}"""
-        ++ """],"layout":{"canvas":{"position":{"left":5,"top":8},"zoom":0.5},"tables":{"public.users":{"position":{"left":1,"top":2},"color":"red","selected":true,"columns":["id","name"]}},"hiddenTables":{"public.creds":{"position":{"left":0,"top":0},"color":"blue","columns":["login","pass"]}}}"""
+        ++ """],"layout":{"canvas":{"position":{"left":5,"top":8},"zoom":0.5},"tables":[{"id":"public.users","position":{"left":1,"top":2},"color":"red","selected":true,"columns":["id","name"]}],"hiddenTables":[{"id":"public.creds","position":{"left":0,"top":0},"color":"blue","columns":["login","pass"]}]}"""
         ++ ""","layoutName":"users","""
         ++ """"layouts":{"""
         ++ """"empty":{"canvas":{"position":{"left":3,"top":6},"zoom":1}},"""
-        ++ """"link":{"canvas":{"position":{"left":32,"top":13},"zoom":1.5},"tables":{"public.creds":{"position":{"left":0,"top":0},"color":"blue","columns":["user_id"]},"public.users":{"position":{"left":90,"top":102},"color":"red","selected":true,"columns":["id"]}}}}}"""
+        ++ """"link":{"canvas":{"position":{"left":32,"top":13},"zoom":1.5},"tables":[{"id":"public.users","position":{"left":90,"top":102},"color":"red","selected":true,"columns":["id"]},{"id":"public.creds","position":{"left":0,"top":0},"color":"blue","columns":["user_id"]}]}}}"""
 
 
 suite : Test

@@ -47,8 +47,8 @@ loadSchema model ( errs, schema ) =
             ++ (schema
                     |> Maybe.map
                         (\s ->
-                            (if not (s.layout.tables |> Dict.isEmpty) then
-                                observeTablesSize (s.layout.tables |> Dict.keys)
+                            (if not (s.layout.tables |> List.isEmpty) then
+                                observeTablesSize (s.layout.tables |> List.map .id)
 
                              else if Dict.size s.tables < 10 then
                                 T.send ShowAllTables

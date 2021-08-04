@@ -28,24 +28,22 @@ viewErd hover sizes schema =
                     (\( tables, incomingRelations, layout ) ->
                         -- display all shown tables
                         (layout.tables
-                            |> Dict.toList
-                            |> L.filterZip (\( id, _ ) -> tables |> Dict.get id)
-                            |> List.map (\( ( id, p ), t ) -> ( ( t, p ), ( incomingRelations |> Dict.get id |> buildRelations tables layout sizes, sizes |> Dict.get (tableIdAsHtmlId id) ) ))
+                            |> List.reverse
+                            |> L.filterZip (\t -> tables |> Dict.get t.id)
+                            |> List.map (\( p, t ) -> ( ( t, p ), ( incomingRelations |> Dict.get p.id |> buildRelations tables layout sizes, sizes |> Dict.get (tableIdAsHtmlId p.id) ) ))
                             |> List.map (\( ( table, props ), ( rels, size ) ) -> viewTable hover layout.canvas.zoom table props rels size)
                         )
                             -- display all incoming relations for shown tables
                             ++ (layout.tables
-                                    |> Dict.toList
-                                    |> List.map (\( id, _ ) -> incomingRelations |> Dict.get id)
+                                    |> List.map (\t -> incomingRelations |> Dict.get t.id)
                                     |> List.concatMap (buildRelations tables layout sizes)
                                     |> List.map (viewRelation hover)
                                )
                             -- display outgoing relations of shown table which refer to a hidden table
                             ++ (layout.tables
-                                    |> Dict.toList
-                                    |> List.filterMap (\( id, _ ) -> tables |> Dict.get id)
+                                    |> List.filterMap (\t -> tables |> Dict.get t.id)
                                     |> List.concatMap outgoingRelations
-                                    |> List.filter (\r -> not (layout.tables |> Dict.member r.ref.table))
+                                    |> List.filter (\r -> not (layout.tables |> L.memberBy .id r.ref.table))
                                     |> List.filterMap (buildRelation tables layout sizes)
                                     |> List.map (viewRelation hover)
                                )
@@ -75,4 +73,4 @@ buildRelation tables layout sizes rel =
 buildRelationTarget : Dict TableId Table -> Layout -> Dict HtmlId Size -> ColumnRef -> Maybe RelationTarget
 buildRelationTarget tables layout sizes ref =
     (tables |> Dict.get ref.table |> M.andThenZip (\table -> table.columns |> Ned.get ref.column))
-        |> Maybe.map (\( table, column ) -> { ref = ref, table = table, column = column, props = M.zip (layout.tables |> Dict.get ref.table) (sizes |> Dict.get (tableIdAsHtmlId ref.table)) })
+        |> Maybe.map (\( table, column ) -> { ref = ref, table = table, column = column, props = M.zip (layout.tables |> L.findBy .id ref.table) (sizes |> Dict.get (tableIdAsHtmlId ref.table)) })

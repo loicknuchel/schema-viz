@@ -1,8 +1,8 @@
-module PagesComponents.App.Updates.Helpers exposing (decodeErrorToHtml, setCanvas, setDictTable, setLayout, setLayouts, setPosition, setSchema, setSchemaWithCmd, setSwitch, setTables, setTime)
+module PagesComponents.App.Updates.Helpers exposing (decodeErrorToHtml, setCanvas, setLayout, setLayouts, setListTable, setPosition, setSchema, setSchemaWithCmd, setSwitch, setTables, setTime)
 
-import Dict exposing (Dict)
 import Draggable
 import Json.Decode as Decode
+import Libs.Bool as B
 import Libs.Models exposing (ZoomLevel)
 import Libs.Position exposing (Position)
 
@@ -52,9 +52,9 @@ setPosition ( dx, dy ) zoom item =
     { item | position = Position (item.position.left + (dx / zoom)) (item.position.top + (dy / zoom)) }
 
 
-setDictTable : comparable -> (table -> table) -> { item | tables : Dict comparable table } -> { item | tables : Dict comparable table }
-setDictTable id transform item =
-    { item | tables = item.tables |> Dict.update id (Maybe.map transform) }
+setListTable : (table -> comparable) -> comparable -> (table -> table) -> { item | tables : List table } -> { item | tables : List table }
+setListTable get id transform item =
+    { item | tables = item.tables |> List.map (\t -> B.cond (get t == id) (transform t) t) }
 
 
 decodeErrorToHtml : Decode.Error -> String

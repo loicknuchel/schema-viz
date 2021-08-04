@@ -121,7 +121,7 @@ trackSchemaEvent name schema =
 
 trackLayoutEvent : String -> Layout -> Cmd msg
 trackLayoutEvent name layout =
-    messageToJs (TrackEvent (name ++ "-layout") (Encode.object [ ( "tableCount", layout.tables |> Dict.size |> Encode.int ) ]))
+    messageToJs (TrackEvent (name ++ "-layout") (Encode.object [ ( "tableCount", layout.tables |> List.length |> Encode.int ) ]))
 
 
 trackJsonError : String -> Decode.Error -> Cmd msg

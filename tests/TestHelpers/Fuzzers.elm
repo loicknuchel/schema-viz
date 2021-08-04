@@ -83,7 +83,7 @@ sourceLine =
 
 layout : Fuzzer Layout
 layout =
-    Fuzz.map3 Layout canvasProps (dictSmall tableId tableProps) (dictSmall tableId tableProps)
+    Fuzz.map3 Layout canvasProps (listSmall tableProps) (listSmall tableProps)
 
 
 canvasProps : Fuzzer CanvasProps
@@ -93,7 +93,7 @@ canvasProps =
 
 tableProps : Fuzzer TableProps
 tableProps =
-    Fuzz.map4 TableProps position color Fuzz.bool (listSmall columnName)
+    Fuzz.map5 TableProps tableId position color Fuzz.bool (listSmall columnName)
 
 
 position : Fuzzer Position

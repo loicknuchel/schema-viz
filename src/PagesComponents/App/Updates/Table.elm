@@ -1,4 +1,4 @@
-module PagesComponents.App.Updates.Table exposing (hideAllTables, hideColumn, hideColumns, hideTable, hoverNextColumn, showAllTables, showColumn, showColumns, showTable, showTables, sortColumns)
+module PagesComponents.App.Updates.Table exposing (hideAllTables, hideColumn, hideColumns, hideTable, hideTables, hoverNextColumn, showAllTables, showColumn, showColumns, showTable, showTables, sortColumns)
 
 import Dict
 import Libs.Bool exposing (cond)
@@ -73,7 +73,15 @@ hideTable : TableId -> Layout -> Layout
 hideTable id layout =
     { layout
         | tables = layout.tables |> List.filter (\t -> not (t.id == id))
-        , hiddenTables = (layout.tables |> L.findBy .id id |> M.toList) ++ (layout.hiddenTables |> List.filter (\t -> not (t.id == id)))
+        , hiddenTables = ((layout.tables |> L.findBy .id id |> M.toList) ++ layout.hiddenTables) |> L.uniqueBy .id
+    }
+
+
+hideTables : List TableId -> Layout -> Layout
+hideTables ids layout =
+    { layout
+        | tables = layout.tables |> List.filter (\t -> not (List.member t.id ids))
+        , hiddenTables = ((layout.tables |> List.filter (\t -> List.member t.id ids)) ++ layout.hiddenTables) |> L.uniqueBy .id
     }
 
 

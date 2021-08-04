@@ -1,10 +1,11 @@
-module Libs.List exposing (addAt, addIf, appendOn, dropUntil, dropWhile, filterMap, filterZip, find, findBy, get, groupBy, has, hasNot, indexOf, memberBy, nonEmpty, prependOn, resultCollect, resultSeq, unique, uniqueBy, updateBy, zipWith)
+module Libs.List exposing (addAt, addIf, appendOn, dropUntil, dropWhile, filterMap, filterZip, find, findBy, findIndex, findIndexBy, get, groupBy, has, hasNot, indexOf, memberBy, move, moveBy, nonEmpty, prependOn, resultCollect, resultSeq, unique, uniqueBy, updateBy, zipWith)
 
 import Dict exposing (Dict)
 import Libs.Bool as B
 import Libs.Maybe as M
 import Libs.Nel as Nel exposing (Nel)
 import Random
+import Set
 
 
 get : Int -> List a -> Maybe a
@@ -31,9 +32,33 @@ find predicate list =
                 find predicate rest
 
 
+findIndex : (a -> Bool) -> List a -> Maybe Int
+findIndex =
+    findIndexInner 0
+
+
+findIndexInner : Int -> (a -> Bool) -> List a -> Maybe Int
+findIndexInner index predicate list =
+    case list of
+        [] ->
+            Nothing
+
+        first :: rest ->
+            if predicate first then
+                Just index
+
+            else
+                findIndexInner (index + 1) predicate rest
+
+
 findBy : (a -> b) -> b -> List a -> Maybe a
 findBy matcher value list =
     find (\a -> matcher a == value) list
+
+
+findIndexBy : (a -> b) -> b -> List a -> Maybe Int
+findIndexBy matcher value list =
+    findIndex (\a -> matcher a == value) list
 
 
 memberBy : (a -> b) -> b -> List a -> Bool
@@ -71,10 +96,28 @@ filterMap predicate transform list =
     list |> List.foldr (\a res -> B.lazyCond (predicate a) (\_ -> transform a :: res) (\_ -> res)) []
 
 
+move : Int -> Int -> List a -> List a
+move from to list =
+    list |> get from |> Maybe.map (\v -> list |> removeAt from |> addAt v to) |> Maybe.withDefault list
+
+
+moveBy : (a -> b) -> b -> Int -> List a -> List a
+moveBy matcher value position list =
+    list |> findIndexBy matcher value |> Maybe.map (\index -> list |> move index position) |> Maybe.withDefault list
+
+
+removeAt : Int -> List a -> List a
+removeAt index list =
+    list |> List.indexedMap (\i a -> ( i, a )) |> List.filter (\( i, _ ) -> not (i == index)) |> List.map (\( _, a ) -> a)
+
+
 addAt : a -> Int -> List a -> List a
 addAt item index list =
     if index >= List.length list then
-        List.concat [ list, [ item ] ]
+        list ++ [ item ]
+
+    else if index < 0 then
+        item :: list
 
     else
         -- list |> List.indexedMap (\i a -> ( i, a )) |> List.concatMap (\( i, a ) -> B.cond (i == index) [ item, a ] [ a ])
@@ -142,8 +185,19 @@ unique list =
 
 uniqueBy : (a -> comparable) -> List a -> List a
 uniqueBy matcher list =
-    -- TODO better code here, keep the first found
-    list |> List.map (\a -> ( matcher a, a )) |> Dict.fromList |> Dict.values
+    list
+        |> zipWith matcher
+        |> List.foldl
+            (\( item, key ) ( res, set ) ->
+                if set |> Set.member key then
+                    ( res, set )
+
+                else
+                    ( item :: res, set |> Set.insert key )
+            )
+            ( [], Set.empty )
+        |> Tuple.first
+        |> List.reverse
 
 
 groupBy : (a -> comparable) -> List a -> Dict comparable (Nel a)

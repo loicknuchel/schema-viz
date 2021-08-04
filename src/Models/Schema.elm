@@ -54,7 +54,7 @@ type alias Relation =
 
 
 type alias RelationTarget =
-    { ref : ColumnRef, table : Table, column : Column, props : Maybe ( TableProps, Size ) }
+    { ref : ColumnRef, table : Table, column : Column, props : Maybe ( TableProps, Int, Size ) }
 
 
 type alias Table =

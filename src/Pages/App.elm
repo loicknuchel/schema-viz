@@ -5,17 +5,18 @@ import Dict
 import Draggable
 import Gen.Params.App exposing (Params)
 import Libs.Bool as B
+import Libs.List as L
 import Page
 import PagesComponents.App.Commands.GetTime exposing (getTime)
 import PagesComponents.App.Commands.GetZone exposing (getZone)
 import PagesComponents.App.Commands.LoadSample exposing (loadSample)
 import PagesComponents.App.Models as Models exposing (Model, Msg(..), initConfirm, initHover, initSwitch, initTimeInfo)
-import PagesComponents.App.Updates exposing (dragConfig, dragItem, removeElement, updateSizes)
+import PagesComponents.App.Updates exposing (dragConfig, dragItem, moveTable, removeElement, updateSizes)
 import PagesComponents.App.Updates.Canvas exposing (fitCanvas, handleWheel, zoomCanvas)
 import PagesComponents.App.Updates.Helpers exposing (decodeErrorToHtml, setCanvas, setLayout, setListTable, setSchema, setSchemaWithCmd, setSwitch, setTables, setTime)
 import PagesComponents.App.Updates.Layout exposing (createLayout, deleteLayout, loadLayout, updateLayout)
 import PagesComponents.App.Updates.Schema exposing (createSampleSchema, createSchema, useSchema)
-import PagesComponents.App.Updates.Table exposing (hideAllTables, hideColumn, hideColumns, hideTable, hoverNextColumn, showAllTables, showColumn, showColumns, showTable, showTables, sortColumns)
+import PagesComponents.App.Updates.Table exposing (hideAllTables, hideColumn, hideColumns, hideTable, hideTables, hoverNextColumn, showAllTables, showColumn, showColumns, showTable, showTables, sortColumns)
 import PagesComponents.App.View exposing (viewApp)
 import PagesComponents.Containers as Containers
 import Ports exposing (JsMsg(..), activateTooltipsAndPopovers, click, dropSchema, hideOffcanvas, listenHotkeys, loadSchemas, observeSize, onJsMessage, readFile, saveSchema, showModal, toastError, toastInfo, toastWarning, trackJsonError, trackPage, trackSchemaEvent)
@@ -135,8 +136,14 @@ update msg model =
         ShowTable id ->
             model |> setSchemaWithCmd (showTable id)
 
+        TableOrder id index ->
+            ( model |> setSchema (setLayout (setTables (\tables -> tables |> L.moveBy .id id (List.length tables - 1 - index)))), Cmd.none )
+
         ShowTables ids ->
             model |> setSchemaWithCmd (showTables ids)
+
+        HideTables ids ->
+            ( model |> setSchema (setLayout (hideTables ids)), Cmd.none )
 
         InitializedTable id position ->
             ( model |> setSchema (setLayout (setListTable .id id (\t -> { t | position = position }))), Cmd.none )
@@ -214,7 +221,19 @@ update msg model =
             ( model, click conf.ids.searchInput )
 
         JsMessage (HotkeyUsed "remove") ->
-            ( model, removeElement model )
+            ( model, model.schema |> Maybe.map (removeElement model.hover) |> Maybe.withDefault Cmd.none )
+
+        JsMessage (HotkeyUsed "move-forward") ->
+            ( model, model.schema |> Maybe.map (moveTable 1 model.hover) |> Maybe.withDefault Cmd.none )
+
+        JsMessage (HotkeyUsed "move-backward") ->
+            ( model, model.schema |> Maybe.map (moveTable -1 model.hover) |> Maybe.withDefault Cmd.none )
+
+        JsMessage (HotkeyUsed "move-to-top") ->
+            ( model, model.schema |> Maybe.map (moveTable 1000 model.hover) |> Maybe.withDefault Cmd.none )
+
+        JsMessage (HotkeyUsed "move-to-back") ->
+            ( model, model.schema |> Maybe.map (moveTable -1000 model.hover) |> Maybe.withDefault Cmd.none )
 
         JsMessage (HotkeyUsed "save") ->
             ( model, model.schema |> Maybe.map (\s -> Cmd.batch [ saveSchema s, toastInfo "Schema saved", trackSchemaEvent "save" s ]) |> Maybe.withDefault (toastWarning "No schema to save") )

@@ -1,5 +1,6 @@
 module PagesComponents.App.Views.Erd.Table exposing (viewTable)
 
+import Conf exposing (conf)
 import Dict
 import FontAwesome.Icon exposing (viewIcon)
 import FontAwesome.Regular as IconLight
@@ -22,8 +23,8 @@ import PagesComponents.App.Models exposing (Hover, Msg(..))
 import PagesComponents.App.Views.Helpers exposing (columnRefAsHtmlId, dragAttrs, extractColumnName, extractColumnType, placeAt, sizeAttr, withColumnName, withNullableInfo)
 
 
-viewTable : Hover -> ZoomLevel -> Table -> TableProps -> List Relation -> Maybe Size -> Html Msg
-viewTable hover zoom table props incomingRelations size =
+viewTable : Hover -> ZoomLevel -> Int -> Table -> TableProps -> List Relation -> Maybe Size -> Html Msg
+viewTable hover zoom index table props incomingRelations size =
     let
         hiddenColumns : List Column
         hiddenColumns =
@@ -39,13 +40,14 @@ viewTable hover zoom table props incomingRelations size =
          , classList [ ( "selected", props.selected ) ]
          , id (tableIdAsHtmlId table.id)
          , placeAt props.position
+         , style "z-index" (String.fromInt (conf.zIndex.tables + index))
          , size |> Maybe.map sizeAttr |> Maybe.withDefault (style "visibility" "hidden")
          , onMouseEnter (HoverTable (Just table.id))
          , onMouseLeave (HoverTable Nothing)
          ]
             ++ dragAttrs (tableIdAsHtmlId table.id)
         )
-        [ viewHeader zoom table
+        [ viewHeader zoom index table
         , div [ class "columns" ]
             (props.columns
                 |> List.filterMap (\c -> table.columns |> Ned.get c)
@@ -65,8 +67,8 @@ viewTable hover zoom table props incomingRelations size =
         ]
 
 
-viewHeader : ZoomLevel -> Table -> Html Msg
-viewHeader zoom table =
+viewHeader : ZoomLevel -> Int -> Table -> Html Msg
+viewHeader zoom index table =
     div [ class "header", style "display" "flex", style "align-items" "center", onClick (SelectTable table.id) ]
         [ div [ style "flex-grow" "1" ] (L.appendOn table.comment (\(TableComment comment) -> viewComment comment) [ span (tableNameSize zoom) [ text (showTableName table.schema table.table) ] ])
         , bsDropdown (tableIdAsHtmlId table.id ++ "-settings-dropdown")
@@ -96,6 +98,15 @@ viewHeader zoom table =
                         [ button [ type_ "button", class "dropdown-item" ] [ text "Show columns »" ]
                         , ul [ class "dropdown-menu dropdown-submenu" ]
                             [ li [] [ button [ type_ "button", class "dropdown-item", onClick (ShowColumns table.id "all") ] [ text "All" ] ]
+                            ]
+                        ]
+                    , li []
+                        [ button [ type_ "button", class "dropdown-item" ] [ text "Order »" ]
+                        , ul [ class "dropdown-menu dropdown-submenu" ]
+                            [ li [] [ button [ type_ "button", class "dropdown-item", onClick (TableOrder table.id 1000) ] [ text "Bring to front" ] ]
+                            , li [] [ button [ type_ "button", class "dropdown-item", onClick (TableOrder table.id (index + 1)) ] [ text "Bring forward" ] ]
+                            , li [] [ button [ type_ "button", class "dropdown-item", onClick (TableOrder table.id (index - 1)) ] [ text "Send backward" ] ]
+                            , li [] [ button [ type_ "button", class "dropdown-item", onClick (TableOrder table.id 0) ] [ text "Send to back" ] ]
                             ]
                         ]
                     ]

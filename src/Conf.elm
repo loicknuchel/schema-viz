@@ -9,6 +9,7 @@ conf :
     { zoom : { min : ZoomLevel, max : ZoomLevel, speed : Float }
     , colors : List Color
     , default : { schema : String, color : Color }
+    , zIndex : { tables : Int }
     , ids :
         { searchInput : HtmlId
         , menu : HtmlId
@@ -25,6 +26,7 @@ conf =
     { zoom = { min = 0.05, max = 5, speed = 0.001 }
     , colors = [ "red", "orange", "amber", "yellow", "lime", "green", "emerald", "teal", "cyan", "sky", "blue", "indigo", "violet", "purple", "fuchsia", "pink", "rose" ]
     , default = { schema = "public", color = "gray" }
+    , zIndex = { tables = 10 }
     , ids =
         { searchInput = "search"
         , menu = "menu"
@@ -38,10 +40,14 @@ conf =
     , hotkeys =
         Dict.fromList
             [ ( "focus-search", [ { hotkey | key = Just "/" } ] )
-            , ( "autocomplete-down", [ { hotkey | key = Just "ArrowDown", target = Just { target | id = Just "search", tag = Just "input" } } ] )
             , ( "autocomplete-up", [ { hotkey | key = Just "ArrowUp", target = Just { target | id = Just "search", tag = Just "input" } } ] )
+            , ( "autocomplete-down", [ { hotkey | key = Just "ArrowDown", target = Just { target | id = Just "search", tag = Just "input" } } ] )
             , ( "remove", [ { hotkey | key = Just "d" }, { hotkey | key = Just "h" }, { hotkey | key = Just "Backspace" }, { hotkey | key = Just "Delete" } ] )
             , ( "save", [ { hotkey | key = Just "s", ctrl = True, onInput = True, preventDefault = True } ] )
+            , ( "move-forward", [ { hotkey | key = Just "ArrowUp", ctrl = True } ] )
+            , ( "move-backward", [ { hotkey | key = Just "ArrowDown", ctrl = True } ] )
+            , ( "move-to-top", [ { hotkey | key = Just "ArrowUp", ctrl = True, shift = True } ] )
+            , ( "move-to-back", [ { hotkey | key = Just "ArrowDown", ctrl = True, shift = True } ] )
             , ( "undo", [ { hotkey | key = Just "z", ctrl = True } ] )
             , ( "redo", [ { hotkey | key = Just "Z", ctrl = True, shift = True } ] )
             , ( "help", [ { hotkey | key = Just "?" } ] )

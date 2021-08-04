@@ -31,7 +31,7 @@ viewErd hover sizes schema =
                             |> List.reverse
                             |> L.filterZip (\t -> tables |> Dict.get t.id)
                             |> List.map (\( p, t ) -> ( ( t, p ), ( incomingRelations |> Dict.get p.id |> buildRelations tables layout sizes, sizes |> Dict.get (tableIdAsHtmlId p.id) ) ))
-                            |> List.map (\( ( table, props ), ( rels, size ) ) -> viewTable hover layout.canvas.zoom table props rels size)
+                            |> List.indexedMap (\i ( ( table, props ), ( rels, size ) ) -> viewTable hover layout.canvas.zoom i table props rels size)
                         )
                             -- display all incoming relations for shown tables
                             ++ (layout.tables
@@ -73,4 +73,15 @@ buildRelation tables layout sizes rel =
 buildRelationTarget : Dict TableId Table -> Layout -> Dict HtmlId Size -> ColumnRef -> Maybe RelationTarget
 buildRelationTarget tables layout sizes ref =
     (tables |> Dict.get ref.table |> M.andThenZip (\table -> table.columns |> Ned.get ref.column))
-        |> Maybe.map (\( table, column ) -> { ref = ref, table = table, column = column, props = M.zip (layout.tables |> L.findBy .id ref.table) (sizes |> Dict.get (tableIdAsHtmlId ref.table)) })
+        |> Maybe.map
+            (\( table, column ) ->
+                { ref = ref
+                , table = table
+                , column = column
+                , props =
+                    M.zip3
+                        (layout.tables |> L.findBy .id ref.table)
+                        (layout.tables |> L.findIndexBy .id ref.table |> Maybe.map (\i -> List.length layout.tables - 1 - i))
+                        (sizes |> Dict.get (tableIdAsHtmlId ref.table))
+                }
+            )

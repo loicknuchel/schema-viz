@@ -1,5 +1,6 @@
 module PagesComponents.App.Views.Erd.Relation exposing (viewRelation)
 
+import Conf exposing (conf)
 import Libs.List as L
 import Libs.Maybe as M
 import Libs.Models exposing (Color)
@@ -14,8 +15,8 @@ import Svg.Attributes exposing (class, height, strokeDasharray, style, width, x1
 viewRelation : Hover -> Relation -> Svg Msg
 viewRelation hover { key, src, ref } =
     case
-        ( ( src.props |> M.filter (\p -> p |> Tuple.first |> .columns |> List.member src.column.name)
-          , ref.props |> M.filter (\p -> p |> Tuple.first |> .columns |> List.member ref.column.name)
+        ( ( src.props |> M.filter (\( p, _, _ ) -> p |> .columns |> List.member src.column.name)
+          , ref.props |> M.filter (\( p, _, _ ) -> p |> .columns |> List.member ref.column.name)
           )
         , ( formatText key src ref, getColor hover src ref )
         )
@@ -23,24 +24,24 @@ viewRelation hover { key, src, ref } =
         ( ( Nothing, Nothing ), ( name, _ ) ) ->
             svg [ class "erd-relation" ] [ text name ]
 
-        ( ( Just ( sProps, sSize ), Nothing ), ( name, color ) ) ->
+        ( ( Just ( sProps, sIndex, sSize ), Nothing ), ( name, color ) ) ->
             case { x = sProps.position.left + sSize.width, y = positionY sProps src.column } of
                 srcPos ->
-                    drawRelation srcPos { x = srcPos.x + 20, y = srcPos.y } src.column.nullable color name
+                    drawRelation srcPos { x = srcPos.x + 20, y = srcPos.y } src.column.nullable color (conf.zIndex.tables + sIndex) name
 
-        ( ( Nothing, Just ( rProps, _ ) ), ( name, color ) ) ->
+        ( ( Nothing, Just ( rProps, rIndex, _ ) ), ( name, color ) ) ->
             case { x = rProps.position.left, y = positionY rProps ref.column } of
                 refPos ->
-                    drawRelation { x = refPos.x - 20, y = refPos.y } refPos src.column.nullable color name
+                    drawRelation { x = refPos.x - 20, y = refPos.y } refPos src.column.nullable color (conf.zIndex.tables + rIndex) name
 
-        ( ( Just ( sProps, sSize ), Just ( rProps, rSize ) ), ( name, color ) ) ->
+        ( ( Just ( sProps, _, sSize ), Just ( rProps, _, rSize ) ), ( name, color ) ) ->
             case ( positionX ( sProps, sSize ) ( rProps, rSize ), ( positionY sProps src.column, positionY rProps ref.column ) ) of
                 ( ( srcX, refX ), ( srcY, refY ) ) ->
-                    drawRelation { x = srcX, y = srcY } { x = refX, y = refY } src.column.nullable color name
+                    drawRelation { x = srcX, y = srcY } { x = refX, y = refY } src.column.nullable color (conf.zIndex.tables - 1) name
 
 
-drawRelation : Point -> Point -> Bool -> Maybe Color -> String -> Svg Msg
-drawRelation src ref optional color name =
+drawRelation : Point -> Point -> Bool -> Maybe Color -> Int -> String -> Svg Msg
+drawRelation src ref optional color index name =
     let
         padding : Float
         padding =
@@ -54,7 +55,7 @@ drawRelation src ref optional color name =
         [ class "relation"
         , width (String.fromFloat (abs (src.x - ref.x) + (padding * 2)))
         , height (String.fromFloat (abs (src.y - ref.y) + (padding * 2)))
-        , style ("position: absolute; left: " ++ String.fromFloat origin.x ++ "px; top: " ++ String.fromFloat origin.y ++ "px;")
+        , style ("position: absolute; left: " ++ String.fromFloat origin.x ++ "px; top: " ++ String.fromFloat origin.y ++ "px; z-index: " ++ String.fromInt index ++ ";")
         ]
         [ viewLine (minus src origin) (minus ref origin) optional color
         , text name
@@ -90,14 +91,14 @@ type alias Point =
 
 getColor : Hover -> RelationTarget -> RelationTarget -> Maybe Color
 getColor hover src ref =
-    (src.props |> Maybe.map (\( p, _ ) -> p.color))
-        |> M.orElse (ref.props |> Maybe.map (\( p, _ ) -> p.color))
+    (src.props |> Maybe.map (\( p, _, _ ) -> p.color))
+        |> M.orElse (ref.props |> Maybe.map (\( p, _, _ ) -> p.color))
         |> M.filter (\_ -> shouldHighlight hover src || shouldHighlight hover ref)
 
 
 shouldHighlight : Hover -> RelationTarget -> Bool
 shouldHighlight hover target =
-    target.props |> M.exist (\( p, _ ) -> p.selected || (hover.column |> M.contains target.ref))
+    target.props |> M.exist (\( p, _, _ ) -> p.selected || (hover.column |> M.contains target.ref))
 
 
 positionX : ( TableProps, Size ) -> ( TableProps, Size ) -> ( Float, Float )

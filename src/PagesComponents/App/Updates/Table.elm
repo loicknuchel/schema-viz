@@ -6,7 +6,7 @@ import Libs.List as L
 import Libs.Maybe as M
 import Libs.Ned as Ned
 import Libs.Nel as Nel
-import Models.Schema exposing (ColumnName, ColumnRef, Layout, Schema, Table, TableId, extractColumnIndex, extractColumnType, inIndexes, inPrimaryKey, inUniques, initTableProps, showTableId, withNullableInfo)
+import Models.Project exposing (ColumnName, ColumnRef, Layout, Schema, Table, TableId, inIndexes, inOutRelation, inPrimaryKey, inUniques, initTableProps, showTableId, withNullableInfo)
 import PagesComponents.App.Models as Models exposing (Msg)
 import PagesComponents.App.Updates.Helpers exposing (setLayout)
 import Ports exposing (activateTooltipsAndPopovers, observeTableSize, observeTablesSize, toastError, toastInfo)
@@ -108,51 +108,61 @@ hoverNextColumn table column model =
     let
         nextColumn : Maybe ColumnName
         nextColumn =
-            model.schema
-                |> Maybe.andThen (\s -> s.layout.tables |> L.findBy .id table)
-                |> Maybe.andThen (\p -> p.columns |> L.dropUntil (\c -> c == column) |> List.drop 1 |> List.head)
+            model.project
+                |> Maybe.andThen (\p -> p.schema.layout.tables |> L.findBy .id table)
+                |> Maybe.andThen (\t -> t.columns |> L.dropUntil (\c -> c == column) |> List.drop 1 |> List.head)
     in
-    { model | hover = model.hover |> (\h -> { h | column = nextColumn |> Maybe.map (\c -> ColumnRef table c) }) }
+    { model | hover = model.hover |> (\h -> { h | column = nextColumn |> Maybe.map (ColumnRef table) }) }
 
 
 sortColumns : TableId -> String -> Schema -> Schema
 sortColumns id kind schema =
     updateColumns id
         (\table columns ->
-            columns
-                |> L.zipWith (\name -> table.columns |> Ned.get name)
-                |> List.sortBy
-                    (\( name, col ) ->
-                        case ( kind, col ) of
-                            ( "property", Just c ) ->
-                                if name |> inPrimaryKey table |> M.isJust then
-                                    ( 0 + sortOffset c.nullable, name )
+            schema.relations
+                |> List.filter (\r -> r.src.table == id)
+                |> (\tableOutRelations ->
+                        columns
+                            |> L.zipWith (\name -> table.columns |> Ned.get name)
+                            |> (case kind of
+                                    "property" ->
+                                        List.sortBy
+                                            (\( name, col ) ->
+                                                col
+                                                    |> Maybe.map
+                                                        (\c ->
+                                                            if name |> inPrimaryKey table |> M.isJust then
+                                                                ( 0 + sortOffset c.nullable, name |> String.toLower )
 
-                                else if c.foreignKey |> M.isJust then
-                                    ( 1 + sortOffset c.nullable, name )
+                                                            else if name |> inOutRelation tableOutRelations |> L.nonEmpty then
+                                                                ( 1 + sortOffset c.nullable, name |> String.toLower )
 
-                                else if name |> inUniques table |> L.nonEmpty then
-                                    ( 2 + sortOffset c.nullable, name )
+                                                            else if name |> inUniques table |> L.nonEmpty then
+                                                                ( 2 + sortOffset c.nullable, name |> String.toLower )
 
-                                else if name |> inIndexes table |> L.nonEmpty then
-                                    ( 3 + sortOffset c.nullable, name )
+                                                            else if name |> inIndexes table |> L.nonEmpty then
+                                                                ( 3 + sortOffset c.nullable, name |> String.toLower )
 
-                                else
-                                    ( 4 + sortOffset c.nullable, name )
+                                                            else
+                                                                ( 4 + sortOffset c.nullable, name |> String.toLower )
+                                                        )
+                                                    |> Maybe.withDefault ( 5, name |> String.toLower )
+                                            )
 
-                            ( "name", Just _ ) ->
-                                ( 0, name )
+                                    "name" ->
+                                        List.sortBy (\( name, _ ) -> name |> String.toLower)
 
-                            ( "sql", Just c ) ->
-                                ( toFloat (extractColumnIndex c.index), "" )
+                                    "sql" ->
+                                        List.sortBy (\( _, col ) -> col |> Maybe.map .index |> Maybe.withDefault (table.columns |> Ned.size))
 
-                            ( "type", Just c ) ->
-                                ( 0, extractColumnType c.kind |> withNullableInfo c.nullable )
+                                    "type" ->
+                                        List.sortBy (\( _, col ) -> col |> Maybe.map (\c -> c.kind |> String.toLower |> withNullableInfo c.nullable) |> Maybe.withDefault "~")
 
-                            _ ->
-                                ( toFloat (table.columns |> Ned.size), name )
-                    )
-                |> List.map Tuple.first
+                                    _ ->
+                                        List.sortBy (\( _, col ) -> col |> Maybe.map .index |> Maybe.withDefault (table.columns |> Ned.size))
+                               )
+                            |> List.map Tuple.first
+                   )
         )
         schema
 
@@ -170,27 +180,31 @@ hideColumns : TableId -> String -> Schema -> Schema
 hideColumns id kind schema =
     updateColumns id
         (\table columns ->
-            columns
-                |> L.zipWith (\name -> table.columns |> Ned.get name)
-                |> List.filter
-                    (\( name, col ) ->
-                        case ( kind, col ) of
-                            ( "regular", Just c ) ->
-                                (name |> inPrimaryKey table |> M.isJust)
-                                    || (c.foreignKey |> M.isJust)
-                                    || (name |> inUniques table |> L.nonEmpty)
-                                    || (name |> inIndexes table |> L.nonEmpty)
+            schema.relations
+                |> List.filter (\r -> r.src.table == id)
+                |> (\tableOutRelations ->
+                        columns
+                            |> L.zipWith (\name -> table.columns |> Ned.get name)
+                            |> List.filter
+                                (\( name, col ) ->
+                                    case ( kind, col ) of
+                                        ( "regular", Just _ ) ->
+                                            (name |> inPrimaryKey table |> M.isJust)
+                                                || (name |> inOutRelation tableOutRelations |> L.nonEmpty)
+                                                || (name |> inUniques table |> L.nonEmpty)
+                                                || (name |> inIndexes table |> L.nonEmpty)
 
-                            ( "nullable", Just c ) ->
-                                not c.nullable
+                                        ( "nullable", Just c ) ->
+                                            not c.nullable
 
-                            ( "all", _ ) ->
-                                False
+                                        ( "all", _ ) ->
+                                            False
 
-                            _ ->
-                                False
-                    )
-                |> List.map Tuple.first
+                                        _ ->
+                                            False
+                                )
+                            |> List.map Tuple.first
+                   )
         )
         schema
 

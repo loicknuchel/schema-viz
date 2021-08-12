@@ -5,39 +5,39 @@ import Libs.List as L
 import Libs.Maybe as M
 import Libs.Models exposing (Color)
 import Libs.Size exposing (Size)
-import Models.Schema exposing (Column, ForeignKeyName(..), Relation, RelationTarget, Table, TableProps, showTableId)
+import Models.Project exposing (Column, ColumnRefFull, RelationFull, RelationName, Table, TableProps, showTableId)
 import PagesComponents.App.Models exposing (Hover, Msg)
 import PagesComponents.App.Views.Helpers exposing (withColumnName)
 import Svg exposing (Svg, line, svg, text)
 import Svg.Attributes exposing (class, height, strokeDasharray, style, width, x1, x2, y1, y2)
 
 
-viewRelation : Hover -> Relation -> Svg Msg
-viewRelation hover { key, src, ref } =
+viewRelation : Hover -> RelationFull -> Svg Msg
+viewRelation hover { name, src, ref } =
     case
         ( ( src.props |> M.filter (\( p, _, _ ) -> p |> .columns |> List.member src.column.name)
           , ref.props |> M.filter (\( p, _, _ ) -> p |> .columns |> List.member ref.column.name)
           )
-        , ( formatText key src ref, getColor hover src ref )
+        , ( formatText name src ref, getColor hover src ref )
         )
     of
-        ( ( Nothing, Nothing ), ( name, _ ) ) ->
-            svg [ class "erd-relation" ] [ text name ]
+        ( ( Nothing, Nothing ), ( label, _ ) ) ->
+            svg [ class "erd-relation" ] [ text label ]
 
-        ( ( Just ( sProps, sIndex, sSize ), Nothing ), ( name, color ) ) ->
+        ( ( Just ( sProps, sIndex, sSize ), Nothing ), ( label, color ) ) ->
             case { x = sProps.position.left + sSize.width, y = positionY sProps src.column } of
                 srcPos ->
-                    drawRelation srcPos { x = srcPos.x + 20, y = srcPos.y } src.column.nullable color (conf.zIndex.tables + sIndex) name
+                    drawRelation srcPos { x = srcPos.x + 20, y = srcPos.y } src.column.nullable color (conf.zIndex.tables + sIndex) label
 
-        ( ( Nothing, Just ( rProps, rIndex, _ ) ), ( name, color ) ) ->
+        ( ( Nothing, Just ( rProps, rIndex, _ ) ), ( label, color ) ) ->
             case { x = rProps.position.left, y = positionY rProps ref.column } of
                 refPos ->
-                    drawRelation { x = refPos.x - 20, y = refPos.y } refPos src.column.nullable color (conf.zIndex.tables + rIndex) name
+                    drawRelation { x = refPos.x - 20, y = refPos.y } refPos src.column.nullable color (conf.zIndex.tables + rIndex) label
 
-        ( ( Just ( sProps, _, sSize ), Just ( rProps, _, rSize ) ), ( name, color ) ) ->
+        ( ( Just ( sProps, _, sSize ), Just ( rProps, _, rSize ) ), ( label, color ) ) ->
             case ( positionX ( sProps, sSize ) ( rProps, rSize ), ( positionY sProps src.column, positionY rProps ref.column ) ) of
                 ( ( srcX, refX ), ( srcY, refY ) ) ->
-                    drawRelation { x = srcX, y = srcY } { x = refX, y = refY } src.column.nullable color (conf.zIndex.tables - 1) name
+                    drawRelation { x = srcX, y = srcY } { x = refX, y = refY } src.column.nullable color (conf.zIndex.tables - 1) label
 
 
 drawRelation : Point -> Point -> Bool -> Maybe Color -> Int -> String -> Svg Msg
@@ -89,14 +89,14 @@ type alias Point =
     { x : Float, y : Float }
 
 
-getColor : Hover -> RelationTarget -> RelationTarget -> Maybe Color
+getColor : Hover -> ColumnRefFull -> ColumnRefFull -> Maybe Color
 getColor hover src ref =
     (src.props |> Maybe.map (\( p, _, _ ) -> p.color))
         |> M.orElse (ref.props |> Maybe.map (\( p, _, _ ) -> p.color))
         |> M.filter (\_ -> shouldHighlight hover src || shouldHighlight hover ref)
 
 
-shouldHighlight : Hover -> RelationTarget -> Bool
+shouldHighlight : Hover -> ColumnRefFull -> Bool
 shouldHighlight hover target =
     target.props |> M.exist (\( p, _, _ ) -> p.selected || (hover.column |> M.contains target.ref))
 
@@ -147,16 +147,11 @@ minus p1 p2 =
 -- formatters
 
 
-formatText : ForeignKeyName -> RelationTarget -> RelationTarget -> String
-formatText fk src ref =
-    formatRef src.table src.column ++ " -> " ++ formatForeignKeyName fk ++ " -> " ++ formatRef ref.table ref.column
+formatText : RelationName -> ColumnRefFull -> ColumnRefFull -> String
+formatText name src ref =
+    formatRef src.table src.column ++ " -> " ++ name ++ " -> " ++ formatRef ref.table ref.column
 
 
 formatRef : Table -> Column -> String
 formatRef table column =
     showTableId table.id |> withColumnName column.name
-
-
-formatForeignKeyName : ForeignKeyName -> String
-formatForeignKeyName (ForeignKeyName name) =
-    name

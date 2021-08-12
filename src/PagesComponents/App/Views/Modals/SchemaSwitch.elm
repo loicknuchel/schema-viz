@@ -12,18 +12,18 @@ import Libs.Bootstrap exposing (BsColor(..), Toggle(..), bsButton, bsModal, bsTo
 import Libs.Html exposing (bText, codeText, divIf)
 import Libs.Html.Attributes exposing (ariaExpanded, ariaLabelledBy, role)
 import Libs.String as S
-import Models.Schema exposing (Schema)
+import Models.Project exposing (Project)
 import PagesComponents.App.Models exposing (Msg(..), Switch, TimeInfo)
 import PagesComponents.App.Views.Helpers exposing (formatDate, onClickConfirm)
 import Time
 
 
-viewSchemaSwitchModal : TimeInfo -> Switch -> String -> List Schema -> Html Msg
-viewSchemaSwitchModal time switch title storedSchemas =
-    bsModal conf.ids.schemaSwitchModal
+viewSchemaSwitchModal : TimeInfo -> Switch -> String -> List Project -> Html Msg
+viewSchemaSwitchModal time switch title storedProjects =
+    bsModal conf.ids.projectSwitchModal
         title
         [ viewWarning
-        , viewSavedSchemas time storedSchemas
+        , viewSavedProjects time storedProjects
         , viewFileUpload switch
         , viewSampleSchemas
         , div [ style "margin-top" "1em" ] (viewGetSchemaInstructions ++ viewDataPrivacyExplanation)
@@ -36,29 +36,29 @@ viewWarning =
     div [ style "text-align" "center" ] [ bText "⚠️ This app is currently being built", text ", you can use it but stored data may break sometimes ⚠️" ]
 
 
-viewSavedSchemas : TimeInfo -> List Schema -> Html Msg
-viewSavedSchemas time storedSchemas =
-    divIf (List.length storedSchemas > 0)
+viewSavedProjects : TimeInfo -> List Project -> Html Msg
+viewSavedProjects time storedProjects =
+    divIf (List.length storedProjects > 0)
         [ class "row row-cols-1 row-cols-sm-2 row-cols-lg-3" ]
-        (storedSchemas
-            |> List.sortBy (\s -> negate (Time.posixToMillis s.info.updated))
+        (storedProjects
+            |> List.sortBy (\s -> negate (Time.posixToMillis s.updatedAt))
             |> List.map
-                (\s ->
+                (\prj ->
                     div [ class "col", style "margin-top" "1em" ]
                         [ div [ class "card h-100" ]
                             [ div [ class "card-body" ]
-                                [ h5 [ class "card-title" ] [ text s.id ]
+                                [ h5 [ class "card-title" ] [ text prj.name ]
                                 , p [ class "card-text" ]
                                     [ small [ class "text-muted" ]
-                                        [ text (S.plural (Dict.size s.layouts) "No saved layout" "1 saved layout" "saved layouts")
+                                        [ text (S.plural (Dict.size prj.layouts) "No saved layout" "1 saved layout" "saved layouts")
                                         , br [] []
-                                        , text ("Version from " ++ formatDate time (s.info.file |> Maybe.map .lastModified |> Maybe.withDefault s.info.created))
+                                        , text ("Updated on " ++ formatDate time prj.createdAt)
                                         ]
                                     ]
                                 ]
                             , div [ class "card-footer d-flex" ]
-                                [ button [ type_ "button", class "link link-secondary me-auto", title "Delete this schema", bsToggle Tooltip, onClickConfirm ("You you really want to delete " ++ s.id ++ " schema ?") (DeleteSchema s) ] [ viewIcon Icon.trash ]
-                                , bsButton Primary [ onClick (UseSchema s) ] [ text "Use this schema" ]
+                                [ button [ type_ "button", class "link link-secondary me-auto", title "Delete this project", bsToggle Tooltip, onClickConfirm ("You you really want to delete " ++ prj.name ++ " project ?") (DeleteProject prj) ] [ viewIcon Icon.trash ]
+                                , bsButton Primary [ onClick (UseProject prj) ] [ text "Use this project" ]
                                 ]
                             ]
                         ]
@@ -97,7 +97,7 @@ viewSampleSchemas =
                 (schemaSamples
                     |> Dict.toList
                     |> List.sortBy (\( _, ( tables, _ ) ) -> tables)
-                    |> List.map (\( name, ( tables, _ ) ) -> li [] [ button [ type_ "button", class "dropdown-item", onClick (LoadSampleData name) ] [ text (name ++ " (" ++ String.fromInt tables ++ " tables)") ] ])
+                    |> List.map (\( name, ( tables, url ) ) -> li [] [ button [ type_ "button", class "dropdown-item", onClick (LoadFile url) ] [ text (name ++ " (" ++ String.fromInt tables ++ " tables)") ] ])
                 )
             ]
         ]

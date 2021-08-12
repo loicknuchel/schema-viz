@@ -1,4 +1,4 @@
-module Libs.List exposing (addAt, addIf, appendOn, dropUntil, dropWhile, filterMap, filterZip, find, findBy, findIndex, findIndexBy, get, groupBy, has, hasNot, indexOf, memberBy, move, moveBy, nonEmpty, prependOn, resultCollect, resultSeq, unique, uniqueBy, updateBy, zipWith)
+module Libs.List exposing (addAt, addIf, appendOn, dropUntil, dropWhile, filterMap, filterZip, find, findBy, findIndex, findIndexBy, get, groupBy, has, hasNot, indexOf, last, memberBy, move, moveBy, nonEmpty, prependOn, resultCollect, resultSeq, unique, uniqueBy, updateBy, zipWith)
 
 import Dict exposing (Dict)
 import Libs.Bool as B
@@ -11,6 +11,19 @@ import Set
 get : Int -> List a -> Maybe a
 get index list =
     list |> List.drop index |> List.head
+
+
+last : List a -> Maybe a
+last list =
+    case list of
+        [] ->
+            Nothing
+
+        [ a ] ->
+            Just a
+
+        _ :: tail ->
+            last tail
 
 
 nonEmpty : List a -> Bool

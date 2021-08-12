@@ -13,13 +13,12 @@ import Libs.List as L
 import Libs.Models exposing (Text)
 import Libs.Ned as Ned
 import Libs.Nel as Nel exposing (Nel)
-import Models.Schema exposing (Column, Layout, LayoutName, SchemaId, Table, TableId, showTableId)
+import Models.Project exposing (Column, Layout, LayoutName, Project, ProjectName, Schema, Table, TableId, showTableId)
 import PagesComponents.App.Models exposing (Msg(..), Search)
-import PagesComponents.App.Views.Helpers exposing (extractColumnName)
 
 
-viewNavbar : Search -> Maybe ( SchemaId, ( Dict TableId Table, Layout ), ( Maybe LayoutName, Dict LayoutName Layout ) ) -> List (Html Msg)
-viewNavbar search schema =
+viewNavbar : Search -> Maybe Project -> List (Html Msg)
+viewNavbar search project =
     [ nav [ id "navbar", class "navbar navbar-expand-md navbar-light bg-white shadow-sm" ]
         [ div [ class "container-fluid" ]
             [ button ([ type_ "button", class "link navbar-brand" ] ++ bsToggleOffcanvas conf.ids.menu) [ img [ src "assets/logo.png", alt "logo", height 24, class "d-inline-block align-text-top" ] [], text " Schema Viz" ]
@@ -27,28 +26,28 @@ viewNavbar search schema =
                 [ span [ class "navbar-toggler-icon" ] []
                 ]
             , div [ class "collapse navbar-collapse", id "navbar-content" ]
-                ([ viewSearchBar (schema |> Maybe.map (\( _, s, _ ) -> s)) search
+                ([ viewSearchBar (project |> Maybe.map .schema) search
                  , ul [ class "navbar-nav me-auto" ]
                     [ li [ class "nav-item" ] [ button ([ type_ "button", class "link nav-link" ] ++ bsToggleModal conf.ids.helpModal) [ text "?" ] ]
                     ]
                  ]
-                    ++ (schema |> Maybe.map (\( id, ( tables, _ ), ( layoutName, layouts ) ) -> [ viewTitle id tables layoutName, viewLayoutButton layoutName layouts ]) |> Maybe.withDefault [])
+                    ++ (project |> Maybe.map (\p -> [ viewTitle p.name p.schema.tables p.currentLayout, viewLayoutButton p.currentLayout p.layouts ]) |> Maybe.withDefault [])
                 )
             ]
         ]
     ]
 
 
-viewSearchBar : Maybe ( Dict TableId Table, Layout ) -> Search -> Html Msg
+viewSearchBar : Maybe Schema -> Search -> Html Msg
 viewSearchBar schema search =
     schema
         |> Maybe.map
-            (\( tables, layout ) ->
+            (\s ->
                 form [ class "d-flex" ]
                     [ div [ class "dropdown" ]
                         [ input ([ type_ "text", class "form-control", value search, placeholder "Search", ariaLabel "Search", autocomplete False, onInput ChangedSearch, attribute "data-bs-auto-close" "false" ] ++ bsToggleDropdown conf.ids.searchInput) []
                         , ul [ class "dropdown-menu" ]
-                            (buildSuggestions tables layout search
+                            (buildSuggestions s.tables s.layout search
                                 |> List.map (\suggestion -> li [] [ button [ type_ "button", class "dropdown-item", onClick suggestion.msg ] suggestion.content ])
                             )
                         ]
@@ -64,9 +63,9 @@ viewSearchBar schema search =
             )
 
 
-viewTitle : SchemaId -> Dict TableId Table -> Maybe LayoutName -> Html msg
-viewTitle id tables layoutName =
-    div [ class "me-auto", title (String.fromInt (Dict.size tables) ++ " tables") ] [ text (id ++ (layoutName |> Maybe.map (\name -> " > " ++ name) |> Maybe.withDefault "")) ]
+viewTitle : ProjectName -> Dict TableId Table -> Maybe LayoutName -> Html msg
+viewTitle projectName tables layoutName =
+    div [ class "me-auto", title (String.fromInt (Dict.size tables) ++ " tables") ] [ text (projectName ++ (layoutName |> Maybe.map (\name -> " > " ++ name) |> Maybe.withDefault "")) ]
 
 
 viewLayoutButton : Maybe LayoutName -> Dict LayoutName Layout -> Html Msg
@@ -133,7 +132,7 @@ columnSuggestion search table column =
     if column.name == search then
         Just
             { priority = 0 - 0.5
-            , content = viewIcon Icon.angleDoubleRight :: [ text (" " ++ showTableId table.id ++ "."), b [] [ text (extractColumnName column.name) ] ]
+            , content = viewIcon Icon.angleDoubleRight :: [ text (" " ++ showTableId table.id ++ "."), b [] [ text column.name ] ]
             , msg = ShowTable table.id
             }
 
@@ -148,13 +147,13 @@ highlightMatch search value =
 
 matchStrength : Table -> Layout -> Search -> Float
 matchStrength table layout search =
-    exactMatch search table.table
-        + matchAtBeginning search table.table
-        + matchNotAtBeginning search table.table
+    exactMatch search table.name
+        + matchAtBeginning search table.name
+        + matchNotAtBeginning search table.name
         + tableShownMalus layout table
         + columnMatchingBonus search table
         + (5 * manyColumnBonus table)
-        + shortNameBonus table.table
+        + shortNameBonus table.name
 
 
 exactMatch : Search -> Text -> Float
@@ -189,7 +188,7 @@ columnMatchingBonus search table =
     let
         columnNames : Nel Text
         columnNames =
-            table.columns |> Ned.values |> Nel.map (\c -> extractColumnName c.name)
+            table.columns |> Ned.values |> Nel.map .name
     in
     if not (search == "") then
         if columnNames |> Nel.any (\columnName -> not (exactMatch search columnName == 0)) then

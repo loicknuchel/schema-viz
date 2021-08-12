@@ -9,44 +9,41 @@ import Libs.List as L
 import Libs.Maybe as M
 import Libs.Models exposing (HtmlId, ZoomLevel)
 import Libs.Ned as Ned
-import Libs.Nel as Nel exposing (Nel)
 import Libs.Position exposing (Position)
 import Libs.Size exposing (Size)
-import Models.Schema exposing (ColumnRef, Layout, Relation, RelationRef, RelationTarget, Table, TableId, outgoingRelations, tableIdAsHtmlId, viewportSize)
+import Models.Project exposing (ColumnRef, ColumnRefFull, Layout, Relation, RelationFull, Schema, Table, TableId, tableIdAsHtmlId, viewportSize)
 import PagesComponents.App.Models exposing (Hover, Msg(..))
 import PagesComponents.App.Views.Erd.Relation exposing (viewRelation)
 import PagesComponents.App.Views.Erd.Table exposing (viewTable)
 import PagesComponents.App.Views.Helpers exposing (dragAttrs, sizeAttr)
+import Set exposing (Set)
 
 
-viewErd : Hover -> Dict HtmlId Size -> Maybe ( Dict TableId Table, Dict TableId (Nel RelationRef), Layout ) -> Html Msg
+viewErd : Hover -> Dict HtmlId Size -> Maybe Schema -> Html Msg
 viewErd hover sizes schema =
+    let
+        shownTableIds : Set TableId
+        shownTableIds =
+            schema |> Maybe.map (\s -> s.layout.tables |> List.map .id |> Set.fromList) |> Maybe.withDefault Set.empty
+
+        shownRelations : List RelationFull
+        shownRelations =
+            schema |> Maybe.map (\s -> s.relations |> List.filter (\r -> Set.member r.src.table shownTableIds || Set.member r.ref.table shownTableIds) |> List.filterMap (buildRelationFull s.tables s.layout sizes)) |> Maybe.withDefault []
+    in
     div ([ id conf.ids.erd, class "erd", sizeAttr (viewportSize sizes |> Maybe.withDefault (Size 0 0)), onWheel OnWheel ] ++ dragAttrs conf.ids.erd)
-        [ div [ class "canvas", schema |> Maybe.map (\( _, _, layout ) -> placeAndZoom layout.canvas.zoom layout.canvas.position) |> Maybe.withDefault (placeAndZoom 1 (Position 0 0)) ]
+        [ div [ class "canvas", schema |> Maybe.map (\s -> placeAndZoom s.layout.canvas.zoom s.layout.canvas.position) |> Maybe.withDefault (placeAndZoom 1 (Position 0 0)) ]
             (schema
                 |> Maybe.map
-                    (\( tables, incomingRelations, layout ) ->
+                    (\s ->
                         -- display all shown tables
-                        (layout.tables
+                        (s.layout.tables
                             |> List.reverse
-                            |> L.filterZip (\t -> tables |> Dict.get t.id)
-                            |> List.map (\( p, t ) -> ( ( t, p ), ( incomingRelations |> Dict.get p.id |> buildRelations tables layout sizes, sizes |> Dict.get (tableIdAsHtmlId p.id) ) ))
-                            |> List.indexedMap (\i ( ( table, props ), ( rels, size ) ) -> viewTable hover layout.canvas.zoom i table props rels size)
+                            |> L.filterZip (\t -> s.tables |> Dict.get t.id)
+                            |> List.map (\( p, t ) -> ( ( t, p ), ( shownRelations |> List.filter (\r -> r.src.table.id == t.id || r.ref.table.id == t.id), sizes |> Dict.get (tableIdAsHtmlId p.id) ) ))
+                            |> List.indexedMap (\i ( ( table, props ), ( rels, size ) ) -> viewTable hover s.layout.canvas.zoom i table props rels size)
                         )
-                            -- display all incoming relations for shown tables
-                            ++ (layout.tables
-                                    |> List.map (\t -> incomingRelations |> Dict.get t.id)
-                                    |> List.concatMap (buildRelations tables layout sizes)
-                                    |> List.map (viewRelation hover)
-                               )
-                            -- display outgoing relations of shown table which refer to a hidden table
-                            ++ (layout.tables
-                                    |> List.filterMap (\t -> tables |> Dict.get t.id)
-                                    |> List.concatMap outgoingRelations
-                                    |> List.filter (\r -> not (layout.tables |> L.memberBy .id r.ref.table))
-                                    |> List.filterMap (buildRelation tables layout sizes)
-                                    |> List.map (viewRelation hover)
-                               )
+                            -- display all relations for shown tables
+                            ++ (shownRelations |> List.map (viewRelation hover))
                     )
                 |> Maybe.withDefault []
             )
@@ -58,20 +55,15 @@ placeAndZoom zoom pan =
     style "transform" ("translate(" ++ String.fromFloat pan.left ++ "px, " ++ String.fromFloat pan.top ++ "px) scale(" ++ String.fromFloat zoom ++ ")")
 
 
-buildRelations : Dict TableId Table -> Layout -> Dict HtmlId Size -> Maybe (Nel RelationRef) -> List Relation
-buildRelations tables layout sizes rels =
-    rels |> Maybe.map Nel.toList |> Maybe.withDefault [] |> List.filterMap (buildRelation tables layout sizes)
+buildRelationFull : Dict TableId Table -> Layout -> Dict HtmlId Size -> Relation -> Maybe RelationFull
+buildRelationFull tables layout sizes rel =
+    Maybe.map2 (\src ref -> { name = rel.name, src = src, ref = ref, sources = rel.sources })
+        (buildColumnRefFull tables layout sizes rel.src)
+        (buildColumnRefFull tables layout sizes rel.ref)
 
 
-buildRelation : Dict TableId Table -> Layout -> Dict HtmlId Size -> RelationRef -> Maybe Relation
-buildRelation tables layout sizes rel =
-    Maybe.map2 (\src ref -> { key = rel.key, src = src, ref = ref })
-        (buildRelationTarget tables layout sizes rel.src)
-        (buildRelationTarget tables layout sizes rel.ref)
-
-
-buildRelationTarget : Dict TableId Table -> Layout -> Dict HtmlId Size -> ColumnRef -> Maybe RelationTarget
-buildRelationTarget tables layout sizes ref =
+buildColumnRefFull : Dict TableId Table -> Layout -> Dict HtmlId Size -> ColumnRef -> Maybe ColumnRefFull
+buildColumnRefFull tables layout sizes ref =
     (tables |> Dict.get ref.table |> M.andThenZip (\table -> table.columns |> Ned.get ref.column))
         |> Maybe.map
             (\( table, column ) ->

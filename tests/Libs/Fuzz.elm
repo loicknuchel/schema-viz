@@ -1,4 +1,4 @@
-module Libs.Fuzz exposing (letter, listN, map7, map8, nel, nelN)
+module Libs.Fuzz exposing (letter, listN, map6, map7, map8, map9, nel, nelN)
 
 import Fuzz exposing (Fuzzer)
 import Libs.Nel exposing (Nel)

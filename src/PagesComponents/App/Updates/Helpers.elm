@@ -1,4 +1,4 @@
-module PagesComponents.App.Updates.Helpers exposing (decodeErrorToHtml, setCanvas, setLayout, setLayouts, setListTable, setPosition, setSchema, setSchemaWithCmd, setSwitch, setTables, setTime)
+module PagesComponents.App.Updates.Helpers exposing (decodeErrorToHtml, setCanvas, setLayout, setLayouts, setListTable, setPosition, setProject, setProjectWithCmd, setSchema, setSchemaWithCmd, setSwitch, setTables, setTime)
 
 import Draggable
 import Json.Decode as Decode
@@ -17,14 +17,24 @@ setSwitch transform item =
     { item | switch = item.switch |> transform }
 
 
-setSchema : (s -> s) -> { item | schema : Maybe s } -> { item | schema : Maybe s }
+setProject : (p -> p) -> { item | project : Maybe p } -> { item | project : Maybe p }
+setProject transform item =
+    { item | project = item.project |> Maybe.map transform }
+
+
+setProjectWithCmd : (p -> ( p, Cmd msg )) -> { item | project : Maybe p } -> ( { item | project : Maybe p }, Cmd msg )
+setProjectWithCmd transform item =
+    item.project |> Maybe.map (\p -> p |> transform |> Tuple.mapFirst (\project -> { item | project = Just project })) |> Maybe.withDefault ( item, Cmd.none )
+
+
+setSchema : (s -> s) -> { item | schema : s } -> { item | schema : s }
 setSchema transform item =
-    { item | schema = item.schema |> Maybe.map transform }
+    { item | schema = transform item.schema }
 
 
-setSchemaWithCmd : (s -> ( s, Cmd msg )) -> { item | schema : Maybe s } -> ( { item | schema : Maybe s }, Cmd msg )
+setSchemaWithCmd : (s -> ( s, Cmd msg )) -> { item | schema : s } -> ( { item | schema : s }, Cmd msg )
 setSchemaWithCmd transform item =
-    item.schema |> Maybe.map (\s -> s |> transform |> Tuple.mapFirst (\schema -> { item | schema = Just schema })) |> Maybe.withDefault ( item, Cmd.none )
+    transform item.schema |> Tuple.mapFirst (\s -> { item | schema = s })
 
 
 setLayout : (l -> l) -> { item | layout : l } -> { item | layout : l }

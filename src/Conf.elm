@@ -14,7 +14,7 @@ conf :
         { searchInput : HtmlId
         , menu : HtmlId
         , erd : HtmlId
-        , schemaSwitchModal : HtmlId
+        , projectSwitchModal : HtmlId
         , newLayoutModal : HtmlId
         , helpModal : HtmlId
         , confirm : HtmlId
@@ -31,7 +31,7 @@ conf =
         { searchInput = "search"
         , menu = "menu"
         , erd = "erd"
-        , schemaSwitchModal = "schema-switch-modal"
+        , projectSwitchModal = "project-switch-modal"
         , newLayoutModal = "new-layout-modal"
         , helpModal = "help-modal"
         , confirm = "confirm-modal"

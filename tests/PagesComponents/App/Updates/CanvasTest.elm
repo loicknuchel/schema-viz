@@ -4,10 +4,11 @@ import Expect exposing (Expectation, FloatingPointTolerance(..))
 import Fuzz exposing (tuple)
 import Libs.Area exposing (Area)
 import Libs.Position exposing (Position)
-import Models.Schema exposing (CanvasProps)
+import Models.Project exposing (CanvasProps)
 import PagesComponents.App.Updates.Canvas exposing (computeFit, performZoom)
 import Test exposing (Test, describe, fuzz, test)
-import TestHelpers.Fuzzers exposing (canvasProps, position)
+import TestHelpers.Fuzzers exposing (position)
+import TestHelpers.ProjectFuzzers exposing (canvasProps)
 
 
 suite : Test

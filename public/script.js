@@ -24,10 +24,11 @@ window.onload = function () {
                 case 'HideOffcanvas': hideOffcanvas(msg.id); break;
                 case 'ActivateTooltipsAndPopovers': activateTooltipsAndPopovers(); break;
                 case 'ShowToast':     showToast(msg.toast); break;
-                case 'LoadSchemas':   loadSchemas(); break;
-                case 'SaveSchema':    saveSchema(msg.schema); break;
-                case 'DropSchema':    dropSchema(msg.schema); break;
+                case 'LoadProjects':  loadProjects(); break;
+                case 'SaveProject':   saveProject(msg.project); break;
+                case 'DropProject':   dropProject(msg.project); break;
                 case 'ReadFile':      readFile(msg.file); break;
+                case 'LoadFile':      loadFile(msg.url); break;
                 case 'ObserveSizes':  observeSizes(msg.ids); break;
                 case 'ListenKeys':    listenHotkeys(msg.keys); break;
                 case 'TrackPage':     analytics.then(a => a.trackPage(msg.name)); break;
@@ -94,40 +95,47 @@ window.onload = function () {
         }
     }
 
-    const schemaPrefix = 'schema-'
-    function loadSchemas() {
+    const projectPrefix = 'project-'
+    function loadProjects() {
         const values = Object.keys(localStorage)
-            .filter(key => key.startsWith(schemaPrefix))
-            .map(key => [key.replace(schemaPrefix, ''), JSON.parse(localStorage.getItem(key))])
-        sendToElm({kind: 'SchemasLoaded', schemas: values})
+            .filter(key => key.startsWith(projectPrefix))
+            .map(key => [key.replace(projectPrefix, ''), JSON.parse(localStorage.getItem(key))])
+        sendToElm({kind: 'ProjectsLoaded', projects: values})
     }
-    function saveSchema(schema) {
-        const key = schemaPrefix + schema.id
+    function saveProject(project) {
+        const key = projectPrefix + project.id
         // setting dates should be done in Elm but can't find how to run a Task before calling a Port
         const now = Date.now()
-        schema.info.updated = now
-        if (localStorage.getItem(key) == null) { schema.info.created = now }
+        project.updatedAt = now
+        if (localStorage.getItem(key) === null) { project.createdAt = now }
         try {
-            localStorage.setItem(key, JSON.stringify(schema))
+            localStorage.setItem(key, JSON.stringify(project))
         } catch (e) {
             if (e.code === DOMException.QUOTA_EXCEEDED_ERR) {
-                showToast({kind: 'error', message: "Can't save schema, storage quota exceeded. Use a smaller schema or clean unused ones."})
+                showToast({kind: 'error', message: "Can't save project, storage quota exceeded. Use a smaller schema or clean unused projects."})
             } else {
-                showToast({kind: 'error', message: "Can't save schema: " + e.message})
+                showToast({kind: 'error', message: "Can't save project: " + e.message})
             }
             const name = 'local-storage'
             const details = {error: e.name, message: e.message}
             analytics.then(a => a.trackError(name, details)); errorTracking.then(e => e.track(name, details));
         }
     }
-    function dropSchema(schema) {
-        localStorage.removeItem(schemaPrefix + schema.id)
+    function dropProject(project) {
+        localStorage.removeItem(projectPrefix + project.id)
     }
 
     function readFile(file) {
         const reader = new FileReader()
-        reader.onload = e => sendToElm({kind: 'FileRead', now: Date.now(), file: file, content: e.target.result})
+        reader.onload = e => sendToElm({kind: 'FileRead', now: Date.now(), projectId: randomUID(), sourceId: randomUID(), file, content: e.target.result})
         reader.readAsText(file)
+    }
+
+    function loadFile(url) {
+        fetch(url)
+            .then(res => res.text())
+            .then(content => sendToElm({kind: 'FileLoaded', now: Date.now(), projectId: randomUID(), sourceId: randomUID(), url, content}))
+            .catch(err => showToast({kind: 'error', message: err}))
     }
 
     const resizeObserver = new ResizeObserver(entries => {
@@ -327,6 +335,10 @@ window.onload = function () {
     function maybeElementById(id) {
         const elem = document.getElementById(id)
         return elem ? [elem] : []
+    }
+
+    function randomUID() {
+        return uuidv4() // TODO replace with https://github.com/ai/nanoid
     }
 
     function loadScript(url) {

@@ -1,4 +1,4 @@
-module PagesComponents.App.Views.Helpers exposing (columnRefAsHtmlId, dragAttrs, extractColumnName, extractColumnType, formatDate, onClickConfirm, placeAt, sizeAttr, withColumnName, withNullableInfo)
+module PagesComponents.App.Views.Helpers exposing (columnRefAsHtmlId, dragAttrs, formatDate, onClickConfirm, placeAt, sizeAttr, withColumnName)
 
 import Draggable
 import Html exposing (Attribute, text)
@@ -9,7 +9,7 @@ import Libs.Models exposing (HtmlId)
 import Libs.Position exposing (Position)
 import Libs.Size exposing (Size)
 import Libs.Task as T
-import Models.Schema exposing (ColumnName, ColumnRef, ColumnType(..), tableIdAsHtmlId)
+import Models.Project exposing (ColumnName, ColumnRef, tableIdAsHtmlId)
 import PagesComponents.App.Models exposing (DragId, Msg(..), TimeInfo)
 import Time
 
@@ -38,16 +38,6 @@ onClickConfirm content msg =
 -- formatters
 
 
-extractColumnName : ColumnName -> String
-extractColumnName name =
-    name
-
-
-extractColumnType : ColumnType -> String
-extractColumnType (ColumnType kind) =
-    kind
-
-
 withColumnName : ColumnName -> String -> String
 withColumnName column table =
     table ++ "." ++ column
@@ -56,15 +46,6 @@ withColumnName column table =
 columnRefAsHtmlId : ColumnRef -> HtmlId
 columnRefAsHtmlId ref =
     tableIdAsHtmlId ref.table |> withColumnName ref.column
-
-
-withNullableInfo : Bool -> String -> String
-withNullableInfo nullable text =
-    if nullable then
-        text ++ "?"
-
-    else
-        text
 
 
 formatDate : TimeInfo -> Time.Posix -> String

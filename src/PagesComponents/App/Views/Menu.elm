@@ -12,13 +12,13 @@ import Libs.Bootstrap exposing (BsColor(..), Toggle(..), bsBackdrop, bsButton, b
 import Libs.Html.Attributes exposing (ariaLabel, ariaLabelledBy)
 import Libs.List as L
 import Libs.Ned as Ned
-import Libs.Nel as Nel exposing (Nel)
+import Libs.Nel as Nel
 import Libs.String as S exposing (plural)
-import Models.Schema exposing (Layout, RelationRef, Table, TableId, showTableId)
+import Models.Project exposing (Layout, Schema, Table, TableId, showTableId)
 import PagesComponents.App.Models exposing (Msg(..))
 
 
-viewMenu : Maybe ( Dict TableId Table, Dict TableId (Nel RelationRef), Layout ) -> List (Html Msg)
+viewMenu : Maybe Schema -> List (Html Msg)
 viewMenu schema =
     [ div [ id conf.ids.menu, class "offcanvas offcanvas-start", bsScroll True, bsBackdrop "false", ariaLabelledBy (conf.ids.menu ++ "-label"), tabindex -1 ]
         [ div [ class "offcanvas-header" ]
@@ -26,11 +26,11 @@ viewMenu schema =
             , button [ type_ "button", class "btn-close text-reset", bsDismiss Offcanvas, ariaLabel "Close" ] []
             ]
         , div [ class "offcanvas-body" ]
-            ([ div [] [ bsButton Primary [ onClick ChangeSchema ] [ text "Load a schema" ] ] ]
+            ([ div [] [ bsButton Primary [ onClick ChangeProject ] [ text "Switch from project" ] ] ]
                 ++ (schema
                         |> Maybe.map
-                            (\( tables, relations, layout ) ->
-                                if Dict.isEmpty tables then
+                            (\s ->
+                                if Dict.isEmpty s.tables then
                                     []
 
                                 else
@@ -42,15 +42,15 @@ viewMenu schema =
                                         ]
                                     , div [ style "margin-top" "1em" ]
                                         [ text
-                                            ((tables |> Dict.size |> String.fromInt)
+                                            ((s.tables |> Dict.size |> String.fromInt)
                                                 ++ " tables, "
-                                                ++ (tables |> Dict.foldl (\_ t c -> c + Ned.size t.columns) 0 |> String.fromInt)
+                                                ++ (s.tables |> Dict.foldl (\_ t c -> c + Ned.size t.columns) 0 |> String.fromInt)
                                                 ++ " columns, "
-                                                ++ (relations |> Dict.values |> List.map Nel.length |> List.sum |> String.fromInt)
+                                                ++ (s.relations |> List.length |> String.fromInt)
                                                 ++ " relations"
                                             )
                                         ]
-                                    , viewTableList tables layout
+                                    , viewTableList s.tables s.layout
                                     ]
                             )
                         |> Maybe.withDefault []

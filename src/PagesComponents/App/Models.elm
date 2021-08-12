@@ -4,13 +4,12 @@ import Dict exposing (Dict)
 import Draggable
 import FileValue exposing (File)
 import Html exposing (Html, text)
-import Http
 import Libs.Html.Events exposing (WheelEvent)
-import Libs.Models exposing (HtmlId, Text, ZoomDelta)
+import Libs.Models exposing (FileUrl, HtmlId, ZoomDelta)
 import Libs.Position exposing (Position)
 import Libs.Size exposing (Size)
 import Libs.Task as T
-import Models.Schema exposing (ColumnRef, LayoutName, Schema, TableId)
+import Models.Project exposing (ColumnRef, LayoutName, Project, TableId)
 import Ports exposing (JsMsg)
 import Time
 
@@ -18,8 +17,8 @@ import Time
 type alias Model =
     { time : TimeInfo
     , switch : Switch
-    , storedSchemas : List Schema
-    , schema : Maybe Schema
+    , storedProjects : List Project
+    , project : Maybe Project
     , search : Search
     , newLayout : Maybe LayoutName
     , confirm : Confirm
@@ -33,15 +32,14 @@ type alias Model =
 type Msg
     = TimeChanged Time.Posix
     | ZoneChanged Time.Zone
-    | ChangeSchema
+    | ChangeProject
     | FileDragOver File (List File)
     | FileDragLeave
     | FileDropped File (List File)
     | FileSelected File
-    | LoadSampleData String
-    | GotSampleData Time.Posix String String (Result Http.Error Text)
-    | DeleteSchema Schema
-    | UseSchema Schema
+    | LoadFile FileUrl
+    | DeleteProject Project
+    | UseProject Project
     | ChangedSearch Search
     | SelectTable TableId
     | HideTable TableId

@@ -16,11 +16,11 @@ import PagesComponents.App.Views.Navbar exposing (viewNavbar)
 viewApp : Model -> List (Html Msg)
 viewApp model =
     [ Icon.css, node "style" [] [ text "body { overflow: hidden; }" ] ]
-        ++ viewNavbar model.search (model.schema |> Maybe.map (\s -> ( s.id, ( s.tables, s.layout ), ( s.layoutName, s.layouts ) )))
-        ++ viewMenu (model.schema |> Maybe.map (\s -> ( s.tables, s.incomingRelations, s.layout )))
-        ++ [ viewErd model.hover model.sizes (model.schema |> Maybe.map (\s -> ( s.tables, s.incomingRelations, s.layout )))
-           , viewCommands (model.schema |> Maybe.map (\s -> s.layout.canvas))
-           , viewSchemaSwitchModal model.time model.switch (model.schema |> Maybe.map (\_ -> "Schema Viz, easily explore your SQL schema!") |> Maybe.withDefault "Load a new schema") model.storedSchemas
+        ++ viewNavbar model.search model.project
+        ++ viewMenu (model.project |> Maybe.map .schema)
+        ++ [ viewErd model.hover model.sizes (model.project |> Maybe.map .schema)
+           , viewCommands (model.project |> Maybe.map (\p -> p.schema.layout.canvas))
+           , viewSchemaSwitchModal model.time model.switch (model.project |> Maybe.map (\_ -> "Schema Viz, easily explore your SQL schema!") |> Maybe.withDefault "Load a new schema") model.storedProjects
            , viewCreateLayoutModal model.newLayout
            , viewHelpModal
            , viewConfirm model.confirm

@@ -1,4 +1,4 @@
-port module Ports exposing (JsMsg(..), activateTooltipsAndPopovers, click, dropSchema, hideModal, hideOffcanvas, listenHotkeys, loadSchemas, observeSize, observeTableSize, observeTablesSize, onJsMessage, readFile, saveSchema, showModal, toastError, toastInfo, toastWarning, trackErrorList, trackJsonError, trackLayoutEvent, trackPage, trackSchemaEvent)
+port module Ports exposing (JsMsg(..), activateTooltipsAndPopovers, click, dropProject, hideModal, hideOffcanvas, listenHotkeys, loadFile, loadProjects, observeSize, observeTableSize, observeTablesSize, onJsMessage, readFile, saveProject, showModal, toastError, toastInfo, toastWarning, trackErrorList, trackJsonError, trackLayoutEvent, trackPage, trackProjectEvent)
 
 import Dict exposing (Dict)
 import FileValue exposing (File)
@@ -6,9 +6,10 @@ import Json.Decode as Decode exposing (Decoder, Value, errorToString)
 import Json.Encode as Encode
 import Libs.Hotkey exposing (Hotkey, hotkeyEncoder)
 import Libs.Json.Decode as D
+import Libs.Json.Formats exposing (decodeSize)
 import Libs.List as L
-import Libs.Models exposing (FileContent, HtmlId, SizeChange, Text)
-import Models.Schema exposing (Layout, Schema, SchemaId, TableId, decodeSchema, decodeSize, encodeSchema, tableIdAsHtmlId)
+import Libs.Models exposing (FileContent, FileUrl, HtmlId, SizeChange, Text)
+import Models.Project exposing (Layout, Project, ProjectId, ProjectSourceId, TableId, decodeProject, encodeProject, tableIdAsHtmlId)
 import Time
 
 
@@ -57,24 +58,29 @@ showToast toast =
     messageToJs (ShowToast toast)
 
 
-loadSchemas : Cmd msg
-loadSchemas =
-    messageToJs LoadSchemas
+loadProjects : Cmd msg
+loadProjects =
+    messageToJs LoadProjects
 
 
-saveSchema : Schema -> Cmd msg
-saveSchema schema =
-    messageToJs (SaveSchema schema)
+saveProject : Project -> Cmd msg
+saveProject project =
+    messageToJs (SaveProject project)
 
 
-dropSchema : Schema -> Cmd msg
-dropSchema schema =
-    messageToJs (DropSchema schema)
+dropProject : Project -> Cmd msg
+dropProject project =
+    messageToJs (DropProject project)
 
 
 readFile : File -> Cmd msg
 readFile file =
     messageToJs (ReadFile file)
+
+
+loadFile : FileUrl -> Cmd msg
+loadFile url =
+    messageToJs (LoadFile url)
 
 
 observeSizes : List HtmlId -> Cmd msg
@@ -107,13 +113,13 @@ trackPage name =
     messageToJs (TrackPage name)
 
 
-trackSchemaEvent : String -> Schema -> Cmd msg
-trackSchemaEvent name schema =
+trackProjectEvent : String -> Project -> Cmd msg
+trackProjectEvent name project =
     messageToJs
-        (TrackEvent (name ++ "-schema")
+        (TrackEvent (name ++ "-project")
             (Encode.object
-                [ ( "tableCount", schema.tables |> Dict.size |> Encode.int )
-                , ( "layoutCount", schema.layouts |> Dict.size |> Encode.int )
+                [ ( "tableCount", project.schema.tables |> Dict.size |> Encode.int )
+                , ( "layoutCount", project.layouts |> Dict.size |> Encode.int )
                 ]
             )
         )
@@ -141,10 +147,11 @@ type ElmMsg
     | HideOffcanvas HtmlId
     | ActivateTooltipsAndPopovers
     | ShowToast Toast
-    | LoadSchemas
-    | SaveSchema Schema
-    | DropSchema Schema
+    | LoadProjects
+    | SaveProject Project
+    | DropProject Project
     | ReadFile File
+    | LoadFile FileUrl
     | ObserveSizes (List HtmlId)
     | ListenKeys (Dict String (List Hotkey))
     | TrackPage String
@@ -153,8 +160,9 @@ type ElmMsg
 
 
 type JsMsg
-    = SchemasLoaded ( List ( String, Decode.Error ), List Schema )
-    | FileRead Time.Posix File FileContent
+    = ProjectsLoaded ( List ( ProjectId, Decode.Error ), List Project )
+    | FileRead Time.Posix ProjectId ProjectSourceId File FileContent
+    | FileLoaded Time.Posix ProjectId ProjectSourceId FileUrl FileContent
     | SizesChanged (List SizeChange)
     | HotkeyUsed String
     | Error Decode.Error
@@ -203,17 +211,20 @@ elmEncoder elm =
         ShowToast toast ->
             Encode.object [ ( "kind", "ShowToast" |> Encode.string ), ( "toast", toast |> toastEncoder ) ]
 
-        LoadSchemas ->
-            Encode.object [ ( "kind", "LoadSchemas" |> Encode.string ) ]
+        LoadProjects ->
+            Encode.object [ ( "kind", "LoadProjects" |> Encode.string ) ]
 
-        SaveSchema schema ->
-            Encode.object [ ( "kind", "SaveSchema" |> Encode.string ), ( "schema", schema |> encodeSchema ) ]
+        SaveProject project ->
+            Encode.object [ ( "kind", "SaveProject" |> Encode.string ), ( "project", project |> encodeProject ) ]
 
-        DropSchema schema ->
-            Encode.object [ ( "kind", "DropSchema" |> Encode.string ), ( "schema", schema |> encodeSchema ) ]
+        DropProject project ->
+            Encode.object [ ( "kind", "DropProject" |> Encode.string ), ( "project", project |> encodeProject ) ]
 
         ReadFile file ->
             Encode.object [ ( "kind", "ReadFile" |> Encode.string ), ( "file", file |> FileValue.encode ) ]
+
+        LoadFile url ->
+            Encode.object [ ( "kind", "LoadFile" |> Encode.string ), ( "url", url |> Encode.string ) ]
 
         ObserveSizes ids ->
             Encode.object [ ( "kind", "ObserveSizes" |> Encode.string ), ( "ids", ids |> Encode.list Encode.string ) ]
@@ -238,38 +249,47 @@ toastEncoder toast =
 
 jsDecoder : Decoder JsMsg
 jsDecoder =
-    Decode.field "kind" Decode.string
-        |> Decode.andThen
-            (\kind ->
-                case kind of
-                    "SchemasLoaded" ->
-                        Decode.field "schemas" schemasDecoder |> Decode.map SchemasLoaded
+    D.matchOn "kind"
+        (\kind ->
+            case kind of
+                "ProjectsLoaded" ->
+                    Decode.field "projects" projectsDecoder |> Decode.map ProjectsLoaded
 
-                    "FileRead" ->
-                        Decode.map3 FileRead
-                            (Decode.field "now" Decode.int |> Decode.map Time.millisToPosix)
-                            (Decode.field "file" FileValue.decoder)
-                            (Decode.field "content" Decode.string)
+                "FileRead" ->
+                    Decode.map5 FileRead
+                        (Decode.field "now" Decode.int |> Decode.map Time.millisToPosix)
+                        (Decode.field "projectId" Decode.string)
+                        (Decode.field "sourceId" Decode.string)
+                        (Decode.field "file" FileValue.decoder)
+                        (Decode.field "content" Decode.string)
 
-                    "SizesChanged" ->
-                        Decode.field "sizes"
-                            (Decode.map2 (\id size -> { id = id, size = size })
-                                (Decode.field "id" Decode.string)
-                                (Decode.field "size" decodeSize)
-                                |> Decode.list
-                            )
-                            |> Decode.map SizesChanged
+                "FileLoaded" ->
+                    Decode.map5 FileLoaded
+                        (Decode.field "now" Decode.int |> Decode.map Time.millisToPosix)
+                        (Decode.field "projectId" Decode.string)
+                        (Decode.field "sourceId" Decode.string)
+                        (Decode.field "url" Decode.string)
+                        (Decode.field "content" Decode.string)
 
-                    "HotkeyUsed" ->
-                        Decode.field "id" Decode.string |> Decode.map HotkeyUsed
+                "SizesChanged" ->
+                    Decode.field "sizes"
+                        (Decode.map2 (\id size -> { id = id, size = size })
+                            (Decode.field "id" Decode.string)
+                            (Decode.field "size" decodeSize)
+                            |> Decode.list
+                        )
+                        |> Decode.map SizesChanged
 
-                    other ->
-                        Decode.fail ("Not supported kind of JsMsg '" ++ other ++ "'")
-            )
+                "HotkeyUsed" ->
+                    Decode.field "id" Decode.string |> Decode.map HotkeyUsed
+
+                other ->
+                    Decode.fail ("Not supported kind of JsMsg '" ++ other ++ "'")
+        )
 
 
-schemasDecoder : Decoder ( List ( SchemaId, Decode.Error ), List Schema )
-schemasDecoder =
+projectsDecoder : Decoder ( List ( ProjectId, Decode.Error ), List Project )
+projectsDecoder =
     Decode.list (D.tuple Decode.string Decode.value)
         |> Decode.map
             (\list ->
@@ -277,7 +297,7 @@ schemasDecoder =
                     |> List.map
                         (\( k, v ) ->
                             v
-                                |> Decode.decodeValue (decodeSchema [])
+                                |> Decode.decodeValue decodeProject
                                 |> Result.mapError (\e -> ( k, e ))
                         )
                     |> L.resultCollect

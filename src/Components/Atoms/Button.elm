@@ -22,16 +22,20 @@ button props =
         [ Html.text props.label ]
 
 
+
+-- TODO Comprendre le x après Chapter
+
+
 buttonChapter : Chapter x
 buttonChapter =
     let
         props =
             { label = "Click me!"
             , disabled = False
-            , onClick = logAction "Clicked button 2!"
+            , onClick = logAction "Clicked button!"
             }
     in
-    chapter "Buttons default"
+    chapter "Buttons"
         |> renderComponentList
             [ ( "Default", button props )
             , ( "Disabled", button { props | disabled = True } )

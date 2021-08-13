@@ -6,9 +6,9 @@ import ElmBook exposing (..)
 
 main : Book ()
 main =
-    book "Schemavizz Components"
+    book "Schemavizz UI"
         |> withChapterGroups
-            [ ( "Components"
+            [ ( "Atoms"
               , [ buttonChapter
                 ]
               )

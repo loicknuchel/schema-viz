@@ -7,6 +7,7 @@ import Html.Attributes exposing (..)
 import Html.Events exposing (onClick)
 
 
+
 button :
     { label : String
     , disabled : Bool
@@ -15,7 +16,7 @@ button :
     -> Html msg
 button props =
     Html.button
-        [ class "px-8 py-3 rounded-md bg-pink-600"
+        [ class "px-8 py-3 rounded-md bg-indigo-500"
         , disabled props.disabled
         , onClick props.onClick
         ]
@@ -32,7 +33,7 @@ buttonChapter =
         props =
             { label = "Click me!"
             , disabled = False
-            , onClick = logAction "Clicked button!"
+            , onClick = logAction "Clicked button 2!"
             }
     in
     chapter "Buttons"

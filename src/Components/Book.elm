@@ -1,15 +1,14 @@
 module Components.Book exposing (main)
 
 import Components.Atoms.Button exposing (buttonChapter)
-import ElmBook exposing (..)
+import Components.Atoms.Link exposing (firstChapter)
+import ElmBook exposing (withChapters)
+import ElmBook.ElmCSS exposing (Book, Chapter, book)
 
 
 main : Book ()
 main =
-    book "Schemavizz UI"
-        |> withChapterGroups
-            [ ( "Atoms"
-              , [ buttonChapter
-                ]
-              )
+    book "ElmBook with Elm-CSS"
+        |> withChapters
+            [ firstChapter
             ]

@@ -1,8 +1,10 @@
 module PagesComponents.Home_.Views.HeaderSection exposing (viewHeaderSection)
 
+import Components.Atoms.Link exposing (linkButton)
 import Gen.Route as Route
-import Html exposing (Html, a, div, header, img, span, text)
 import Html.Attributes exposing (alt, class, href, src)
+import Html exposing (Html, a, div, header, img, span, text)
+import Html.Styled as Styled
 
 
 viewHeaderSection : Html msg
@@ -18,4 +20,12 @@ viewHeaderSection =
                     ]
                 ]
             ]
+        , viewButton |> Styled.toUnstyled
         ]
+
+
+viewButton =
+    linkButton
+        { label = "Click me!"
+        , url = "#"
+        }

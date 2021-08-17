@@ -1,7 +1,7 @@
 module Components.Atoms.Link exposing (firstChapter, linkButton)
 
+import Components.Reset exposing (resetCSS)
 import Css
-import Css.Global
 import ElmBook.Actions exposing (logAction)
 import ElmBook.Chapter exposing (..)
 import ElmBook.ElmCSS exposing (Book, Chapter, book)
@@ -25,8 +25,7 @@ firstChapter =
     in
     chapter "Links"
         |> renderComponentList
-            [ ( "Default", linkButton props )
-            , ( "Disabled", linkButton { props | label = "test" } )
+            [ ( "Default", resetCSS (linkButton props) )
             ]
 
 
@@ -36,10 +35,9 @@ linkButton :
     }
     -> Html msg
 linkButton props =
-    div [ Attr.css [ Tw.bg_gray_50 ] ]
+    div []
         [ -- This will give us the standard tailwind style-reset as well as the fonts
-          Css.Global.global Tw.globalStyles
-        , div
+         div
             [ Attr.css
                 [ Tw.mt_8
                 , Tw.flex

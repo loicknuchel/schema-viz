@@ -7,7 +7,6 @@ import Html.Attributes exposing (..)
 import Html.Events exposing (onClick)
 
 
-
 button :
     { label : String
     , disabled : Bool

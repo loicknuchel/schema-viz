@@ -109,6 +109,7 @@ viewHeader zoom index table =
                             , li [] [ button [ type_ "button", class "dropdown-item", onClick (TableOrder table.id 0) ] [ text "Send to back" ] ]
                             ]
                         ]
+                    , li [] [ button [ type_ "button", class "dropdown-item", onClick (FindPath (Just table.id) Nothing) ] [ text "Find path from this table" ] ]
                     ]
             )
         ]

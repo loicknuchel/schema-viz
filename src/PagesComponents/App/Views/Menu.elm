@@ -18,15 +18,17 @@ import Models.Project exposing (Layout, Schema, Table, TableId, showTableId)
 import PagesComponents.App.Models exposing (Msg(..))
 
 
-viewMenu : Maybe Schema -> List (Html Msg)
+viewMenu : Maybe Schema -> Html Msg
 viewMenu schema =
-    [ div [ id conf.ids.menu, class "offcanvas offcanvas-start", bsScroll True, bsBackdrop "false", ariaLabelledBy (conf.ids.menu ++ "-label"), tabindex -1 ]
+    div [ id conf.ids.menu, class "offcanvas offcanvas-start", bsScroll True, bsBackdrop "false", ariaLabelledBy (conf.ids.menu ++ "-label"), tabindex -1 ]
         [ div [ class "offcanvas-header" ]
             [ h5 [ class "offcanvas-title", id (conf.ids.menu ++ "-label") ] [ text "Menu" ]
             , button [ type_ "button", class "btn-close text-reset", bsDismiss Offcanvas, ariaLabel "Close" ] []
             ]
         , div [ class "offcanvas-body" ]
-            ([ div [] [ bsButton Primary [ onClick ChangeProject ] [ text "Switch from project" ] ] ]
+            ([ div [] [ bsButton Primary [ onClick ChangeProject ] [ text "Switch from project" ] ]
+             , div [ style "margin-top" "1em" ] [ bsButton Primary [ onClick (FindPath Nothing Nothing) ] [ text "Find path" ] ]
+             ]
                 ++ (schema
                         |> Maybe.map
                             (\s ->
@@ -57,7 +59,6 @@ viewMenu schema =
                    )
             )
         ]
-    ]
 
 
 viewTableList : Dict TableId Table -> Layout -> Html Msg

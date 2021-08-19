@@ -17,9 +17,9 @@ import Models.Project exposing (Column, Layout, LayoutName, Project, ProjectName
 import PagesComponents.App.Models exposing (Msg(..), Search)
 
 
-viewNavbar : Search -> Maybe Project -> List (Html Msg)
+viewNavbar : Search -> Maybe Project -> Html Msg
 viewNavbar search project =
-    [ nav [ id "navbar", class "navbar navbar-expand-md navbar-light bg-white shadow-sm" ]
+    nav [ id "navbar", class "navbar navbar-expand-md navbar-light bg-white shadow-sm" ]
         [ div [ class "container-fluid" ]
             [ button ([ type_ "button", class "link navbar-brand" ] ++ bsToggleOffcanvas conf.ids.menu) [ img [ src "assets/logo.png", alt "logo", height 24, class "d-inline-block align-text-top" ] [], text " Schema Viz" ]
             , button ([ type_ "button", class "navbar-toggler", ariaLabel "Toggle navigation" ] ++ bsToggleCollapse "navbar-content")
@@ -35,7 +35,6 @@ viewNavbar search project =
                 )
             ]
         ]
-    ]
 
 
 viewSearchBar : Maybe Schema -> Search -> Html Msg

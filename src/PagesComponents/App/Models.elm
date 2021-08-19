@@ -9,6 +9,7 @@ import Libs.Models exposing (FileUrl, HtmlId, ZoomDelta)
 import Libs.Position exposing (Position)
 import Libs.Size exposing (Size)
 import Libs.Task as T
+import Models.FindPath as FindPath
 import Models.Project exposing (ColumnRef, LayoutName, Project, TableId)
 import Ports exposing (JsMsg)
 import Time
@@ -21,6 +22,7 @@ type alias Model =
     , project : Maybe Project
     , search : Search
     , newLayout : Maybe LayoutName
+    , findPath : Maybe FindPath.Model
     , confirm : Confirm
     , sizes : Dict HtmlId Size
     , dragId : Maybe DragId
@@ -64,6 +66,10 @@ type Msg
     | StartDragging DragId
     | StopDragging
     | OnDragBy Draggable.Delta
+    | FindPath (Maybe TableId) (Maybe TableId)
+    | FindPathFrom (Maybe TableId)
+    | FindPathTo (Maybe TableId)
+    | FindPathCompute
     | NewLayout LayoutName
     | CreateLayout LayoutName
     | LoadLayout LayoutName

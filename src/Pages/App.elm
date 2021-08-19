@@ -12,6 +12,7 @@ import PagesComponents.App.Commands.GetZone exposing (getZone)
 import PagesComponents.App.Models as Models exposing (Model, Msg(..), initConfirm, initHover, initSwitch, initTimeInfo)
 import PagesComponents.App.Updates exposing (dragConfig, dragItem, moveTable, removeElement, updateSizes)
 import PagesComponents.App.Updates.Canvas exposing (fitCanvas, handleWheel, zoomCanvas)
+import PagesComponents.App.Updates.FindPath exposing (computeFindPath)
 import PagesComponents.App.Updates.Helpers exposing (decodeErrorToHtml, setCanvas, setLayout, setListTable, setProject, setProjectWithCmd, setSchema, setSchemaWithCmd, setSwitch, setTables, setTime)
 import PagesComponents.App.Updates.Layout exposing (createLayout, deleteLayout, loadLayout, updateLayout)
 import PagesComponents.App.Updates.Project exposing (createProjectFromFile, createProjectFromUrl, useProject)
@@ -55,6 +56,7 @@ init =
       , project = Nothing
       , search = ""
       , newLayout = Nothing
+      , findPath = Nothing
       , confirm = initConfirm
       , sizes = Dict.empty
       , dragId = Nothing
@@ -194,6 +196,21 @@ update msg model =
 
         OnDragBy delta ->
             dragItem model delta
+
+        FindPath from to ->
+            ( { model | findPath = Just { from = from, to = to, paths = Nothing } }, showModal conf.ids.findPathModal )
+
+        FindPathFrom from ->
+            ( { model | findPath = model.findPath |> Maybe.map (\m -> { m | from = from, paths = Nothing }) }, Cmd.none )
+
+        FindPathTo to ->
+            ( { model | findPath = model.findPath |> Maybe.map (\m -> { m | to = to, paths = Nothing }) }, Cmd.none )
+
+        FindPathCompute ->
+            model.findPath
+                |> Maybe.andThen (\fp -> Maybe.map3 (\p from to -> ( p, from, to )) model.project fp.from fp.to)
+                |> Maybe.map (\( p, from, to ) -> ( { model | findPath = model.findPath |> Maybe.map (\m -> { m | paths = Just (computeFindPath p.schema.tables p.schema.relations from to).paths }) }, Cmd.none ))
+                |> Maybe.withDefault ( model, Cmd.none )
 
         NewLayout name ->
             ( { model | newLayout = B.cond (String.length name == 0) Nothing (Just name) }, Cmd.none )

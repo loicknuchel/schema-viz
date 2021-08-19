@@ -15,6 +15,7 @@ conf :
         , menu : HtmlId
         , erd : HtmlId
         , projectSwitchModal : HtmlId
+        , findPathModal : HtmlId
         , newLayoutModal : HtmlId
         , helpModal : HtmlId
         , confirm : HtmlId
@@ -32,6 +33,7 @@ conf =
         , menu = "menu"
         , erd = "erd"
         , projectSwitchModal = "project-switch-modal"
+        , findPathModal = "find-path-modal"
         , newLayoutModal = "new-layout-modal"
         , helpModal = "help-modal"
         , confirm = "confirm-modal"

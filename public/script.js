@@ -161,7 +161,7 @@ window.onload = function () {
                     (!hotkey.shift || e.shiftKey) &&
                     (!hotkey.alt || e.altKey) &&
                     (!hotkey.meta || e.metaKey) &&
-                    ((!hotkey.target && (!hotkey.oninput || e.target.localName !== 'input')) || (hotkey.target &&
+                    ((!hotkey.target && (hotkey.onInput || e.target.localName !== 'input')) || (hotkey.target &&
                         (!hotkey.target.id || hotkey.target.id === e.target.id) &&
                         (!hotkey.target.class || e.target.className.split(' ').includes(hotkey.target.class)) &&
                         (!hotkey.target.tag || hotkey.target.tag === e.target.localName)))) {

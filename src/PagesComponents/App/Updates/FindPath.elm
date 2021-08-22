@@ -21,6 +21,11 @@ ignoreTables =
     [ ( "public", "user_requests" ) ]
 
 
+maxLength : number
+maxLength =
+    3
+
+
 filterRelations : List Relation -> List Relation
 filterRelations relations =
     -- ugly hack to keep computing low
@@ -41,7 +46,7 @@ buildPaths tables relations tableId isDone curPath =
                     relations
                         |> List.partition (\r -> r.src.table == tableId || r.ref.table == tableId)
                         |> (\( tableRelations, otherRelations ) ->
-                                if (tableRelations |> List.isEmpty) || ((curPath |> List.length) > 3) then
+                                if (tableRelations |> List.isEmpty) || ((curPath |> List.length) > maxLength) then
                                     []
 
                                 else

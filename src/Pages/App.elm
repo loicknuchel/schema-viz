@@ -6,6 +6,8 @@ import Draggable
 import Gen.Params.App exposing (Params)
 import Libs.Bool as B
 import Libs.List as L
+import Libs.Task exposing (sendAfter)
+import Models.FindPath exposing (PathState(..))
 import Page
 import PagesComponents.App.Commands.GetTime exposing (getTime)
 import PagesComponents.App.Commands.GetZone exposing (getZone)
@@ -198,19 +200,22 @@ update msg model =
             dragItem model delta
 
         FindPath from to ->
-            ( { model | findPath = Just { from = from, to = to, paths = Nothing } }, showModal conf.ids.findPathModal )
+            ( { model | findPath = Just { from = from, to = to, result = Empty } }, showModal conf.ids.findPathModal )
 
         FindPathFrom from ->
-            ( { model | findPath = model.findPath |> Maybe.map (\m -> { m | from = from, paths = Nothing }) }, Cmd.none )
+            ( { model | findPath = model.findPath |> Maybe.map (\m -> { m | from = from }) }, Cmd.none )
 
         FindPathTo to ->
-            ( { model | findPath = model.findPath |> Maybe.map (\m -> { m | to = to, paths = Nothing }) }, Cmd.none )
+            ( { model | findPath = model.findPath |> Maybe.map (\m -> { m | to = to }) }, Cmd.none )
 
-        FindPathCompute ->
+        FindPathSearch ->
             model.findPath
                 |> Maybe.andThen (\fp -> Maybe.map3 (\p from to -> ( p, from, to )) model.project fp.from fp.to)
-                |> Maybe.map (\( p, from, to ) -> ( { model | findPath = model.findPath |> Maybe.map (\m -> { m | paths = Just (computeFindPath p.schema.tables p.schema.relations from to).paths }) }, Cmd.none ))
+                |> Maybe.map (\( p, from, to ) -> ( { model | findPath = model.findPath |> Maybe.map (\m -> { m | result = Searching }) }, sendAfter 300 (FindPathCompute p.schema.tables p.schema.relations from to) ))
                 |> Maybe.withDefault ( model, Cmd.none )
+
+        FindPathCompute tables relations from to ->
+            computeFindPath tables relations from to |> (\result -> ( { model | findPath = model.findPath |> Maybe.map (\m -> { m | result = Found result }) }, Cmd.none ))
 
         NewLayout name ->
             ( { model | newLayout = B.cond (String.length name == 0) Nothing (Just name) }, Cmd.none )

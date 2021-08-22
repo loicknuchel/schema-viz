@@ -10,7 +10,7 @@ import Libs.Position exposing (Position)
 import Libs.Size exposing (Size)
 import Libs.Task as T
 import Models.FindPath as FindPath
-import Models.Project exposing (ColumnRef, LayoutName, Project, TableId)
+import Models.Project exposing (ColumnRef, LayoutName, Project, Relation, Table, TableId)
 import Ports exposing (JsMsg)
 import Time
 
@@ -69,7 +69,8 @@ type Msg
     | FindPath (Maybe TableId) (Maybe TableId)
     | FindPathFrom (Maybe TableId)
     | FindPathTo (Maybe TableId)
-    | FindPathCompute
+    | FindPathSearch
+    | FindPathCompute (Dict TableId Table) (List Relation) TableId TableId
     | NewLayout LayoutName
     | CreateLayout LayoutName
     | LoadLayout LayoutName

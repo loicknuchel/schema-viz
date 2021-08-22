@@ -1,11 +1,18 @@
-module Libs.Task exposing (send)
+module Libs.Task exposing (send, sendAfter)
 
+import Libs.Models exposing (Millis)
+import Process
 import Task
 
 
 send : msg -> Cmd msg
 send msg =
     Task.succeed msg |> Task.perform identity
+
+
+sendAfter : Millis -> msg -> Cmd msg
+sendAfter millis msg =
+    Process.sleep (toFloat millis) |> Task.perform (always msg)
 
 
 andThen : msg -> msg -> Cmd msg

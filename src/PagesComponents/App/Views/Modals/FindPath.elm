@@ -3,13 +3,13 @@ module PagesComponents.App.Views.Modals.FindPath exposing (viewFindPathModal)
 import Conf exposing (conf)
 import Dict exposing (Dict)
 import Html exposing (Html, b, br, button, div, label, li, ol, option, select, span, text)
-import Html.Attributes exposing (class, for, id, selected, title, type_, value)
-import Html.Events exposing (onBlur, onInput)
+import Html.Attributes exposing (class, disabled, for, id, selected, title, type_, value)
+import Html.Events exposing (onClick, onInput)
 import Libs.Bootstrap exposing (Toggle(..), bsDismiss, bsModal)
-import Libs.Html.Attributes exposing (role)
+import Libs.Html.Attributes exposing (ariaHidden, role)
 import Libs.Maybe as M
 import Libs.Nel as Nel
-import Models.FindPath as FindPath
+import Models.FindPath as FindPath exposing (PathState(..))
 import Models.Project exposing (Table, TableId, showColumnRef, showTableId, stringAsTableId, tableIdAsString)
 import PagesComponents.App.Models exposing (Msg(..))
 
@@ -24,9 +24,9 @@ viewFindPathModal tables model =
             , div [ class "col" ] [ selectCard "to" "To" "Table you want to go to" model.to FindPathTo tables ]
             ]
          ]
-            ++ (Maybe.map3 viewPaths model.from model.to model.paths |> Maybe.withDefault [])
+            ++ viewPaths model
         )
-        [ button [ type_ "button", class "btn btn-primary", bsDismiss Modal ] [ text "Done" ] ]
+        [ viewSearchButton model ]
 
 
 selectCard : String -> String -> String -> Maybe TableId -> (Maybe TableId -> Msg) -> Dict TableId Table -> Html Msg
@@ -46,7 +46,6 @@ selectInput ref selectedValue buildMsg tables =
         [ class "form-select"
         , id (conf.ids.findPathModal ++ "-" ++ ref)
         , onInput (\id -> Just id |> M.filter (\i -> not (i == "")) |> Maybe.map stringAsTableId |> buildMsg)
-        , onBlur FindPathCompute
         ]
         (option [ value "", selected (selectedValue == Nothing) ] [ text "-- Select a table" ]
             :: (tables
@@ -63,21 +62,29 @@ selectInput ref selectedValue buildMsg tables =
         )
 
 
-viewPaths : TableId -> TableId -> List FindPath.Path -> List (Html msg)
-viewPaths from to paths =
-    if paths |> List.isEmpty then
-        [ div [ class "mt-3" ] [ text "No path found" ] ]
+viewPaths : FindPath.Model -> List (Html msg)
+viewPaths model =
+    case ( model.from, model.to, model.result ) of
+        ( Just from, Just to, Found result ) ->
+            if result.from /= from || result.to /= to then
+                [ div [ class "mt-3" ] [ text "Results out of sync with search 🤯" ] ]
 
-    else
-        [ div [ class "mt-3" ]
-            [ text ("Found " ++ String.fromInt (List.length paths) ++ " paths between tables ")
-            , b [] [ text (showTableId from) ]
-            , text " and "
-            , b [] [ text (showTableId to) ]
-            , text ":"
-            ]
-        , ol [ class "list-group list-group-numbered mt-3" ] (paths |> List.sortBy Nel.length |> List.map (viewPath from))
-        ]
+            else if result.paths |> List.isEmpty then
+                [ div [ class "mt-3" ] [ text "No path found" ] ]
+
+            else
+                [ div [ class "mt-3" ]
+                    [ text ("Found " ++ String.fromInt (List.length result.paths) ++ " paths between tables ")
+                    , b [] [ text (showTableId from) ]
+                    , text " and "
+                    , b [] [ text (showTableId to) ]
+                    , text ":"
+                    ]
+                , ol [ class "list-group list-group-numbered mt-3" ] (result.paths |> List.sortBy Nel.length |> List.map (viewPath from))
+                ]
+
+        _ ->
+            []
 
 
 viewPath : TableId -> FindPath.Path -> Html msg
@@ -99,3 +106,23 @@ viewPath from path =
                         )
                )
         )
+
+
+viewSearchButton : FindPath.Model -> Html Msg
+viewSearchButton model =
+    case ( model.from, model.to, model.result ) of
+        ( Just from, Just to, Found res ) ->
+            if from == res.from && to == res.to then
+                button [ type_ "button", class "btn btn-primary", bsDismiss Modal ] [ text "Done" ]
+
+            else
+                button [ type_ "button", class "btn btn-primary", onClick FindPathSearch ] [ text "Search" ]
+
+        ( Just _, Just _, Searching ) ->
+            button [ type_ "button", class "btn btn-primary", disabled True ] [ span [ class "spinner-border spinner-border-sm", role "status", ariaHidden True ] [], text " Searching..." ]
+
+        ( Just _, Just _, Empty ) ->
+            button [ type_ "button", class "btn btn-primary", onClick FindPathSearch ] [ text "Search" ]
+
+        _ ->
+            button [ type_ "button", class "btn btn-primary", disabled True ] [ text "Search" ]

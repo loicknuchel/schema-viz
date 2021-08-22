@@ -19,6 +19,11 @@ tableId =
     ( "public", "users" )
 
 
+tableId2 : TableId
+tableId2 =
+    ( "other", "users" )
+
+
 suite : Test
 suite =
     describe "Models.Project"
@@ -29,6 +34,12 @@ suite =
         , describe "tableIdAsString"
             [ test "round-trip" (\_ -> tableId |> tableIdAsString |> stringAsTableId |> Expect.equal tableId)
             , test "serialize" (\_ -> tableId |> tableIdAsString |> Expect.equal "public.users")
+            ]
+        , describe "showTableId"
+            [ test "round-trip" (\_ -> tableId2 |> showTableId |> parseTableId |> Expect.equal tableId2)
+            , test "round-trip with default schema" (\_ -> tableId |> showTableId |> parseTableId |> Expect.equal tableId)
+            , test "serialize" (\_ -> tableId2 |> showTableId |> Expect.equal "other.users")
+            , test "serialize with default schema" (\_ -> tableId |> showTableId |> Expect.equal "users")
             ]
         , describe "showTableName"
             [ test "with default schema" (\_ -> showTableName "public" "users" |> Expect.equal "users")
@@ -58,9 +69,14 @@ suite =
             , jsonFuzz "Layout" ProjectFuzzers.layout encodeLayout decodeLayout
             , jsonFuzz "CanvasProps" ProjectFuzzers.canvasProps encodeCanvasProps decodeCanvasProps
             , jsonFuzz "TableProps" ProjectFuzzers.tableProps encodeTableProps decodeTableProps
-            , jsonFuzz "ProjectSettings" ProjectFuzzers.projectSettings encodeProjectSettings decodeProjectSettings
+            , jsonFuzz "ProjectSettings" ProjectFuzzers.projectSettings (encodeProjectSettings defaultProjectSettings) (decodeProjectSettings defaultProjectSettings)
             ]
         ]
+
+
+defaultProjectSettings : { findPath : FindPathSettings }
+defaultProjectSettings =
+    { findPath = FindPathSettings 3 [] [] }
 
 
 project0 : Project
@@ -71,7 +87,7 @@ project0 =
     , schema = Schema Dict.empty [] (Layout (CanvasProps (Position 1 2) 0.75) [] [] (time 1200) (time 1201))
     , layouts = Dict.empty
     , currentLayout = Nothing
-    , settings = {}
+    , settings = defaultProjectSettings
     , createdAt = time 1000
     , updatedAt = time 1001
     }
@@ -96,7 +112,7 @@ project1 =
         }
     , layouts = Dict.fromList [ ( "empty", Layout (CanvasProps (Position 0 0) 0.5) [] [] (time 1202) (time 1203) ) ]
     , currentLayout = Nothing
-    , settings = {}
+    , settings = { findPath = FindPathSettings 4 [] [] }
     , createdAt = time 1000
     , updatedAt = time 1001
     }
@@ -108,7 +124,8 @@ project1Json =
         ++ """"sources":[{"id":"src-1","name":"source 1","source":{"kind":"LocalFile","name":"structure.sql","size":10000,"lastModified":200},"createdAt":1100,"updatedAt":1101}],"""
         ++ """"schema":{"tables":[{"schema":"public","table":"users","columns":[{"name":"id","type":"int"}]}],"relations":[],"""
         ++ """"layout":{"canvas":{"position":{"left":1,"top":2},"zoom":0.75},"tables":[{"id":"public.users","position":{"left":3,"top":4},"color":"red","columns":["id"],"selected":true}],"createdAt":1200,"updatedAt":1201}},"""
-        ++ """"layouts":{"empty":{"canvas":{"position":{"left":0,"top":0},"zoom":0.5},"tables":[],"createdAt":1202,"updatedAt":1203}},"createdAt":1000,"updatedAt":1001,"version":1}"""
+        ++ """"layouts":{"empty":{"canvas":{"position":{"left":0,"top":0},"zoom":0.5},"tables":[],"createdAt":1202,"updatedAt":1203}},"""
+        ++ """"settings":{"findPath":{"maxPathLength":4}},"createdAt":1000,"updatedAt":1001,"version":1}"""
 
 
 project2 : Project
@@ -170,7 +187,7 @@ project2 =
             , ( "users", Layout (CanvasProps (Position 12 32) 1.5) [ TableProps ( "public", "users" ) (Position 90 102) "red" [ "id", "name" ] True ] [] (time 1202) (time 1203) )
             ]
     , currentLayout = Just "users"
-    , settings = {}
+    , settings = { findPath = FindPathSettings 4 [ ( "public", "users" ) ] [ "created_by" ] }
     , createdAt = time 1000
     , updatedAt = time 1001
     }
@@ -188,7 +205,7 @@ project2Json =
         ++ """"layouts":{"""
         ++ """"empty":{"canvas":{"position":{"left":0,"top":0},"zoom":0.5},"tables":[],"createdAt":1202,"updatedAt":1203},"""
         ++ """"users":{"canvas":{"position":{"left":12,"top":32},"zoom":1.5},"tables":[{"id":"public.users","position":{"left":90,"top":102},"color":"red","columns":["id","name"],"selected":true}],"createdAt":1202,"updatedAt":1203}},"""
-        ++ """"currentLayout":"users","createdAt":1000,"updatedAt":1001,"version":1}"""
+        ++ """"currentLayout":"users","settings":{"findPath":{"maxPathLength":4,"ignoredTables":["public.users"],"ignoredColumns":["created_by"]}},"createdAt":1000,"updatedAt":1001,"version":1}"""
 
 
 time : Int -> Time.Posix

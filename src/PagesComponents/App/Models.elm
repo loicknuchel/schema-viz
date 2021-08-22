@@ -9,8 +9,7 @@ import Libs.Models exposing (FileUrl, HtmlId, ZoomDelta)
 import Libs.Position exposing (Position)
 import Libs.Size exposing (Size)
 import Libs.Task as T
-import Models.FindPath as FindPath
-import Models.Project exposing (ColumnRef, LayoutName, Project, Relation, Table, TableId)
+import Models.Project exposing (ColumnRef, FindPath, FindPathSettings, LayoutName, Project, Relation, Table, TableId)
 import Ports exposing (JsMsg)
 import Time
 
@@ -22,7 +21,7 @@ type alias Model =
     , project : Maybe Project
     , search : Search
     , newLayout : Maybe LayoutName
-    , findPath : Maybe FindPath.Model
+    , findPath : Maybe FindPath
     , confirm : Confirm
     , sizes : Dict HtmlId Size
     , dragId : Maybe DragId
@@ -70,7 +69,8 @@ type Msg
     | FindPathFrom (Maybe TableId)
     | FindPathTo (Maybe TableId)
     | FindPathSearch
-    | FindPathCompute (Dict TableId Table) (List Relation) TableId TableId
+    | FindPathCompute (Dict TableId Table) (List Relation) TableId TableId FindPathSettings
+    | UpdateFindPathSettings FindPathSettings
     | NewLayout LayoutName
     | CreateLayout LayoutName
     | LoadLayout LayoutName

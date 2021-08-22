@@ -7,7 +7,7 @@ import Gen.Params.App exposing (Params)
 import Libs.Bool as B
 import Libs.List as L
 import Libs.Task exposing (sendAfter)
-import Models.FindPath exposing (PathState(..))
+import Models.Project exposing (FindPathState(..))
 import Page
 import PagesComponents.App.Commands.GetTime exposing (getTime)
 import PagesComponents.App.Commands.GetZone exposing (getZone)
@@ -15,7 +15,7 @@ import PagesComponents.App.Models as Models exposing (Model, Msg(..), initConfir
 import PagesComponents.App.Updates exposing (dragConfig, dragItem, moveTable, removeElement, updateSizes)
 import PagesComponents.App.Updates.Canvas exposing (fitCanvas, handleWheel, zoomCanvas)
 import PagesComponents.App.Updates.FindPath exposing (computeFindPath)
-import PagesComponents.App.Updates.Helpers exposing (decodeErrorToHtml, setCanvas, setLayout, setListTable, setProject, setProjectWithCmd, setSchema, setSchemaWithCmd, setSwitch, setTables, setTime)
+import PagesComponents.App.Updates.Helpers exposing (decodeErrorToHtml, setCanvas, setLayout, setListTable, setProject, setProjectWithCmd, setSchema, setSchemaWithCmd, setSettings, setSwitch, setTables, setTime)
 import PagesComponents.App.Updates.Layout exposing (createLayout, deleteLayout, loadLayout, updateLayout)
 import PagesComponents.App.Updates.Project exposing (createProjectFromFile, createProjectFromUrl, useProject)
 import PagesComponents.App.Updates.Table exposing (hideAllTables, hideColumn, hideColumns, hideTable, hideTables, hoverNextColumn, showAllTables, showColumn, showColumns, showTable, showTables, sortColumns)
@@ -211,11 +211,14 @@ update msg model =
         FindPathSearch ->
             model.findPath
                 |> Maybe.andThen (\fp -> Maybe.map3 (\p from to -> ( p, from, to )) model.project fp.from fp.to)
-                |> Maybe.map (\( p, from, to ) -> ( { model | findPath = model.findPath |> Maybe.map (\m -> { m | result = Searching }) }, sendAfter 300 (FindPathCompute p.schema.tables p.schema.relations from to) ))
+                |> Maybe.map (\( p, from, to ) -> ( { model | findPath = model.findPath |> Maybe.map (\m -> { m | result = Searching }) }, sendAfter 300 (FindPathCompute p.schema.tables p.schema.relations from to p.settings.findPath) ))
                 |> Maybe.withDefault ( model, Cmd.none )
 
-        FindPathCompute tables relations from to ->
-            computeFindPath tables relations from to |> (\result -> ( { model | findPath = model.findPath |> Maybe.map (\m -> { m | result = Found result }) }, Cmd.none ))
+        FindPathCompute tables relations from to settings ->
+            computeFindPath tables relations from to settings |> (\result -> ( { model | findPath = model.findPath |> Maybe.map (\m -> { m | result = Found result }) }, Cmd.none ))
+
+        UpdateFindPathSettings settings ->
+            ( model |> setProject (setSettings (\s -> { s | findPath = settings })), Cmd.none )
 
         NewLayout name ->
             ( { model | newLayout = B.cond (String.length name == 0) Nothing (Just name) }, Cmd.none )

@@ -5,8 +5,7 @@ import Expect
 import Libs.Dict as D
 import Libs.Ned as Ned
 import Libs.Nel as Nel exposing (Nel)
-import Models.FindPath as FindPath
-import Models.Project exposing (Column, ColumnName, ColumnRef, Relation, Table, TableId, TableName)
+import Models.Project exposing (Column, ColumnName, ColumnRef, FindPathSettings, FindPathStep, FindPathStepDir(..), Relation, Table, TableId, TableName)
 import PagesComponents.App.Updates.FindPath exposing (computeFindPath)
 import Test exposing (Test, describe, test)
 
@@ -15,21 +14,21 @@ suite : Test
 suite =
     describe "PagesComponents.App.Updates.FindPath"
         [ describe "computeFindPath"
-            [ test "empty" (\_ -> computeFindPath basicTables [] (tableId "users") (tableId "roles") |> .paths |> Expect.equal [])
-            , test "same from & to" (\_ -> computeFindPath basicTables [] (tableId "users") (tableId "users") |> .paths |> Expect.equal [])
+            [ test "empty" (\_ -> computeFindPath basicTables [] (tableId "users") (tableId "roles") settings |> .paths |> Expect.equal [])
+            , test "same from & to" (\_ -> computeFindPath basicTables [] (tableId "users") (tableId "users") settings |> .paths |> Expect.equal [])
             , test "basic"
                 (\_ ->
-                    computeFindPath basicTables basicRelations (tableId "users") (tableId "roles")
+                    computeFindPath basicTables basicRelations (tableId "users") (tableId "roles") settings
                         |> .paths
-                        |> Expect.equal [ Nel (FindPath.Step roleUserToUsers FindPath.Left) [ FindPath.Step roleUserToRoles FindPath.Right ] ]
+                        |> Expect.equal [ Nel (FindPathStep roleUserToUsers Left) [ FindPathStep roleUserToRoles Right ] ]
                 )
             , test "with cycle"
                 (\_ ->
-                    computeFindPath basicTables (rolesToUsers :: basicRelations) (tableId "users") (tableId "roles")
+                    computeFindPath basicTables (rolesToUsers :: basicRelations) (tableId "users") (tableId "roles") settings
                         |> .paths
                         |> Expect.equal
-                            [ Nel (FindPath.Step rolesToUsers FindPath.Left) []
-                            , Nel (FindPath.Step roleUserToUsers FindPath.Left) [ FindPath.Step roleUserToRoles FindPath.Right ]
+                            [ Nel (FindPathStep rolesToUsers Left) []
+                            , Nel (FindPathStep roleUserToUsers Left) [ FindPathStep roleUserToRoles Right ]
                             ]
                 )
             ]
@@ -104,3 +103,8 @@ buildColumn name =
 buildRelation : ( TableName, ColumnName ) -> ( TableName, ColumnName ) -> Relation
 buildRelation ( fromTable, fromCol ) ( toTable, toCol ) =
     Relation "" (ColumnRef (tableId fromTable) fromCol) (ColumnRef (tableId toTable) toCol) []
+
+
+settings : FindPathSettings
+settings =
+    FindPathSettings 10 [] []

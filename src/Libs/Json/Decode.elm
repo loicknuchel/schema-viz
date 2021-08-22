@@ -1,4 +1,4 @@
-module Libs.Json.Decode exposing (defaultField, dict, map9, matchOn, maybeField, maybeWithDefault, ned, nel, tuple)
+module Libs.Json.Decode exposing (defaultField, defaultFieldDeep, dict, map9, matchOn, maybeField, maybeWithDefault, ned, nel, tuple)
 
 import Dict exposing (Dict)
 import Json.Decode as Decode exposing (Decoder)
@@ -41,6 +41,11 @@ maybeWithDefault decoder a =
 defaultField : String -> Decoder a -> a -> Decoder a
 defaultField name decoder default =
     maybeWithDefault (\_ -> Decode.field name decoder) default
+
+
+defaultFieldDeep : String -> (a -> Decoder a) -> a -> Decoder a
+defaultFieldDeep name decoder default =
+    maybeWithDefault (\_ -> Decode.field name (decoder default)) default
 
 
 matchOn : String -> (String -> Decoder a) -> Decoder a

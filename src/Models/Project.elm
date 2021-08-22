@@ -1,4 +1,4 @@
-module Models.Project exposing (CanvasProps, Check, CheckName, Column, ColumnIndex, ColumnName, ColumnRef, ColumnRefFull, ColumnType, ColumnValue, Comment, Index, IndexName, Layout, LayoutName, PrimaryKey, PrimaryKeyName, Project, ProjectId, ProjectName, ProjectSettings, ProjectSource, ProjectSourceContent(..), ProjectSourceId, ProjectSourceName, Relation, RelationFull, RelationName, Schema, SchemaName, Source, SourceLine, Table, TableId, TableName, TableProps, Unique, UniqueName, decodeCanvasProps, decodeCheck, decodeColumn, decodeColumnName, decodeColumnRef, decodeComment, decodeIndex, decodeLayout, decodePrimaryKey, decodeProject, decodeProjectId, decodeProjectName, decodeProjectSettings, decodeProjectSource, decodeProjectSourceContent, decodeProjectSourceId, decodeProjectSourceName, decodeRelation, decodeSchema, decodeSource, decodeSourceLine, decodeTable, decodeTableId, decodeTableProps, decodeUnique, encodeCanvasProps, encodeCheck, encodeColumn, encodeColumnName, encodeColumnRef, encodeComment, encodeIndex, encodeLayout, encodePrimaryKey, encodeProject, encodeProjectId, encodeProjectName, encodeProjectSettings, encodeProjectSource, encodeProjectSourceContent, encodeProjectSourceId, encodeProjectSourceName, encodeRelation, encodeSchema, encodeSource, encodeSourceLine, encodeTable, encodeTableId, encodeTableProps, encodeUnique, extractPath, htmlIdAsTableId, inIndexes, inOutRelation, inPrimaryKey, inUniques, initLayout, initTableProps, showColumnRef, showTableId, showTableName, stringAsTableId, tableIdAsHtmlId, tableIdAsString, tablesArea, viewportArea, viewportSize, withNullableInfo)
+module Models.Project exposing (CanvasProps, Check, CheckName, Column, ColumnIndex, ColumnName, ColumnRef, ColumnRefFull, ColumnType, ColumnValue, Comment, FindPath, FindPathPath, FindPathResult, FindPathSettings, FindPathState(..), FindPathStep, FindPathStepDir(..), Index, IndexName, Layout, LayoutName, PrimaryKey, PrimaryKeyName, Project, ProjectId, ProjectName, ProjectSettings, ProjectSource, ProjectSourceContent(..), ProjectSourceId, ProjectSourceName, Relation, RelationFull, RelationName, Schema, SchemaName, Source, SourceLine, Table, TableId, TableName, TableProps, Unique, UniqueName, buildProject, decodeCanvasProps, decodeCheck, decodeColumn, decodeColumnName, decodeColumnRef, decodeComment, decodeIndex, decodeLayout, decodePrimaryKey, decodeProject, decodeProjectId, decodeProjectName, decodeProjectSettings, decodeProjectSource, decodeProjectSourceContent, decodeProjectSourceId, decodeProjectSourceName, decodeRelation, decodeSchema, decodeSource, decodeSourceLine, decodeTable, decodeTableId, decodeTableProps, decodeUnique, encodeCanvasProps, encodeCheck, encodeColumn, encodeColumnName, encodeColumnRef, encodeComment, encodeIndex, encodeLayout, encodePrimaryKey, encodeProject, encodeProjectId, encodeProjectName, encodeProjectSettings, encodeProjectSource, encodeProjectSourceContent, encodeProjectSourceId, encodeProjectSourceName, encodeRelation, encodeSchema, encodeSource, encodeSourceLine, encodeTable, encodeTableId, encodeTableProps, encodeUnique, extractPath, htmlIdAsTableId, inIndexes, inOutRelation, inPrimaryKey, inUniques, initLayout, initTableProps, parseTableId, showColumnRef, showTableId, showTableName, stringAsTableId, tableIdAsHtmlId, tableIdAsString, tablesArea, viewportArea, viewportSize, withNullableInfo)
 
 import Conf exposing (conf)
 import Dict exposing (Dict)
@@ -139,7 +139,45 @@ type alias TableProps =
 
 
 type alias ProjectSettings =
-    {}
+    { findPath : FindPathSettings }
+
+
+type alias FindPath =
+    { from : Maybe TableId
+    , to : Maybe TableId
+    , result : FindPathState
+    }
+
+
+type FindPathState
+    = Empty
+    | Searching
+    | Found FindPathResult
+
+
+type alias FindPathResult =
+    { from : TableId
+    , to : TableId
+    , paths : List FindPathPath
+    , settings : FindPathSettings
+    }
+
+
+type alias FindPathPath =
+    Nel FindPathStep
+
+
+type alias FindPathStep =
+    { relation : Relation, direction : FindPathStepDir }
+
+
+type FindPathStepDir
+    = Right
+    | Left
+
+
+type alias FindPathSettings =
+    { maxPathLength : Int, ignoredTables : List TableId, ignoredColumns : List ColumnName }
 
 
 type alias ProjectId =
@@ -210,6 +248,20 @@ type alias LayoutName =
     String
 
 
+buildProject : ProjectId -> ProjectName -> Nel ProjectSource -> Schema -> Time.Posix -> Project
+buildProject id name sources schema now =
+    { id = id
+    , name = name
+    , sources = sources
+    , schema = schema
+    , layouts = Dict.empty
+    , currentLayout = Nothing
+    , settings = defaultProjectSettings
+    , createdAt = now
+    , updatedAt = now
+    }
+
+
 tableIdAsHtmlId : TableId -> HtmlId
 tableIdAsHtmlId ( schema, table ) =
     "table-" ++ schema ++ "-" ++ table
@@ -262,6 +314,19 @@ showTableName schema table =
 showTableId : TableId -> String
 showTableId ( schema, table ) =
     showTableName schema table
+
+
+parseTableId : String -> TableId
+parseTableId tableId =
+    case tableId |> String.split "." of
+        table :: [] ->
+            ( conf.default.schema, table )
+
+        schema :: table :: [] ->
+            ( schema, table )
+
+        _ ->
+            ( conf.default.schema, tableId )
 
 
 showColumnRef : ColumnRef -> String
@@ -391,6 +456,21 @@ tablesArea sizes tables =
     Area left top right bottom
 
 
+defaultTime : Time.Posix
+defaultTime =
+    Time.millisToPosix 0
+
+
+defaultLayout : Layout
+defaultLayout =
+    initLayout defaultTime
+
+
+defaultProjectSettings : { findPath : FindPathSettings }
+defaultProjectSettings =
+    { findPath = FindPathSettings 3 [] [] }
+
+
 
 -- JSON
 
@@ -410,7 +490,7 @@ encodeProject value =
         , ( "schema", value.schema |> encodeSchema )
         , ( "layouts", value.layouts |> Encode.dict layoutNameAsString encodeLayout )
         , ( "currentLayout", value.currentLayout |> E.maybe encodeLayoutName )
-        , ( "settings", value.settings |> E.withDefault (\_ -> encodeProjectSettings) {} )
+        , ( "settings", value.settings |> E.withDefaultDeep encodeProjectSettings defaultProjectSettings )
         , ( "createdAt", value.createdAt |> encodePosix )
         , ( "updatedAt", value.updatedAt |> encodePosix )
         , ( "version", currentVersion |> Encode.int )
@@ -426,9 +506,9 @@ decodeProject =
         (Decode.field "schema" decodeSchema)
         (D.defaultField "layouts" (D.dict stringAsLayoutName decodeLayout) Dict.empty)
         (D.maybeField "currentLayout" decodeLayoutName)
-        (D.defaultField "settings" decodeProjectSettings {})
-        (D.defaultField "createdAt" decodePosix (Time.millisToPosix 0))
-        (D.defaultField "updatedAt" decodePosix (Time.millisToPosix 0))
+        (D.defaultFieldDeep "settings" decodeProjectSettings defaultProjectSettings)
+        (D.defaultField "createdAt" decodePosix defaultTime)
+        (D.defaultField "updatedAt" decodePosix defaultTime)
 
 
 encodeProjectSource : ProjectSource -> Value
@@ -506,7 +586,7 @@ decodeSchema =
     Decode.map3 Schema
         (Decode.field "tables" (Decode.list decodeTable) |> Decode.map (D.fromListMap .id))
         (Decode.field "relations" (Decode.list decodeRelation))
-        (D.defaultField "layout" decodeLayout (Layout (CanvasProps (Position 0 0) 1) [] [] (Time.millisToPosix 0) (Time.millisToPosix 0)))
+        (D.defaultField "layout" decodeLayout defaultLayout)
 
 
 encodeTable : Table -> Value
@@ -516,11 +596,11 @@ encodeTable value =
         , ( "table", value.name |> encodeTableName )
         , ( "columns", value.columns |> Ned.values |> Nel.sortBy .index |> E.nel encodeColumn )
         , ( "primaryKey", value.primaryKey |> E.maybe encodePrimaryKey )
-        , ( "uniques", value.uniques |> E.withDefault (\_ -> Encode.list encodeUnique) [] )
-        , ( "indexes", value.indexes |> E.withDefault (\_ -> Encode.list encodeIndex) [] )
-        , ( "checks", value.checks |> E.withDefault (\_ -> Encode.list encodeCheck) [] )
+        , ( "uniques", value.uniques |> E.withDefault (Encode.list encodeUnique) [] )
+        , ( "indexes", value.indexes |> E.withDefault (Encode.list encodeIndex) [] )
+        , ( "checks", value.checks |> E.withDefault (Encode.list encodeCheck) [] )
         , ( "comment", value.comment |> E.maybe encodeComment )
-        , ( "sources", value.sources |> E.withDefault (\_ -> Encode.list encodeSource) [] )
+        , ( "sources", value.sources |> E.withDefault (Encode.list encodeSource) [] )
         ]
 
 
@@ -543,10 +623,10 @@ encodeColumn value =
     E.object
         [ ( "name", value.name |> encodeColumnName )
         , ( "type", value.kind |> encodeColumnType )
-        , ( "nullable", value.nullable |> E.withDefault (\_ -> Encode.bool) False )
+        , ( "nullable", value.nullable |> E.withDefault Encode.bool False )
         , ( "default", value.default |> E.maybe encodeColumnValue )
         , ( "comment", value.comment |> E.maybe encodeComment )
-        , ( "sources", value.sources |> E.withDefault (\_ -> Encode.list encodeSource) [] )
+        , ( "sources", value.sources |> E.withDefault (Encode.list encodeSource) [] )
         ]
 
 
@@ -566,7 +646,7 @@ encodePrimaryKey value =
     E.object
         [ ( "name", value.name |> encodePrimaryKeyName )
         , ( "columns", value.columns |> E.nel encodeColumnName )
-        , ( "sources", value.sources |> E.withDefault (\_ -> Encode.list encodeSource) [] )
+        , ( "sources", value.sources |> E.withDefault (Encode.list encodeSource) [] )
         ]
 
 
@@ -584,7 +664,7 @@ encodeUnique value =
         [ ( "name", value.name |> encodeUniqueName )
         , ( "columns", value.columns |> E.nel encodeColumnName )
         , ( "definition", value.definition |> Encode.string )
-        , ( "sources", value.sources |> E.withDefault (\_ -> Encode.list encodeSource) [] )
+        , ( "sources", value.sources |> E.withDefault (Encode.list encodeSource) [] )
         ]
 
 
@@ -603,7 +683,7 @@ encodeIndex value =
         [ ( "name", value.name |> encodeIndexName )
         , ( "columns", value.columns |> E.nel encodeColumnName )
         , ( "definition", value.definition |> Encode.string )
-        , ( "sources", value.sources |> E.withDefault (\_ -> Encode.list encodeSource) [] )
+        , ( "sources", value.sources |> E.withDefault (Encode.list encodeSource) [] )
         ]
 
 
@@ -621,7 +701,7 @@ encodeCheck value =
     E.object
         [ ( "name", value.name |> encodeCheckName )
         , ( "predicate", value.predicate |> Encode.string )
-        , ( "sources", value.sources |> E.withDefault (\_ -> Encode.list encodeSource) [] )
+        , ( "sources", value.sources |> E.withDefault (Encode.list encodeSource) [] )
         ]
 
 
@@ -637,7 +717,7 @@ encodeComment : Comment -> Value
 encodeComment value =
     E.object
         [ ( "text", value.text |> Encode.string )
-        , ( "sources", value.sources |> E.withDefault (\_ -> Encode.list encodeSource) [] )
+        , ( "sources", value.sources |> E.withDefault (Encode.list encodeSource) [] )
         ]
 
 
@@ -654,7 +734,7 @@ encodeRelation value =
         [ ( "name", value.name |> encodeRelationName )
         , ( "src", value.src |> encodeColumnRef )
         , ( "ref", value.ref |> encodeColumnRef )
-        , ( "sources", value.sources |> E.withDefault (\_ -> Encode.list encodeSource) [] )
+        , ( "sources", value.sources |> E.withDefault (Encode.list encodeSource) [] )
         ]
 
 
@@ -717,7 +797,7 @@ encodeLayout value =
     E.object
         [ ( "canvas", value.canvas |> encodeCanvasProps )
         , ( "tables", value.tables |> Encode.list encodeTableProps )
-        , ( "hiddenTables", value.hiddenTables |> E.withDefault (\_ -> Encode.list encodeTableProps) [] )
+        , ( "hiddenTables", value.hiddenTables |> E.withDefault (Encode.list encodeTableProps) [] )
         , ( "createdAt", value.createdAt |> encodePosix )
         , ( "updatedAt", value.updatedAt |> encodePosix )
         ]
@@ -754,8 +834,8 @@ encodeTableProps value =
         [ ( "id", value.id |> encodeTableId )
         , ( "position", value.position |> encodePosition )
         , ( "color", value.color |> encodeColor )
-        , ( "columns", value.columns |> E.withDefault (\_ -> Encode.list encodeColumnName) [] )
-        , ( "selected", value.selected |> E.withDefault (\_ -> Encode.bool) False )
+        , ( "columns", value.columns |> E.withDefault (Encode.list encodeColumnName) [] )
+        , ( "selected", value.selected |> E.withDefault Encode.bool False )
         ]
 
 
@@ -769,14 +849,32 @@ decodeTableProps =
         (D.defaultField "selected" Decode.bool False)
 
 
-encodeProjectSettings : ProjectSettings -> Value
-encodeProjectSettings _ =
-    E.object []
+encodeProjectSettings : ProjectSettings -> ProjectSettings -> Value
+encodeProjectSettings default value =
+    E.object [ ( "findPath", value.findPath |> E.withDefaultDeep encodeFindPathSettings default.findPath ) ]
 
 
-decodeProjectSettings : Decode.Decoder ProjectSettings
-decodeProjectSettings =
-    Decode.succeed {}
+decodeProjectSettings : ProjectSettings -> Decode.Decoder ProjectSettings
+decodeProjectSettings default =
+    Decode.map ProjectSettings
+        (D.defaultFieldDeep "findPath" decodeFindPathSettings default.findPath)
+
+
+encodeFindPathSettings : FindPathSettings -> FindPathSettings -> Value
+encodeFindPathSettings default value =
+    E.object
+        [ ( "maxPathLength", value.maxPathLength |> E.withDefault Encode.int default.maxPathLength )
+        , ( "ignoredTables", value.ignoredTables |> E.withDefault (Encode.list encodeTableId) default.ignoredTables )
+        , ( "ignoredColumns", value.ignoredColumns |> E.withDefault (Encode.list encodeColumnName) default.ignoredColumns )
+        ]
+
+
+decodeFindPathSettings : FindPathSettings -> Decode.Decoder FindPathSettings
+decodeFindPathSettings default =
+    Decode.map3 FindPathSettings
+        (D.defaultField "maxPathLength" Decode.int default.maxPathLength)
+        (D.defaultField "ignoredTables" (Decode.list decodeTableId) default.ignoredTables)
+        (D.defaultField "ignoredColumns" (Decode.list decodeColumnName) default.ignoredColumns)
 
 
 encodeProjectId : ProjectId -> Value

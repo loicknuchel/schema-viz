@@ -4,8 +4,8 @@ import Fuzz exposing (Fuzzer)
 import Libs.Fuzz as F exposing (listN, nelN)
 import Libs.Ned as Ned
 import Libs.Nel as Nel
-import Models.Project exposing (CanvasProps, Check, CheckName, Column, ColumnIndex, ColumnName, ColumnRef, ColumnType, ColumnValue, Comment, Index, IndexName, Layout, LayoutName, PrimaryKey, PrimaryKeyName, Project, ProjectId, ProjectName, ProjectSettings, ProjectSource, ProjectSourceContent(..), ProjectSourceId, ProjectSourceName, Relation, RelationName, Schema, SchemaName, Source, SourceLine, Table, TableId, TableName, TableProps, Unique, UniqueName)
-import TestHelpers.Fuzzers exposing (color, dictSmall, identifier, intPos, listSmall, nelSmall, position, posix, text, zoomLevel)
+import Models.Project exposing (CanvasProps, Check, CheckName, Column, ColumnIndex, ColumnName, ColumnRef, ColumnType, ColumnValue, Comment, FindPathSettings, Index, IndexName, Layout, LayoutName, PrimaryKey, PrimaryKeyName, Project, ProjectId, ProjectName, ProjectSettings, ProjectSource, ProjectSourceContent(..), ProjectSourceId, ProjectSourceName, Relation, RelationName, Schema, SchemaName, Source, SourceLine, Table, TableId, TableName, TableProps, Unique, UniqueName)
+import TestHelpers.Fuzzers exposing (color, dictSmall, identifier, intPos, intPosSmall, listSmall, nelSmall, position, posix, text, zoomLevel)
 
 
 project : Fuzzer Project
@@ -109,7 +109,12 @@ tableProps =
 
 projectSettings : Fuzzer ProjectSettings
 projectSettings =
-    Fuzz.constant {}
+    Fuzz.map ProjectSettings findPathSettings
+
+
+findPathSettings : Fuzzer FindPathSettings
+findPathSettings =
+    Fuzz.map3 FindPathSettings intPosSmall (listSmall tableId) (listSmall columnName)
 
 
 projectId : Fuzzer ProjectId

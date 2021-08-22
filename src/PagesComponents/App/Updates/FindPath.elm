@@ -2,38 +2,31 @@ module PagesComponents.App.Updates.FindPath exposing (computeFindPath)
 
 import Dict exposing (Dict)
 import Libs.Nel as Nel
-import Models.FindPath as FindPath
-import Models.Project exposing (Relation, Table, TableId)
+import Models.Project exposing (FindPathPath, FindPathResult, FindPathSettings, FindPathStep, FindPathStepDir(..), Relation, Table, TableId)
 
 
-computeFindPath : Dict TableId Table -> List Relation -> TableId -> TableId -> FindPath.Result
-computeFindPath tables relations from to =
-    { from = from, to = to, paths = buildPaths tables (filterRelations relations) from (\t -> t.id == to) [] }
+computeFindPath : Dict TableId Table -> List Relation -> TableId -> TableId -> FindPathSettings -> FindPathResult
+computeFindPath tables relations from to settings =
+    { from = from, to = to, paths = buildPaths tables (filterRelations settings relations) settings from (\t -> t.id == to) [], settings = settings }
 
 
-ignoreColumns : List String
-ignoreColumns =
-    [ "created_by", "updated_by" ]
-
-
-ignoreTables : List ( String, String )
-ignoreTables =
-    [ ( "public", "user_requests" ) ]
-
-
-maxLength : number
-maxLength =
-    3
-
-
-filterRelations : List Relation -> List Relation
-filterRelations relations =
+filterRelations : FindPathSettings -> List Relation -> List Relation
+filterRelations settings relations =
     -- ugly hack to keep computing low
-    relations |> List.filter (\r -> not (List.member r.src.table ignoreTables || List.member r.ref.table ignoreTables || List.member r.src.column ignoreColumns || List.member r.ref.column ignoreColumns))
+    relations
+        |> List.filter
+            (\r ->
+                not
+                    (List.member r.src.table settings.ignoredTables
+                        || List.member r.ref.table settings.ignoredTables
+                        || List.member r.src.column settings.ignoredColumns
+                        || List.member r.ref.column settings.ignoredColumns
+                    )
+            )
 
 
-buildPaths : Dict TableId Table -> List Relation -> TableId -> (Table -> Bool) -> List FindPath.Step -> List FindPath.Path
-buildPaths tables relations tableId isDone curPath =
+buildPaths : Dict TableId Table -> List Relation -> FindPathSettings -> TableId -> (Table -> Bool) -> List FindPathStep -> List FindPathPath
+buildPaths tables relations settings tableId isDone curPath =
     -- FIXME improve algo complexity
     tables
         |> Dict.get tableId
@@ -46,7 +39,7 @@ buildPaths tables relations tableId isDone curPath =
                     relations
                         |> List.partition (\r -> r.src.table == tableId || r.ref.table == tableId)
                         |> (\( tableRelations, otherRelations ) ->
-                                if (tableRelations |> List.isEmpty) || ((curPath |> List.length) > maxLength) then
+                                if (tableRelations |> List.isEmpty) || ((curPath |> List.length) > settings.maxPathLength) then
                                     []
 
                                 else
@@ -54,10 +47,10 @@ buildPaths tables relations tableId isDone curPath =
                                         |> List.concatMap
                                             (\r ->
                                                 if r.src.table == tableId then
-                                                    buildPaths (tables |> Dict.remove tableId) otherRelations r.ref.table isDone (curPath ++ [ { relation = r, direction = FindPath.Right } ])
+                                                    buildPaths (tables |> Dict.remove tableId) otherRelations settings r.ref.table isDone (curPath ++ [ { relation = r, direction = Right } ])
 
                                                 else
-                                                    buildPaths (tables |> Dict.remove tableId) otherRelations r.src.table isDone (curPath ++ [ { relation = r, direction = FindPath.Left } ])
+                                                    buildPaths (tables |> Dict.remove tableId) otherRelations settings r.src.table isDone (curPath ++ [ { relation = r, direction = Left } ])
                                             )
                            )
             )

@@ -95,6 +95,11 @@ intPos =
     Fuzz.intRange 0 100000
 
 
+intPosSmall : Fuzzer Int
+intPosSmall =
+    Fuzz.intRange 0 100
+
+
 posix : Fuzzer Time.Posix
 posix =
     Fuzz.intRange -10000000000 10000000000 |> Fuzz.map (\offset -> Time.millisToPosix (1626342639000 + offset))

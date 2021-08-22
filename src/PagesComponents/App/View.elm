@@ -25,7 +25,7 @@ viewApp model =
         , [ viewCommands (model.project |> Maybe.map (\p -> p.schema.layout.canvas)) ]
         , [ viewSchemaSwitchModal model.time model.switch (model.project |> Maybe.map (\_ -> "Schema Viz, easily explore your SQL schema!") |> Maybe.withDefault "Load a new schema") model.storedProjects ]
         , [ viewCreateLayoutModal model.newLayout ]
-        , Maybe.map2 viewFindPathModal (model.project |> Maybe.map (\p -> p.schema.tables)) model.findPath |> M.toList
+        , Maybe.map2 (\p fp -> viewFindPathModal p.schema.tables p.settings.findPath fp) model.project model.findPath |> M.toList
         , [ viewHelpModal ]
         , [ viewConfirm model.confirm ]
         ]

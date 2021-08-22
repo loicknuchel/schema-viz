@@ -19,7 +19,8 @@ type BsColor
 
 
 type Toggle
-    = Tooltip
+    = Alert
+    | Tooltip
     | Dropdown
     | Modal
     | Collapse
@@ -29,6 +30,9 @@ type Toggle
 toggleName : Toggle -> String
 toggleName toggle =
     case toggle of
+        Alert ->
+            "alert"
+
         Tooltip ->
             "tooltip"
 

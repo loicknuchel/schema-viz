@@ -1,4 +1,4 @@
-module PagesComponents.App.Updates.Helpers exposing (decodeErrorToHtml, setCanvas, setLayout, setLayouts, setListTable, setPosition, setProject, setProjectWithCmd, setSchema, setSchemaWithCmd, setSwitch, setTables, setTime)
+module PagesComponents.App.Updates.Helpers exposing (decodeErrorToHtml, setCanvas, setLayout, setLayouts, setListTable, setPosition, setProject, setProjectWithCmd, setSchema, setSchemaWithCmd, setSettings, setSwitch, setTables, setTime)
 
 import Draggable
 import Json.Decode as Decode
@@ -65,6 +65,11 @@ setPosition ( dx, dy ) zoom item =
 setListTable : (table -> comparable) -> comparable -> (table -> table) -> { item | tables : List table } -> { item | tables : List table }
 setListTable get id transform item =
     { item | tables = item.tables |> List.map (\t -> B.cond (get t == id) (transform t) t) }
+
+
+setSettings : (s -> s) -> { item | settings : s } -> { item | settings : s }
+setSettings transform item =
+    { item | settings = item.settings |> transform }
 
 
 decodeErrorToHtml : Decode.Error -> String

@@ -211,7 +211,7 @@ featureSlice =
                                     , Tw.max_w_none
                                     ]
                                 ]
-                            , src "/screenshot.png"
+                            , src "/public/screenshot.png"
                             , alt "Azimutt screenshot"
                             ]
                             []
@@ -231,7 +231,7 @@ featureSlice =
                                     , Tw.max_w_none
                                     ]
                                 ]
-                            , src "/screenshot-complex.png"
+                            , src "/public/screenshot-complex.png"
                             , alt "Azimutt screenshot"
                             ]
                             []

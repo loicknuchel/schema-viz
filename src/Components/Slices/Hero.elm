@@ -16,7 +16,7 @@ import Tailwind.Utilities as Tw
 heroSlice : Html msg
 heroSlice =
     div []
-        [ headerSlice "./logo.png"
+        [ headerSlice "/public/logo.png"
         , div
             [ css
                 [ Tw.relative
@@ -391,7 +391,7 @@ heroSimpleSlice =
                                                 [ Tw.h_10
                                                 ]
                                             ]
-                                        , Attr.src "/logo.svg"
+                                        , Attr.src "/public/logo.svg"
                                         , Attr.alt ""
                                         ]
                                         []
@@ -500,7 +500,7 @@ heroSimpleSlice =
                                         [ Tw.h_8
                                         , Tw.w_auto
                                         ]
-                                    , Attr.src "/logo.svg"
+                                    , Attr.src "/public/logo.svg"
                                     , Attr.alt "Azimutt logo"
                                     ]
                                     []

@@ -5,6 +5,7 @@
 /public/dist
 /local
 /review/elm-stuff/
+index.html
 
 /legacy/ruby/coverage/
 /legacy/ruby/test/resources/samples/

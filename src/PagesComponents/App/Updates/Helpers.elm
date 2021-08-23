@@ -75,3 +75,19 @@ setSettings transform item =
 decodeErrorToHtml : Decode.Error -> String
 decodeErrorToHtml error =
     "<pre>" ++ Decode.errorToString error ++ "</pre>"
+
+
+
+--pure : a -> ( a, Cmd msg )
+--pure a =
+--    ( a, Cmd.none )
+--
+--
+--map : (a -> b) -> ( a, Cmd msg ) -> ( b, Cmd msg )
+--map f ( a, cmd ) =
+--    ( f a, cmd )
+--
+--
+--andThen : (a -> ( b, Cmd msg )) -> ( a, Cmd msg ) -> ( b, Cmd msg )
+--andThen f ( a, cmd1 ) =
+--    f a |> Tuple.mapSecond (\cmd2 -> Cmd.batch [ cmd1, cmd2 ])

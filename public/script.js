@@ -1,10 +1,17 @@
-window.onload = function () {
+window.addEventListener('load', function() {
     const isDev = window.location.hostname === 'localhost'
     const isProd = window.location.hostname === 'schema-viz.netlify.app'
     const skipAnalytics = !!JSON.parse(localStorage.getItem('skip-analytics'))
     const analytics = initAnalytics(isProd && !skipAnalytics)
     const errorTracking = initErrorTracking(isProd)
     const app = Elm.Main.init()
+
+
+    /* PWA service worker */
+
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register("/service-worker.js")
+    }
 
 
     /* Elm ports */
@@ -351,4 +358,4 @@ window.onload = function () {
             document.getElementsByTagName('head')[0].appendChild(script)
         })
     }
-}
+})

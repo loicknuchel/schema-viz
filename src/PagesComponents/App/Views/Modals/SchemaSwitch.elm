@@ -22,18 +22,12 @@ viewSchemaSwitchModal : TimeInfo -> Switch -> String -> List Project -> Html Msg
 viewSchemaSwitchModal time switch title storedProjects =
     bsModal conf.ids.projectSwitchModal
         title
-        [ viewWarning
-        , viewSavedProjects time storedProjects
+        [ viewSavedProjects time storedProjects
         , viewFileUpload switch
         , viewSampleSchemas
-        , div [ style "margin-top" "1em" ] (viewGetSchemaInstructions ++ viewDataPrivacyExplanation)
+        , div [ class "mt-3" ] (viewGetSchemaInstructions ++ viewDataPrivacyExplanation)
         ]
         [ viewFooter ]
-
-
-viewWarning : Html msg
-viewWarning =
-    div [ style "text-align" "center" ] [ bText "⚠️ This app is currently being built", text ", you can use it but stored data may break sometimes ⚠️" ]
 
 
 viewSavedProjects : TimeInfo -> List Project -> Html Msg
@@ -44,7 +38,7 @@ viewSavedProjects time storedProjects =
             |> List.sortBy (\s -> negate (Time.posixToMillis s.updatedAt))
             |> List.map
                 (\prj ->
-                    div [ class "col", style "margin-top" "1em" ]
+                    div [ class "col" ]
                         [ div [ class "card h-100" ]
                             [ div [ class "card-body" ]
                                 [ h5 [ class "card-title" ] [ text prj.name ]
@@ -68,7 +62,7 @@ viewSavedProjects time storedProjects =
 
 viewFileUpload : Switch -> Html Msg
 viewFileUpload switch =
-    div [ style "margin-top" "1em" ]
+    div [ class "mt-3" ]
         [ hiddenInputSingle "file-loader" [ ".sql,.json" ] FileSelected
         , label
             ([ for "file-loader", class "drop-zone" ]
@@ -89,7 +83,7 @@ viewFileUpload switch =
 
 viewSampleSchemas : Html Msg
 viewSampleSchemas =
-    div [ style "text-align" "center", style "margin-top" "1em" ]
+    div [ class "mt-3 text-center" ]
         [ text "Or just try out with "
         , div [ class "dropdown", style "display" "inline-block" ]
             [ button [ type_ "button", class "link link-primary", id "schema-samples", bsToggle Dropdown, ariaExpanded False ] [ text "an example" ]
@@ -139,10 +133,7 @@ viewFooter : Html msg
 viewFooter =
     p [ class "fw-lighter fst-italic text-muted" ]
         [ bText "Schema Viz"
-        , text " is an "
-        , a [ href "https://github.com/loicknuchel/schema-viz", target "_blank" ] [ text "open source tool" ]
-        , text " done by "
-        , a [ href "https://twitter.com/sbouaked", target "_blank" ] [ text "@sbouaked" ]
-        , text " and "
-        , a [ href "https://twitter.com/loicknuchel", target "_blank" ] [ text "@loicknuchel" ]
+        , text " is "
+        , a [ href "https://github.com/loicknuchel/schema-viz", target "_blank" ] [ text "open source" ]
+        , text ", feel free to report bugs, ask questions or request features in github issues."
         ]

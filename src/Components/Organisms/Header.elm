@@ -82,5 +82,5 @@ headerChapter : Chapter x
 headerChapter =
     chapter "Header"
         |> renderComponentList
-            [ ( "default", headerSlice "/public/logo.png" )
+            [ ( "default", headerSlice "/logo.png" )
             ]

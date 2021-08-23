@@ -38,7 +38,7 @@ First, you need to install npm, Elm & [elm-spa](https://www.elm-spa.dev) on your
 - launch the tests: `elm-test` (needs `npm install -g elm-test` or use `npx`)
 - run linter: `elm-review` (needs `npm install -g elm-review` or use `npx`)
 - check format: `elm-format src tests --validate` (needs `npm install -g elm-format` or use `npx`)
-- open design system: `elm-book src/Components/Book.elm --port 8001` (needs `npm install -g elm-boor` or use `npx`)
+- open design system: `elm-book src/Components/Book.elm --port 8001 --dir=public --start-page=book.html -- --output=public/dist/book.js` (needs `npm install -g elm-book` or use `npx`)
 - run coverage: `elm-coverage --open` (needs `npm install -g elm-coverage`) > doesn't work with elm-spa :(
 - install deps `elm-json install author/package` (needs `npm install --g elm-json`)
 - uninstall deps `elm-json uninstall author/package`

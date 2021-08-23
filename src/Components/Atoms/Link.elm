@@ -19,9 +19,9 @@ linkButtonChapter =
             , url = href
             }
     in
-    chapter "Atoms.Links"
+    chapter "Links"
         |> renderComponentList
-            [ ( "Button Link",  linkButton props)
+            [ ( "button Link",  linkButton props)
             ]
 
 

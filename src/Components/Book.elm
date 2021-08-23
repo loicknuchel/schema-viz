@@ -1,8 +1,10 @@
 module Components.Book exposing (main)
 
 import Components.Atoms.Button exposing (buttonChapter)
+import Components.Atoms.SvgIcon exposing (iconChapter)
 import Components.Atoms.Link exposing (linkButtonChapter)
 import Components.Organisms.Header exposing (headerChapter)
+import Components.Organisms.Footer exposing (footerChapter)
 import Components.Slices.Feature exposing (featureChapter)
 import Components.Slices.Hero exposing (heroChapter)
 import Css
@@ -22,7 +24,7 @@ main : Book x
 main =
     book "Azimutt UI"
         |> withThemeOptions
-            [ ElmBook.ThemeOptions.subtitle "v1.0.1"
+            [ ElmBook.ThemeOptions.subtitle "v0.1.0"
             , ElmBook.ThemeOptions.globals [ global globalStyles ]
             , ElmBook.ThemeOptions.logo logo
             ]
@@ -33,6 +35,7 @@ main =
             [ ( "Atoms"
               , [ linkButtonChapter
                 , buttonChapter
+                , iconChapter
                 ]
               )
             , ( "Molecules"
@@ -40,6 +43,7 @@ main =
               )
             , ( "Organisms"
               , [ headerChapter
+              , footerChapter
                 ]
               )
             , ( "Slices"

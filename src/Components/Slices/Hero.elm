@@ -12,7 +12,7 @@ import Svg.Styled.Attributes as SvgAttr
 import Tailwind.Breakpoints as Bp
 import Tailwind.Utilities as Tw
 
-
+heroSlice : Html msg
 heroSlice =
     div []
         [ headerSlice "./assets/azimutt_logo.png"
@@ -188,7 +188,7 @@ heroSlice =
             ]
         ]
 
-
+heroSimpleSlice : Html msg
 heroSimpleSlice =
     div
         [ css
@@ -389,7 +389,7 @@ heroSimpleSlice =
                                                 [ Tw.h_10
                                                 ]
                                             ]
-                                        , Attr.src "https://tailwindui.com/img/logos/workflow-mark-indigo-600.svg"
+                                        , Attr.src "http://localhost:4000/assets/azimutt_logo.svg"
                                         , Attr.alt ""
                                         ]
                                         []
@@ -456,114 +456,9 @@ heroSimpleSlice =
                                     ]
                                 ]
                             ]
-                        , div
-                            [ css
-                                [ Tw.hidden
-                                , Bp.md
-                                    [ Tw.flex
-                                    , Tw.space_x_10
-                                    ]
-                                ]
-                            ]
-                            [ a
-                                [ Attr.href "#"
-                                , css
-                                    [ Tw.font_medium
-                                    , Tw.text_gray_500
-                                    , Css.hover
-                                        [ Tw.text_gray_900
-                                        ]
-                                    ]
-                                ]
-                                [ text "Product" ]
-                            , a
-                                [ Attr.href "#"
-                                , css
-                                    [ Tw.font_medium
-                                    , Tw.text_gray_500
-                                    , Css.hover
-                                        [ Tw.text_gray_900
-                                        ]
-                                    ]
-                                ]
-                                [ text "Features" ]
-                            , a
-                                [ Attr.href "#"
-                                , css
-                                    [ Tw.font_medium
-                                    , Tw.text_gray_500
-                                    , Css.hover
-                                        [ Tw.text_gray_900
-                                        ]
-                                    ]
-                                ]
-                                [ text "Marketplace" ]
-                            , a
-                                [ Attr.href "#"
-                                , css
-                                    [ Tw.font_medium
-                                    , Tw.text_gray_500
-                                    , Css.hover
-                                        [ Tw.text_gray_900
-                                        ]
-                                    ]
-                                ]
-                                [ text "Company" ]
-                            ]
-                        , div
-                            [ css
-                                [ Tw.hidden
-                                , Bp.md
-                                    [ Tw.absolute
-                                    , Tw.flex
-                                    , Tw.items_center
-                                    , Tw.justify_end
-                                    , Tw.inset_y_0
-                                    , Tw.right_0
-                                    ]
-                                ]
-                            ]
-                            [ span
-                                [ css
-                                    [ Tw.inline_flex
-                                    , Tw.rounded_md
-                                    , Tw.shadow
-                                    ]
-                                ]
-                                [ a
-                                    [ Attr.href "#"
-                                    , css
-                                        [ Tw.inline_flex
-                                        , Tw.items_center
-                                        , Tw.px_4
-                                        , Tw.py_2
-                                        , Tw.border
-                                        , Tw.border_transparent
-                                        , Tw.text_base
-                                        , Tw.font_medium
-                                        , Tw.rounded_md
-                                        , Tw.text_indigo_600
-                                        , Tw.bg_white
-                                        , Css.hover
-                                            [ Tw.bg_gray_50
-                                            ]
-                                        ]
-                                    ]
-                                    [ text "Log in" ]
-                                ]
-                            ]
                         ]
                     ]
-                , {-
-                     Mobile menu, show/hide based on menu open state.
-
-                     Entering: "duration-150 ease-out"
-                       From: "opacity-0 scale-95"
-                       To: "opacity-100 scale-100"
-                     Leaving: "duration-100 ease-in"
-                       From: "opacity-100 scale-100"
-                       To: "opacity-0 scale-95"
-                  -}
+                , 
                   div
                     [ css
                         [ Tw.absolute
@@ -605,7 +500,7 @@ heroSimpleSlice =
                                         , Tw.w_auto
                                         ]
                                     , Attr.src "./assets/azimutt_logo.svg"
-                                    , Attr.alt ""
+                                    , Attr.alt "Azimutt logo"
                                     ]
                                     []
                                 ]
@@ -664,99 +559,6 @@ heroSimpleSlice =
                                     ]
                                 ]
                             ]
-                        , div
-                            [ css
-                                [ Tw.px_2
-                                , Tw.pt_2
-                                , Tw.pb_3
-                                ]
-                            ]
-                            [ a
-                                [ Attr.href "#"
-                                , css
-                                    [ Tw.block
-                                    , Tw.px_3
-                                    , Tw.py_2
-                                    , Tw.rounded_md
-                                    , Tw.text_base
-                                    , Tw.font_medium
-                                    , Tw.text_gray_700
-                                    , Css.hover
-                                        [ Tw.text_gray_900
-                                        , Tw.bg_gray_50
-                                        ]
-                                    ]
-                                ]
-                                [ text "Product" ]
-                            , a
-                                [ Attr.href "#"
-                                , css
-                                    [ Tw.block
-                                    , Tw.px_3
-                                    , Tw.py_2
-                                    , Tw.rounded_md
-                                    , Tw.text_base
-                                    , Tw.font_medium
-                                    , Tw.text_gray_700
-                                    , Css.hover
-                                        [ Tw.text_gray_900
-                                        , Tw.bg_gray_50
-                                        ]
-                                    ]
-                                ]
-                                [ text "Features" ]
-                            , a
-                                [ Attr.href "#"
-                                , css
-                                    [ Tw.block
-                                    , Tw.px_3
-                                    , Tw.py_2
-                                    , Tw.rounded_md
-                                    , Tw.text_base
-                                    , Tw.font_medium
-                                    , Tw.text_gray_700
-                                    , Css.hover
-                                        [ Tw.text_gray_900
-                                        , Tw.bg_gray_50
-                                        ]
-                                    ]
-                                ]
-                                [ text "Marketplace" ]
-                            , a
-                                [ Attr.href "#"
-                                , css
-                                    [ Tw.block
-                                    , Tw.px_3
-                                    , Tw.py_2
-                                    , Tw.rounded_md
-                                    , Tw.text_base
-                                    , Tw.font_medium
-                                    , Tw.text_gray_700
-                                    , Css.hover
-                                        [ Tw.text_gray_900
-                                        , Tw.bg_gray_50
-                                        ]
-                                    ]
-                                ]
-                                [ text "Company" ]
-                            ]
-                        , a
-                            [ Attr.href "#"
-                            , css
-                                [ Tw.block
-                                , Tw.w_full
-                                , Tw.px_5
-                                , Tw.py_3
-                                , Tw.text_center
-                                , Tw.font_medium
-                                , Tw.text_indigo_600
-                                , Tw.bg_gray_50
-                                , Css.hover
-                                    [ Tw.bg_gray_100
-                                    ]
-                                ]
-                            ]
-                            [ text "Log in" ]
                         ]
                     ]
                 ]
@@ -798,17 +600,17 @@ heroSimpleSlice =
                                     ]
                                 ]
                             ]
-                            [ text "Data to enrich your" ]
+                            [ text "Explore your SQL " ]
                         , span
                             [ css
                                 [ Tw.block
-                                , Tw.text_indigo_600
+                                , Tw.text_blue_600
                                 , Bp.xl
                                     [ Tw.inline
                                     ]
                                 ]
                             ]
-                            [ text "online business" ]
+                            [ text "Schema" ]
                         ]
                     , p
                         [ css
@@ -827,7 +629,7 @@ heroSimpleSlice =
                                 ]
                             ]
                         ]
-                        [ text "Anim aute id magna aliqua ad ad non deserunt sunt. Qui irure qui lorem cupidatat commodo. Elit sunt amet fugiat veniam occaecat fugiat aliqua." ]
+                        [ text "Easily visualize your database schema and see how everything fits together." ]
                     , div
                         [ css
                             [ Tw.mt_5
@@ -849,7 +651,7 @@ heroSimpleSlice =
                                 ]
                             ]
                             [ a
-                                [ Attr.href "#"
+                                [ Attr.href (Route.toHref Route.App)
                                 , css
                                     [ Tw.w_full
                                     , Tw.flex
@@ -863,9 +665,9 @@ heroSimpleSlice =
                                     , Tw.font_medium
                                     , Tw.rounded_md
                                     , Tw.text_white
-                                    , Tw.bg_indigo_600
+                                    , Tw.bg_blue_600
                                     , Css.hover
-                                        [ Tw.bg_indigo_700
+                                        [ Tw.bg_blue_800
                                         ]
                                     , Bp.md
                                         [ Tw.py_4
@@ -876,45 +678,6 @@ heroSimpleSlice =
                                 ]
                                 [ text "Get started" ]
                             ]
-                        , div
-                            [ css
-                                [ Tw.mt_3
-                                , Tw.rounded_md
-                                , Tw.shadow
-                                , Bp.sm
-                                    [ Tw.mt_0
-                                    , Tw.ml_3
-                                    ]
-                                ]
-                            ]
-                            [ a
-                                [ Attr.href "#"
-                                , css
-                                    [ Tw.w_full
-                                    , Tw.flex
-                                    , Tw.items_center
-                                    , Tw.justify_center
-                                    , Tw.px_8
-                                    , Tw.py_3
-                                    , Tw.border
-                                    , Tw.border_transparent
-                                    , Tw.text_base
-                                    , Tw.font_medium
-                                    , Tw.rounded_md
-                                    , Tw.text_indigo_600
-                                    , Tw.bg_white
-                                    , Css.hover
-                                        [ Tw.bg_gray_50
-                                        ]
-                                    , Bp.md
-                                        [ Tw.py_4
-                                        , Tw.text_lg
-                                        , Tw.px_10
-                                        ]
-                                    ]
-                                ]
-                                [ text "Live demo" ]
-                            ]
                         ]
                     ]
                 ]
@@ -924,7 +687,7 @@ heroSimpleSlice =
 
 heroChapter : Chapter x
 heroChapter =
-    chapter "Slices.Hero"
+    chapter "Hero"
         |> renderComponentList
             [ ( "withImage",  heroSlice )
             , ( "simple",  heroSimpleSlice )

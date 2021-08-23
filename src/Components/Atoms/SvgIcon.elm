@@ -1,5 +1,7 @@
-module Components.Atoms.SvgIcon exposing (documentSearch, github, inbox, link, photograph, twitter)
+module Components.Atoms.SvgIcon exposing (documentSearch, github, iconChapter, inbox, link, photograph, twitter)
 
+import ElmBook.Chapter exposing (..)
+import ElmBook.ElmCSS exposing (Chapter)
 import Html.Styled exposing (..)
 import Html.Styled.Attributes as Attr exposing (css)
 import Svg.Styled as Svg exposing (path, svg)
@@ -39,7 +41,9 @@ twitter =
         , Attr.attribute "aria-hidden" "true"
         ]
         [ path
-            [ SvgAttr.d "M8.29 20.251c7.547 0 11.675-6.253 11.675-11.675 0-.178 0-.355-.012-.53A8.348 8.348 0 0022 5.92a8.19 8.19 0 01-2.357.646 4.118 4.118 0 001.804-2.27 8.224 8.224 0 01-2.605.996 4.107 4.107 0 00-6.993 3.743 11.65 11.65 0 01-8.457-4.287 4.106 4.106 0 001.27 5.477A4.072 4.072 0 012.8 9.713v.052a4.105 4.105 0 003.292 4.022 4.095 4.095 0 01-1.853.07 4.108 4.108 0 003.834 2.85A8.233 8.233 0 012 18.407a11.616 11.616 0 006.29 1.84"
+            [ SvgAttr.fillRule "evenodd"
+            , SvgAttr.clipRule "evenodd"
+            , SvgAttr.d "M8.29 20.251c7.547 0 11.675-6.253 11.675-11.675 0-.178 0-.355-.012-.53A8.348 8.348 0 0022 5.92a8.19 8.19 0 01-2.357.646 4.118 4.118 0 001.804-2.27 8.224 8.224 0 01-2.605.996 4.107 4.107 0 00-6.993 3.743 11.65 11.65 0 01-8.457-4.287 4.106 4.106 0 001.27 5.477A4.072 4.072 0 012.8 9.713v.052a4.105 4.105 0 003.292 4.022 4.095 4.095 0 01-1.853.07 4.108 4.108 0 003.834 2.85A8.233 8.233 0 012 18.407a11.616 11.616 0 006.29 1.84"
             ]
             []
         ]
@@ -71,7 +75,6 @@ icon draw =
         [ SvgAttr.css
             [ Tw.h_6
             , Tw.w_6
-            , Tw.text_white
             ]
         , SvgAttr.fill "none"
         , SvgAttr.viewBox "0 0 24 24"
@@ -79,3 +82,16 @@ icon draw =
         , Attr.attribute "aria-hidden" "true"
         ]
         [ path [ SvgAttr.strokeLinecap "round", SvgAttr.strokeLinejoin "round", SvgAttr.strokeWidth "2", SvgAttr.d draw ] [] ]
+
+
+iconChapter : Chapter x
+iconChapter =
+    chapter "SvgIcon"
+        |> renderComponentList
+            [ ( "inbox", inbox )
+            , ( "documentSearch", documentSearch )
+            , ( "photograph", photograph )
+            , ( "link", link )
+            , ( "twitter", twitter )
+            , ( "github", github )
+            ]

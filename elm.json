@@ -20,6 +20,7 @@
             "elm/svg": "1.0.1",
             "elm/time": "1.0.0",
             "elm/url": "1.0.0",
+            "jasonliang-dev/elm-heroicons": "1.0.3",
             "lattyware/elm-fontawesome": "5.0.0",
             "matheus23/elm-default-tailwind-modules": "2.0.1",
             "mpizenberg/elm-file": "1.0.0",

@@ -3,10 +3,10 @@ module PagesComponents.Home_.View exposing (viewHome)
 import Components.Slices.Cta exposing (ctaSlice)
 import Components.Slices.Feature exposing (featureListeSlice, featureSlice)
 import Components.Slices.Hero exposing (heroSlice)
+import Components.Organisms.Footer exposing (footerSlice)
 import Html exposing (Html, div)
 import Html.Attributes exposing (class)
 import Html.Styled as Styled
-import PagesComponents.Home_.Views.FooterSection exposing (viewFooterSection)
 
 
 viewHome : List (Html msg)
@@ -16,6 +16,6 @@ viewHome =
         , featureSlice |> Styled.toUnstyled
         , featureListeSlice |> Styled.toUnstyled
         , ctaSlice |> Styled.toUnstyled
-        , viewFooterSection
+        , footerSlice |> Styled.toUnstyled
         ]
     ]

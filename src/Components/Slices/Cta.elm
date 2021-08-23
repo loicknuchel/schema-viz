@@ -1,6 +1,5 @@
 module Components.Slices.Cta exposing (..)
 
-import Components.Reset exposing (resetCSS)
 import Css
 import ElmBook.Chapter exposing (..)
 import ElmBook.ElmCSS exposing (Chapter)

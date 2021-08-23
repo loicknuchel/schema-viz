@@ -80,7 +80,7 @@ headerSlice url =
 
 headerChapter : Chapter x
 headerChapter =
-    chapter "Slices.Header"
+    chapter "Header"
         |> renderComponentList
             [ ( "default", headerSlice "http://localhost:4000/assets/azimutt_logo.png")
             ]

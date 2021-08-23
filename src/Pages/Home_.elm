@@ -39,7 +39,7 @@ update _ model =
 
 view : Model -> View msg
 view _ =
-    { title = "Schema Viz"
+    { title = "Azimutt"
     , body = viewHome
     }
 

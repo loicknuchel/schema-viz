@@ -24,10 +24,14 @@ button props =
         , Attr.css
             [ Tw.inline_flex
             , Tw.items_center
+            , Tw.justify_center
+            , Tw.px_5
+            , Tw.py_3
             , Tw.border
             , Tw.border_transparent
+            , Tw.text_base
+            , Tw.font_medium
             , Tw.rounded_md
-            , Tw.shadow_sm
             , Tw.text_white
             , Tw.bg_indigo_600
             , Css.focus
@@ -61,8 +65,8 @@ buttonChapter =
             , onClick = logAction "Clicked button"
             }
     in
-    chapter "Atoms.Buttons"
+    chapter "Buttons"
         |> renderComponentList
             [ ( "default", button { props | onClick = logAction "Clicked default button" } )
-            , ( "Disabled", button { props | disabled = True } )
+            , ( "disabled", button { props | disabled = True } )
             ]

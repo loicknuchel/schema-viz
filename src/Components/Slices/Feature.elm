@@ -292,6 +292,7 @@ featureListeSlice =
                     , Tw.grid_cols_1
                     , Tw.gap_x_6
                     , Tw.gap_y_12
+                    , Tw.text_white
                     , Bp.lg
                         [ Tw.mt_16
                         , Tw.grid_cols_3
@@ -377,7 +378,7 @@ item icon title description =
 
 featureChapter : Chapter x
 featureChapter =
-    chapter "Slices.Feature"
+    chapter "Feature"
         |> renderComponentList
             [ ( "default", featureSlice )
             , ( "list", featureListeSlice )

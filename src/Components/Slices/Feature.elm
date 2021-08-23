@@ -2,7 +2,7 @@ module Components.Slices.Feature exposing (featureChapter, featureListeSlice, fe
 
 import Components.Atoms.SvgIcon as SvgIcon
 import Css
-import ElmBook.Chapter exposing (..)
+import ElmBook.Chapter exposing (chapter, renderComponentList)
 import ElmBook.ElmCSS exposing (Chapter)
 import Gen.Route as Route
 import Html.Styled exposing (Html, a, blockquote, div, footer, h2, h3, img, p, span, text)

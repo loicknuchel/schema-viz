@@ -1,7 +1,7 @@
 module Components.Atoms.Link exposing (linkButton, linkButtonChapter)
 
 import Css
-import ElmBook.Chapter exposing (..)
+import ElmBook.Chapter exposing (chapter, renderComponentList)
 import ElmBook.ElmCSS exposing (Chapter)
 import Html.Styled exposing (Html, a, div, text)
 import Html.Styled.Attributes as Attr

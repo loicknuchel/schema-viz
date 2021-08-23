@@ -2,7 +2,7 @@ module Components.Slices.Hero exposing (heroChapter, heroSimpleSlice, heroSlice)
 
 import Components.Organisms.Header exposing (headerSlice)
 import Css
-import ElmBook.Chapter exposing (..)
+import ElmBook.Chapter exposing (chapter, renderComponentList)
 import ElmBook.ElmCSS exposing (Chapter)
 import Gen.Route as Route
 import Html.Styled exposing (Html, a, button, div, h1, img, main_, nav, p, span, text)

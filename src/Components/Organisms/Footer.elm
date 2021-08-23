@@ -2,7 +2,7 @@ module Components.Organisms.Footer exposing (footerChapter, footerSlice)
 
 import Components.Atoms.SvgIcon as SvgIcon
 import Css
-import ElmBook.Chapter exposing (..)
+import ElmBook.Chapter exposing (chapter, renderComponentList)
 import ElmBook.ElmCSS exposing (Chapter)
 import Html.Styled exposing (Html, a, div, p, span, text)
 import Html.Styled.Attributes as Attr exposing (css)

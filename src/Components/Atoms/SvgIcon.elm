@@ -1,8 +1,8 @@
 module Components.Atoms.SvgIcon exposing (documentSearch, github, iconChapter, inbox, link, photograph, twitter)
 
-import ElmBook.Chapter exposing (..)
+import ElmBook.Chapter exposing (chapter, renderComponentList)
 import ElmBook.ElmCSS exposing (Chapter)
-import Html.Styled exposing (..)
+import Html.Styled exposing (Html)
 import Html.Styled.Attributes as Attr
 import Svg.Styled exposing (path, svg)
 import Svg.Styled.Attributes as SvgAttr

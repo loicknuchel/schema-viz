@@ -3,7 +3,7 @@ module Components.Atoms.Button exposing (button, buttonChapter)
 import Css
 import ElmBook exposing (Msg)
 import ElmBook.Actions exposing (logAction)
-import ElmBook.Chapter exposing (..)
+import ElmBook.Chapter exposing (chapter, renderComponentList)
 import ElmBook.ElmCSS exposing (Chapter)
 import Html.Styled as Styled
 import Html.Styled.Attributes as Attr

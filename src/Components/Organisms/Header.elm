@@ -1,6 +1,6 @@
 module Components.Organisms.Header exposing (headerChapter, headerSlice)
 
-import ElmBook.Chapter exposing (..)
+import ElmBook.Chapter exposing (chapter, renderComponentList)
 import ElmBook.ElmCSS exposing (Chapter)
 import Gen.Route as Route
 import Html.Styled exposing (Html, a, div, header, img, span, text)

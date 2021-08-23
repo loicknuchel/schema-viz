@@ -1,7 +1,7 @@
 module Components.Slices.Cta exposing (ctaChapter, ctaSlice)
 
 import Css
-import ElmBook.Chapter exposing (..)
+import ElmBook.Chapter exposing (chapter, renderComponentList)
 import ElmBook.ElmCSS exposing (Chapter)
 import Gen.Route as Route
 import Html.Styled exposing (Html, a, div, h2, span, text)

@@ -10,15 +10,14 @@ import Components.Slices.Feature exposing (featureChapter)
 import Components.Slices.Hero exposing (heroChapter)
 import Css.Global exposing (global)
 import ElmBook exposing (withChapterGroups, withComponentOptions, withThemeOptions)
+import ElmBook.Chapter exposing (chapter, render)
 import ElmBook.ComponentOptions
+import ElmBook.ElmCSS exposing (Book, Chapter, book)
 import ElmBook.ThemeOptions
 import Html.Styled exposing (Html, img)
 import Html.Styled.Attributes as Attr exposing (css)
 import Tailwind.Breakpoints as Bp
 import Tailwind.Utilities as Tw exposing (globalStyles)
-
-import ElmBook.Chapter exposing (render, chapter)
-import ElmBook.ElmCSS exposing (Book, Chapter, book)
 
 
 main : Book x

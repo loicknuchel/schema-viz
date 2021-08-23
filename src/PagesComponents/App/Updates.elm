@@ -21,7 +21,7 @@ import Ports exposing (toastError, toastInfo)
 
 updateSizes : List SizeChange -> Model -> ( Model, Cmd Msg )
 updateSizes sizeChanges model =
-    ( sizeChanges |> List.foldr updateSize model, Cmd.batch (sizeChanges |> List.filterMap (initializeTableOnFirstSize model)) )
+    ( sizeChanges |> List.foldl updateSize model, Cmd.batch (sizeChanges |> List.filterMap (initializeTableOnFirstSize model)) )
 
 
 updateSize : SizeChange -> Model -> Model

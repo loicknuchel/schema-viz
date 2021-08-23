@@ -50,7 +50,7 @@ view _ =
 hero : Html msg
 hero =
     div [ class "px-4 mt-5 text-center border-bottom" ]
-        [ img [ class "d-block mx-auto mb-4", src "/assets/logo.png", width 100, height 100, alt "Schema Viz logo" ] []
+        [ img [ class "d-block mx-auto mb-4", src "/logo.png", width 100, height 100, alt "Schema Viz logo" ] []
         , h1 [ class "display-5 fw-bold" ] [ text "Schema Viz" ]
         , div [ class "col-lg-6 mx-auto" ]
             [ p [ class "lead mb-4" ] [ text "Explore and understand your SQL schema" ]
@@ -62,8 +62,8 @@ hero =
         , div [ class "overflow-hidden", style "max-height" "50vh" ]
             [ div [ class "container px-5" ]
                 [ span [ class "img-swipe" ]
-                    [ img [ src "/assets/schema-viz-screenshot.png", class "img-fluid border rounded-3 shadow-lg mb-4 img-default", alt "Schema Viz screenshot", width 800, height 759 ] []
-                    , img [ src "/assets/schema-viz-screenshot-complex.png", class "img-fluid border rounded-3 shadow-lg mb-4 img-hover", alt "Schema Viz screenshot", width 800, height 759 ] []
+                    [ img [ src "/screenshot.png", class "img-fluid border rounded-3 shadow-lg mb-4 img-default", alt "Schema Viz screenshot", width 800, height 759 ] []
+                    , img [ src "/screenshot-complex.png", class "img-fluid border rounded-3 shadow-lg mb-4 img-hover", alt "Schema Viz screenshot", width 800, height 759 ] []
                     ]
                 ]
             ]

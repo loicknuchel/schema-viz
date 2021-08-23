@@ -1,6 +1,7 @@
 module Components.Atoms.Button exposing (button, buttonChapter)
 
 import Css
+import ElmBook exposing (Msg)
 import ElmBook.Actions exposing (logAction)
 import ElmBook.Chapter exposing (..)
 import ElmBook.ElmCSS exposing (Chapter)
@@ -51,6 +52,7 @@ button props =
 buttonChapter : Chapter x
 buttonChapter =
     let
+        props : { label : String, disabled : Bool, onClick : Msg state }
         props =
             { label = "Click me!"
             , disabled = False

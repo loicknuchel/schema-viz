@@ -11,12 +11,14 @@ import Components.Slices.Hero exposing (heroChapter)
 import Css.Global exposing (global)
 import ElmBook exposing (withChapterGroups, withComponentOptions, withThemeOptions)
 import ElmBook.ComponentOptions
-import ElmBook.ElmCSS exposing (Book, book)
 import ElmBook.ThemeOptions
 import Html.Styled exposing (Html, img)
 import Html.Styled.Attributes as Attr exposing (css)
 import Tailwind.Breakpoints as Bp
 import Tailwind.Utilities as Tw exposing (globalStyles)
+
+import ElmBook.Chapter exposing (render, chapter)
+import ElmBook.ElmCSS exposing (Book, Chapter, book)
 
 
 main : Book x
@@ -31,7 +33,10 @@ main =
             [ ElmBook.ComponentOptions.fullWidth True
             ]
         |> withChapterGroups
-            [ ( "Atoms"
+            [ ( ""
+              , [ docs ]
+              )
+            , ( "Atoms"
               , [ linkButtonChapter
                 , buttonChapter
                 , iconChapter
@@ -68,3 +73,13 @@ logo =
         , Attr.alt "Azimutt elm-book"
         ]
         []
+
+
+docs : Chapter x
+docs =
+    chapter "Readme"
+        |> render """
+
+work in progress
+---
+"""

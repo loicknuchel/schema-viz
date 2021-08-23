@@ -68,7 +68,7 @@ logo =
                 [ Tw.h_6
                 ]
             ]
-        , Attr.src "http://localhost:4000/assets/azimutt_logo.svg"
+        , Attr.src "/logo.svg"
         , Attr.alt "Azimutt elm-book"
         ]
         []

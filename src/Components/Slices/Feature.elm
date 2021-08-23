@@ -211,8 +211,8 @@ featureSlice =
                                     , Tw.max_w_none
                                     ]
                                 ]
-                            , src "/assets/schema-viz-screenshot.png"
-                            , alt "Schema Viz screenshot"
+                            , src "/screenshot.png"
+                            , alt "Azimutt screenshot"
                             ]
                             []
                         , img
@@ -231,8 +231,8 @@ featureSlice =
                                     , Tw.max_w_none
                                     ]
                                 ]
-                            , src "/assets/schema-viz-screenshot-complex.png"
-                            , alt "Schema Viz screenshot"
+                            , src "/screenshot-complex.png"
+                            , alt "Azimutt screenshot"
                             ]
                             []
                         ]

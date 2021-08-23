@@ -1,11 +1,11 @@
 {
-  "name": "Schema Viz",
-  "short_name": "Schema Viz",
+  "name": "Azimutt",
+  "short_name": "Azimutt",
   "description": "Explore and understand your SQL schema",
   "start_url": "/app?source=pwa",
   "display": "standalone",
-  "theme_color": "#ffffff",
-  "background_color": "#ffffff",
+  "theme_color": "#f1f6f8",
+  "background_color": "#f1f6f8",
   "orientation": "landscape-primary",
   "icons": [
     {

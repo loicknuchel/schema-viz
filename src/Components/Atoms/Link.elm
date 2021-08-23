@@ -15,22 +15,14 @@ linkButtonChapter =
         href =
             "#"
 
+        props : { label : String, url : String }
         props =
-            { label = "Click me!"
-            , url = href
-            }
+            { label = "Click me!", url = href }
     in
-    chapter "Links"
-        |> renderComponentList
-            [ ( "button Link", linkButton props )
-            ]
+    chapter "Links" |> renderComponentList [ ( "button Link", linkButton props ) ]
 
 
-linkButton :
-    { label : String
-    , url : String
-    }
-    -> Html msg
+linkButton : { label : String, url : String } -> Html msg
 linkButton props =
     div []
         [ div [ Attr.css [ Tw.inline_flex, Tw.rounded_md, Tw.shadow ] ]

@@ -294,6 +294,6 @@ subscriptions model =
 
 view : Model -> View Msg
 view model =
-    { title = "Azimutt.app"
+    { title = "Azimutt"
     , body = Containers.root (viewApp model)
     }

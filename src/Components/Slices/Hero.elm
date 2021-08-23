@@ -116,7 +116,7 @@ heroSlice =
                                     , Tw.text_white
                                     ]
                                 ]
-                                [ text "azimutt.app" ]
+                                [ text "Azimutt" ]
                             ]
                         , p
                             [ css

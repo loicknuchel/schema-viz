@@ -58,7 +58,7 @@ headerSlice url =
                                 [ Tw.sr_only
                                 ]
                             ]
-                            [ text "Schema Viz" ]
+                            [ text "Azimutt" ]
                         , img
                             [ css
                                 [ Tw.h_8
@@ -68,7 +68,7 @@ headerSlice url =
                                     ]
                                 ]
                             , src url
-                            , alt "Schema Viz"
+                            , alt "Azimutt"
                             ]
                             []
                         ]

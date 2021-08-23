@@ -1,6 +1,4 @@
-# SchemaViz
-
-**⚠️⚠️⚠️ Under construction ⚠️⚠️⚠️**
+# Azimutt
 
 [![Netlify Status](https://api.netlify.com/api/v1/badges/21f157ae-adde-4caa-8fce-4921b917761b/deploy-status)](https://app.netlify.com/sites/schema-viz/deploys)
 
@@ -32,7 +30,7 @@ For me, this tool is the missing piece between a classic ERD tool and a Data cat
 
 ## Installation
 
-Schema Viz is a Single Page Application built with Elm that parse and explore your SQL schema.
+Azimutt is a Single Page Application built with Elm that parse and explore your SQL schema.
 
 First, you need to install npm, Elm & [elm-spa](https://www.elm-spa.dev) on your machine and run `npm install` to get the dependencies.
 

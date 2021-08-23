@@ -23,7 +23,7 @@ viewApp model =
         , [ viewMenu (model.project |> Maybe.map .schema) ]
         , [ viewErd model.hover model.sizes (model.project |> Maybe.map .schema) ]
         , [ viewCommands (model.project |> Maybe.map (\p -> p.schema.layout.canvas)) ]
-        , [ viewSchemaSwitchModal model.time model.switch (model.project |> Maybe.map (\_ -> "Schema Viz, easily explore your SQL schema!") |> Maybe.withDefault "Load a new schema") model.storedProjects ]
+        , [ viewSchemaSwitchModal model.time model.switch (model.project |> Maybe.map (\_ -> "Azimutt, easily explore your SQL schema!") |> Maybe.withDefault "Load a new schema") model.storedProjects ]
         , [ viewCreateLayoutModal model.newLayout ]
         , Maybe.map2 (\p fp -> viewFindPathModal p.schema.tables p.settings.findPath fp) model.project model.findPath |> M.toList
         , [ viewHelpModal ]

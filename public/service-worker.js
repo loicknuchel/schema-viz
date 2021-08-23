@@ -1,4 +1,4 @@
-const cacheName = 'schema-viz'
+const cacheName = 'azimutt'
 const assets = [
     '/',
     '/assets/bootstrap.bundle.min.js',

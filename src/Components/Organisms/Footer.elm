@@ -91,7 +91,7 @@ footerSlice =
                     ]
                 ]
             ]
-            [ text "© 2021 Azimutt.app" ]
+            [ text "© 2021 Azimutt" ]
         ]
 
 

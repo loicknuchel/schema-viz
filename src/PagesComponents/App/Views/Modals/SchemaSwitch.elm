@@ -122,7 +122,7 @@ viewDataPrivacyExplanation =
     [ div [] [ button ([ class "link a text-muted" ] ++ bsToggleCollapse "data-privacy") [ viewIcon Icon.angleRight, text " What about data privacy ?" ] ]
     , div [ class "collapse", id "data-privacy" ]
         [ div [ class "card card-body" ]
-            [ p [ class "card-text" ] [ text "Your application schema may be a sensitive information, but no worries with Schema Viz, everything stay on your machine. In fact, there is even no server at all!" ]
+            [ p [ class "card-text" ] [ text "Your application schema may be a sensitive information, but no worries with Azimutt, everything stay on your machine. In fact, there is even no server at all!" ]
             , p [ class "card-text" ] [ text "Your schema is read and ", bText "parsed in your browser", text ", and then saved with the layouts in your browser ", bText "local storage", text ". Nothing fancy ^^" ]
             ]
         ]
@@ -132,7 +132,7 @@ viewDataPrivacyExplanation =
 viewFooter : Html msg
 viewFooter =
     p [ class "fw-lighter fst-italic text-muted" ]
-        [ bText "Schema Viz"
+        [ bText "Azimutt"
         , text " is "
         , a [ href "https://github.com/loicknuchel/schema-viz", target "_blank" ] [ text "open source" ]
         , text ", feel free to report bugs, ask questions or request features in github issues."

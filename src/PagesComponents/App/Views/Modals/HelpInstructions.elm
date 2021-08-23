@@ -10,7 +10,7 @@ import Libs.Html exposing (bText, codeText)
 viewHelpModal : Html msg
 viewHelpModal =
     bsModal conf.ids.helpModal
-        "Schema Viz cheatsheet"
+        "Azimutt cheatsheet"
         [ ul []
             [ li [] [ text "In ", bText "search", text ", you can look for tables and columns, then click on one to show it" ]
             , li [] [ text "Not connected relations on the left are ", bText "incoming foreign keys", text ". Click on the column icon to see tables referencing it and then show them" ]

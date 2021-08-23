@@ -325,7 +325,7 @@ featureListeSlice =
                 , item SvgIcon.link
                     "Relation search (soon)"
                     [ text """Did you ever ask how to join two tables ?
-                           Schema Viz can help showing all the possible path between tables. But also between a table and a column!""" ]
+                           Azimutt can help showing all the possible path between tables. But also between a table and a column!""" ]
                 , item SvgIcon.link
                     "Lorem Ipsum"
                     [ text """You came this far ??? Awesome! You seem quite interested and ready to dig in ^^

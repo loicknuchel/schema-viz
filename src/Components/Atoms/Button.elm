@@ -1,10 +1,13 @@
 module Components.Atoms.Button exposing (button, buttonChapter)
 
+import Css
 import ElmBook.Actions exposing (logAction)
 import ElmBook.Chapter exposing (..)
-import Html exposing (Html)
-import Html.Attributes exposing (..)
-import Html.Events exposing (onClick)
+import ElmBook.ElmCSS exposing (Chapter)
+import Html.Styled as Styled
+import Html.Styled.Attributes as Attr
+import Html.Styled.Events as Events
+import Tailwind.Utilities as Tw
 
 
 button :
@@ -12,18 +15,41 @@ button :
     , disabled : Bool
     , onClick : msg
     }
-    -> Html msg
+    -> Styled.Html msg
 button props =
-    Html.button
-        [ class "px-8 py-3 rounded-md bg-indigo-500"
-        , disabled props.disabled
-        , onClick props.onClick
+    Styled.button
+        [ Attr.type_ "button"
+        , Attr.disabled props.disabled
+        , Events.onClick props.onClick
+        , Attr.css
+            [ Tw.inline_flex
+            , Tw.items_center
+            , Tw.border
+            , Tw.border_transparent
+            , Tw.rounded_md
+            , Tw.shadow_sm
+            , Tw.text_white
+            , Tw.bg_indigo_600
+            , Css.focus
+                [ Tw.outline_none
+                , Tw.ring_2
+                , Tw.ring_offset_2
+                , Tw.ring_indigo_500
+                ]
+            , Css.hover
+                [ Tw.bg_indigo_700
+                ]
+            ]
         ]
-        [ Html.text props.label ]
+        [ Styled.text props.label ]
 
 
-
--- TODO Comprendre le x après Chapter
+defaultClass =
+    [ Tw.px_4
+    , Tw.py_2
+    , Tw.text_base
+    , Tw.font_medium
+    ]
 
 
 buttonChapter : Chapter x
@@ -32,11 +58,11 @@ buttonChapter =
         props =
             { label = "Click me!"
             , disabled = False
-            , onClick = logAction "Clicked button 2!"
+            , onClick = logAction "Clicked button"
             }
     in
-    chapter "Buttons"
+    chapter "Atoms.Buttons"
         |> renderComponentList
-            [ ( "Default", button props )
+            [ ( "default", button { props | onClick = logAction "Clicked default button" } )
             , ( "Disabled", button { props | disabled = True } )
             ]

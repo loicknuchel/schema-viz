@@ -9,7 +9,7 @@ window.addEventListener('load', function() {
 
     /* PWA service worker */
 
-    if ('serviceWorker' in navigator) {
+    if ('serviceWorker' in navigator && isProd) {
         navigator.serviceWorker.register("/service-worker.js")
     }
 

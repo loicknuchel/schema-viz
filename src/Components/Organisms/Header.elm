@@ -1,4 +1,4 @@
-module Components.Organisms.Header exposing (headerSlice, headerChapter)
+module Components.Organisms.Header exposing (headerChapter, headerSlice)
 
 import ElmBook.Chapter exposing (..)
 import ElmBook.ElmCSS exposing (Chapter)
@@ -82,5 +82,5 @@ headerChapter : Chapter x
 headerChapter =
     chapter "Header"
         |> renderComponentList
-            [ ( "default", headerSlice "http://localhost:4000/assets/azimutt_logo.png")
+            [ ( "default", headerSlice "http://localhost:4000/assets/azimutt_logo.png" )
             ]

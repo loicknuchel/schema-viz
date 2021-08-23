@@ -1,4 +1,4 @@
-module Components.Slices.Hero exposing (..)
+module Components.Slices.Hero exposing (heroChapter, heroSimpleSlice, heroSlice)
 
 import Components.Organisms.Header exposing (headerSlice)
 import Css
@@ -11,6 +11,7 @@ import Svg.Styled as Svg exposing (path, svg)
 import Svg.Styled.Attributes as SvgAttr
 import Tailwind.Breakpoints as Bp
 import Tailwind.Utilities as Tw
+
 
 heroSlice : Html msg
 heroSlice =
@@ -187,6 +188,7 @@ heroSlice =
                 ]
             ]
         ]
+
 
 heroSimpleSlice : Html msg
 heroSimpleSlice =
@@ -458,8 +460,7 @@ heroSimpleSlice =
                             ]
                         ]
                     ]
-                , 
-                  div
+                , div
                     [ css
                         [ Tw.absolute
                         , Tw.top_0
@@ -689,6 +690,6 @@ heroChapter : Chapter x
 heroChapter =
     chapter "Hero"
         |> renderComponentList
-            [ ( "withImage",  heroSlice )
-            , ( "simple",  heroSimpleSlice )
+            [ ( "withImage", heroSlice )
+            , ( "simple", heroSimpleSlice )
             ]

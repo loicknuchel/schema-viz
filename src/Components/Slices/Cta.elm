@@ -1,11 +1,11 @@
-module Components.Slices.Cta exposing (..)
+module Components.Slices.Cta exposing (ctaChapter, ctaSlice)
 
 import Css
 import ElmBook.Chapter exposing (..)
 import ElmBook.ElmCSS exposing (Chapter)
 import Gen.Route as Route
 import Html.Styled exposing (Html, a, div, h2, span, text)
-import Html.Styled.Attributes exposing (alt, css, href, src)
+import Html.Styled.Attributes exposing (css, href)
 import Tailwind.Breakpoints as Bp
 import Tailwind.Utilities as Tw
 
@@ -15,6 +15,7 @@ documentationLink =
     "https://github.com/azimuttapp/azimuttapp"
 
 
+ctaSlice : Html msg
 ctaSlice =
     div
         [ css
@@ -120,3 +121,11 @@ ctaSlice =
                 ]
             ]
         ]
+
+
+ctaChapter : Chapter x
+ctaChapter =
+    chapter "Cta"
+        |> renderComponentList
+            [ ( "default", ctaSlice )
+            ]

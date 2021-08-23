@@ -1,21 +1,20 @@
 module Components.Book exposing (main)
 
 import Components.Atoms.Button exposing (buttonChapter)
-import Components.Atoms.SvgIcon exposing (iconChapter)
 import Components.Atoms.Link exposing (linkButtonChapter)
-import Components.Organisms.Header exposing (headerChapter)
+import Components.Atoms.SvgIcon exposing (iconChapter)
 import Components.Organisms.Footer exposing (footerChapter)
+import Components.Organisms.Header exposing (headerChapter)
+import Components.Slices.Cta exposing (ctaChapter)
 import Components.Slices.Feature exposing (featureChapter)
 import Components.Slices.Hero exposing (heroChapter)
-import Css
 import Css.Global exposing (global)
 import ElmBook exposing (withChapterGroups, withComponentOptions, withThemeOptions)
 import ElmBook.ComponentOptions
 import ElmBook.ElmCSS exposing (Book, book)
 import ElmBook.ThemeOptions
-import Html.Attributes exposing (..)
-import Html.Styled as Html exposing (..)
-import Html.Styled.Attributes as Attr exposing (css, href, src)
+import Html.Styled exposing (Html, img)
+import Html.Styled.Attributes as Attr exposing (css)
 import Tailwind.Breakpoints as Bp
 import Tailwind.Utilities as Tw exposing (globalStyles)
 
@@ -43,17 +42,19 @@ main =
               )
             , ( "Organisms"
               , [ headerChapter
-              , footerChapter
+                , footerChapter
                 ]
               )
             , ( "Slices"
               , [ heroChapter
                 , featureChapter
+                , ctaChapter
                 ]
               )
             ]
 
 
+logo : Html msg
 logo =
     img
         [ css

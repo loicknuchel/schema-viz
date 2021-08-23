@@ -6,19 +6,18 @@ import ElmBook.Chapter exposing (..)
 import ElmBook.ElmCSS exposing (Chapter)
 import Html.Styled exposing (Html, a, div, p, span, text)
 import Html.Styled.Attributes as Attr exposing (css)
-import Svg.Styled as Svg exposing (path, svg)
 import Tailwind.Breakpoints as Bp
 import Tailwind.Utilities as Tw
 
 
 twitterLink : String
 twitterLink =
-    "https://twitter.com/loicknuchel"
+    "https://twitter.com/azimuttapp"
 
 
 githubLink : String
 githubLink =
-    "https://github.com/loicknuchel/schema-viz"
+    "https://github.com/azimuttapp/azimuttapp"
 
 
 footerSlice : Html msg
@@ -47,7 +46,7 @@ footerSlice =
                 ]
             ]
             [ a
-                [ Attr.href "https://twitter.com/azimuttapp"
+                [ Attr.href twitterLink
                 , css
                     [ Tw.text_gray_400
                     , Css.hover
@@ -64,7 +63,7 @@ footerSlice =
                 , SvgIcon.twitter
                 ]
             , a
-                [ Attr.href "https://github.com/azimuttapp/azimuttapp"
+                [ Attr.href githubLink
                 , css
                     [ Tw.text_gray_400
                     , Css.hover

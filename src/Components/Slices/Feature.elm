@@ -11,6 +11,7 @@ import Tailwind.Breakpoints as Bp
 import Tailwind.Utilities as Tw
 
 
+featureSlice : Html msg
 featureSlice =
     div
         [ css
@@ -241,6 +242,7 @@ featureSlice =
         ]
 
 
+featureListeSlice : Html msg
 featureListeSlice =
     div
         [ css

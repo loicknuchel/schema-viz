@@ -48,14 +48,6 @@ button props =
         [ Styled.text props.label ]
 
 
-defaultClass =
-    [ Tw.px_4
-    , Tw.py_2
-    , Tw.text_base
-    , Tw.font_medium
-    ]
-
-
 buttonChapter : Chapter x
 buttonChapter =
     let

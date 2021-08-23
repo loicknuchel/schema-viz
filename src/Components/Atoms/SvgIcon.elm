@@ -3,8 +3,8 @@ module Components.Atoms.SvgIcon exposing (documentSearch, github, iconChapter, i
 import ElmBook.Chapter exposing (..)
 import ElmBook.ElmCSS exposing (Chapter)
 import Html.Styled exposing (..)
-import Html.Styled.Attributes as Attr exposing (css)
-import Svg.Styled as Svg exposing (path, svg)
+import Html.Styled.Attributes as Attr
+import Svg.Styled exposing (path, svg)
 import Svg.Styled.Attributes as SvgAttr
 import Tailwind.Utilities as Tw
 

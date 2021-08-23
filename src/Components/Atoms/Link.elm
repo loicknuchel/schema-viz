@@ -1,4 +1,4 @@
-module Components.Atoms.Link exposing (linkButtonChapter, linkButton)
+module Components.Atoms.Link exposing (linkButton, linkButtonChapter)
 
 import Css
 import ElmBook.Chapter exposing (..)
@@ -11,8 +11,9 @@ import Tailwind.Utilities as Tw
 linkButtonChapter : Chapter x
 linkButtonChapter =
     let
+        href : String
         href =
-            "http://#"
+            "#"
 
         props =
             { label = "Click me!"
@@ -21,7 +22,7 @@ linkButtonChapter =
     in
     chapter "Links"
         |> renderComponentList
-            [ ( "button Link",  linkButton props)
+            [ ( "button Link", linkButton props )
             ]
 
 
@@ -32,8 +33,7 @@ linkButton :
     -> Html msg
 linkButton props =
     div []
-        [
-          div [ Attr.css [ Tw.inline_flex, Tw.rounded_md, Tw.shadow ] ]
+        [ div [ Attr.css [ Tw.inline_flex, Tw.rounded_md, Tw.shadow ] ]
             [ a
                 [ Attr.css
                     [ Tw.inline_flex

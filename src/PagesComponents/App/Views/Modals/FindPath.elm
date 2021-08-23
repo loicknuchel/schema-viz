@@ -2,10 +2,10 @@ module PagesComponents.App.Views.Modals.FindPath exposing (viewFindPathModal)
 
 import Conf exposing (conf)
 import Dict exposing (Dict)
-import Html exposing (Html, a, b, br, button, div, input, label, li, ol, option, select, span, text)
+import Html exposing (Html, b, br, button, div, input, label, li, ol, option, select, span, text)
 import Html.Attributes as Attributes exposing (class, disabled, for, id, placeholder, selected, title, type_, value)
 import Html.Events exposing (onClick, onInput)
-import Libs.Bootstrap exposing (Toggle(..), bsDismiss, bsModal, bsToggleCollapseLink)
+import Libs.Bootstrap exposing (Toggle(..), bsDismiss, bsModal, bsToggleCollapse)
 import Libs.Html.Attributes exposing (ariaDescribedBy, ariaHidden, ariaLabel, role)
 import Libs.Maybe as M
 import Libs.Models exposing (HtmlId)
@@ -39,7 +39,7 @@ viewAlert =
 viewSettings : HtmlId -> FindPathSettings -> Html Msg
 viewSettings idPrefix settings =
     div []
-        [ a (bsToggleCollapseLink (idPrefix ++ "-settings")) [ text "Search settings" ]
+        [ button ([ class "link a" ] ++ bsToggleCollapse (idPrefix ++ "-settings")) [ text "Search settings" ]
         , div [ class "collapse", id (idPrefix ++ "-settings") ]
             [ div []
                 [ text

@@ -293,6 +293,15 @@ button.link {
     background: transparent;
 }
 
+button.link.a {
+    color: #0d6efd;
+    text-decoration: underline;
+}
+
+button.link.a:hover {
+    color: #0a58ca;
+}
+
 #toast-container {
     z-index: calc(var(--modal-z-index) + 1);
     overflow: auto;

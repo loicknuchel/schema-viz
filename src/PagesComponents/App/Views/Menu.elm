@@ -4,11 +4,11 @@ import Conf exposing (conf)
 import Dict exposing (Dict)
 import FontAwesome.Icon exposing (viewIcon)
 import FontAwesome.Solid as Icon
-import Html exposing (Html, a, button, div, h5, text)
-import Html.Attributes exposing (class, href, id, style, tabindex, title, type_)
+import Html exposing (Html, button, div, h5, text)
+import Html.Attributes exposing (class, id, style, tabindex, title, type_)
 import Html.Events exposing (onClick)
 import Libs.Bool exposing (cond)
-import Libs.Bootstrap exposing (BsColor(..), Toggle(..), bsBackdrop, bsButton, bsButtonGroup, bsDismiss, bsScroll, bsToggle)
+import Libs.Bootstrap exposing (BsColor(..), Toggle(..), bsBackdrop, bsButton, bsButtonGroup, bsDismiss, bsScroll, bsToggleCollapse)
 import Libs.Html.Attributes exposing (ariaLabel, ariaLabelledBy)
 import Libs.List as L
 import Libs.Ned as Ned
@@ -72,7 +72,7 @@ viewTableList tables layout =
                 |> List.sortBy (\( name, _ ) -> name)
                 |> List.concatMap
                     (\( groupTitle, groupedTables ) ->
-                        [ a [ class "list-group-item list-group-item-secondary", bsToggle Collapse, href ("#" ++ groupTitle ++ "-table-list") ]
+                        [ button ([ class "list-group-item list-group-item-secondary text-start" ] ++ bsToggleCollapse (groupTitle ++ "-table-list"))
                             [ text (groupTitle ++ " (" ++ plural (Nel.length groupedTables) "" "1 table" "tables" ++ ")") ]
                         , div [ class "collapse show", id (groupTitle ++ "-table-list") ]
                             (groupedTables

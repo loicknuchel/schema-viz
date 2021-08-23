@@ -8,7 +8,7 @@ import FontAwesome.Solid as Icon
 import Html exposing (Html, a, br, button, div, h5, label, li, p, small, span, text, ul)
 import Html.Attributes exposing (class, for, href, id, style, target, title, type_)
 import Html.Events exposing (onClick)
-import Libs.Bootstrap exposing (BsColor(..), Toggle(..), bsButton, bsModal, bsToggle, bsToggleCollapseLink)
+import Libs.Bootstrap exposing (BsColor(..), Toggle(..), bsButton, bsModal, bsToggle, bsToggleCollapse)
 import Libs.Html exposing (bText, codeText, divIf)
 import Libs.Html.Attributes exposing (ariaExpanded, ariaLabelledBy, role)
 import Libs.String as S
@@ -105,7 +105,7 @@ viewSampleSchemas =
 
 viewGetSchemaInstructions : List (Html msg)
 viewGetSchemaInstructions =
-    [ div [] [ a ([ class "text-muted" ] ++ bsToggleCollapseLink "get-schema-instructions") [ viewIcon Icon.angleRight, text " How to get my db schema ?" ] ]
+    [ div [] [ button ([ class "link a text-muted" ] ++ bsToggleCollapse "get-schema-instructions") [ viewIcon Icon.angleRight, text " How to get my db schema ?" ] ]
     , div [ class "collapse", id "get-schema-instructions" ]
         [ div [ class "card card-body" ]
             [ p [ class "card-text" ]
@@ -113,7 +113,7 @@ viewGetSchemaInstructions =
                 , bText "SQL schema"
                 , text " is a SQL file with all the needed instructions to create your database, so it contains your database structure. Here are some ways to get it:"
                 , ul []
-                    [ li [] [ bText "Export it", text " from your database: connect to your database using your favorite client and follow the instructions to extract the schema (ex: ", a [ href "https://stackoverflow.com/a/54504510/15051232" ] [ text "DBeaver" ], text ")" ]
+                    [ li [] [ bText "Export it", text " from your database: connect to your database using your favorite client and follow the instructions to extract the schema (ex: ", a [ href "https://stackoverflow.com/a/54504510/15051232", target "_blank" ] [ text "DBeaver" ], text ")" ]
                     , li [] [ bText "Find it", text " in your project: some frameworks like Rails store the schema in your project, so you may have it (ex: with Rails it's ", codeText "db/structure.sql", text " if you use the SQL version)" ]
                     ]
                 , text "If you have no idea on what I'm talking about just before, ask to the developers working on the project or your database administrator 😇"
@@ -125,7 +125,7 @@ viewGetSchemaInstructions =
 
 viewDataPrivacyExplanation : List (Html msg)
 viewDataPrivacyExplanation =
-    [ div [] [ a ([ class "text-muted" ] ++ bsToggleCollapseLink "data-privacy") [ viewIcon Icon.angleRight, text " What about data privacy ?" ] ]
+    [ div [] [ button ([ class "link a text-muted" ] ++ bsToggleCollapse "data-privacy") [ viewIcon Icon.angleRight, text " What about data privacy ?" ] ]
     , div [ class "collapse", id "data-privacy" ]
         [ div [ class "card card-body" ]
             [ p [ class "card-text" ] [ text "Your application schema may be a sensitive information, but no worries with Schema Viz, everything stay on your machine. In fact, there is even no server at all!" ]

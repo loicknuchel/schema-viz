@@ -1,4 +1,4 @@
-module Libs.Bootstrap exposing (BsColor(..), Toggle(..), bsBackdrop, bsButton, bsButtonGroup, bsDismiss, bsDropdown, bsKeyboard, bsModal, bsScroll, bsToggle, bsToggleCollapse, bsToggleCollapseLink, bsToggleDropdown, bsToggleModal, bsToggleOffcanvas)
+module Libs.Bootstrap exposing (BsColor(..), Toggle(..), bsBackdrop, bsButton, bsButtonGroup, bsDismiss, bsDropdown, bsKeyboard, bsModal, bsScroll, bsToggle, bsToggleCollapse, bsToggleDropdown, bsToggleModal, bsToggleOffcanvas)
 
 import Html exposing (Attribute, Html, button, div, h5, text)
 import Html.Attributes exposing (attribute, class, href, id, tabindex, type_)

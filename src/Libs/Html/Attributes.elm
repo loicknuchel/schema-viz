@@ -1,4 +1,4 @@
-module Libs.Html.Attributes exposing (ariaControls, ariaExpanded, ariaHidden, ariaLabel, ariaLabelledBy, role)
+module Libs.Html.Attributes exposing (ariaControls, ariaDescribedBy, ariaExpanded, ariaHidden, ariaLabel, ariaLabelledBy, role)
 
 import Html exposing (Attribute)
 import Html.Attributes exposing (attribute)
@@ -34,3 +34,8 @@ ariaLabel text =
 ariaLabelledBy : HtmlId -> Attribute msg
 ariaLabelledBy targetId =
     attribute "aria-labelledby" targetId
+
+
+ariaDescribedBy : HtmlId -> Attribute msg
+ariaDescribedBy targetId =
+    attribute "aria-describedby" targetId

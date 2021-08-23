@@ -1,7 +1,8 @@
-module Libs.Json.Decode exposing (dict, map9, nel, tuple)
+module Libs.Json.Decode exposing (defaultField, defaultFieldDeep, dict, map9, matchOn, maybeField, maybeWithDefault, ned, nel, tuple)
 
 import Dict exposing (Dict)
 import Json.Decode as Decode exposing (Decoder)
+import Libs.Ned as Ned exposing (Ned)
 import Libs.Nel as Nel exposing (Nel)
 
 
@@ -20,6 +21,36 @@ dict buildKey decoder =
 nel : Decode.Decoder a -> Decode.Decoder (Nel a)
 nel decoder =
     Decode.list decoder |> Decode.andThen (\l -> l |> Nel.fromList |> Maybe.map Decode.succeed |> Maybe.withDefault (Decode.fail "Non empty list can't be empty"))
+
+
+ned : (String -> comparable) -> Decode.Decoder a -> Decode.Decoder (Ned comparable a)
+ned buildKey decoder =
+    dict buildKey decoder |> Decode.andThen (\d -> d |> Ned.fromDict |> Maybe.map Decode.succeed |> Maybe.withDefault (Decode.fail "Non empty dict can't be empty"))
+
+
+maybeField : String -> Decoder a -> Decoder (Maybe a)
+maybeField field decoder =
+    Decode.maybe (Decode.field field decoder)
+
+
+maybeWithDefault : (a -> Decode.Decoder a) -> a -> Decode.Decoder a
+maybeWithDefault decoder a =
+    Decode.maybe (decoder a) |> Decode.map (Maybe.withDefault a)
+
+
+defaultField : String -> Decoder a -> a -> Decoder a
+defaultField name decoder default =
+    maybeWithDefault (\_ -> Decode.field name decoder) default
+
+
+defaultFieldDeep : String -> (a -> Decoder a) -> a -> Decoder a
+defaultFieldDeep name decoder default =
+    maybeWithDefault (\_ -> Decode.field name (decoder default)) default
+
+
+matchOn : String -> (String -> Decoder a) -> Decoder a
+matchOn field decode =
+    Decode.field field Decode.string |> Decode.andThen decode
 
 
 map9 : (a -> b -> c -> d -> e -> f -> g -> h -> i -> value) -> Decode.Decoder a -> Decode.Decoder b -> Decode.Decoder c -> Decode.Decoder d -> Decode.Decoder e -> Decode.Decoder f -> Decode.Decoder g -> Decode.Decoder h -> Decode.Decoder i -> Decode.Decoder value

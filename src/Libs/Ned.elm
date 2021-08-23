@@ -1,4 +1,4 @@
-module Libs.Ned exposing (Ned, build, buildMap, fromNel, fromNelMap, get, singleton, singletonMap, size, values)
+module Libs.Ned exposing (Ned, build, buildMap, fromDict, fromList, fromNel, fromNelMap, get, singleton, singletonMap, size, toDict, values)
 
 import Dict exposing (Dict)
 import Libs.Nel as Nel exposing (Nel)
@@ -21,14 +21,14 @@ get key ned =
         ned.tail |> Dict.get key
 
 
-values : Ned k a -> Nel a
-values ned =
-    Nel (ned.head |> Tuple.second) (ned.tail |> Dict.values)
-
-
 size : Ned k a -> Int
 size ned =
     1 + Dict.size ned.tail
+
+
+values : Ned k a -> Nel a
+values ned =
+    Nel (ned.head |> Tuple.second) (ned.tail |> Dict.values)
 
 
 singleton : ( comparable, a ) -> Ned comparable a
@@ -36,14 +36,29 @@ singleton head =
     Ned head Dict.empty
 
 
+singletonMap : (a -> comparable) -> a -> Ned comparable a
+singletonMap getKey item =
+    singleton ( getKey item, item )
+
+
 build : ( comparable, a ) -> List ( comparable, a ) -> Ned comparable a
 build head tail =
-    Ned head (tail |> Dict.fromList)
+    Ned head (tail |> Dict.fromList |> Dict.remove (Tuple.first head))
+
+
+buildMap : (a -> comparable) -> a -> List a -> Ned comparable a
+buildMap getKey head tail =
+    build ( getKey head, head ) (List.map (\item -> ( getKey item, item )) tail)
 
 
 fromNel : Nel ( comparable, a ) -> Ned comparable a
 fromNel nel =
-    Ned nel.head (nel.tail |> Dict.fromList)
+    build nel.head nel.tail
+
+
+fromNelMap : (a -> comparable) -> Nel a -> Ned comparable a
+fromNelMap getKey nel =
+    nel |> Nel.map (\item -> ( getKey item, item )) |> fromNel
 
 
 toNel : Ned k a -> Nel ( k, a )
@@ -55,7 +70,7 @@ fromList : List ( comparable, a ) -> Maybe (Ned comparable a)
 fromList list =
     case list of
         head :: tail ->
-            Just (Ned head (tail |> Dict.fromList))
+            Just (build head tail)
 
         _ ->
             Nothing
@@ -70,7 +85,7 @@ fromDict : Dict comparable a -> Maybe (Ned comparable a)
 fromDict dict =
     case dict |> Dict.toList of
         head :: tail ->
-            Just (Ned head (tail |> Dict.fromList))
+            Just (build head tail)
 
         _ ->
             Nothing
@@ -79,18 +94,3 @@ fromDict dict =
 toDict : Ned comparable a -> Dict comparable a
 toDict ned =
     ned.tail |> Dict.insert (Tuple.first ned.head) (Tuple.second ned.head)
-
-
-singletonMap : (a -> comparable) -> a -> Ned comparable a
-singletonMap getKey item =
-    Ned ( getKey item, item ) Dict.empty
-
-
-buildMap : (a -> comparable) -> a -> List a -> Ned comparable a
-buildMap getKey head tail =
-    Ned ( getKey head, head ) (tail |> List.map (\item -> ( getKey item, item )) |> Dict.fromList)
-
-
-fromNelMap : (a -> comparable) -> Nel a -> Ned comparable a
-fromNelMap getKey nel =
-    nel |> Nel.map (\item -> ( getKey item, item )) |> fromNel

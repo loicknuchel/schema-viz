@@ -1,6 +1,10 @@
-module Libs.Models exposing (Color, FileContent, FileName, HtmlId, SizeChange, Text, ZoomDelta, ZoomLevel)
+module Libs.Models exposing (Color, FileContent, FileName, FileUrl, HtmlId, Millis, SizeChange, Text, UID, ZoomDelta, ZoomLevel)
 
 import Libs.Size exposing (Size)
+
+
+type alias UID =
+    String
 
 
 type alias HtmlId =
@@ -12,6 +16,10 @@ type alias Text =
 
 
 type alias FileName =
+    String
+
+
+type alias FileUrl =
     String
 
 
@@ -33,3 +41,7 @@ type alias SizeChange =
 
 type alias Color =
     String
+
+
+type alias Millis =
+    Int

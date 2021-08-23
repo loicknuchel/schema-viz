@@ -1,8 +1,10 @@
 window.onload = function () {
     const isDev = window.location.hostname === 'localhost'
     const isProd = window.location.hostname === 'schema-viz.netlify.app'
+    const skipAnalytics = !!JSON.parse(localStorage.getItem('skip-analytics'))
+    const analytics = initAnalytics(isProd && !skipAnalytics)
+    const errorTracking = initErrorTracking(isProd)
     const app = Elm.Main.init()
-    initAnalytics()
 
 
     /* Elm ports */
@@ -16,21 +18,22 @@ window.onload = function () {
         setTimeout(() => {
             // console.log('elm message', msg)
             switch (msg.kind) {
-                case "Click":         click(msg.id); break;
-                case "ShowModal":     showModal(msg.id); break;
-                case "HideModal":     hideModal(msg.id); break;
-                case "HideOffcanvas": hideOffcanvas(msg.id); break;
-                case "ActivateTooltipsAndPopovers": activateTooltipsAndPopovers(); break;
-                case "ShowToast":     showToast(msg.toast); break;
-                case "LoadSchemas":   loadSchemas(); break;
-                case "SaveSchema":    saveSchema(msg.schema); break;
-                case "DropSchema":    dropSchema(msg.schema); break;
-                case "ReadFile":      readFile(msg.file); break;
-                case "ObserveSizes":  observeSizes(msg.ids); break;
-                case "ListenKeys":    listenHotkeys(msg.keys); break;
-                case "TrackPage":     trackPage(msg.name); break;
-                case "TrackEvent":    trackEvent(msg.name, msg.details); break;
-                case "TrackError":    trackError(msg.name, msg.details); break;
+                case 'Click':         click(msg.id); break;
+                case 'ShowModal':     showModal(msg.id); break;
+                case 'HideModal':     hideModal(msg.id); break;
+                case 'HideOffcanvas': hideOffcanvas(msg.id); break;
+                case 'ActivateTooltipsAndPopovers': activateTooltipsAndPopovers(); break;
+                case 'ShowToast':     showToast(msg.toast); break;
+                case 'LoadProjects':  loadProjects(); break;
+                case 'SaveProject':   saveProject(msg.project); break;
+                case 'DropProject':   dropProject(msg.project); break;
+                case 'ReadFile':      readFile(msg.file); break;
+                case 'LoadFile':      loadFile(msg.url); break;
+                case 'ObserveSizes':  observeSizes(msg.ids); break;
+                case 'ListenKeys':    listenHotkeys(msg.keys); break;
+                case 'TrackPage':     analytics.then(a => a.trackPage(msg.name)); break;
+                case 'TrackEvent':    analytics.then(a => a.trackEvent(msg.name, msg.details)); break;
+                case 'TrackError':    analytics.then(a => a.trackError(msg.name, msg.details)); errorTracking.then(e => e.trackError(msg.name, msg.details)); break;
                 default: console.error('Unsupported Elm message', msg); break;
             }
         }, 100)
@@ -92,38 +95,47 @@ window.onload = function () {
         }
     }
 
-    const schemaPrefix = 'schema-'
-    function loadSchemas() {
+    const projectPrefix = 'project-'
+    function loadProjects() {
         const values = Object.keys(localStorage)
-            .filter(key => key.startsWith(schemaPrefix))
-            .map(key => [key.replace(schemaPrefix, ''), JSON.parse(localStorage.getItem(key))])
-        sendToElm({kind: "SchemasLoaded", schemas: values})
+            .filter(key => key.startsWith(projectPrefix))
+            .map(key => [key.replace(projectPrefix, ''), JSON.parse(localStorage.getItem(key))])
+        sendToElm({kind: 'ProjectsLoaded', projects: values})
     }
-    function saveSchema(schema) {
-        const key = schemaPrefix + schema.id
+    function saveProject(project) {
+        const key = projectPrefix + project.id
         // setting dates should be done in Elm but can't find how to run a Task before calling a Port
         const now = Date.now()
-        schema.info.updated = now
-        if (localStorage.getItem(key) == null) { schema.info.created = now }
+        project.updatedAt = now
+        if (localStorage.getItem(key) === null) { project.createdAt = now }
         try {
-            localStorage.setItem(key, JSON.stringify(schema))
+            localStorage.setItem(key, JSON.stringify(project))
         } catch (e) {
             if (e.code === DOMException.QUOTA_EXCEEDED_ERR) {
-                showToast({kind: 'error', message: "Can't save schema, storage quota exceeded. Use a smaller schema or clean unused ones."})
+                showToast({kind: 'error', message: "Can't save project, storage quota exceeded. Use a smaller schema or clean unused projects."})
             } else {
-                showToast({kind: 'error', message: "Can't save schema: " + e.message})
+                showToast({kind: 'error', message: "Can't save project: " + e.message})
             }
-            trackError('local-storage', {error: e.name, message: e.message})
+            const name = 'local-storage'
+            const details = {error: e.name, message: e.message}
+            analytics.then(a => a.trackError(name, details)); errorTracking.then(e => e.track(name, details));
         }
     }
-    function dropSchema(schema) {
-        localStorage.removeItem(schemaPrefix + schema.id)
+    function dropProject(project) {
+        localStorage.removeItem(projectPrefix + project.id)
     }
 
     function readFile(file) {
         const reader = new FileReader()
-        reader.onload = e => sendToElm({kind: "FileRead", now: Date.now(), file: file, content: e.target.result})
+        reader.onload = e => sendToElm({kind: 'FileRead', now: Date.now(), projectId: randomUID(), sourceId: randomUID(), file, content: e.target.result})
         reader.readAsText(file)
+    }
+
+    function loadFile(url) {
+        fetch(url)
+            .then(res => res.text())
+            .then(content => sendToElm({kind: 'FileLoaded', now: Date.now(), projectId: randomUID(), sourceId: randomUID(), url, content}))
+            .catch(err => showToast({kind: 'error', message: err}))
     }
 
     const resizeObserver = new ResizeObserver(entries => {
@@ -134,7 +146,7 @@ window.onload = function () {
                 height: entry.contentRect.height
             }
         }))
-        sendToElm({kind: "SizesChanged", sizes: sizes})
+        sendToElm({kind: 'SizesChanged', sizes: sizes})
     })
     function observeSizes(ids) {
         ids.forEach(id => resizeObserver.observe(getElementById(id)))
@@ -149,20 +161,90 @@ window.onload = function () {
                     (!hotkey.shift || e.shiftKey) &&
                     (!hotkey.alt || e.altKey) &&
                     (!hotkey.meta || e.metaKey) &&
-                    ((!hotkey.target && (!hotkey.oninput || e.target.localName !== 'input')) || (hotkey.target &&
+                    ((!hotkey.target && (hotkey.onInput || e.target.localName !== 'input')) || (hotkey.target &&
                         (!hotkey.target.id || hotkey.target.id === e.target.id) &&
                         (!hotkey.target.class || e.target.className.split(' ').includes(hotkey.target.class)) &&
                         (!hotkey.target.tag || hotkey.target.tag === e.target.localName)))) {
                     if (hotkey.preventDefault) {
                         e.preventDefault()
                     }
-                    sendToElm({kind: "HotkeyUsed", id: id})
+                    sendToElm({kind: 'HotkeyUsed', id: id})
                 }
             })
         })
     })
     function listenHotkeys(keys) {
         Object.assign(hotkeys, keys)
+    }
+
+
+    /* Tracking */
+
+    function initAnalytics(shouldTrack) {
+        if (shouldTrack) {
+            // see https://getinsights.io/projects/TelOpGhJG0jZQtCk
+            // initial: https://getinsights.io/js/insights.js
+            return loadScript('/assets/insights.js').then(() => {
+                insights.init('TelOpGhJG0jZQtCk')
+                insights.trackPages({hash: true, search: true})
+                return {
+                    trackPage: name => {
+                        insights.track({
+                            id: 'page-view',
+                            parameters: {
+                                name,
+                                path: insights.parameters.path().value,
+                                locale: insights.parameters.locale().value,
+                                screenType: insights.parameters.screenType().value,
+                                referrer: insights.parameters.referrer().value,
+                            }
+                        })
+                    },
+                    trackEvent: (name, details) => {
+                        insights.track({
+                            id: name,
+                            parameters: {
+                                ...details,
+                                locale: insights.parameters.locale().value,
+                                screenType: insights.parameters.screenType().value,
+                                referrer: insights.parameters.referrer().value,
+                            }
+                        })
+                    },
+                    trackError: (name, details) => {
+                        insights.track({
+                            id: name + '-error',
+                            parameters: {
+                                ...details,
+                                locale: insights.parameters.locale().value,
+                                screenType: insights.parameters.screenType().value,
+                                referrer: insights.parameters.referrer().value,
+                            }
+                        })
+                    }
+                }
+            })
+        } else {
+            return Promise.resolve({
+                trackPage: name => console.log('analytics.page', name),
+                trackEvent: (name, details) => console.log('analytics.event', name, details),
+                trackError: (name, details) => console.log('analytics.error', name, details)
+            })
+        }
+    }
+
+    function initErrorTracking(shouldTrack) {
+        if (shouldTrack) {
+            // see https://sentry.io
+            // initial: https://js.sentry-cdn.com/268b122ecafb4f20b6316b87246e509c.min.js
+            return loadScript('/assets/sentry-268b122ecafb4f20b6316b87246e509c.min.js').then(() => ({
+                trackError: (name, details) => Sentry.captureException(new Error(JSON.stringify({name, ...details})))
+            }))
+        } else {
+            return Promise.resolve({
+                trackError: (name, details) => console.log('error.track', name, details)
+            })
+        }
     }
 
 
@@ -255,61 +337,18 @@ window.onload = function () {
         return elem ? [elem] : []
     }
 
-    function initAnalytics() {
-        if (isProd) {
-            // see https://getinsights.io/projects/TelOpGhJG0jZQtCk
-            insights.init('TelOpGhJG0jZQtCk')
-            insights.trackPages({hash: true, search: true})
-        }
+    function randomUID() {
+        return uuidv4() // TODO replace with https://github.com/ai/nanoid
     }
 
-    function trackPage(name) {
-        if (isProd) {
-            insights.track({
-                id: 'page-view',
-                parameters: {
-                    name,
-                    path: insights.parameters.path().value,
-                    locale: insights.parameters.locale().value,
-                    screenType: insights.parameters.screenType().value,
-                    referrer: insights.parameters.referrer().value,
-                }
-            })
-        } else {
-            console.log("trackPage", name)
-        }
-    }
-
-    function trackEvent(name, details) {
-        if (isProd) {
-            insights.track({
-                id: name,
-                parameters: {
-                    ...details,
-                    locale: insights.parameters.locale().value,
-                    screenType: insights.parameters.screenType().value,
-                    referrer: insights.parameters.referrer().value,
-                }
-            })
-        } else {
-            console.log("trackEvent", name, details)
-        }
-    }
-
-    function trackError(name, details) {
-        if (isProd) {
-            insights.track({
-                id: name + '-error',
-                parameters: {
-                    ...details,
-                    locale: insights.parameters.locale().value,
-                    screenType: insights.parameters.screenType().value,
-                    referrer: insights.parameters.referrer().value,
-                }
-            })
-            Sentry.captureException(new Error(JSON.stringify({name, ...details})))
-        } else {
-            console.log("trackError", name, details)
-        }
+    function loadScript(url) {
+        return new Promise((resolve, reject) => {
+            const script = document.createElement('script')
+            script.src = url
+            script.type='text/javascript'
+            script.addEventListener('load', resolve)
+            script.addEventListener('error', reject)
+            document.getElementsByTagName('head')[0].appendChild(script)
+        })
     }
 }

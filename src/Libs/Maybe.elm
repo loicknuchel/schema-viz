@@ -1,4 +1,4 @@
-module Libs.Maybe exposing (andThenZip, contains, exist, filter, isJust, orElse, resultSeq, toList, zip)
+module Libs.Maybe exposing (andThenZip, contains, exist, filter, isJust, orElse, resultSeq, toList, zip, zip3)
 
 import Libs.Bool as B
 
@@ -41,6 +41,11 @@ isJust maybe =
 zip : Maybe a -> Maybe b -> Maybe ( a, b )
 zip maybeA maybeB =
     Maybe.map2 (\a b -> ( a, b )) maybeA maybeB
+
+
+zip3 : Maybe a -> Maybe b -> Maybe c -> Maybe ( a, b, c )
+zip3 maybeA maybeB maybeC =
+    Maybe.map3 (\a b c -> ( a, b, c )) maybeA maybeB maybeC
 
 
 andThenZip : (a -> Maybe b) -> Maybe a -> Maybe ( a, b )

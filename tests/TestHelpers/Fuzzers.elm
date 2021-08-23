@@ -5,95 +5,11 @@ import Dict exposing (Dict)
 import Fuzz exposing (Fuzzer)
 import Libs.Fuzz as F
 import Libs.Models exposing (Color, ZoomLevel)
-import Libs.Ned as Ned
+import Libs.Ned as Ned exposing (Ned)
 import Libs.Nel exposing (Nel)
 import Libs.Position exposing (Position)
 import Libs.Size exposing (Size)
-import Models.Schema exposing (CanvasProps, Column, ColumnComment(..), ColumnIndex(..), ColumnName, ColumnRef, ColumnType(..), ColumnValue(..), FileInfo, ForeignKey, ForeignKeyName(..), Index, IndexName(..), Layout, LayoutName, PrimaryKey, PrimaryKeyName(..), Schema, SchemaId, SchemaInfo, SchemaName, Source, SourceLine, Table, TableComment(..), TableId, TableName, TableProps, Unique, UniqueName(..), buildSchema)
 import Time
-
-
-schema : Fuzzer Schema
-schema =
-    F.map7 buildSchema (listSmall schemaId) schemaId schemaInfo (listSmall table) layout (Fuzz.maybe layoutName) (dictSmall layoutName layout)
-
-
-schemaInfo : Fuzzer SchemaInfo
-schemaInfo =
-    Fuzz.map3 SchemaInfo posix posix (Fuzz.maybe fileInfo)
-
-
-fileInfo : Fuzzer FileInfo
-fileInfo =
-    Fuzz.map2 FileInfo path posix
-
-
-table : Fuzzer Table
-table =
-    F.map8 (\s t c p u i co so -> Table ( s, t ) s t c p u i co so)
-        schemaName
-        tableName
-        (nelSmall column |> Fuzz.map (Ned.fromNelMap .name))
-        (Fuzz.maybe primaryKey)
-        (listSmall unique)
-        (listSmall index)
-        (Fuzz.maybe tableComment)
-        (listSmall source)
-
-
-column : Fuzzer Column
-column =
-    F.map7 Column columnIndex columnName columnType Fuzz.bool (Fuzz.maybe columnValue) (Fuzz.maybe foreignKey) (Fuzz.maybe columnComment)
-
-
-primaryKey : Fuzzer PrimaryKey
-primaryKey =
-    Fuzz.map2 PrimaryKey primaryKeyName (nelSmall columnName)
-
-
-foreignKey : Fuzzer ForeignKey
-foreignKey =
-    Fuzz.map2 (\f r -> ForeignKey f r) foreignKeyName columnRef
-
-
-columnRef : Fuzzer ColumnRef
-columnRef =
-    Fuzz.map2 (\t c -> ColumnRef t c) tableId columnName
-
-
-unique : Fuzzer Unique
-unique =
-    Fuzz.map3 Unique uniqueName (nelSmall columnName) text
-
-
-index : Fuzzer Index
-index =
-    Fuzz.map3 Index indexName (nelSmall columnName) text
-
-
-source : Fuzzer Source
-source =
-    Fuzz.map2 Source path (F.nel sourceLine)
-
-
-sourceLine : Fuzzer SourceLine
-sourceLine =
-    Fuzz.map2 SourceLine (Fuzz.intRange 0 50000) text
-
-
-layout : Fuzzer Layout
-layout =
-    Fuzz.map3 Layout canvasProps (dictSmall tableId tableProps) (dictSmall tableId tableProps)
-
-
-canvasProps : Fuzzer CanvasProps
-canvasProps =
-    Fuzz.map2 CanvasProps position zoomLevel
-
-
-tableProps : Fuzzer TableProps
-tableProps =
-    Fuzz.map4 TableProps position color Fuzz.bool (listSmall columnName)
 
 
 position : Fuzzer Position
@@ -110,81 +26,6 @@ size =
         (Fuzz.floatRange 0 10000)
 
 
-schemaId : Fuzzer SchemaId
-schemaId =
-    identifier
-
-
-layoutName : Fuzzer LayoutName
-layoutName =
-    identifier
-
-
-tableId : Fuzzer TableId
-tableId =
-    Fuzz.tuple ( schemaName, tableName )
-
-
-schemaName : Fuzzer SchemaName
-schemaName =
-    identifier
-
-
-tableName : Fuzzer TableName
-tableName =
-    identifier
-
-
-columnName : Fuzzer ColumnName
-columnName =
-    identifier
-
-
-columnIndex : Fuzzer ColumnIndex
-columnIndex =
-    Fuzz.intRange 0 50 |> Fuzz.map ColumnIndex
-
-
-columnType : Fuzzer ColumnType
-columnType =
-    Fuzz.oneOf ([ "int", "serial", "varchar", "timestamp", "bigint", "text", "boolean", "character varying(10)" ] |> List.map Fuzz.constant) |> Fuzz.map ColumnType
-
-
-columnValue : Fuzzer ColumnValue
-columnValue =
-    Fuzz.oneOf ([ "1", "false", "''::public.hstore", "default value: 'fr'::character varying" ] |> List.map Fuzz.constant) |> Fuzz.map ColumnValue
-
-
-primaryKeyName : Fuzzer PrimaryKeyName
-primaryKeyName =
-    Fuzz.map PrimaryKeyName identifier
-
-
-foreignKeyName : Fuzzer ForeignKeyName
-foreignKeyName =
-    Fuzz.map ForeignKeyName identifier
-
-
-uniqueName : Fuzzer UniqueName
-uniqueName =
-    Fuzz.map UniqueName identifier
-
-
-indexName : Fuzzer IndexName
-indexName =
-    Fuzz.map IndexName identifier
-
-
-tableComment : Fuzzer TableComment
-tableComment =
-    Fuzz.map TableComment text
-
-
-columnComment : Fuzzer ColumnComment
-columnComment =
-    Fuzz.map ColumnComment text
-
-
 zoomLevel : Fuzzer ZoomLevel
 zoomLevel =
     Fuzz.floatRange conf.zoom.min conf.zoom.max
@@ -199,11 +40,6 @@ color =
 -- Generic fuzzers
 
 
-dictSmall : Fuzzer comparable -> Fuzzer v -> Fuzzer (Dict comparable v)
-dictSmall kFuzz vFuzz =
-    Fuzz.tuple ( kFuzz, vFuzz ) |> listSmall |> Fuzz.map Dict.fromList
-
-
 listSmall : Fuzzer a -> Fuzzer (List a)
 listSmall fuzz =
     -- TODO: should find a way to randomize list size but keep it small efficiently
@@ -214,6 +50,16 @@ listSmall fuzz =
 nelSmall : Fuzzer a -> Fuzzer (Nel a)
 nelSmall fuzz =
     F.nelN 3 fuzz
+
+
+dictSmall : Fuzzer comparable -> Fuzzer a -> Fuzzer (Dict comparable a)
+dictSmall fuzzK fuzzA =
+    Fuzz.tuple ( fuzzK, fuzzA ) |> listSmall |> Fuzz.map Dict.fromList
+
+
+nedSmall : Fuzzer comparable -> Fuzzer a -> Fuzzer (Ned comparable a)
+nedSmall fuzzK fuzzA =
+    Fuzz.tuple ( fuzzK, fuzzA ) |> nelSmall |> Fuzz.map Ned.fromNel
 
 
 stringSmall : Fuzzer String
@@ -242,6 +88,16 @@ text =
 word : Fuzzer String
 word =
     F.letter |> Fuzz.list |> Fuzz.map String.fromList
+
+
+intPos : Fuzzer Int
+intPos =
+    Fuzz.intRange 0 100000
+
+
+intPosSmall : Fuzzer Int
+intPosSmall =
+    Fuzz.intRange 0 100
 
 
 posix : Fuzzer Time.Posix

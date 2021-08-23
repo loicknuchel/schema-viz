@@ -1,4 +1,4 @@
-module Libs.String exposing (hashCode, plural, uniqueId, wordSplit)
+module Libs.String exposing (hashCode, plural, unique, wordSplit)
 
 import Bitwise
 import Libs.Regex as R
@@ -19,12 +19,12 @@ updateHash char code =
     Bitwise.shiftLeftBy code (5 + code + Char.toCode char)
 
 
-uniqueId : List String -> String -> String
-uniqueId takenIds id =
+unique : List String -> String -> String
+unique takenIds id =
     if takenIds |> List.any (\taken -> taken == id) then
         case id |> R.matches "^(.*?)([0-9]+)?(\\.[a-z]+)?$" of
             (Just prefix) :: num :: extension :: [] ->
-                uniqueId
+                unique
                     takenIds
                     (prefix
                         ++ (num |> Maybe.andThen String.toInt |> Maybe.map (\n -> n + 1) |> Maybe.withDefault 2 |> String.fromInt)

@@ -3,8 +3,6 @@
     --modal-backdrop-z-index: 1040;
     --offcanvas-z-index: 1050;
     --modal-z-index: 1060;
-    --table-z-index: 10;
-    --relation-z-index: 9;
     --loading-z-index: 10000; /* should be on top of everything */
     --bg-light: #F1F6F8;
     /* shade 500 from https://tailwindcss.com/docs/customizing-colors#color-palette-reference */
@@ -85,7 +83,6 @@
     border-radius: .5rem;
     box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
     cursor: pointer;
-    z-index: var(--table-z-index);
 }
 
 .erd-table .header { border-top-color: var(--tw-blueGray); }
@@ -253,10 +250,6 @@
     margin-top: .25rem;
 }
 
-.erd-relation {
-    z-index: var(--relation-z-index);
-}
-
 .commands {
     position: absolute;
     bottom: 1em;
@@ -298,6 +291,15 @@ button.link {
     border: none;
     padding: 0;
     background: transparent;
+}
+
+button.link.a {
+    color: #0d6efd;
+    text-decoration: underline;
+}
+
+button.link.a:hover {
+    color: #0a58ca;
 }
 
 #toast-container {

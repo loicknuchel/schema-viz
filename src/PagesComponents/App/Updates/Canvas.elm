@@ -7,7 +7,7 @@ import Libs.Html.Events exposing (WheelEvent)
 import Libs.Models exposing (HtmlId, ZoomLevel)
 import Libs.Position as Position exposing (Position)
 import Libs.Size as Size exposing (Size)
-import Models.Schema exposing (CanvasProps, Layout, tablesArea, viewportArea, viewportSize)
+import Models.Project exposing (CanvasProps, Layout, tablesArea, viewportArea, viewportSize)
 import PagesComponents.App.Updates.Helpers exposing (setCanvas, setTables)
 
 
@@ -48,7 +48,7 @@ fitCanvas sizes layout =
                 in
                 layout
                     |> setCanvas (\c -> { c | position = Position 0 0, zoom = newZoom })
-                    |> setTables (\tables -> tables |> Dict.map (\_ t -> { t | position = t.position |> Position.add centerOffset }))
+                    |> setTables (\tables -> tables |> List.map (\t -> { t | position = t.position |> Position.add centerOffset }))
             )
         |> Maybe.withDefault layout
 

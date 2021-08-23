@@ -3,7 +3,7 @@ module PagesComponents.App.Commands.InitializeTable exposing (initializeTable)
 import Libs.Area exposing (Area)
 import Libs.Position exposing (Position)
 import Libs.Size exposing (Size)
-import Models.Schema exposing (TableId)
+import Models.Project exposing (TableId)
 import PagesComponents.App.Models exposing (Msg(..))
 import Random
 

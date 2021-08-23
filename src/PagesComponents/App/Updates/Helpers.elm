@@ -1,8 +1,8 @@
-module PagesComponents.App.Updates.Helpers exposing (decodeErrorToHtml, setCanvas, setDictTable, setLayout, setLayouts, setPosition, setSchema, setSchemaWithCmd, setSwitch, setTables, setTime)
+module PagesComponents.App.Updates.Helpers exposing (decodeErrorToHtml, setCanvas, setLayout, setLayouts, setListTable, setPosition, setProject, setProjectWithCmd, setSchema, setSchemaWithCmd, setSettings, setSwitch, setTables, setTime)
 
-import Dict exposing (Dict)
 import Draggable
 import Json.Decode as Decode
+import Libs.Bool as B
 import Libs.Models exposing (ZoomLevel)
 import Libs.Position exposing (Position)
 
@@ -17,14 +17,24 @@ setSwitch transform item =
     { item | switch = item.switch |> transform }
 
 
-setSchema : (s -> s) -> { item | schema : Maybe s } -> { item | schema : Maybe s }
+setProject : (p -> p) -> { item | project : Maybe p } -> { item | project : Maybe p }
+setProject transform item =
+    { item | project = item.project |> Maybe.map transform }
+
+
+setProjectWithCmd : (p -> ( p, Cmd msg )) -> { item | project : Maybe p } -> ( { item | project : Maybe p }, Cmd msg )
+setProjectWithCmd transform item =
+    item.project |> Maybe.map (\p -> p |> transform |> Tuple.mapFirst (\project -> { item | project = Just project })) |> Maybe.withDefault ( item, Cmd.none )
+
+
+setSchema : (s -> s) -> { item | schema : s } -> { item | schema : s }
 setSchema transform item =
-    { item | schema = item.schema |> Maybe.map transform }
+    { item | schema = transform item.schema }
 
 
-setSchemaWithCmd : (s -> ( s, Cmd msg )) -> { item | schema : Maybe s } -> ( { item | schema : Maybe s }, Cmd msg )
+setSchemaWithCmd : (s -> ( s, Cmd msg )) -> { item | schema : s } -> ( { item | schema : s }, Cmd msg )
 setSchemaWithCmd transform item =
-    item.schema |> Maybe.map (\s -> s |> transform |> Tuple.mapFirst (\schema -> { item | schema = Just schema })) |> Maybe.withDefault ( item, Cmd.none )
+    transform item.schema |> Tuple.mapFirst (\s -> { item | schema = s })
 
 
 setLayout : (l -> l) -> { item | layout : l } -> { item | layout : l }
@@ -52,9 +62,14 @@ setPosition ( dx, dy ) zoom item =
     { item | position = Position (item.position.left + (dx / zoom)) (item.position.top + (dy / zoom)) }
 
 
-setDictTable : comparable -> (table -> table) -> { item | tables : Dict comparable table } -> { item | tables : Dict comparable table }
-setDictTable id transform item =
-    { item | tables = item.tables |> Dict.update id (Maybe.map transform) }
+setListTable : (table -> comparable) -> comparable -> (table -> table) -> { item | tables : List table } -> { item | tables : List table }
+setListTable get id transform item =
+    { item | tables = item.tables |> List.map (\t -> B.cond (get t == id) (transform t) t) }
+
+
+setSettings : (s -> s) -> { item | settings : s } -> { item | settings : s }
+setSettings transform item =
+    { item | settings = item.settings |> transform }
 
 
 decodeErrorToHtml : Decode.Error -> String

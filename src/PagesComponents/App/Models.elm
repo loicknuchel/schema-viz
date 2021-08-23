@@ -4,13 +4,12 @@ import Dict exposing (Dict)
 import Draggable
 import FileValue exposing (File)
 import Html exposing (Html, text)
-import Http
 import Libs.Html.Events exposing (WheelEvent)
-import Libs.Models exposing (HtmlId, Text, ZoomDelta)
+import Libs.Models exposing (FileUrl, HtmlId, ZoomDelta)
 import Libs.Position exposing (Position)
 import Libs.Size exposing (Size)
 import Libs.Task as T
-import Models.Schema exposing (ColumnRef, LayoutName, Schema, TableId)
+import Models.Project exposing (ColumnRef, FindPath, FindPathSettings, LayoutName, Project, Relation, Table, TableId)
 import Ports exposing (JsMsg)
 import Time
 
@@ -18,10 +17,11 @@ import Time
 type alias Model =
     { time : TimeInfo
     , switch : Switch
-    , storedSchemas : List Schema
-    , schema : Maybe Schema
+    , storedProjects : List Project
+    , project : Maybe Project
     , search : Search
     , newLayout : Maybe LayoutName
+    , findPath : Maybe FindPath
     , confirm : Confirm
     , sizes : Dict HtmlId Size
     , dragId : Maybe DragId
@@ -33,20 +33,21 @@ type alias Model =
 type Msg
     = TimeChanged Time.Posix
     | ZoneChanged Time.Zone
-    | ChangeSchema
+    | ChangeProject
     | FileDragOver File (List File)
     | FileDragLeave
     | FileDropped File (List File)
     | FileSelected File
-    | LoadSampleData String
-    | GotSampleData Time.Posix String String (Result Http.Error Text)
-    | DeleteSchema Schema
-    | UseSchema Schema
+    | LoadFile FileUrl
+    | DeleteProject Project
+    | UseProject Project
     | ChangedSearch Search
     | SelectTable TableId
     | HideTable TableId
     | ShowTable TableId
+    | TableOrder TableId Int
     | ShowTables (List TableId)
+    | HideTables (List TableId)
     | InitializedTable TableId Position
     | HideAllTables
     | ShowAllTables
@@ -64,6 +65,12 @@ type Msg
     | StartDragging DragId
     | StopDragging
     | OnDragBy Draggable.Delta
+    | FindPath (Maybe TableId) (Maybe TableId)
+    | FindPathFrom (Maybe TableId)
+    | FindPathTo (Maybe TableId)
+    | FindPathSearch
+    | FindPathCompute (Dict TableId Table) (List Relation) TableId TableId FindPathSettings
+    | UpdateFindPathSettings FindPathSettings
     | NewLayout LayoutName
     | CreateLayout LayoutName
     | LoadLayout LayoutName

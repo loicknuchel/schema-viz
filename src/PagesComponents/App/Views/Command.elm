@@ -8,7 +8,7 @@ import Html.Attributes exposing (class, id, title, type_)
 import Html.Events exposing (onClick)
 import Libs.Bootstrap exposing (Toggle(..), bsToggle)
 import Libs.Html.Attributes exposing (ariaLabel, ariaLabelledBy, role)
-import Models.Schema exposing (CanvasProps)
+import Models.Project exposing (CanvasProps)
 import PagesComponents.App.Models exposing (Msg(..))
 
 

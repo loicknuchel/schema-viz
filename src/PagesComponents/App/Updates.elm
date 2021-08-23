@@ -1,4 +1,4 @@
-module PagesComponents.App.Updates exposing (dragConfig, dragItem, removeElement, updateSizes)
+module PagesComponents.App.Updates exposing (dragConfig, dragItem, moveTable, removeElement, updateSizes)
 
 import Conf exposing (conf)
 import Dict
@@ -12,16 +12,16 @@ import Libs.Models exposing (SizeChange)
 import Libs.Position exposing (Position)
 import Libs.Size exposing (Size)
 import Libs.Task exposing (send)
-import Models.Schema exposing (CanvasProps, TableId, htmlIdAsTableId)
+import Models.Project exposing (CanvasProps, Layout, TableId, TableProps, htmlIdAsTableId)
 import PagesComponents.App.Commands.InitializeTable exposing (initializeTable)
-import PagesComponents.App.Models exposing (DragId, Model, Msg(..))
-import PagesComponents.App.Updates.Helpers exposing (setCanvas, setDictTable, setLayout, setPosition, setSchema)
+import PagesComponents.App.Models exposing (DragId, Hover, Model, Msg(..))
+import PagesComponents.App.Updates.Helpers exposing (setCanvas, setLayout, setListTable, setPosition, setProject, setSchema)
 import Ports exposing (toastError, toastInfo)
 
 
 updateSizes : List SizeChange -> Model -> ( Model, Cmd Msg )
 updateSizes sizeChanges model =
-    ( sizeChanges |> List.foldr updateSize model, Cmd.batch (sizeChanges |> List.filterMap (initializeTableOnFirstSize model)) )
+    ( sizeChanges |> List.foldl updateSize model, Cmd.batch (sizeChanges |> List.filterMap (initializeTableOnFirstSize model)) )
 
 
 updateSize : SizeChange -> Model -> Model
@@ -31,15 +31,15 @@ updateSize change model =
 
 initializeTableOnFirstSize : Model -> SizeChange -> Maybe (Cmd Msg)
 initializeTableOnFirstSize model change =
-    model.schema
+    model.project
         |> Maybe.andThen
-            (\s ->
+            (\p ->
                 Maybe.map3 (\t props canvasSize -> ( t, props, canvasSize ))
-                    (s.tables |> Dict.get (htmlIdAsTableId change.id))
-                    (s.layout.tables |> Dict.get (htmlIdAsTableId change.id))
+                    (p.schema.tables |> Dict.get (htmlIdAsTableId change.id))
+                    (p.schema.layout.tables |> L.findBy .id (htmlIdAsTableId change.id))
                     (model.sizes |> Dict.get conf.ids.erd)
                     |> M.filter (\( _, props, _ ) -> props.position == Position 0 0 && not (model.sizes |> Dict.member change.id))
-                    |> Maybe.map (\( t, _, canvasSize ) -> t.id |> initializeTable change.size (getArea canvasSize s.layout.canvas))
+                    |> Maybe.map (\( t, _, canvasSize ) -> t.id |> initializeTable change.size (getArea canvasSize p.schema.layout.canvas))
             )
 
 
@@ -66,31 +66,44 @@ dragItem model delta =
     case model.dragId of
         Just id ->
             if id == conf.ids.erd then
-                ( model |> setSchema (setLayout (setCanvas (setPosition delta 1))), Cmd.none )
+                ( model |> setProject (setSchema (setLayout (setCanvas (setPosition delta 1)))), Cmd.none )
 
             else
-                ( model |> setSchema (setLayout (\l -> l |> setDictTable (htmlIdAsTableId id) (setPosition delta l.canvas.zoom))), Cmd.none )
+                ( model |> setProject (setSchema (setLayout (\l -> l |> setListTable .id (htmlIdAsTableId id) (setPosition delta l.canvas.zoom)))), Cmd.none )
 
         Nothing ->
             ( model, toastError "Can't dragItem when no drag id" )
 
 
-removeElement : Model -> Cmd Msg
-removeElement model =
-    model.schema
-        |> Maybe.map
-            (\s ->
-                let
-                    selectedTables : List TableId
-                    selectedTables =
-                        s.layout.tables |> Dict.toList |> List.filter (\( _, t ) -> t.selected) |> List.map (\( id, _ ) -> id)
-                in
-                if L.nonEmpty selectedTables then
-                    Cmd.batch (selectedTables |> List.map (\id -> send (HideTable id)))
+removeElement : Hover -> Layout -> Cmd Msg
+removeElement hover layout =
+    let
+        selectedTables : List TableId
+        selectedTables =
+            layout.tables |> List.filter (\t -> t.selected) |> List.map .id
+    in
+    if L.nonEmpty selectedTables then
+        send (HideTables selectedTables)
 
-                else
-                    (model.hover.column |> Maybe.map (\c -> send (HideColumn c)))
-                        |> M.orElse (model.hover.table |> Maybe.map (\t -> send (HideTable t)))
-                        |> Maybe.withDefault (toastInfo "Can't find an element to remove :(")
-            )
-        |> Maybe.withDefault Cmd.none
+    else
+        (hover.column |> Maybe.map (\c -> send (HideColumn c)))
+            |> M.orElse (hover.table |> Maybe.map (\t -> send (HideTable t)))
+            |> Maybe.withDefault (toastInfo "Can't find an element to remove :(")
+
+
+moveTable : Int -> Hover -> Layout -> Cmd Msg
+moveTable delta hover layout =
+    let
+        selectedTables : List ( Int, TableProps )
+        selectedTables =
+            layout.tables |> List.indexedMap (\i t -> ( i, t )) |> List.filter (\( _, t ) -> t.selected)
+    in
+    if L.nonEmpty selectedTables then
+        Cmd.batch (selectedTables |> List.map (\( i, t ) -> send (TableOrder t.id (List.length layout.tables - 1 - i + delta))))
+
+    else
+        (hover.table
+            |> Maybe.andThen (\id -> layout.tables |> L.findIndexBy .id id |> Maybe.map (\i -> ( id, i )))
+            |> Maybe.map (\( id, i ) -> send (TableOrder id (List.length layout.tables - 1 - i + delta)))
+        )
+            |> Maybe.withDefault (toastInfo "Can't find an element to move :(")

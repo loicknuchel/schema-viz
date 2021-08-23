@@ -5,7 +5,7 @@ import Html exposing (Html, button, div, input, label, text)
 import Html.Attributes exposing (autofocus, class, disabled, for, id, type_, value)
 import Html.Events exposing (onClick, onInput)
 import Libs.Bootstrap exposing (Toggle(..), bsDismiss, bsModal)
-import Models.Schema exposing (LayoutName)
+import Models.Project exposing (LayoutName)
 import PagesComponents.App.Models exposing (Msg(..))
 
 

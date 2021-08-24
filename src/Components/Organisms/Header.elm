@@ -11,66 +11,14 @@ import Tailwind.Utilities as Tw
 
 headerSlice : String -> Html msg
 headerSlice url =
-    header
-        []
-        [ div
-            [ css
-                [ Tw.relative
-                , Tw.bg_white
-                ]
-            ]
-            [ div
-                [ css
-                    [ Tw.flex
-                    , Tw.justify_between
-                    , Tw.items_center
-                    , Tw.max_w_7xl
-                    , Tw.mx_auto
-                    , Tw.px_4
-                    , Tw.py_6
-                    , Bp.lg
-                        [ Tw.px_8
-                        ]
-                    , Bp.md
-                        [ Tw.justify_start
-                        , Tw.space_x_10
-                        ]
-                    , Bp.sm
-                        [ Tw.px_6
-                        ]
-                    ]
-                ]
-                [ div
-                    [ css
-                        [ Tw.flex
-                        , Tw.justify_start
-                        , Bp.lg
-                            [ Tw.w_0
-                            , Tw.flex_1
-                            ]
-                        ]
-                    ]
-                    [ a
-                        [ href (Route.toHref Route.Home_)
-                        ]
-                        [ span
-                            [ css
-                                [ Tw.sr_only
-                                ]
-                            ]
+    header []
+        [ div [ css [ Tw.relative, Tw.bg_white ] ]
+            [ div [ css [ Tw.flex, Tw.justify_between, Tw.items_center, Tw.max_w_7xl, Tw.mx_auto, Tw.px_4, Tw.py_6, Bp.lg [ Tw.px_8 ], Bp.md [ Tw.justify_start, Tw.space_x_10 ], Bp.sm [ Tw.px_6 ] ] ]
+                [ div [ css [ Tw.flex, Tw.justify_start, Bp.lg [ Tw.w_0, Tw.flex_1 ] ] ]
+                    [ a [ href (Route.toHref Route.Home_) ]
+                        [ span [ css [ Tw.sr_only ] ]
                             [ text "Azimutt" ]
-                        , img
-                            [ css
-                                [ Tw.h_8
-                                , Tw.w_auto
-                                , Bp.sm
-                                    [ Tw.h_10
-                                    ]
-                                ]
-                            , src url
-                            , alt "Azimutt"
-                            ]
-                            []
+                        , img [ src url, alt "Azimutt", css [ Tw.h_8, Tw.w_auto, Bp.sm [ Tw.h_10 ] ] ] []
                         ]
                     ]
                 ]

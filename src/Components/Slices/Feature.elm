@@ -1,6 +1,6 @@
 module Components.Slices.Feature exposing (featureChapter, featureListeSlice, featureSlice)
 
-import Components.Atoms.SvgIcon as SvgIcon
+import Components.Atoms.Icon as Icon
 import Css
 import ElmBook.Chapter exposing (chapter, renderComponentList)
 import ElmBook.ElmCSS exposing (Chapter)
@@ -66,27 +66,27 @@ featureListeSlice =
             , p [ css [ Tw.mt_4, Tw.max_w_3xl, Tw.text_lg, Tw.text_purple_200 ] ]
                 [ text "Ac tincidunt sapien vehicula erat auctor pellentesque rhoncus. Et magna sit morbi lobortis. Blandit aliquam sit nisl euismod mattis in." ]
             , div [ css [ Tw.mt_12, Tw.grid, Tw.grid_cols_1, Tw.gap_x_6, Tw.gap_y_12, Tw.text_white, Bp.lg [ Tw.mt_16, Tw.grid_cols_3, Tw.gap_x_8, Tw.gap_y_16 ], Bp.sm [ Tw.grid_cols_2 ] ] ]
-                [ item SvgIcon.inbox
+                [ item Icon.inbox
                     "Partial display"
                     [ text """Maybe the less impressive but most useful feature when you work with a schema with 20, 40 or even 400 or 1000 tables!
                               Seeing only what you need is vital to understand how it works. This is true for tables but also for columns and relations!""" ]
-                , item SvgIcon.documentSearch
+                , item Icon.documentSearch
                     "Search"
                     [ text """Search is awesome, don't know where to start? Just type a few words and you will have related tables and columns ranked by relevance.
                               Looking at table and column names, but also comments, keys or relations (soon).""" ]
-                , item SvgIcon.photograph
+                , item Icon.photograph
                     "Layouts"
                     [ text """Your database is probably supporting many use cases, why not save them to move from one to an other ?
                               Layouts are here for that: select tables and columns related to a feature and save them as a layout. So you can easily switch between them.""" ]
-                , item SvgIcon.link
+                , item Icon.link
                     "Relation exploration"
                     [ text """Start from a table and look at its relations to display more.
                               Outgoing, of course (foreign keys), but incoming ones also (foreign keys from other tables)!""" ]
-                , item SvgIcon.link
+                , item Icon.link
                     "Relation search (soon)"
                     [ text """Did you ever ask how to join two tables ?
                               Azimutt can help showing all the possible path between tables. But also between a table and a column!""" ]
-                , item SvgIcon.link
+                , item Icon.link
                     "Lorem Ipsum"
                     [ text """You came this far ??? Awesome! You seem quite interested and ready to dig in ^^
                               The best you can do now is to """, a [ href (Route.toHref Route.App) ] [ text "try it out" ], text " right away :D" ]

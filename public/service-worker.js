@@ -1,4 +1,5 @@
-const cacheName = 'azimutt'
+const version = 1
+const assetsCache = 'azimutt-static'
 const assets = [
     '/',
     '/assets/bootstrap.bundle.min.js',
@@ -30,17 +31,29 @@ const assets = [
 ]
 
 self.addEventListener('install', installEvent => {
+    // console.log(`Installing V${version}...`, installEvent)
     installEvent.waitUntil(
-        caches.open(cacheName).then(cache => {
-            cache.addAll(assets)
-        })
+        caches.open(assetsCache).then(cache => cache.addAll(assets))
     )
 })
 
+self.addEventListener('activate', activateEvent => {
+    // console.log(`V${version} activated!`, activateEvent)
+})
+
 self.addEventListener('fetch', fetchEvent => {
-    fetchEvent.respondWith(
-        caches.match(fetchEvent.request).then(res => {
-            return res || fetch(fetchEvent.request)
-        })
-    )
+    // console.log(`Fetch in V${version}.`, fetchEvent)
+    const request = fetchEvent.request
+    if (request.method === 'GET') {
+        fetchEvent.respondWith(
+            caches.open(assetsCache).then(cache =>
+                fetch(request)
+                    .then(response => {
+                        cache.put(request, response.clone())
+                        return response
+                    })
+                    .catch(err => cache.match(request).then(response => response || Promise.reject(err)))
+            )
+        )
+    }
 })

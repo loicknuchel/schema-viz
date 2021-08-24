@@ -2,6 +2,7 @@ module PagesComponents.App.View exposing (viewApp)
 
 import FontAwesome.Styles as Icon
 import Html exposing (Html, node, text)
+import Html.Lazy exposing (lazy, lazy2, lazy3, lazy4)
 import Libs.Maybe as M
 import PagesComponents.App.Models exposing (Model, Msg(..))
 import PagesComponents.App.Views.Command exposing (viewCommands)
@@ -19,13 +20,13 @@ viewApp : Model -> List (Html Msg)
 viewApp model =
     List.concatMap identity
         [ [ Icon.css, node "style" [] [ text "body { overflow: hidden; }" ] ]
-        , [ viewNavbar model.search model.project ]
-        , [ viewMenu (model.project |> Maybe.map .schema) ]
-        , [ viewErd model.hover model.sizes (model.project |> Maybe.map .schema) ]
-        , [ viewCommands (model.project |> Maybe.map (\p -> p.schema.layout.canvas)) ]
-        , [ viewSchemaSwitchModal model.time model.switch (model.project |> Maybe.map (\_ -> "Azimutt, easily explore your SQL schema!") |> Maybe.withDefault "Load a new schema") model.storedProjects ]
-        , [ viewCreateLayoutModal model.newLayout ]
-        , Maybe.map2 (\p fp -> viewFindPathModal p.schema.tables p.settings.findPath fp) model.project model.findPath |> M.toList
+        , [ lazy2 viewNavbar model.search model.project ]
+        , [ lazy viewMenu (model.project |> Maybe.map .schema) ]
+        , [ lazy3 viewErd model.hover model.sizes (model.project |> Maybe.map .schema) ]
+        , [ lazy viewCommands (model.project |> Maybe.map (\p -> p.schema.layout.canvas)) ]
+        , [ lazy4 viewSchemaSwitchModal model.time model.switch (model.project |> Maybe.map (\_ -> "Azimutt, easily explore your SQL schema!") |> Maybe.withDefault "Load a new schema") model.storedProjects ]
+        , [ lazy viewCreateLayoutModal model.newLayout ]
+        , Maybe.map2 (\p fp -> lazy3 viewFindPathModal p.schema.tables p.settings.findPath fp) model.project model.findPath |> M.toList
         , [ viewHelpModal ]
-        , [ viewConfirm model.confirm ]
+        , [ lazy viewConfirm model.confirm ]
         ]

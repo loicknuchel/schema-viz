@@ -4,6 +4,8 @@ import Conf exposing (conf)
 import Dict exposing (Dict)
 import Html exposing (Attribute, Html, div)
 import Html.Attributes exposing (class, id, style)
+import Html.Keyed as Keyed
+import Html.Lazy exposing (lazy2, lazy7)
 import Libs.Html.Events exposing (onWheel)
 import Libs.List as L
 import Libs.Maybe as M
@@ -11,7 +13,7 @@ import Libs.Models exposing (HtmlId, ZoomLevel)
 import Libs.Ned as Ned
 import Libs.Position exposing (Position)
 import Libs.Size exposing (Size)
-import Models.Project exposing (ColumnRef, ColumnRefFull, Layout, Relation, RelationFull, Schema, Table, TableId, tableIdAsHtmlId, viewportSize)
+import Models.Project exposing (ColumnRef, ColumnRefFull, Layout, Relation, RelationFull, Schema, Table, TableId, tableIdAsHtmlId, tableIdAsString, viewportSize)
 import PagesComponents.App.Models exposing (Hover, Msg(..))
 import PagesComponents.App.Views.Erd.Relation exposing (viewRelation)
 import PagesComponents.App.Views.Erd.Table exposing (viewTable)
@@ -35,15 +37,16 @@ viewErd hover sizes schema =
             (schema
                 |> Maybe.map
                     (\s ->
-                        -- display all shown tables
-                        (s.layout.tables
-                            |> List.reverse
-                            |> L.filterZip (\t -> s.tables |> Dict.get t.id)
-                            |> List.map (\( p, t ) -> ( ( t, p ), ( shownRelations |> List.filter (\r -> r.src.table.id == t.id || r.ref.table.id == t.id), sizes |> Dict.get (tableIdAsHtmlId p.id) ) ))
-                            |> List.indexedMap (\i ( ( table, props ), ( rels, size ) ) -> viewTable hover s.layout.canvas.zoom i table props rels size)
-                        )
-                            -- display all relations for shown tables
-                            ++ (shownRelations |> List.map (viewRelation hover))
+                        [ Keyed.node "div"
+                            [ class "tables" ]
+                            (s.layout.tables
+                                |> List.reverse
+                                |> L.filterZip (\t -> s.tables |> Dict.get t.id)
+                                |> List.map (\( p, t ) -> ( ( t, p ), ( shownRelations |> List.filter (\r -> r.src.table.id == t.id || r.ref.table.id == t.id), sizes |> Dict.get (tableIdAsHtmlId p.id) ) ))
+                                |> List.indexedMap (\i ( ( table, props ), ( rels, size ) ) -> ( tableIdAsString table.id, lazy7 viewTable hover s.layout.canvas.zoom i table props rels size ))
+                            )
+                        , Keyed.node "div" [ class "relations" ] (shownRelations |> List.map (\r -> ( r.name, lazy2 viewRelation hover r )))
+                        ]
                     )
                 |> Maybe.withDefault []
             )

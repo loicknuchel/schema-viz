@@ -8,6 +8,8 @@ import FontAwesome.Solid as Icon
 import Html exposing (Attribute, Html, b, button, div, li, span, text, ul)
 import Html.Attributes exposing (class, classList, id, style, title, type_)
 import Html.Events exposing (onClick, onDoubleClick, onMouseEnter, onMouseLeave)
+import Html.Keyed as Keyed
+import Html.Lazy exposing (lazy3, lazy4)
 import Libs.Bootstrap exposing (Toggle(..), bsDropdown, bsToggle, bsToggleCollapse)
 import Libs.Html exposing (divIf)
 import Libs.Html.Events exposing (stopClick)
@@ -29,10 +31,6 @@ viewTable hover zoom index table props tableRelations size =
         hiddenColumns : List Column
         hiddenColumns =
             table.columns |> Ned.values |> Nel.filter (\c -> props.columns |> L.hasNot c.name)
-
-        collapseId : String
-        collapseId =
-            tableIdAsHtmlId table.id ++ "-hidden-columns-collapse"
     in
     div
         ([ class "erd-table"
@@ -47,23 +45,9 @@ viewTable hover zoom index table props tableRelations size =
          ]
             ++ dragAttrs (tableIdAsHtmlId table.id)
         )
-        [ viewHeader zoom index table
-        , div [ class "columns" ]
-            (props.columns
-                |> List.filterMap (\c -> table.columns |> Ned.get c)
-                |> List.map (\c -> viewColumn hover (tableRelations |> filterColumnRelations table.id c.name) table c)
-            )
-        , divIf (List.length hiddenColumns > 0)
-            [ class "hidden-columns" ]
-            [ button ([ class "toggle", type_ "button" ] ++ bsToggleCollapse collapseId)
-                [ text (S.plural (hiddenColumns |> List.length) "No hidden column" "1 hidden column" "hidden columns")
-                ]
-            , div [ class "collapse", id collapseId ]
-                (hiddenColumns
-                    |> List.sortBy .index
-                    |> List.map (\c -> viewHiddenColumn table c (tableRelations |> filterColumnRelations table.id c.name))
-                )
-            ]
+        [ lazy3 viewHeader zoom index table
+        , lazy4 viewColumns hover table tableRelations props.columns
+        , lazy4 viewHiddenColumns (tableIdAsHtmlId table.id ++ "-hidden-columns-collapse") table tableRelations hiddenColumns
         ]
 
 
@@ -115,14 +99,25 @@ viewHeader zoom index table =
         ]
 
 
-viewColumn : Hover -> List RelationFull -> Table -> Column -> Html Msg
-viewColumn hover columnRelations table column =
+viewColumns : Hover -> Table -> List RelationFull -> List ColumnName -> Html Msg
+viewColumns hover table tableRelations columns =
+    Keyed.node "div"
+        [ class "columns" ]
+        (columns
+            |> List.filterMap (\c -> table.columns |> Ned.get c)
+            |> L.zipWith (\c -> tableRelations |> filterColumnRelations table.id c.name)
+            |> List.map (\( c, columnRelations ) -> ( c.name, lazy4 viewColumn (isRelationHover hover columnRelations) columnRelations table c ))
+        )
+
+
+viewColumn : Bool -> List RelationFull -> Table -> Column -> Html Msg
+viewColumn isHover columnRelations table column =
     let
         ref : ColumnRef
         ref =
             ColumnRef table.id column.name
     in
-    div [ class "column", classList [ ( "hover", isRelationHover hover columnRelations ) ], id (columnRefAsHtmlId ref), onDoubleClick (HideColumn ref), onMouseEnter (HoverColumn (Just ref)), onMouseLeave (HoverColumn Nothing) ]
+    div [ class "column", classList [ ( "hover", isHover ) ], id (columnRefAsHtmlId ref), onDoubleClick (HideColumn ref), onMouseEnter (HoverColumn (Just ref)), onMouseLeave (HoverColumn Nothing) ]
         [ viewColumnDropdown columnRelations ref (viewColumnIcon table column columnRelations)
         , viewColumnName table column
         , viewColumnType column
@@ -132,6 +127,22 @@ viewColumn hover columnRelations table column =
 isRelationHover : Hover -> List RelationFull -> Bool
 isRelationHover hover columnRelations =
     hover.column |> M.exist (\c -> columnRelations |> List.any (\r -> (r.src.table.id == c.table && r.src.column.name == c.column) || (r.ref.table.id == c.table && r.ref.column.name == c.column)))
+
+
+viewHiddenColumns : String -> Table -> List RelationFull -> List Column -> Html Msg
+viewHiddenColumns collapseId table tableRelations hiddenColumns =
+    divIf (List.length hiddenColumns > 0)
+        [ class "hidden-columns" ]
+        [ button ([ class "toggle", type_ "button" ] ++ bsToggleCollapse collapseId)
+            [ text (S.plural (hiddenColumns |> List.length) "No hidden column" "1 hidden column" "hidden columns")
+            ]
+        , Keyed.node "div"
+            [ class "collapse", id collapseId ]
+            (hiddenColumns
+                |> List.sortBy .index
+                |> List.map (\c -> ( c.name, lazy3 viewHiddenColumn table c (tableRelations |> filterColumnRelations table.id c.name) ))
+            )
+        ]
 
 
 viewHiddenColumn : Table -> Column -> List RelationFull -> Html Msg

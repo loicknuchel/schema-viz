@@ -7,6 +7,7 @@ import FontAwesome.Solid as Icon
 import Html exposing (Html, b, button, div, form, img, input, li, nav, span, text, ul)
 import Html.Attributes exposing (alt, attribute, autocomplete, class, height, id, placeholder, src, title, type_, value)
 import Html.Events exposing (onClick, onInput)
+import Html.Lazy exposing (lazy2)
 import Libs.Bootstrap exposing (BsColor(..), Toggle(..), bsButton, bsToggle, bsToggleCollapse, bsToggleDropdown, bsToggleModal, bsToggleOffcanvas)
 import Libs.Html.Attributes exposing (ariaExpanded, ariaLabel)
 import Libs.List as L
@@ -26,12 +27,12 @@ viewNavbar search project =
                 [ span [ class "navbar-toggler-icon" ] []
                 ]
             , div [ class "collapse navbar-collapse", id "navbar-content" ]
-                ([ viewSearchBar (project |> Maybe.map .schema) search
+                ([ lazy2 viewSearchBar (project |> Maybe.map .schema) search
                  , ul [ class "navbar-nav me-auto" ]
                     [ li [ class "nav-item" ] [ button ([ type_ "button", class "link nav-link" ] ++ bsToggleModal conf.ids.helpModal) [ text "?" ] ]
                     ]
                  ]
-                    ++ (project |> Maybe.map (\p -> [ viewTitle p.name p.schema.tables p.currentLayout, viewLayoutButton p.currentLayout p.layouts ]) |> Maybe.withDefault [])
+                    ++ (project |> Maybe.map (\p -> [ viewTitle p.name p.schema.tables p.currentLayout, lazy2 viewLayoutButton p.currentLayout p.layouts ]) |> Maybe.withDefault [])
                 )
             ]
         ]

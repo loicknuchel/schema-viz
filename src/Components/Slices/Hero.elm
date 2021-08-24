@@ -7,8 +7,9 @@ import Css
 import ElmBook.Chapter exposing (chapter, renderComponentList)
 import ElmBook.ElmCSS exposing (Chapter)
 import Gen.Route as Route
-import Html.Styled exposing (Html, a, button, div, h1, img, main_, nav, p, span, text)
+import Html.Styled exposing (Html, a, br, button, div, h1, img, main_, nav, p, span, text)
 import Html.Styled.Attributes exposing (alt, css, href, src, type_)
+import Libs.Html.Styled exposing (bText)
 import Libs.Html.Styled.Attributes exposing (ariaExpanded, ariaHidden, ariaLabel)
 import Tailwind.Breakpoints as Bp
 import Tailwind.Utilities as Tw
@@ -32,7 +33,7 @@ heroSlice =
                                 [ text "Azimutt" ]
                             ]
                         , p [ css [ Tw.mt_6, Tw.max_w_lg, Tw.mx_auto, Tw.text_center, Tw.text_xl, Tw.text_indigo_200, Bp.sm [ Tw.max_w_3xl ] ] ]
-                            [ text "Explore and understand your SQL schema" ]
+                            [ text "Lost in your database schema ?", br [] [], text "You just found the right ", bText "Azimutt", text " 🎉" ]
                         , div [ css [ Tw.mt_10, Tw.max_w_sm, Tw.mx_auto, Bp.sm [ Tw.max_w_none, Tw.flex, Tw.justify_center ] ] ]
                             [ div [ css [ Tw.space_y_4, Bp.sm [ Tw.space_y_0, Tw.mx_auto, Tw.inline_grid, Tw.grid_cols_1, Tw.gap_5 ] ] ]
                                 [ a [ href (Route.toHref Route.App), css [ Tw.flex, Tw.items_center, Tw.justify_center, Tw.px_4, Tw.py_3, Tw.border, Tw.border_transparent, Tw.text_base, Tw.font_medium, Tw.rounded_md, Tw.shadow_sm, Tw.text_indigo_700, Tw.bg_white, Css.hover [ Tw.bg_indigo_50 ], Bp.sm [ Tw.px_8 ] ] ]

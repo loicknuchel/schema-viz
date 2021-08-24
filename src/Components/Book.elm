@@ -23,7 +23,7 @@ import Tailwind.Utilities as Tw exposing (globalStyles)
 
 main : Book x
 main =
-    book "Azimutt UI"
+    book "Azimutt Design System"
         |> withThemeOptions [ ElmBook.ThemeOptions.subtitle "v0.1.0", ElmBook.ThemeOptions.globals [ global globalStyles ], ElmBook.ThemeOptions.logo logo ]
         |> withComponentOptions [ ElmBook.ComponentOptions.fullWidth True ]
         |> withChapterGroups

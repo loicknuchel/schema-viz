@@ -5,8 +5,9 @@ import Css
 import ElmBook.Chapter exposing (chapter, renderComponentList)
 import ElmBook.ElmCSS exposing (Chapter)
 import Gen.Route as Route
-import Html.Styled exposing (Html, a, blockquote, div, footer, h2, h3, img, p, span, text)
+import Html.Styled exposing (Html, a, blockquote, br, div, footer, h2, h3, img, p, span, text)
 import Html.Styled.Attributes exposing (alt, class, css, href, src)
+import Libs.Html.Styled exposing (bText)
 import Tailwind.Breakpoints as Bp
 import Tailwind.Utilities as Tw
 
@@ -19,9 +20,15 @@ featureSlice =
                 [ div []
                     [ div [ css [ Tw.mt_6 ] ]
                         [ h2 [ css [ Tw.text_3xl, Tw.font_extrabold, Tw.tracking_tight, Tw.text_gray_900 ] ]
-                            [ text "See the big picture" ]
+                            [ text "Explore your database schema" ]
                         , p [ css [ Tw.mt_4, Tw.text_lg, Tw.text_gray_500 ] ]
-                            [ text "Easily visualize your database schema and see how everything fits together. Having a living document of your app schema helps when architecting a new feature or onboarding a new team member." ]
+                            [ text """Not everyone has the opportunity to work on brand you application where you create everything, including the data model.
+                                      Most of developers evolve and maintain existing applications with an already big schema, sometimes more than 50, 100 or even 500 tables.
+                                      Finding the right tables and relations to work with can be hard, and sincerely, no tool really helps. Until now."""
+                            , br [] []
+                            , bText "Azimutt"
+                            , text " allows you to explore your schema: search for relevant tables, follow the relations, hide less interesting columns and even find the paths between tables."
+                            ]
                         , div [ css [ Tw.mt_6 ] ]
                             [ a [ href (Route.toHref Route.App), css [ Tw.inline_flex, Tw.bg_gradient_to_r, Tw.from_green_600, Tw.to_indigo_700, Tw.px_4, Tw.py_2, Tw.border, Tw.border_transparent, Tw.text_base, Tw.font_medium, Tw.rounded_md, Tw.shadow_sm, Tw.text_white, Css.hover [ Tw.from_green_700, Tw.to_indigo_600, Tw.text_white ] ] ]
                                 [ text "Get started" ]
@@ -32,7 +39,7 @@ featureSlice =
                     [ blockquote []
                         [ div []
                             [ p [ css [ Tw.text_base, Tw.text_gray_500 ] ]
-                                [ text "“Being able to see only the relevant tables/columns and follow relations (incoming and outgoing) was a real game changer when working with hundreds of tables”" ]
+                                [ text "“Using Azimutt is like having superpowers!”" ]
                             ]
                         , footer [ css [ Tw.mt_3 ] ]
                             [ div [ css [ Tw.flex, Tw.items_center, Tw.space_x_3 ] ]
@@ -64,7 +71,7 @@ featureListeSlice =
             [ h2 [ css [ Tw.text_3xl, Tw.font_extrabold, Tw.text_white, Tw.tracking_tight ] ]
                 [ text "Explore your SQL schema like never before" ]
             , p [ css [ Tw.mt_4, Tw.max_w_3xl, Tw.text_lg, Tw.text_purple_200 ] ]
-                [ text "Ac tincidunt sapien vehicula erat auctor pellentesque rhoncus. Et magna sit morbi lobortis. Blandit aliquam sit nisl euismod mattis in." ]
+                [ text "Your new weapons to dig into your schema:" ]
             , div [ css [ Tw.mt_12, Tw.grid, Tw.grid_cols_1, Tw.gap_x_6, Tw.gap_y_12, Tw.text_white, Bp.lg [ Tw.mt_16, Tw.grid_cols_3, Tw.gap_x_8, Tw.gap_y_16 ], Bp.sm [ Tw.grid_cols_2 ] ] ]
                 [ item Icon.inbox
                     "Partial display"
@@ -73,23 +80,23 @@ featureListeSlice =
                 , item Icon.documentSearch
                     "Search"
                     [ text """Search is awesome, don't know where to start? Just type a few words and you will have related tables and columns ranked by relevance.
-                              Looking at table and column names, but also comments, keys or relations (soon).""" ]
+                              Looking at table and column names, but also comments, keys or relations.""" ]
                 , item Icon.photograph
                     "Layouts"
-                    [ text """Your database is probably supporting many use cases, why not save them to move from one to an other ?
+                    [ text """Your database is probably supporting many use cases, why not save them and move from one to an other ?
                               Layouts are here for that: select tables and columns related to a feature and save them as a layout. So you can easily switch between them.""" ]
                 , item Icon.link
                     "Relation exploration"
                     [ text """Start from a table and look at its relations to display more.
                               Outgoing, of course (foreign keys), but incoming ones also (foreign keys from other tables)!""" ]
                 , item Icon.link
-                    "Relation search (soon)"
+                    "Relation search"
                     [ text """Did you ever ask how to join two tables ?
-                              Azimutt can help showing all the possible path between tables. But also between a table and a column!""" ]
+                              Azimutt can help showing all the possible paths between two tables. But also between a table and a column!""" ]
                 , item Icon.link
                     "Lorem Ipsum"
-                    [ text """You came this far ??? Awesome! You seem quite interested and ready to dig in ^^
-                              The best you can do now is to """, a [ href (Route.toHref Route.App) ] [ text "try it out" ], text " right away :D" ]
+                    [ text "You came this far ??? Awesome! You seem quite interested and ready to dig in ^^", br [] [], text """
+                            The best you can do now is to """, a [ href (Route.toHref Route.App), class "link" ] [ text "try it out" ], text " right away :D" ]
                 ]
             ]
         ]

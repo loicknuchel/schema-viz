@@ -294,6 +294,6 @@ subscriptions model =
 
 view : Model -> View Msg
 view model =
-    { title = "Schema Viz"
+    { title = "Azimutt"
     , body = Containers.root (viewApp model)
     }

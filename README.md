@@ -1,6 +1,4 @@
-# SchemaViz
-
-**⚠️⚠️⚠️ Under construction ⚠️⚠️⚠️**
+# Azimutt
 
 [![Netlify Status](https://api.netlify.com/api/v1/badges/21f157ae-adde-4caa-8fce-4921b917761b/deploy-status)](https://app.netlify.com/sites/schema-viz/deploys)
 
@@ -32,15 +30,16 @@ For me, this tool is the missing piece between a classic ERD tool and a Data cat
 
 ## Installation
 
-Schema Viz is a Single Page Application built with Elm that parse and explore your SQL schema.
+Azimutt is a Single Page Application built with Elm that parse and explore your SQL schema.
 
 First, you need to install npm, Elm & [elm-spa](https://www.elm-spa.dev) on your machine and run `npm install` to get the dependencies.
 
 - launch dev server: `elm-spa server` or `elm-live .elm-spa/defaults/Main.elm --dir=public --pushstate -- --output=public/dist/elm.js`
-- launch the tests: `elm-test` (needs `npm install -g elm-test`)
-- run linter: `elm-review` (needs `npm install -g elm-review`)
-- run coverage: `elm-coverage --open` (needs `npm install -g elm-coverage`) > doesn't work with elm-spa :(
-- update the demo: `./build-demo.sh`
+- launch design system: `elm-book src/Components/Book.elm --dir=public --start-page=book.html --port 8001 -- --output=public/dist/book.js` (needs `npm install -g elm-book` or use `npx`)
+- launch the tests: `elm-test` (needs `npm install -g elm-test` or use `npx`)
+- run linter: `elm-review` (needs `npm install -g elm-review` or use `npx`)
+- check format: `elm-format src tests --validate` (needs `npm install -g elm-format` or use `npx`)
+- run coverage: `elm-coverage --open` (needs `npm install -g elm-coverage`) > **doesn't work with elm-spa :(**
 - install deps `elm-json install author/package` (needs `npm install --g elm-json`)
 - uninstall deps `elm-json uninstall author/package`
 - update deps `elm-json upgrade` (use `--unsafe` flag for major versions)

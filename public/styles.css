@@ -325,3 +325,14 @@ button.link.a:hover {
 .dropdown-menu > li:hover > .dropdown-submenu {
     display: block;
 }
+
+/* fix tailwind */
+
+#navbar .navbar-brand img {
+    height: 24px;
+}
+
+a.link {
+    color: #0d6efd;
+    text-decoration: underline;
+}

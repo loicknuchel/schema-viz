@@ -2,6 +2,8 @@
 
 [![Netlify Status](https://api.netlify.com/api/v1/badges/21f157ae-adde-4caa-8fce-4921b917761b/deploy-status)](https://app.netlify.com/sites/schema-viz/deploys)
 
+**This repo has been migrated to [https://github.com/azimuttapp/azimutt](https://github.com/azimuttapp/azimutt)**
+
 An Entity Relationship diagram (ERD) visualization tool, with various filters and inputs to help understand your SQL
 schema.
 
